@@ -44,7 +44,7 @@ async function cloudflareMetrics() {
   const cpuP50 = rows.map(row => Number(row.quantiles?.cpuTimeP50)).filter(Number.isFinite);
   const cpuP99 = rows.map(row => Number(row.quantiles?.cpuTimeP99)).filter(Number.isFinite);
   const statuses = rows.reduce((acc, row) => { const key = row.dimensions?.status || 'unknown'; acc[key] = (acc[key] || 0) + Number(row.sum?.requests || 0); return acc; }, {});
-  return { status: 'ok', window: { start: start.toISOString(), end: end.toISOString() }, script: scriptName, total, error_rate_percent: total.requests ? Number((total.errors / total.requests * 100).toFixed(3)) : 0, cpu_time_ms: { p50_max: cpuP50.length ? Math.max(...cpuP50) : null, p99_max: cpuP99.length ? Math.max(...cpuP99) : null }, invocation_status_requests: statuses, data_points: rows.length };
+  return { status: 'ok', window: { start: start.toISOString(), end: end.toISOString() }, script: scriptName, total, error_rate_percent: total.requests ? Number((total.errors / total.requests * 100).toFixed(3)) : 0, cpu_time_raw: { p50_max: cpuP50.length ? Math.max(...cpuP50) : null, p99_max: cpuP99.length ? Math.max(...cpuP99) : null, note: 'Nilai mentah quantile cpuTime dari GraphQL Cloudflare; jangan konversi tanpa mengikuti unit dataset/account.' }, invocation_status_requests: statuses, data_points: rows.length };
 }
 
 (async () => {

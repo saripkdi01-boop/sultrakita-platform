@@ -1,0 +1,803 @@
+{
+  "generated_at": "2026-08-22T23:16:47.410Z",
+  "samples_per_endpoint": 5,
+  "targets": {
+    "vercel": {
+      "base": "https://sultrakita-platform.vercel.app",
+      "summary": {
+        "requests": 20,
+        "successes": 20,
+        "http_errors": 0,
+        "network_errors": 0,
+        "latency_ms": {
+          "p50": 71.34,
+          "p95": 186.3,
+          "max": 530.19,
+          "average": 104.17
+        },
+        "bytes": {
+          "min": 71,
+          "max": 13877
+        }
+      },
+      "security_headers": {
+        "strict-transport-security": {
+          "present": 5,
+          "expected": 5
+        },
+        "x-content-type-options": {
+          "present": 5,
+          "expected": 5
+        },
+        "x-frame-options": {
+          "present": 5,
+          "expected": 5
+        },
+        "referrer-policy": {
+          "present": 5,
+          "expected": 5
+        },
+        "permissions-policy": {
+          "present": 5,
+          "expected": 5
+        },
+        "content-security-policy": {
+          "present": 5,
+          "expected": 5
+        }
+      },
+      "endpoints": [
+        {
+          "path": "/api/health",
+          "sample": 1,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 530.19,
+          "bytes": 71,
+          "content_type": "application/json; charset=utf-8",
+          "headers": {
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=(self)",
+            "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"
+          }
+        },
+        {
+          "path": "/api/health",
+          "sample": 2,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 186.3,
+          "bytes": 71,
+          "content_type": "application/json; charset=utf-8",
+          "headers": {
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=(self)",
+            "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"
+          }
+        },
+        {
+          "path": "/api/health",
+          "sample": 3,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 74.3,
+          "bytes": 71,
+          "content_type": "application/json; charset=utf-8",
+          "headers": {
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=(self)",
+            "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"
+          }
+        },
+        {
+          "path": "/api/health",
+          "sample": 4,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 72.2,
+          "bytes": 71,
+          "content_type": "application/json; charset=utf-8",
+          "headers": {
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=(self)",
+            "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"
+          }
+        },
+        {
+          "path": "/api/health",
+          "sample": 5,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 139.09,
+          "bytes": 71,
+          "content_type": "application/json; charset=utf-8",
+          "headers": {
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=(self)",
+            "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"
+          }
+        },
+        {
+          "path": "/api/categories",
+          "sample": 1,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 70.33,
+          "bytes": 647,
+          "content_type": "application/json; charset=utf-8",
+          "headers": {
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=(self)",
+            "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"
+          }
+        },
+        {
+          "path": "/api/categories",
+          "sample": 2,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 81.69,
+          "bytes": 647,
+          "content_type": "application/json; charset=utf-8",
+          "headers": {
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=(self)",
+            "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"
+          }
+        },
+        {
+          "path": "/api/categories",
+          "sample": 3,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 72.09,
+          "bytes": 647,
+          "content_type": "application/json; charset=utf-8",
+          "headers": {
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=(self)",
+            "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"
+          }
+        },
+        {
+          "path": "/api/categories",
+          "sample": 4,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 67.64,
+          "bytes": 647,
+          "content_type": "application/json; charset=utf-8",
+          "headers": {
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=(self)",
+            "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"
+          }
+        },
+        {
+          "path": "/api/categories",
+          "sample": 5,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 70.82,
+          "bytes": 647,
+          "content_type": "application/json; charset=utf-8",
+          "headers": {
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=(self)",
+            "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"
+          }
+        },
+        {
+          "path": "/api/listings?limit=8",
+          "sample": 1,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 75.98,
+          "bytes": 120,
+          "content_type": "application/json; charset=utf-8",
+          "headers": {
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=(self)",
+            "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"
+          }
+        },
+        {
+          "path": "/api/listings?limit=8",
+          "sample": 2,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 68.96,
+          "bytes": 120,
+          "content_type": "application/json; charset=utf-8",
+          "headers": {
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=(self)",
+            "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"
+          }
+        },
+        {
+          "path": "/api/listings?limit=8",
+          "sample": 3,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 71.3,
+          "bytes": 120,
+          "content_type": "application/json; charset=utf-8",
+          "headers": {
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=(self)",
+            "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"
+          }
+        },
+        {
+          "path": "/api/listings?limit=8",
+          "sample": 4,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 71.27,
+          "bytes": 120,
+          "content_type": "application/json; charset=utf-8",
+          "headers": {
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=(self)",
+            "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"
+          }
+        },
+        {
+          "path": "/api/listings?limit=8",
+          "sample": 5,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 74.58,
+          "bytes": 120,
+          "content_type": "application/json; charset=utf-8",
+          "headers": {
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=(self)",
+            "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"
+          }
+        },
+        {
+          "path": "/",
+          "sample": 1,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 67.36,
+          "bytes": 13877,
+          "content_type": "text/html; charset=UTF-8",
+          "headers": {
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=(self)",
+            "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"
+          }
+        },
+        {
+          "path": "/",
+          "sample": 2,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 64.94,
+          "bytes": 13877,
+          "content_type": "text/html; charset=UTF-8",
+          "headers": {
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=(self)",
+            "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"
+          }
+        },
+        {
+          "path": "/",
+          "sample": 3,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 83.47,
+          "bytes": 13877,
+          "content_type": "text/html; charset=UTF-8",
+          "headers": {
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=(self)",
+            "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"
+          }
+        },
+        {
+          "path": "/",
+          "sample": 4,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 71.34,
+          "bytes": 13877,
+          "content_type": "text/html; charset=UTF-8",
+          "headers": {
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=(self)",
+            "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"
+          }
+        },
+        {
+          "path": "/",
+          "sample": 5,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 69.57,
+          "bytes": 13877,
+          "content_type": "text/html; charset=UTF-8",
+          "headers": {
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=(self)",
+            "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"
+          }
+        }
+      ]
+    },
+    "worker": {
+      "base": "https://sultrakita-demo.aplikasi-cerdasku.workers.dev",
+      "summary": {
+        "requests": 20,
+        "successes": 20,
+        "http_errors": 0,
+        "network_errors": 0,
+        "latency_ms": {
+          "p50": 651.64,
+          "p95": 943.53,
+          "max": 2681.23,
+          "average": 734.28
+        },
+        "bytes": {
+          "min": 77,
+          "max": 70619
+        }
+      },
+      "security_headers": {
+        "strict-transport-security": {
+          "present": 5,
+          "expected": 5
+        },
+        "x-content-type-options": {
+          "present": 5,
+          "expected": 5
+        },
+        "x-frame-options": {
+          "present": 5,
+          "expected": 5
+        },
+        "referrer-policy": {
+          "present": 5,
+          "expected": 5
+        },
+        "permissions-policy": {
+          "present": 5,
+          "expected": 5
+        },
+        "content-security-policy": {
+          "present": 5,
+          "expected": 5
+        }
+      },
+      "endpoints": [
+        {
+          "path": "/api/health",
+          "sample": 1,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 2681.23,
+          "bytes": 77,
+          "content_type": "application/json",
+          "headers": {
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=()",
+            "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"
+          }
+        },
+        {
+          "path": "/api/health",
+          "sample": 2,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 488.37,
+          "bytes": 77,
+          "content_type": "application/json",
+          "headers": {
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=()",
+            "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"
+          }
+        },
+        {
+          "path": "/api/health",
+          "sample": 3,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 427.23,
+          "bytes": 77,
+          "content_type": "application/json",
+          "headers": {
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=()",
+            "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"
+          }
+        },
+        {
+          "path": "/api/health",
+          "sample": 4,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 421.56,
+          "bytes": 77,
+          "content_type": "application/json",
+          "headers": {
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=()",
+            "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"
+          }
+        },
+        {
+          "path": "/api/health",
+          "sample": 5,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 473.1,
+          "bytes": 77,
+          "content_type": "application/json",
+          "headers": {
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=()",
+            "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"
+          }
+        },
+        {
+          "path": "/api/categories",
+          "sample": 1,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 680.81,
+          "bytes": 638,
+          "content_type": "application/json",
+          "headers": {
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=()",
+            "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"
+          }
+        },
+        {
+          "path": "/api/categories",
+          "sample": 2,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 698.4,
+          "bytes": 638,
+          "content_type": "application/json",
+          "headers": {
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=()",
+            "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"
+          }
+        },
+        {
+          "path": "/api/categories",
+          "sample": 3,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 717.39,
+          "bytes": 638,
+          "content_type": "application/json",
+          "headers": {
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=()",
+            "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"
+          }
+        },
+        {
+          "path": "/api/categories",
+          "sample": 4,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 654.96,
+          "bytes": 638,
+          "content_type": "application/json",
+          "headers": {
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=()",
+            "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"
+          }
+        },
+        {
+          "path": "/api/categories",
+          "sample": 5,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 651.64,
+          "bytes": 638,
+          "content_type": "application/json",
+          "headers": {
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=()",
+            "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"
+          }
+        },
+        {
+          "path": "/api/listings?limit=8",
+          "sample": 1,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 943.53,
+          "bytes": 512,
+          "content_type": "application/json",
+          "headers": {
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=()",
+            "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"
+          }
+        },
+        {
+          "path": "/api/listings?limit=8",
+          "sample": 2,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 899.07,
+          "bytes": 512,
+          "content_type": "application/json",
+          "headers": {
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=()",
+            "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"
+          }
+        },
+        {
+          "path": "/api/listings?limit=8",
+          "sample": 3,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 902.26,
+          "bytes": 512,
+          "content_type": "application/json",
+          "headers": {
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=()",
+            "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"
+          }
+        },
+        {
+          "path": "/api/listings?limit=8",
+          "sample": 4,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 940.03,
+          "bytes": 512,
+          "content_type": "application/json",
+          "headers": {
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=()",
+            "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"
+          }
+        },
+        {
+          "path": "/api/listings?limit=8",
+          "sample": 5,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 900.66,
+          "bytes": 512,
+          "content_type": "application/json",
+          "headers": {
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=()",
+            "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"
+          }
+        },
+        {
+          "path": "/",
+          "sample": 1,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 475.81,
+          "bytes": 70619,
+          "content_type": "text/html;charset=UTF-8",
+          "headers": {
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=()",
+            "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"
+          }
+        },
+        {
+          "path": "/",
+          "sample": 2,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 429.97,
+          "bytes": 70619,
+          "content_type": "text/html;charset=UTF-8",
+          "headers": {
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=()",
+            "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"
+          }
+        },
+        {
+          "path": "/",
+          "sample": 3,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 431,
+          "bytes": 70619,
+          "content_type": "text/html;charset=UTF-8",
+          "headers": {
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=()",
+            "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"
+          }
+        },
+        {
+          "path": "/",
+          "sample": 4,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 428.96,
+          "bytes": 70619,
+          "content_type": "text/html;charset=UTF-8",
+          "headers": {
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=()",
+            "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"
+          }
+        },
+        {
+          "path": "/",
+          "sample": 5,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 439.61,
+          "bytes": 70619,
+          "content_type": "text/html;charset=UTF-8",
+          "headers": {
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=()",
+            "content-security-policy": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"
+          }
+        }
+      ]
+    }
+  },
+  "cloudflare_worker_metrics": {
+    "status": "ok",
+    "window": {
+      "start": "2026-08-15T23:16:47.410Z",
+      "end": "2026-08-22T23:16:47.410Z"
+    },
+    "script": "sultrakita-demo",
+    "total": {
+      "requests": 137,
+      "errors": 0,
+      "subrequests": 0
+    },
+    "error_rate_percent": 0,
+    "cpu_time_raw": {
+      "p50_max": 11098,
+      "p99_max": 11098,
+      "note": "Nilai mentah quantile cpuTime dari GraphQL Cloudflare; jangan konversi tanpa mengikuti unit dataset/account."
+    },
+    "invocation_status_requests": {
+      "success": 137
+    },
+    "data_points": 104
+  }
+}
