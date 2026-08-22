@@ -24,7 +24,10 @@ Database SQLite dibuat otomatis di folder `data/` menggunakan `sql.js`. Folder d
 | GET | `/api/listings/:id/comments` | Komentar visible pada listing |
 | POST | `/api/comments` | Menambahkan komentar |
 | POST | `/api/suggestions` | Mengirim saran fitur |
-| POST | `/api/donations` | Mencatat pledge dukungan proyek |
+| GET | `/api/donation/campaigns` | Daftar kampanye donasi aktif |
+| GET | `/api/donation/stats` | Statistik progres dan jumlah donatur |
+| POST | `/api/donations` | Membuat transaksi donasi dan payment URL |
+| POST | `/api/donation/webhook` | Menerima serta memverifikasi notifikasi Midtrans/Xendit |
 | POST | `/api/reports` | Melaporkan listing bermasalah |
 | GET | `/api/community/summary` | Ringkasan aktivitas komunitas |
 
@@ -40,7 +43,67 @@ Endpoint API memiliki rate limiting berbasis IP dan path sebagai perlindungan aw
 
 ## Komunitas dan donasi
 
-Fitur saran, komentar, dan laporan telah tersedia sebagai fondasi moderasi komunitas. Komentar disimpan dengan status moderasi, sedangkan laporan dipisahkan agar tim admin dapat menindaklanjuti konten bermasalah. Fitur donasi saat ini mencatat komitmen dukungan (`pledged`) dan sengaja belum memproses pembayaran nyata. Untuk production, hubungkan endpoint ini ke provider pembayaran resmi, webhook tervalidasi, rekening organisasi yang sah, kebijakan pengembalian dana, dan rekonsiliasi admin sebelum menerima dana pengguna.
+Fitur donasi menggunakan kampanye aktif, transaksi berstatus `pending/success/failed/expired`, dan penghitungan progres yang hanya berubah setelah webhook pembayaran terverifikasi. Transaksi sukses bersifat idempoten: webhook yang sama atau webhook duplikat tidak menambahkan nominal dua kali.
+
+| Endpoint | Payload/parameter penting | Respons utama |
+|---|---|---|
+| `GET /api/donation/campaigns` | Opsional tanpa payload | Array kampanye aktif dengan target dan nominal terkumpul |
+| `GET /api/donation/stats?campaign_id=1` | `campaign_id` opsional | Kampanye, `progress_percent`, dan jumlah donatur sukses |
+| `POST /api/donations` | `{ "campaign_id": 1, "amount": 25000, "name": "Hamba Allah", "email": "", "message": "", "payment_method": "qris" }` | `donation_id`, `transaction_id`, `payment_status`, `provider`, `payment_url` |
+| `POST /api/donation/webhook` | Payload Midtrans atau Xendit; signature/header wajib | Status transaksi dan tanda idempotensi |
+
+### Kredensial produksi Midtrans
+
+Pilih `PAYMENT_PROVIDER=midtrans`. Untuk sandbox gunakan `MIDTRANS_MODE=sandbox` dan server key sandbox; untuk penerimaan dana nyata gunakan `MIDTRANS_MODE=production` dan server key production. Server key hanya boleh berada pada environment backend dan tidak boleh diberi prefix `VITE_` atau dikirim ke browser. API akan membuat Snap transaction melalui backend dan mengembalikan `payment_url`.
+
+Di Midtrans MAP, atur **Settings → Configuration → Payment Notification URL** ke `https://DOMAIN-ANDA/api/donation/webhook`. Gunakan URL HTTPS publik. Midtrans memverifikasi notifikasi melalui `signature_key`; endpoint SultraKita mencocokkan signature SHA-512 dan hanya menganggap `settlement` atau `capture` yang diterima sebagai sukses.
+
+### Kredensial produksi Xendit
+
+Pilih `PAYMENT_PROVIDER=xendit`, isi `XENDIT_SECRET_KEY`, dan isi `XENDIT_CALLBACK_TOKEN` dari Dashboard Xendit pada pengaturan webhook. Secret key digunakan backend untuk membuat Invoice dan callback token digunakan hanya untuk memverifikasi header `x-callback-token`. Atur URL webhook Xendit ke `https://DOMAIN-ANDA/api/donation/webhook`. Xendit akan mengembalikan invoice URL melalui API; SultraKita menyimpan transaksi sebagai pending sampai webhook valid diterima.
+
+### Pengaturan environment variable
+
+Untuk lokal, salin `.env.example` menjadi `.env`, lalu isi hanya secret sandbox pada mesin pengembang:
+
+```bash
+cp .env.example .env
+# pilih salah satu provider
+PAYMENT_PROVIDER=midtrans
+MIDTRANS_MODE=sandbox
+MIDTRANS_SERVER_KEY=SB-Mid-server-...
+```
+
+Untuk production, gunakan secret manager platform deployment. Jangan commit `.env`, jangan menaruh secret di `wrangler.toml`, dan jangan mengirim secret melalui chat atau frontend. Contoh Cloudflare Workers:
+
+```bash
+printf '%s' 'midtrans' | npx wrangler secret put PAYMENT_PROVIDER --config wrangler-short.toml
+printf '%s' 'production' | npx wrangler secret put MIDTRANS_MODE --config wrangler-short.toml
+printf '%s' 'SB-or-Mid-server-key' | npx wrangler secret put MIDTRANS_SERVER_KEY --config wrangler-short.toml
+# Alternatif Xendit:
+printf '%s' 'xendit' | npx wrangler secret put PAYMENT_PROVIDER --config wrangler-short.toml
+printf '%s' 'xnd_development_or_production_secret' | npx wrangler secret put XENDIT_SECRET_KEY --config wrangler-short.toml
+printf '%s' 'webhook-callback-token' | npx wrangler secret put XENDIT_CALLBACK_TOKEN --config wrangler-short.toml
+```
+
+Ganti seluruh contoh nilai di atas dengan secret asli melalui terminal yang aman. Setelah deployment, periksa hanya nama secret, bukan nilainya. Atur `PAYMENT_SUCCESS_URL` dan `PAYMENT_FAILURE_URL` ke URL HTTPS platform produksi jika menggunakan Xendit.
+
+### Pengujian lokal
+
+Mode tanpa provider tidak memanggil layanan eksternal dan cocok untuk UI/API development. Jalankan `npm run smoke:donation` untuk menguji statistik kampanye, pembuatan transaksi, penolakan signature palsu, settlement Midtrans simulasi, dan replay webhook idempoten. Untuk pengujian penuh seluruh platform, jalankan `npm run verify:local`.
+
+Contoh manual:
+
+```bash
+npm install
+npm run smoke:donation
+curl http://localhost:3000/api/donation/stats
+curl -X POST http://localhost:3000/api/donations \\
+  -H 'content-type: application/json' \\
+  -d '{"amount":25000,"name":"Donatur Uji","payment_method":"qris"}'
+```
+
+Jangan menandai donasi sebagai sukses berdasarkan redirect browser. Hanya webhook provider yang sudah diverifikasi yang boleh mengubah status menjadi `success` dan menambah `current_amount`.
 
 ## Notifikasi WhatsApp penjual
 
