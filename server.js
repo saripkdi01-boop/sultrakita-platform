@@ -1,5 +1,8 @@
 const express = require('express');
 const path = require('node:path');
+const crypto = require('node:crypto');
+const fs = require('node:fs');
+const multer = require('multer');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const { query, run } = require('./database');
@@ -11,7 +14,13 @@ const districts = ['Kendari', 'Mandonga', 'Baruga', 'Poasia', 'Kadia', 'Kambu', 
 
 app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
 app.use(express.json({ limit: '1mb' }));
+const uploadDir = path.join(__dirname, 'uploads'); fs.mkdirSync(uploadDir, { recursive: true });
+const upload = multer({ storage: multer.diskStorage({ destination: uploadDir, filename: (_req, file, cb) => cb(null, `${Date.now()}-${crypto.randomBytes(8).toString('hex')}${path.extname(file.originalname).toLowerCase()}`) }), limits: { fileSize: 5 * 1024 * 1024, files: 5 }, fileFilter: (_req, file, cb) => cb(null, ['image/jpeg', 'image/png', 'image/webp'].includes(file.mimetype)) });
+const requestHits = new Map();
+const rateLimit = (windowMs = 60_000, max = 60) => (req, res, next) => { const key = `${req.ip}:${req.path}`; const now = Date.now(); const recent = (requestHits.get(key) || []).filter(timestamp => now - timestamp < windowMs); if (recent.length >= max) return fail(res, 429, 'Terlalu banyak permintaan. Silakan coba lagi nanti.'); recent.push(now); requestHits.set(key, recent); next(); };
+setInterval(() => { const now = Date.now(); for (const [key, timestamps] of requestHits) if (!timestamps.some(timestamp => now - timestamp < 60_000)) requestHits.delete(key); }, 60_000).unref();
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/api', rateLimit());
 
 const ok = (res, data, meta) => res.json({ success: true, data, ...(meta ? { meta } : {}) });
 const fail = (res, status, message, details) => res.status(status).json({ success: false, error: message, ...(details ? { details } : {}) });
@@ -28,6 +37,32 @@ app.get('/api/categories', async (_req, res, next) => {
 
 app.get('/api/locations', (_req, res) => ok(res, { province: 'Sulawesi Tenggara', city: 'Kendari', districts }));
 
+app.post('/api/auth/request-otp', async (req, res, next) => {
+  try {
+    const { phone } = req.body || {};
+    if (!/^08\d{8,13}$/.test(phone || '')) return fail(res, 422, 'Nomor telepon Indonesia belum valid');
+    const code = String(crypto.randomInt(100000, 1000000)); const hash = crypto.createHash('sha256').update(code).digest('hex'); const expires = Date.now() + 5 * 60 * 1000;
+    await run('DELETE FROM otp_challenges WHERE phone = ? OR expires_at < ?', [phone, Date.now()]); await run('INSERT INTO otp_challenges (phone, code_hash, expires_at) VALUES (?, ?, ?)', [phone, hash, expires]);
+    const response = { phone, expires_in: 300, message: 'Kode OTP telah dibuat. Pada production, kirim melalui provider SMS/WhatsApp resmi.' };
+    if (process.env.OTP_DEV_MODE === 'true') response.dev_code = code;
+    ok(res, response);
+  } catch (error) { next(error); }
+});
+
+app.post('/api/auth/verify-otp', async (req, res, next) => {
+  try {
+    const { phone, code, name = 'Pengguna SultraKita', role = 'buyer', district = 'Kendari' } = req.body || {};
+    if (!/^08\d{8,13}$/.test(phone || '') || !/^\d{6}$/.test(code || '')) return fail(res, 422, 'Nomor telepon atau kode OTP belum valid');
+    const [challenge] = await query('SELECT * FROM otp_challenges WHERE phone = ? AND consumed_at IS NULL AND expires_at > ? ORDER BY id DESC LIMIT 1', [phone, Date.now()]);
+    if (!challenge) return fail(res, 401, 'OTP sudah kedaluwarsa atau tidak ditemukan');
+    const hash = crypto.createHash('sha256').update(code).digest('hex'); if (hash !== challenge.code_hash) { await run('UPDATE otp_challenges SET attempts = attempts + 1 WHERE id = ?', [challenge.id]); return fail(res, 401, 'Kode OTP salah'); }
+    let [user] = await query('SELECT * FROM users WHERE phone = ?', [phone]);
+    if (!user) { const created = await run('INSERT INTO users (name, phone, role, district, phone_verified) VALUES (?, ?, ?, ?, 1)', [name.trim().slice(0, 80), phone, ['buyer','seller'].includes(role) ? role : 'buyer', districts.includes(district) ? district : 'Kendari']); [user] = await query('SELECT * FROM users WHERE id = ?', [created.id]); } else await run('UPDATE users SET phone_verified = 1 WHERE id = ?', [user.id]);
+    await run('UPDATE otp_challenges SET consumed_at = ? WHERE id = ?', [Date.now(), challenge.id]); const token = crypto.randomBytes(32).toString('hex'); const tokenHash = crypto.createHash('sha256').update(token).digest('hex'); await run('INSERT INTO sessions (token_hash, user_id, expires_at) VALUES (?, ?, ?)', [tokenHash, user.id, Date.now() + 30 * 24 * 60 * 60 * 1000]);
+    ok(res, { token, user: { id: user.id, name: user.name, phone: user.phone, role: user.role, district: user.district, phone_verified: 1, verification_status: user.verification_status || 'unverified' } });
+  } catch (error) { next(error); }
+});
+
 app.post('/api/users', async (req, res, next) => {
   try {
     const { name, phone, role = 'seller', district = 'Kendari' } = req.body || {};
@@ -41,6 +76,14 @@ app.post('/api/users', async (req, res, next) => {
     next(error);
   }
 });
+
+app.get('/api/users/:id', async (req, res, next) => { try { const [user] = await query('SELECT id, name, phone, role, district, phone_verified, verification_status, verification_note, created_at FROM users WHERE id = ?', [Number(req.params.id)]); if (!user) return fail(res, 404, 'Pengguna tidak ditemukan'); ok(res, user); } catch (error) { next(error); } });
+
+app.post('/api/seller-verifications', async (req, res, next) => { try { const { user_id, document_type, document_reference = null } = req.body || {}; if (!positiveInt(user_id) || !['ktp','nib','other'].includes(document_type)) return fail(res, 422, 'user_id atau document_type belum valid'); const result = await run('INSERT INTO seller_verifications (user_id, document_type, document_reference) VALUES (?, ?, ?)', [Number(user_id), document_type, document_reference]); await run("UPDATE users SET verification_status = 'pending' WHERE id = ?", [Number(user_id)]); res.status(201); ok(res, { id: result.id, status: 'pending', message: 'Pengajuan verifikasi seller diterima untuk ditinjau admin.' }); } catch (error) { next(error); } });
+
+app.post('/api/listings/:id/images', upload.array('images', 5), async (req, res, next) => { try { if (!positiveInt(req.params.id)) return fail(res, 400, 'ID listing tidak valid'); if (!req.files?.length) return fail(res, 422, 'Minimal satu foto JPG, PNG, atau WEBP diperlukan'); const listing = await query('SELECT id FROM listings WHERE id = ?', [Number(req.params.id)]); if (!listing.length) return fail(res, 404, 'Listing tidak ditemukan'); const existing = await query('SELECT COUNT(*) AS total FROM listing_images WHERE listing_id = ?', [Number(req.params.id)]); const images = []; for (const [index, file] of req.files.entries()) { const fileUrl = `/uploads/${file.filename}`; await run('INSERT INTO listing_images (listing_id, file_url, sort_order) VALUES (?, ?, ?)', [Number(req.params.id), fileUrl, Number(existing[0].total) + index]); images.push(fileUrl); } ok(res, images); } catch (error) { next(error); } });
+
+app.get('/api/listings/:id/images', async (req, res, next) => { try { ok(res, await query('SELECT id, file_url, sort_order, created_at FROM listing_images WHERE listing_id = ? ORDER BY sort_order', [Number(req.params.id)])); } catch (error) { next(error); } });
 
 app.get('/api/stats', async (_req, res, next) => {
   try {
@@ -147,6 +190,7 @@ app.delete('/api/favorites', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
+app.use('/uploads', express.static(uploadDir));
 app.use((_req, res) => fail(res, 404, 'Endpoint tidak ditemukan'));
 app.use((error, _req, res, _next) => { console.error(error); fail(res, 500, 'Terjadi kesalahan pada server'); });
 
