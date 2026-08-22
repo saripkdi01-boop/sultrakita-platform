@@ -184,6 +184,24 @@ npm run load:donation
 
 Output berisi jumlah request sukses/gagal, p50, p95, dan waktu maksimum. Gunakan environment database terpisah untuk pengujian beban dan pantau CPU, memory, database lock, rate limit, latency provider, serta webhook retry. Jangan menjalankan load test terhadap URL provider secara langsung; skrip ini menguji endpoint SultraKita dengan payload provider yang ditandatangani atau diberi callback token simulasi.
 
+## Dashboard analytics dan operasi donasi
+
+Admin dapat membaca `GET /api/admin/donations/analytics?days=30` untuk melihat percobaan pembayaran, transaksi sukses, transaksi gagal atau expired, net nominal setelah refund, tingkat keberhasilan, serta agregasi harian. Endpoint ini membutuhkan session admin Bearer token dan `x-admin-token`.
+
+| Operasi | Endpoint | Perilaku |
+|---|---|---|
+| Analytics | `GET /api/admin/donations/analytics?days=30` | Statistik harian dan tingkat sukses pembayaran. |
+| Log webhook | `GET /api/admin/webhook-logs?limit=50` | Daftar log webhook terbaru tanpa payload rahasia. |
+| Live webhook | `GET /api/admin/webhook-logs/stream` | Server-Sent Events yang dikonsumsi frontend melalui `fetch` streaming. |
+| Refund | `POST /api/admin/donations/:transaction_id/refund` | Meminta refund provider, mencatat refund, dan mengurangi net kampanye setelah provider menerima request. |
+| Cancel | `POST /api/admin/donations/:transaction_id/cancel` | Membatalkan transaksi pending; Midtrans memakai cancel API dan Xendit memakai expire invoice. |
+
+Frontend `index.html`, `app.js`, dan `styles.css` sekarang memiliki dashboard operasional dengan metrik kartu, grafik harian sederhana, form refund/cancel, dan monitor log webhook live. Kredensial hanya digunakan di memory browser dan tidak disimpan ke `localStorage`.
+
+Refund hanya dapat dilakukan pada transaksi `success`, sedangkan cancel hanya dapat dilakukan pada transaksi `pending`. Untuk Midtrans, refund mengarah ke Refund API dan cancel mengarah ke Cancel API. Untuk Xendit, cancel meng-expire invoice; refund memakai Refund API dengan `XENDIT_REFUND_URL` opsional bila account/API version Anda menggunakan endpoint berbeda. Selalu rekonsiliasi status provider sebelum menganggap dana sudah kembali, dan terapkan persetujuan internal sebelum mengklik operasi refund di production.
+
+Webhook disimpan ke tabel `webhook_logs` dengan provider, transaction ID, status event, HTTP status, validitas signature, timestamp, dan payload terbatas. Endpoint live stream memeriksa log baru setiap dua detik. Untuk production multi-instance, pindahkan log ke database terkelola atau queue/observability service bersama agar semua instance terlihat dalam satu aliran.
+
 ## Notifikasi WhatsApp penjual
 
 Notifikasi WhatsApp otomatis dipicu setelah komentar atau pesan pembeli tersimpan berhasil. Adapter menggunakan WhatsApp Cloud API resmi dan bersifat non-blocking: kegagalan provider dicatat di server tanpa menggagalkan penyimpanan pesan. Konfigurasikan `WHATSAPP_API_VERSION`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_TEMPLATE_NAME`, dan `WHATSAPP_TEMPLATE_LANGUAGE` melalui secret manager. Template default yang dicontohkan adalah `sultrakita_new_message` dengan empat parameter body berurutan: nama penjual, judul listing, nama pembeli, dan isi pesan. Nama serta urutan variabel harus sama persis dengan template yang disetujui di WhatsApp Manager. Nomor `08...` dinormalisasi menjadi format internasional `62...`. Untuk pesan di luar jendela layanan pelanggan, gunakan template pesan yang disetujui Meta dan pastikan penerima telah memberikan opt-in.

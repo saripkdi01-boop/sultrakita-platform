@@ -263,6 +263,27 @@ const createPaymentUrl = async ({ provider, transactionId, amount, name, email, 
   }
   return { provider: 'not_configured', payment_url: null, provider_reference: null };
 };
+const paymentOperation = async ({ provider, transactionId, providerReference, operation, amount, reason }) => {
+  if (provider === 'midtrans') {
+    if (!process.env.MIDTRANS_SERVER_KEY) throw new Error('MIDTRANS_SERVER_KEY belum dikonfigurasi');
+    const baseUrl = process.env.MIDTRANS_MODE === 'production' ? 'https://api.midtrans.com' : 'https://api.sandbox.midtrans.com';
+    const path = operation === 'cancel' ? `/v2/${encodeURIComponent(transactionId)}/cancel` : `/v2/${encodeURIComponent(transactionId)}/refund`;
+    const body = operation === 'refund' ? { refund_key: `SK-${transactionId}-${Date.now()}`, amount, reason: reason || 'Donasi dikembalikan' } : undefined;
+    const result = await providerRequest(`${baseUrl}${path}`, { method:'POST', headers:{ authorization:`Basic ${Buffer.from(`${process.env.MIDTRANS_SERVER_KEY}:`).toString('base64')}`, 'content-type':'application/json', accept:'application/json' }, ...(body ? { body:JSON.stringify(body) } : {}) });
+    return { provider:'midtrans', reference:result?.refund_chargeback_id || result?.order_id || transactionId, raw_status:result?.status_code || 'accepted' };
+  }
+  if (provider === 'xendit') {
+    if (!process.env.XENDIT_SECRET_KEY) throw new Error('XENDIT_SECRET_KEY belum dikonfigurasi');
+    if (operation === 'cancel') {
+      const result = await providerRequest(`https://api.xendit.co/invoices/${encodeURIComponent(providerReference || transactionId)}/expire!`, { method:'POST', headers:{ authorization:`Basic ${Buffer.from(`${process.env.XENDIT_SECRET_KEY}:`).toString('base64')}`, accept:'application/json' } });
+      return { provider:'xendit', reference:result?.id || providerReference || transactionId, raw_status:'expired' };
+    }
+    const refundId = `SK-REFUND-${transactionId}-${Date.now()}`;
+    const result = await providerRequest(process.env.XENDIT_REFUND_URL || 'https://api.xendit.co/refunds', { method:'POST', headers:{ authorization:`Basic ${Buffer.from(`${process.env.XENDIT_SECRET_KEY}:`).toString('base64')}`, 'idempotency-key':refundId, 'content-type':'application/json', accept:'application/json' }, body:JSON.stringify({ reference_id:transactionId, amount, currency:'IDR', reason:reason || 'Donasi dikembalikan' }) });
+    return { provider:'xendit', reference:result?.id || refundId, raw_status:result?.status || 'PENDING' };
+  }
+  throw new Error('Provider pembayaran tidak aktif');
+};
 const safeEqual = (expected, actual) => {
   const expectedBuffer = Buffer.from(String(expected)); const actualBuffer = Buffer.from(String(actual || ''));
   return expectedBuffer.length === actualBuffer.length && crypto.timingSafeEqual(expectedBuffer, actualBuffer);
@@ -301,7 +322,7 @@ app.post('/api/donations', async (req, res, next) => {
     const result = await run('INSERT INTO donations (campaign_id, name, email, amount, message, transaction_id, payment_method, payment_status) VALUES (?, ?, ?, ?, ?, ?, ?, \'pending\')', [campaign.id, safeText(name, 100) || 'Hamba Allah', email ? safeText(email, 160) : null, numericAmount, safeText(message, 500) || null, transactionId, selectedMethod]);
     const provider = configuredPaymentProvider(); let payment = { provider: 'not_configured', payment_url: null, provider_reference: null };
     if (provider) {
-      try { payment = await createPaymentUrl({ provider, transactionId, amount: numericAmount, name: safeText(name, 100) || 'Hamba Allah', email: email ? safeText(email, 160) : null, paymentMethod: selectedMethod }); await run('UPDATE donations SET payment_method = ? WHERE id = ?', [payment.provider, result.id]); }
+      try { payment = await createPaymentUrl({ provider, transactionId, amount: numericAmount, name: safeText(name, 100) || 'Hamba Allah', email: email ? safeText(email, 160) : null, paymentMethod: selectedMethod }); await run('UPDATE donations SET payment_provider = ?, provider_reference = ? WHERE id = ?', [payment.provider, payment.provider_reference, result.id]); }
       catch (error) { await run("UPDATE donations SET payment_status = 'failed' WHERE id = ?", [result.id]); return fail(res, 502, 'Payment provider tidak dapat membuat halaman pembayaran', { transaction_id: transactionId }); }
     }
     const data = { donation_id: result.id, transaction_id: transactionId, payment_status: 'pending', payment_url: payment.payment_url, provider: payment.provider, message: payment.payment_url ? 'Halaman pembayaran berhasil dibuat.' : 'Donasi tercatat dan menunggu pembayaran. Provider pembayaran belum dikonfigurasi.' };
@@ -319,28 +340,34 @@ app.get('/api/donations/:transaction_id', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
+const recordWebhook = async ({ provider, transactionId, eventStatus, httpStatus, signatureValid, payload, errorMessage = null }) => { try { await run('INSERT INTO webhook_logs (provider, transaction_id, event_status, http_status, signature_valid, payload, error_message) VALUES (?, ?, ?, ?, ?, ?, ?)', [provider, transactionId || null, eventStatus || null, httpStatus, signatureValid ? 1 : 0, JSON.stringify(payload || {}).slice(0, 20000), errorMessage]); } catch (error) { console.error('[webhook-log]', error.message); } };
 app.post('/api/donation/webhook', async (req, res, next) => {
   try {
     const payload = req.body || {};
     const midtransValid = verifyMidtransSignature(payload);
     const callbackToken = req.get('x-callback-token');
     const xenditValid = Boolean(process.env.XENDIT_CALLBACK_TOKEN && callbackToken && safeEqual(process.env.XENDIT_CALLBACK_TOKEN, callbackToken));
-    if (!midtransValid && !xenditValid) return fail(res, 401, 'Signature webhook tidak valid');
+    const webhookProvider = midtransValid ? 'midtrans' : 'xendit';
+    if (!midtransValid && !xenditValid) { await recordWebhook({ provider:'unknown', transactionId:payload.order_id || payload.external_id || payload.id, eventStatus:payload.transaction_status || payload.status, httpStatus:401, signatureValid:false, payload }); return fail(res, 401, 'Signature webhook tidak valid'); }
     const transactionId = safeText(payload.order_id || payload.external_id || payload.id, 100);
     const status = midtransValid ? (isSuccessfulPayment(payload.transaction_status, payload.fraud_status) ? 'success' : ['expire'].includes(payload.transaction_status) ? 'expired' : ['deny', 'cancel'].includes(payload.transaction_status) ? 'failed' : 'pending') : (['PAID', 'SETTLED'].includes(String(payload.status).toUpperCase()) ? 'success' : ['EXPIRED'].includes(String(payload.status).toUpperCase()) ? 'expired' : 'pending');
-    if (!transactionId) return fail(res, 422, 'ID transaksi tidak ditemukan');
+    if (!transactionId) { await recordWebhook({ provider:webhookProvider, eventStatus:payload.transaction_status || payload.status, httpStatus:422, signatureValid:true, payload }); return fail(res, 422, 'ID transaksi tidak ditemukan'); }
     const database = await getDb(); database.run('BEGIN');
     try {
       const rows = database.exec('SELECT id, campaign_id, amount, payment_status FROM donations WHERE transaction_id = ?', [transactionId]);
-      const row = rows[0]?.values[0]; if (!row) { database.run('ROLLBACK'); return fail(res, 404, 'Transaksi donasi tidak ditemukan'); }
+      const row = rows[0]?.values[0]; if (!row) { database.run('ROLLBACK'); await recordWebhook({ provider:webhookProvider, transactionId, eventStatus:status, httpStatus:404, signatureValid:true, payload }); return fail(res, 404, 'Transaksi donasi tidak ditemukan'); }
       const [id, campaignId, amount, previousStatus] = row;
       if (status === 'success' && previousStatus !== 'success') { database.run("UPDATE donations SET payment_status = 'success', status = 'confirmed' WHERE id = ?", [id]); database.run('UPDATE donation_campaigns SET current_amount = current_amount + ? WHERE id = ?', [amount, campaignId]); }
       else if (previousStatus !== 'success') database.run('UPDATE donations SET payment_status = ? WHERE id = ?', [status, id]);
-      database.run('COMMIT'); persist(database); ok(res, { received: true, transaction_id: transactionId, payment_status: status, idempotent: previousStatus === status });
+      database.run('COMMIT'); persist(database); await recordWebhook({ provider:webhookProvider, transactionId, eventStatus:status, httpStatus:200, signatureValid:true, payload }); ok(res, { received: true, transaction_id: transactionId, payment_status: status, idempotent: previousStatus === status });
     } catch (error) { database.run('ROLLBACK'); throw error; }
   } catch (error) { next(error); }
 });
 
+app.get('/api/admin/donations/analytics', requireRole('admin'), adminOnly, async (req, res, next) => { try { const days = Math.min(90, Math.max(1, Number(req.query.days) || 30)); const [totals] = await query("SELECT COUNT(*) AS attempts, COALESCE(SUM(payment_status = 'success'), 0) AS successful, COALESCE(SUM(payment_status IN ('failed','expired')), 0) AS failed, COALESCE(SUM(CASE WHEN payment_status = 'success' THEN amount - refunded_amount ELSE 0 END), 0) AS net_amount FROM donations WHERE created_at >= datetime('now', ?)", [`-${days} days`]); const daily = await query("SELECT date(created_at) AS date, COUNT(*) AS attempts, COALESCE(SUM(payment_status = 'success'), 0) AS successful, COALESCE(SUM(payment_status IN ('failed','expired')), 0) AS failed, COALESCE(SUM(CASE WHEN payment_status = 'success' THEN amount - refunded_amount ELSE 0 END), 0) AS net_amount FROM donations WHERE created_at >= datetime('now', ?) GROUP BY date(created_at) ORDER BY date ASC", [`-${days} days`]); const successRate = Number(totals.attempts) ? Number((Number(totals.successful) / Number(totals.attempts) * 100).toFixed(2)) : 0; ok(res, { days, totals:{ ...totals, success_rate:successRate }, daily }); } catch (error) { next(error); } });
+app.get('/api/admin/webhook-logs', requireRole('admin'), adminOnly, async (req, res, next) => { try { const limit = Math.min(200, Math.max(1, Number(req.query.limit) || 50)); ok(res, await query('SELECT id, provider, transaction_id, event_status, http_status, signature_valid, error_message, created_at FROM webhook_logs ORDER BY id DESC LIMIT ?', [limit])); } catch (error) { next(error); } });
+app.get('/api/admin/webhook-logs/stream', requireRole('admin'), adminOnly, async (req, res) => { res.setHeader('Content-Type','text/event-stream'); res.setHeader('Cache-Control','no-cache'); res.setHeader('Connection','keep-alive'); let lastId = Number(req.query.after || 0); const emit = async () => { const rows = await query('SELECT id, provider, transaction_id, event_status, http_status, signature_valid, error_message, created_at FROM webhook_logs WHERE id > ? ORDER BY id ASC LIMIT 100', [lastId]); for (const row of rows) { lastId = row.id; res.write(`data: ${JSON.stringify(row)}\\n\\n`); } }; await emit(); const timer = setInterval(() => emit().catch(() => {}), 2000); req.on('close', () => clearInterval(timer)); });
+app.post('/api/admin/donations/:transaction_id/:operation', requireRole('admin'), adminOnly, async (req, res, next) => { try { const operation = req.params.operation; if (!['refund','cancel'].includes(operation)) return fail(res, 422, 'Operasi harus refund atau cancel'); const transactionId = safeText(req.params.transaction_id, 100); const [donation] = await query('SELECT * FROM donations WHERE transaction_id = ?', [transactionId]); if (!donation) return fail(res, 404, 'Transaksi donasi tidak ditemukan'); if (operation === 'refund' && donation.payment_status !== 'success') return fail(res, 409, 'Hanya donasi sukses yang dapat direfund'); if (operation === 'cancel' && donation.payment_status !== 'pending') return fail(res, 409, 'Hanya donasi pending yang dapat dibatalkan'); const provider = donation.payment_provider || process.env.PAYMENT_PROVIDER; const amount = Math.max(0, Number(donation.amount) - Number(donation.refunded_amount || 0)); if (!provider) return fail(res, 409, 'Provider pembayaran transaksi tidak diketahui'); const result = await paymentOperation({ provider, transactionId, providerReference:donation.provider_reference, operation, amount, reason:safeText(req.body?.reason, 250) }); if (operation === 'cancel') { await run("UPDATE donations SET payment_status = 'expired', status = 'cancelled' WHERE id = ?", [donation.id]); } else { await run('INSERT INTO donation_refunds (transaction_id, amount, reason, provider, provider_reference, status) VALUES (?, ?, ?, ?, ?, ?)', [transactionId, amount, safeText(req.body?.reason, 250) || 'Donasi dikembalikan', provider, result.reference, 'success']); await run('UPDATE donations SET refunded_amount = refunded_amount + ? WHERE id = ?', [amount, donation.id]); await run('UPDATE donation_campaigns SET current_amount = MAX(0, current_amount - ?) WHERE id = ?', [amount, donation.campaign_id]); } ok(res, { transaction_id:transactionId, operation, provider, amount, status:operation === 'refund' ? 'success' : 'expired', provider_reference:result.reference }); } catch (error) { next(error); } });
 app.post('/api/reports', async (req, res, next) => {
   try { const { listing_id, reporter_name, reason } = req.body || {}; if (!positiveInt(listing_id) || !reporter_name || reporter_name.trim().length < 2 || !reason || reason.trim().length < 5) return fail(res, 422, 'Data laporan belum valid'); if (!req.user) return fail(res, 401, 'Autentikasi diperlukan'); const result = await run('INSERT INTO reports (listing_id, reporter_name, reason) VALUES (?, ?, ?)', [Number(listing_id), req.user.name || reporter_name.trim(), reason.trim()]); res.status(201); ok(res, { id: result.id, message: 'Laporan diterima untuk moderasi.' }); } catch (error) { next(error); }
 });

@@ -94,12 +94,39 @@ const schema = `
     message TEXT,
     transaction_id TEXT UNIQUE,
     payment_method TEXT,
+    payment_provider TEXT,
+    provider_reference TEXT,
+    refunded_amount INTEGER NOT NULL DEFAULT 0 CHECK(refunded_amount >= 0),
     payment_status TEXT NOT NULL DEFAULT 'pending' CHECK(payment_status IN ('pending','success','failed','expired')),
     status TEXT NOT NULL DEFAULT 'pledged' CHECK(status IN ('pledged','confirmed','cancelled')),
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(campaign_id) REFERENCES donation_campaigns(id) ON DELETE SET NULL
   );
   CREATE INDEX IF NOT EXISTS idx_donations_campaign_status ON donations(campaign_id, payment_status);
+  CREATE TABLE IF NOT EXISTS donation_refunds (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    transaction_id TEXT NOT NULL UNIQUE,
+    amount INTEGER NOT NULL CHECK(amount > 0),
+    reason TEXT,
+    provider TEXT NOT NULL,
+    provider_reference TEXT,
+    status TEXT NOT NULL DEFAULT 'requested' CHECK(status IN ('requested','success','failed')),
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE TABLE IF NOT EXISTS webhook_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    provider TEXT NOT NULL,
+    transaction_id TEXT,
+    event_status TEXT,
+    http_status INTEGER NOT NULL,
+    signature_valid INTEGER NOT NULL DEFAULT 0,
+    payload TEXT NOT NULL,
+    error_message TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE INDEX IF NOT EXISTS idx_webhook_logs_created ON webhook_logs(created_at DESC);
+  CREATE INDEX IF NOT EXISTS idx_webhook_logs_transaction ON webhook_logs(transaction_id, created_at DESC);
   CREATE TABLE IF NOT EXISTS reports (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     listing_id INTEGER,
@@ -210,8 +237,13 @@ async function getDb() {
       if (!donationColumns.includes('transaction_id')) database.run('ALTER TABLE donations ADD COLUMN transaction_id TEXT');
       if (!donationColumns.includes('payment_method')) database.run('ALTER TABLE donations ADD COLUMN payment_method TEXT');
       if (!donationColumns.includes('payment_status')) database.run("ALTER TABLE donations ADD COLUMN payment_status TEXT NOT NULL DEFAULT 'pending'");
+      if (!donationColumns.includes('payment_provider')) database.run('ALTER TABLE donations ADD COLUMN payment_provider TEXT');
+      if (!donationColumns.includes('provider_reference')) database.run('ALTER TABLE donations ADD COLUMN provider_reference TEXT');
+      if (!donationColumns.includes('refunded_amount')) database.run('ALTER TABLE donations ADD COLUMN refunded_amount INTEGER NOT NULL DEFAULT 0');
       database.run('CREATE UNIQUE INDEX IF NOT EXISTS idx_donations_transaction_id ON donations(transaction_id) WHERE transaction_id IS NOT NULL');
       database.run('CREATE INDEX IF NOT EXISTS idx_donations_campaign_status ON donations(campaign_id, payment_status)');
+      database.run('CREATE INDEX IF NOT EXISTS idx_webhook_logs_created ON webhook_logs(created_at DESC)');
+      database.run('CREATE INDEX IF NOT EXISTS idx_webhook_logs_transaction ON webhook_logs(transaction_id, created_at DESC)');
       const campaignCount = database.exec('SELECT COUNT(*) AS count FROM donation_campaigns')[0]?.values[0][0] || 0;
       if (campaignCount === 0) database.run('INSERT INTO donation_campaigns (title, description, target_amount) VALUES (?, ?, ?)', ['Dukung SultraKita', 'Bantu biaya operasional dan pengembangan marketplace lokal Sulawesi Tenggara.', 50000000]);
       const userColumns = database.exec('PRAGMA table_info(users)')[0]?.values.map(row => row[1]) || [];
