@@ -37,7 +37,7 @@ const notifySellerWhatsApp = async ({ phone, sellerName, listingTitle, senderNam
 
 app.get('/api/health', async (_req, res) => {
   try { await query('SELECT 1 AS ok'); ok(res, { status: 'healthy', service: 'sultrakita-api' }); }
-  catch (error) { fail(res, 503, 'Database tidak tersedia', error.message); }
+  catch (_error) { fail(res, 503, 'Database tidak tersedia'); }
 });
 
 app.get('/api/categories', async (_req, res, next) => {
@@ -62,7 +62,7 @@ app.post('/api/auth/verify-otp', async (req, res, next) => {
   try {
     const { phone, code, name = 'Pengguna SultraKita', role = 'buyer', district = 'Kendari' } = req.body || {};
     if (!/^08\d{8,13}$/.test(phone || '') || !/^\d{6}$/.test(code || '')) return fail(res, 422, 'Nomor telepon atau kode OTP belum valid');
-    const [challenge] = await query('SELECT * FROM otp_challenges WHERE phone = ? AND consumed_at IS NULL AND expires_at > ? ORDER BY id DESC LIMIT 1', [phone, Date.now()]);
+    const [challenge] = await query('SELECT * FROM otp_challenges WHERE phone = ? AND consumed_at IS NULL AND expires_at > ? AND attempts < 5 ORDER BY id DESC LIMIT 1', [phone, Date.now()]);
     if (!challenge) return fail(res, 401, 'OTP sudah kedaluwarsa atau tidak ditemukan');
     const hash = crypto.createHash('sha256').update(code).digest('hex'); if (hash !== challenge.code_hash) { await run('UPDATE otp_challenges SET attempts = attempts + 1 WHERE id = ?', [challenge.id]); return fail(res, 401, 'Kode OTP salah'); }
     let [user] = await query('SELECT * FROM users WHERE phone = ?', [phone]);
@@ -134,7 +134,7 @@ app.get('/api/listings', async (req, res, next) => {
     const allowedSort = { newest: 'l.created_at DESC', cheapest: 'l.price ASC', expensive: 'l.price DESC', popular: 'l.views DESC' };
     const order = allowedSort[req.query.sort] || allowedSort.newest;
     const where = filters.join(' AND ');
-    const items = await query(`SELECT l.*, c.name AS category_name, c.slug AS category_slug, u.name AS seller_name, u.is_verified AS seller_verified FROM listings l JOIN categories c ON c.id = l.category_id LEFT JOIN users u ON u.id = l.seller_id WHERE ${where} ORDER BY ${order} LIMIT ? OFFSET ?`, [...params, limit, offset]);
+    const items = await query(`SELECT l.*, c.name AS category_name, c.slug AS category_slug, u.name AS seller_name, CASE WHEN COALESCE(u.verification_status, 'unverified') = 'approved' OR COALESCE(u.is_verified, 0) = 1 THEN 1 ELSE 0 END AS seller_verified FROM listings l JOIN categories c ON c.id = l.category_id LEFT JOIN users u ON u.id = l.seller_id WHERE ${where} ORDER BY ${order} LIMIT ? OFFSET ?`, [...params, limit, offset]);
     const [{ total }] = await query(`SELECT COUNT(*) AS total FROM listings l JOIN categories c ON c.id = l.category_id WHERE ${where}`, params);
     ok(res, items, { page, limit, total: Number(total), total_pages: Math.ceil(Number(total) / limit), location: 'Kendari, Sulawesi Tenggara' });
   } catch (error) { next(error); }
@@ -143,7 +143,7 @@ app.get('/api/listings', async (req, res, next) => {
 app.get('/api/listings/:id', async (req, res, next) => {
   try {
     if (!positiveInt(req.params.id)) return fail(res, 400, 'ID listing tidak valid');
-    const rows = await query(`SELECT l.*, c.name AS category_name, c.slug AS category_slug, u.name AS seller_name, u.phone AS seller_phone, u.is_verified AS seller_verified, u.district AS seller_district FROM listings l JOIN categories c ON c.id = l.category_id LEFT JOIN users u ON u.id = l.seller_id WHERE l.id = ?`, [Number(req.params.id)]);
+    const rows = await query(`SELECT l.*, c.name AS category_name, c.slug AS category_slug, u.name AS seller_name, u.phone AS seller_phone, CASE WHEN COALESCE(u.verification_status, 'unverified') = 'approved' OR COALESCE(u.is_verified, 0) = 1 THEN 1 ELSE 0 END AS seller_verified, u.district AS seller_district FROM listings l JOIN categories c ON c.id = l.category_id LEFT JOIN users u ON u.id = l.seller_id WHERE l.id = ?`, [Number(req.params.id)]);
     if (!rows.length) return fail(res, 404, 'Listing tidak ditemukan');
     await run('UPDATE listings SET views = views + 1 WHERE id = ?', [Number(req.params.id)]);
     ok(res, rows[0]);
