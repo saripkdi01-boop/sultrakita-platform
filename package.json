@@ -6,7 +6,10 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "test": "node --test"
+    "test": "node --test",
+    "test:security": "node scripts/security-regression.js",
+    "smoke:api": "node scripts/api-smoke.js",
+    "verify:local": "npm test && npm run test:security && npm run smoke:api"
   },
   "keywords": ["marketplace", "kendari", "sulawesi-tenggara", "umkm"],
   "license": "MIT",
