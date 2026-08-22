@@ -123,6 +123,21 @@ const schema = `
     reviewed_at TEXT,
     FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
   );
+  CREATE TABLE IF NOT EXISTS analytics_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_name TEXT NOT NULL CHECK(event_name IN ('page_view','listing_view','search','listing_contact')),
+    path TEXT,
+    listing_id INTEGER,
+    category_slug TEXT,
+    district TEXT,
+    referrer TEXT,
+    user_agent TEXT,
+    country_code TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(listing_id) REFERENCES listings(id) ON DELETE SET NULL
+  );
+  CREATE INDEX IF NOT EXISTS idx_analytics_event_time ON analytics_events(event_name, created_at DESC);
+  CREATE INDEX IF NOT EXISTS idx_analytics_listing ON analytics_events(listing_id, event_name, created_at DESC);
   CREATE TABLE IF NOT EXISTS conversations (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     listing_id INTEGER,
