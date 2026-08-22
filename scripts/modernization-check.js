@@ -6,6 +6,8 @@ const fs = require('node:fs');
 const required = [
   'modernization/php/database/001_marketplace_schema.sql',
   'modernization/php/public/get_listings.php',
+  'modernization/php/public/listings.php',
+  'modernization/php/app/bootstrap.php',
   'modernization/php/public/.htaccess',
   'modernization/react/src/components/ListingCard.jsx',
   'modernization/react/package.json',
@@ -17,8 +19,14 @@ for (const path of required) {
 }
 
 const php = fs.readFileSync('modernization/php/public/get_listings.php', 'utf8');
+const mutation = fs.readFileSync('modernization/php/public/listings.php', 'utf8');
+const bootstrap = fs.readFileSync('modernization/php/app/bootstrap.php', 'utf8');
 for (const marker of ['PDO::ATTR_EMULATE_PREPARES', 'prepare(', 'JSON_UNESCAPED_UNICODE', 'LIMIT :limit OFFSET :offset']) {
   if (!php.includes(marker)) throw new Error(`PHP endpoint missing security/contract marker: ${marker}`);
+}
+
+for (const marker of ['requireCsrf()', 'authenticatedUser()', 'assertListingOwner', 'X_CSRF_TOKEN', 'PDO::ATTR_EMULATE_PREPARES']) {
+  if (!mutation.includes(marker) && !bootstrap.includes(marker)) throw new Error(`PHP mutation track missing security marker: ${marker}`);
 }
 
 const schema = fs.readFileSync('modernization/php/database/001_marketplace_schema.sql', 'utf8');

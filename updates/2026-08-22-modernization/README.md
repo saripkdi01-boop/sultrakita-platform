@@ -8,9 +8,12 @@ This checkpoint implements the first migration-ready artifacts requested by the 
 |---|---|
 | `modernization/php/database/001_marketplace_schema.sql` | MySQL 8+ schema for users, listings, videos, and social links, with filtering and ownership indexes. |
 | `modernization/php/public/get_listings.php` | PDO endpoint with strict input validation, prepared statements, pagination, safe JSON errors, and video metadata. |
+| `modernization/php/public/listings.php` | Secure create/update/archive-delete mutation endpoint with PHP session validation, CSRF header validation, role checks, ownership enforcement, and prepared statements. |
+| `modernization/php/app/bootstrap.php` | Shared PDO, secure session, CSRF, request body, JSON response, and ownership helpers. |
 | `modernization/react/src/components/ListingCard.jsx` | Accessible cream/gold ListingCard with dark-mode classes and short-video thumbnail support. |
 | `modernization/php/public/.htaccess` | Production-safe PHP directory rules and security headers for Apache deployments. |
 | `modernization/react/package.json` | Minimal React/Tailwind track metadata for the component migration. |
+| `updates/2026-08-22-modernization/CUTOVER-RUNBOOK.md` | Staged no-downtime cutover, dual-read, canary, mutation handoff, observability, and rollback procedure. |
 
 ## Integration sequence
 
