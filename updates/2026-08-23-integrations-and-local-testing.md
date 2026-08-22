@@ -99,3 +99,8 @@ Biarkan terminal `curl` tetap terbuka, kirim pesan dari halaman chat atau gunaka
 [3]: https://developers.cloudflare.com/workers/observability/metrics-and-analytics/ — Cloudflare, “Metrics and analytics”.
 
 [4]: https://github.com/saripkdi01-boop/sultrakita-platform — Repository SultraKita.
+
+
+## Release final
+
+Commit dokumentasi dan audit terakhir adalah [`b395d72`](https://github.com/saripkdi01-boop/sultrakita-platform/commit/b395d72), dan GitHub Actions run [`32604830462`](https://github.com/saripkdi01-boop/sultrakita-platform/actions/runs/32604830462) selesai dengan status `success`. Deployment Worker terakhir menggunakan version ID `0569bf6c-91bb-43e1-91f6-36de3e7f2fbf`. Snapshot live setelah hardening menunjukkan seluruh security header hadir pada lima dari lima sample di Vercel dan Worker, tanpa HTTP error maupun network error pada 20 request per target.
