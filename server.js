@@ -16,7 +16,7 @@ const districts = ['Kendari', 'Mandonga', 'Baruga', 'Poasia', 'Kadia', 'Kambu', 
 app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
 app.use(express.json({ limit: '1mb' }));
 app.use(authenticate);
-const uploadDir = path.join(__dirname, 'uploads'); fs.mkdirSync(uploadDir, { recursive: true });
+const uploadDir = process.env.VERCEL ? path.join('/tmp', 'sultrakita-uploads') : path.join(__dirname, 'uploads'); fs.mkdirSync(uploadDir, { recursive: true });
 const upload = multer({ storage: multer.diskStorage({ destination: uploadDir, filename: (_req, file, cb) => cb(null, `${Date.now()}-${crypto.randomBytes(8).toString('hex')}${path.extname(file.originalname).toLowerCase()}`) }), limits: { fileSize: 5 * 1024 * 1024, files: 5 }, fileFilter: (_req, file, cb) => cb(null, ['image/jpeg', 'image/png', 'image/webp'].includes(file.mimetype)) });
 const requestHits = new Map();
 const rateLimit = (windowMs = 60_000, max = 60) => (req, res, next) => { const key = `${req.ip}:${req.path}`; const now = Date.now(); const recent = (requestHits.get(key) || []).filter(timestamp => now - timestamp < windowMs); if (recent.length >= max) return fail(res, 429, 'Terlalu banyak permintaan. Silakan coba lagi nanti.'); recent.push(now); requestHits.set(key, recent); next(); };

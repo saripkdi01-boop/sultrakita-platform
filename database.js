@@ -2,7 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const initSqlJs = require('sql.js');
 
-const dataDir = path.join(__dirname, 'data');
+const dataDir = process.env.VERCEL ? path.join('/tmp', 'sultrakita-data') : path.join(__dirname, 'data');
 const dbFile = path.join(dataDir, 'sultrakita.sqlite');
 
 let databasePromise;
