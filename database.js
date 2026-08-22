@@ -1,6 +1,6 @@
 const fs = require('node:fs');
 const path = require('node:path');
-const initSqlJs = require('sql.js');
+const initSqlJs = require('sql.js/dist/sql-asm.js').default;
 
 const dataDir = process.env.VERCEL ? path.join('/tmp', 'sultrakita-data') : path.join(__dirname, 'data');
 const dbFile = path.join(dataDir, 'sultrakita.sqlite');
@@ -228,7 +228,7 @@ const categories = [
 
 async function getDb() {
   if (!databasePromise) {
-    databasePromise = initSqlJs({ locateFile: file => path.join(path.dirname(require.resolve('sql.js')), file) }).then(SQL => {
+    databasePromise = initSqlJs().then(SQL => {
       fs.mkdirSync(dataDir, { recursive: true });
       const database = fs.existsSync(dbFile)
         ? new SQL.Database(fs.readFileSync(dbFile))

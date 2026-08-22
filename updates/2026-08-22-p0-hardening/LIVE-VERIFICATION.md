@@ -16,3 +16,6 @@ R2 Cloudflare belum aktif pada akun sehingga durable image upload Worker tidak d
 
 
 Vercel `https://sultrakita-platform.vercel.app/` masih mengembalikan `500 FUNCTION_INVOCATION_FAILED` setelah push `ee41369`. Perbaikan `/tmp` belum menyelesaikan crash; diagnosis lanjutan diperlukan dari konfigurasi runtime atau log deployment.
+
+
+Endpoint Vercel `GET /api/health` pada verifikasi terbaru masih merespons `503 {"success":false,"error":"Database tidak tersedia"}` setelah commit `8070075`. Halaman root sempat mengembalikan `FUNCTION_INVOCATION_FAILED`; root cause database runtime belum dapat dikonfirmasi karena log Vercel memerlukan login pemilik akun.
