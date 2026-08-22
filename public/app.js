@@ -19,8 +19,20 @@ async function loadLocations() {
 async function loadStats() { const body = await api('/api/stats'); const summary = body.data.summary; $('#total-listings').textContent = summary.active_listings; $('#covered-districts').textContent = summary.covered_districts; }
 async function loadListings(extra = {}) {
   const params = new URLSearchParams({ q: $('#search').value, district: $('#district').value, sort: $('#sort').value, ...extra });
-  if (!params.get('q')) params.delete('q'); if (!params.get('district')) params.delete('district');
-  try { const body = await api('/api/listings?' + params); $('#listings').innerHTML = body.data.length ? body.data.map(listing => `<article class="listing"><div class="listing-image">${icons[listing.category_slug] || '🏷️'}</div><div class="listing-body"><h3 title="${listing.title}">${listing.title}</h3><div class="listing-price">${rupiah(listing.price)}</div><div class="listing-meta">${listing.category_name} · ${listing.district}<br>${listing.seller_name ? listing.seller_name : 'Penjual lokal'}</div></div></article>`).join('') : '<div class="empty">Belum ada listing yang cocok. Coba kata kunci atau wilayah lain.</div>'; } catch (error) { $('#listings').innerHTML = `<div class="empty">${error.message}</div>`; }
+  if (!params.get('q')) params.delete('q');
+  if (!params.get('district')) params.delete('district');
+  try {
+    const body = await api('/api/listings?' + params);
+    if (!body.data.length) { $('#listings').innerHTML = '<div class="empty">Belum ada listing yang cocok. Coba kata kunci atau wilayah lain.</div>'; return; }
+    $('#listings').innerHTML = body.data.map(listing => `<article class="listing"><div class="listing-image">${icons[listing.category_slug] || '🏷️'}</div><div class="listing-body"><h3 title="${listing.title}">${listing.title}</h3><div class="listing-price">${rupiah(listing.price)}</div><div class="listing-meta">${listing.category_name} · ${listing.district}<br>${listing.seller_name || 'Penjual lokal'}</div><button class="comment-button" data-listing-id="${listing.id}">Tanya / komentar</button></div></article>`).join('');
+    document.querySelectorAll('.comment-button').forEach(button => button.addEventListener('click', async () => {
+      const author_name = window.prompt('Nama Anda:');
+      const body = author_name && window.prompt('Tulis pertanyaan atau komentar:');
+      if (!author_name || !body) return;
+      try { await api('/api/comments', { method:'POST', headers:{ 'content-type':'application/json' }, body:JSON.stringify({ listing_id:Number(button.dataset.listingId), author_name, body }) }); button.textContent = 'Komentar terkirim'; button.disabled = true; }
+      catch (error) { window.alert(error.message); }
+    }));
+  } catch (error) { $('#listings').innerHTML = `<div class="empty">${error.message}</div>`; }
 }
 function openDialog() { $('#sell-dialog').showModal(); }
 $('#search-button').addEventListener('click', () => loadListings()); $('#search').addEventListener('keydown', event => { if (event.key === 'Enter') loadListings(); }); $('#district').addEventListener('change', () => loadListings()); $('#sort').addEventListener('change', () => loadListings()); $('#open-sell').addEventListener('click', openDialog); $('#open-sell-cta').addEventListener('click', openDialog);
