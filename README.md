@@ -44,7 +44,9 @@ Fitur saran, komentar, dan laporan telah tersedia sebagai fondasi moderasi komun
 
 ## Notifikasi WhatsApp penjual
 
-Notifikasi WhatsApp otomatis dipicu setelah komentar atau pesan pembeli tersimpan berhasil. Adapter menggunakan WhatsApp Cloud API resmi dan bersifat non-blocking: kegagalan provider dicatat di server tanpa menggagalkan penyimpanan pesan. Konfigurasikan `WHATSAPP_API_VERSION`, `WHATSAPP_PHONE_NUMBER_ID`, dan `WHATSAPP_ACCESS_TOKEN` melalui secret manager. Nomor `08...` dinormalisasi menjadi format internasional `62...`. Untuk pesan di luar jendela layanan pelanggan, gunakan template pesan yang disetujui Meta sesuai kebijakan WhatsApp.
+Notifikasi WhatsApp otomatis dipicu setelah komentar atau pesan pembeli tersimpan berhasil. Adapter menggunakan WhatsApp Cloud API resmi dan bersifat non-blocking: kegagalan provider dicatat di server tanpa menggagalkan penyimpanan pesan. Konfigurasikan `WHATSAPP_API_VERSION`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_TEMPLATE_NAME`, dan `WHATSAPP_TEMPLATE_LANGUAGE` melalui secret manager. Template default yang dicontohkan adalah `sultrakita_new_message` dengan empat parameter body berurutan: nama penjual, judul listing, nama pembeli, dan isi pesan. Nama serta urutan variabel harus sama persis dengan template yang disetujui di WhatsApp Manager. Nomor `08...` dinormalisasi menjadi format internasional `62...`. Untuk pesan di luar jendela layanan pelanggan, gunakan template pesan yang disetujui Meta dan pastikan penerima telah memberikan opt-in.
+
+Untuk menguji alur tanpa memanggil Meta, jalankan `node scripts/simulate-whatsapp-webhook.js`. Dengan server lokal aktif, gunakan `SIMULATE_HTTP=true SULTRAKITA_URL=http://localhost:3000 SIMULATION_TOKEN=local-only node scripts/simulate-whatsapp-webhook.js`. Endpoint `/api/dev/whatsapp-webhook` hanya menerima token simulasi dan menandai `provider_called:false`; pada `NODE_ENV=production`, endpoint Express dinonaktifkan.
 
 ## Secret Cloudflare Workers
 
@@ -54,6 +56,8 @@ Jangan memasukkan nilai token ke `wrangler.toml`, `.env`, commit Git, screenshot
 printf '%s' 'TOKEN_ADMIN_PANJANG' | npx wrangler secret put ADMIN_TOKEN --config wrangler-short.toml
 printf '%s' 'TOKEN_META_WHATSAPP' | npx wrangler secret put WHATSAPP_ACCESS_TOKEN --config wrangler-short.toml
 printf '%s' 'PHONE_NUMBER_ID_META' | npx wrangler secret put WHATSAPP_PHONE_NUMBER_ID --config wrangler-short.toml
+printf '%s' 'sultrakita_new_message' | npx wrangler secret put WHATSAPP_TEMPLATE_NAME --config wrangler-short.toml
+printf '%s' 'id' | npx wrangler secret put WHATSAPP_TEMPLATE_LANGUAGE --config wrangler-short.toml
 ```
 
 Periksa nama secret tanpa mencetak nilainya melalui dashboard Cloudflare atau daftar konfigurasi Wrangler. Setelah rotasi token, lakukan smoke test endpoint admin menggunakan header `x-admin-token` dari terminal lokal yang aman. `ADMIN_TOKEN` sebaiknya dibuat acak, panjang, berbeda dari password, dan dirotasi ketika ada perubahan anggota tim. Hapus token lama dari secret store setelah deployment baru tervalidasi.
