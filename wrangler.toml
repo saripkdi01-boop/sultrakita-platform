@@ -4,6 +4,11 @@ compatibility_date = "2026-08-22"
 account_id = "1c6fef13342a46180a2f3826f88e8000"
 workers_dev = true
 
+# Aktifkan dua baris berikut setelah R2 diaktifkan dan bucket dibuat:
+# [[r2_buckets]]
+# binding = "IMAGES"
+# bucket_name = "sultrakita-images"
+
 [[d1_databases]]
 binding = "DB"
 database_name = "sultrakita-demo"

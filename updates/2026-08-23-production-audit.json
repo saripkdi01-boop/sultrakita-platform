@@ -1,0 +1,642 @@
+{
+  "generated_at": "2026-08-22T23:10:07.895Z",
+  "samples_per_endpoint": 5,
+  "targets": {
+    "vercel": {
+      "base": "https://sultrakita-platform.vercel.app",
+      "summary": {
+        "requests": 20,
+        "successes": 20,
+        "http_errors": 0,
+        "network_errors": 0,
+        "latency_ms": {
+          "p50": 71.18,
+          "p95": 280.33,
+          "max": 1362.33,
+          "average": 152.19
+        },
+        "bytes": {
+          "min": 71,
+          "max": 13429
+        }
+      },
+      "security_headers": {
+        "strict-transport-security": {
+          "present": 5,
+          "expected": 5
+        },
+        "x-content-type-options": {
+          "present": 5,
+          "expected": 5
+        },
+        "x-frame-options": {
+          "present": 5,
+          "expected": 5
+        },
+        "referrer-policy": {
+          "present": 5,
+          "expected": 5
+        },
+        "permissions-policy": {
+          "present": 5,
+          "expected": 5
+        },
+        "content-security-policy": {
+          "present": 0,
+          "expected": 5
+        }
+      },
+      "endpoints": [
+        {
+          "path": "/api/health",
+          "sample": 1,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 1362.33,
+          "bytes": 71,
+          "content_type": "application/json; charset=utf-8",
+          "headers": {
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=(self)"
+          }
+        },
+        {
+          "path": "/api/health",
+          "sample": 2,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 280.33,
+          "bytes": 71,
+          "content_type": "application/json; charset=utf-8",
+          "headers": {
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=(self)"
+          }
+        },
+        {
+          "path": "/api/health",
+          "sample": 3,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 120.45,
+          "bytes": 71,
+          "content_type": "application/json; charset=utf-8",
+          "headers": {
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=(self)"
+          }
+        },
+        {
+          "path": "/api/health",
+          "sample": 4,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 119.52,
+          "bytes": 71,
+          "content_type": "application/json; charset=utf-8",
+          "headers": {
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=(self)"
+          }
+        },
+        {
+          "path": "/api/health",
+          "sample": 5,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 71.94,
+          "bytes": 71,
+          "content_type": "application/json; charset=utf-8",
+          "headers": {
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=(self)"
+          }
+        },
+        {
+          "path": "/api/categories",
+          "sample": 1,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 122.19,
+          "bytes": 647,
+          "content_type": "application/json; charset=utf-8",
+          "headers": {
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=(self)"
+          }
+        },
+        {
+          "path": "/api/categories",
+          "sample": 2,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 66.92,
+          "bytes": 647,
+          "content_type": "application/json; charset=utf-8",
+          "headers": {
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=(self)"
+          }
+        },
+        {
+          "path": "/api/categories",
+          "sample": 3,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 67.66,
+          "bytes": 647,
+          "content_type": "application/json; charset=utf-8",
+          "headers": {
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=(self)"
+          }
+        },
+        {
+          "path": "/api/categories",
+          "sample": 4,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 78.04,
+          "bytes": 647,
+          "content_type": "application/json; charset=utf-8",
+          "headers": {
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=(self)"
+          }
+        },
+        {
+          "path": "/api/categories",
+          "sample": 5,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 71.77,
+          "bytes": 647,
+          "content_type": "application/json; charset=utf-8",
+          "headers": {
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=(self)"
+          }
+        },
+        {
+          "path": "/api/listings?limit=8",
+          "sample": 1,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 79.51,
+          "bytes": 120,
+          "content_type": "application/json; charset=utf-8",
+          "headers": {
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=(self)"
+          }
+        },
+        {
+          "path": "/api/listings?limit=8",
+          "sample": 2,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 71.18,
+          "bytes": 120,
+          "content_type": "application/json; charset=utf-8",
+          "headers": {
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=(self)"
+          }
+        },
+        {
+          "path": "/api/listings?limit=8",
+          "sample": 3,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 68.39,
+          "bytes": 120,
+          "content_type": "application/json; charset=utf-8",
+          "headers": {
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=(self)"
+          }
+        },
+        {
+          "path": "/api/listings?limit=8",
+          "sample": 4,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 63.06,
+          "bytes": 120,
+          "content_type": "application/json; charset=utf-8",
+          "headers": {
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=(self)"
+          }
+        },
+        {
+          "path": "/api/listings?limit=8",
+          "sample": 5,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 68.96,
+          "bytes": 120,
+          "content_type": "application/json; charset=utf-8",
+          "headers": {
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=(self)"
+          }
+        },
+        {
+          "path": "/",
+          "sample": 1,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 68.53,
+          "bytes": 13429,
+          "content_type": "text/html; charset=UTF-8",
+          "headers": {
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=(self)"
+          }
+        },
+        {
+          "path": "/",
+          "sample": 2,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 71.44,
+          "bytes": 13429,
+          "content_type": "text/html; charset=UTF-8",
+          "headers": {
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=(self)"
+          }
+        },
+        {
+          "path": "/",
+          "sample": 3,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 64.08,
+          "bytes": 13429,
+          "content_type": "text/html; charset=UTF-8",
+          "headers": {
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=(self)"
+          }
+        },
+        {
+          "path": "/",
+          "sample": 4,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 61.9,
+          "bytes": 13429,
+          "content_type": "text/html; charset=UTF-8",
+          "headers": {
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=(self)"
+          }
+        },
+        {
+          "path": "/",
+          "sample": 5,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 65.52,
+          "bytes": 13429,
+          "content_type": "text/html; charset=UTF-8",
+          "headers": {
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "permissions-policy": "camera=(), microphone=(), geolocation=(self)"
+          }
+        }
+      ]
+    },
+    "worker": {
+      "base": "https://sultrakita-demo.aplikasi-cerdasku.workers.dev",
+      "summary": {
+        "requests": 20,
+        "successes": 20,
+        "http_errors": 0,
+        "network_errors": 0,
+        "latency_ms": {
+          "p50": 2199.4,
+          "p95": 2562.22,
+          "max": 4073.24,
+          "average": 2315.39
+        },
+        "bytes": {
+          "min": 77,
+          "max": 65705
+        }
+      },
+      "security_headers": {
+        "strict-transport-security": {
+          "present": 0,
+          "expected": 5
+        },
+        "x-content-type-options": {
+          "present": 0,
+          "expected": 5
+        },
+        "x-frame-options": {
+          "present": 0,
+          "expected": 5
+        },
+        "referrer-policy": {
+          "present": 0,
+          "expected": 5
+        },
+        "permissions-policy": {
+          "present": 0,
+          "expected": 5
+        },
+        "content-security-policy": {
+          "present": 0,
+          "expected": 5
+        }
+      },
+      "endpoints": [
+        {
+          "path": "/api/health",
+          "sample": 1,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 4073.24,
+          "bytes": 77,
+          "content_type": "application/json",
+          "headers": {}
+        },
+        {
+          "path": "/api/health",
+          "sample": 2,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 1972.54,
+          "bytes": 77,
+          "content_type": "application/json",
+          "headers": {}
+        },
+        {
+          "path": "/api/health",
+          "sample": 3,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 2335.53,
+          "bytes": 77,
+          "content_type": "application/json",
+          "headers": {}
+        },
+        {
+          "path": "/api/health",
+          "sample": 4,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 2406.94,
+          "bytes": 77,
+          "content_type": "application/json",
+          "headers": {}
+        },
+        {
+          "path": "/api/health",
+          "sample": 5,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 2185.03,
+          "bytes": 77,
+          "content_type": "application/json",
+          "headers": {}
+        },
+        {
+          "path": "/api/categories",
+          "sample": 1,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 2328.63,
+          "bytes": 638,
+          "content_type": "application/json",
+          "headers": {}
+        },
+        {
+          "path": "/api/categories",
+          "sample": 2,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 2392.01,
+          "bytes": 638,
+          "content_type": "application/json",
+          "headers": {}
+        },
+        {
+          "path": "/api/categories",
+          "sample": 3,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 2115.72,
+          "bytes": 638,
+          "content_type": "application/json",
+          "headers": {}
+        },
+        {
+          "path": "/api/categories",
+          "sample": 4,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 1982.07,
+          "bytes": 638,
+          "content_type": "application/json",
+          "headers": {}
+        },
+        {
+          "path": "/api/categories",
+          "sample": 5,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 1998.81,
+          "bytes": 638,
+          "content_type": "application/json",
+          "headers": {}
+        },
+        {
+          "path": "/api/listings?limit=8",
+          "sample": 1,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 2263.79,
+          "bytes": 512,
+          "content_type": "application/json",
+          "headers": {}
+        },
+        {
+          "path": "/api/listings?limit=8",
+          "sample": 2,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 2199.4,
+          "bytes": 512,
+          "content_type": "application/json",
+          "headers": {}
+        },
+        {
+          "path": "/api/listings?limit=8",
+          "sample": 3,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 2071.8,
+          "bytes": 512,
+          "content_type": "application/json",
+          "headers": {}
+        },
+        {
+          "path": "/api/listings?limit=8",
+          "sample": 4,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 2514.34,
+          "bytes": 512,
+          "content_type": "application/json",
+          "headers": {}
+        },
+        {
+          "path": "/api/listings?limit=8",
+          "sample": 5,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 2562.22,
+          "bytes": 512,
+          "content_type": "application/json",
+          "headers": {}
+        },
+        {
+          "path": "/",
+          "sample": 1,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 2231.45,
+          "bytes": 65705,
+          "content_type": "text/html;charset=UTF-8",
+          "headers": {}
+        },
+        {
+          "path": "/",
+          "sample": 2,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 2165.84,
+          "bytes": 65705,
+          "content_type": "text/html;charset=UTF-8",
+          "headers": {}
+        },
+        {
+          "path": "/",
+          "sample": 3,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 2150.11,
+          "bytes": 65705,
+          "content_type": "text/html;charset=UTF-8",
+          "headers": {}
+        },
+        {
+          "path": "/",
+          "sample": 4,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 2135.01,
+          "bytes": 65705,
+          "content_type": "text/html;charset=UTF-8",
+          "headers": {}
+        },
+        {
+          "path": "/",
+          "sample": 5,
+          "status": 200,
+          "ok": true,
+          "duration_ms": 2223.34,
+          "bytes": 65705,
+          "content_type": "text/html;charset=UTF-8",
+          "headers": {}
+        }
+      ]
+    }
+  },
+  "cloudflare_worker_metrics": {
+    "status": "ok",
+    "window": {
+      "start": "2026-08-15T23:10:07.896Z",
+      "end": "2026-08-22T23:10:07.896Z"
+    },
+    "script": "sultrakita-demo",
+    "total": {
+      "requests": 73,
+      "errors": 0,
+      "subrequests": 0
+    },
+    "error_rate_percent": 0,
+    "cpu_time_ms": {
+      "p50_max": 11098,
+      "p99_max": 11098
+    },
+    "invocation_status_requests": {
+      "success": 73
+    },
+    "data_points": 50
+  }
+}

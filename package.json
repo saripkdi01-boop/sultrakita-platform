@@ -14,6 +14,8 @@
     "test:security": "node scripts/security-regression.js",
     "smoke:api": "node scripts/api-smoke.js",
     "smoke:donation": "node scripts/donation-smoke.js",
+    "e2e:marketplace": "node scripts/local-marketplace-e2e.js",
+    "audit:production": "node scripts/production-audit.js",
     "test:webhook": "node scripts/send-donation-webhook.js",
     "load:donation": "node scripts/load-test-donations.js",
     "e2e:sandbox": "node scripts/sandbox-donation-e2e.js",
