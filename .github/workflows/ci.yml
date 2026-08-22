@@ -36,6 +36,8 @@ jobs:
         run: npm test
       - name: Run build check
         run: npm run build
+      - name: Check Worker frontend parity
+        run: npm run check:worker-sync
       - name: Run security regression
         run: npm run test:security
       - name: Run local API smoke test

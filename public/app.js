@@ -1,206 +1,121 @@
-// --- Utility & State ---
-const $ = s => document.querySelector(s);
-const icons = { properti: '🏠', elektronik: '📱', kendaraan: '🚗', fashion: '👕', perabotan: '🛋️', jasa: '🧰', kuliner: '🍜', 'hobi-koleksi': '📷', 'lowongan-kerja': '💼', lainnya: '🏷️' };
-let categories = [], page = 1, totalPages = 1, sellerSession = null;
+'use strict';
 
-const rupiah = v => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(v);
-const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c]));
+const $ = selector => document.querySelector(selector);
+const icons = { properti: '⌂', elektronik: '▣', kendaraan: '▰', fashion: '◇', perabotan: '▤', jasa: '✦', kuliner: '◌', 'hobi-koleksi': '◈', 'lowongan-kerja': '↗', lainnya: '＋' };
+const state = { categories: [], page: 1, totalPages: 1, category: '', searchTimer: null, suggestionTimer: null, sellerSession: null, listingBusy: false };
 
-async function api(url, options) {
-  const r = await fetch(url, options);
-  const b = await r.json();
-  if (!r.ok) throw Error(b.error || 'Permintaan gagal');
-  return b;
+const rupiah = value => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(Number(value || 0));
+const esc = value => String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[character]));
+const safeImage = value => { const url = String(value || ''); return /^\/(?!\/)|^https:\/\//.test(url) ? url.replace(/['"\\\n\r]/g, '') : ''; };
+
+async function api(url, options = {}) {
+  const response = await fetch(url, options);
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok || body.success === false) throw new Error(body.error || 'Permintaan gagal. Coba lagi.');
+  return body;
 }
 
-function toast(message) {
-  const t = $('#toast');
-  t.textContent = message;
-  t.classList.add('show');
+function toast(message, tone = 'normal') {
+  const element = $('#toast');
+  if (!element) return;
+  element.textContent = message;
+  element.dataset.tone = tone;
+  element.classList.add('show');
   clearTimeout(window.toastTimer);
-  window.toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+  window.toastTimer = setTimeout(() => element.classList.remove('show'), 3200);
 }
 
-// --- NEW: Intersection Observer for Light Animations ---
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('fade-in-visible');
-      observer.unobserve(entry.target); // Hanya animasi sekali
-    }
-  });
-}, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
-
-function applyAnimations() {
-  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+function track(eventName, listingId = null) {
+  const payload = { event_name: eventName, path: location.pathname + location.hash, listing_id: listingId, referrer: document.referrer || null };
+  if (navigator.sendBeacon) navigator.sendBeacon('/api/analytics/track', new Blob([JSON.stringify(payload)], { type: 'application/json' }));
+  else fetch('/api/analytics/track', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload), keepalive: true }).catch(() => {});
 }
 
-// --- Core Functions ---
-async function loadCategories() {
-  const b = await api('/api/categories');
-  categories = b.data;
-  $('#categories').innerHTML = categories.map(c => `
-    <button class="category fade-in" data-slug="${esc(c.slug)}" aria-label="Jelajahi ${esc(c.name)}">
-      <div class="category-icon">${icons[c.slug] || '🏷️'}</div>
-      <strong>${esc(c.name)}</strong>
-      <small>Jelajahi →</small>
-    </button>
-  `).join('');
-  document.querySelectorAll('.category').forEach(b => b.onclick = () => {
-    page = 1; loadListings({ category: b.dataset.slug });
-    $('#jelajah').scrollIntoView({ behavior: 'smooth' });
-    toast(`Menampilkan ${b.querySelector('strong').textContent}`);
-  });
-  applyAnimations();
+function getFavorites() { try { return JSON.parse(localStorage.getItem('sultra-favs') || '[]').map(Number); } catch { return []; } }
+function setFavorites(ids) { localStorage.setItem('sultra-favs', JSON.stringify([...new Set(ids)])); $('#favorite-count').textContent = ids.length; }
+function refreshFavoriteCount() { setFavorites(getFavorites()); }
+function shareListing(title) { const text = `${title} — lihat di SultraKita`; if (navigator.share) navigator.share({ title, text, url: location.href }).catch(() => {}); else navigator.clipboard?.writeText(location.href).then(() => toast('Link listing disalin.')).catch(() => toast('Salin URL halaman ini untuk berbagi.')); }
+
+function listingCard(listing) {
+  const saved = getFavorites().includes(Number(listing.id));
+  const image = safeImage(listing.image_url);
+  const verified = Number(listing.seller_verified) ? '<span class="verified-mark" title="Seller terverifikasi">✓</span>' : '';
+  const imageStyle = image ? ` style="background-image:url('${esc(image)}')"` : '';
+  return `<article class="listing fade-in" data-open-listing="${Number(listing.id)}" tabindex="0" aria-label="Buka listing ${esc(listing.title)}"><div class="listing-image ${image ? 'has-image' : ''}"${imageStyle}><span>${icons[listing.category_slug] || '＋'}</span><span class="listing-badge">${listing.created_at ? 'Baru' : 'Pilihan'}</span>${listing.has_video ? '<span class="video-badge">▶ Video</span>' : ''}</div><div class="listing-body"><h3>${esc(listing.title)}</h3><div class="listing-price">${rupiah(listing.price)}</div><div class="listing-meta">${esc(listing.category_name || 'Marketplace')} · ${esc(listing.district || listing.city || 'Kendari')}</div><div class="seller-line"><span class="seller-avatar">${esc(String(listing.seller_name || 'S').slice(0, 1).toUpperCase())}</span>${esc(listing.seller_name || 'Seller lokal')} ${verified}</div><div class="listing-actions"><button class="mini-action ${saved ? 'saved' : ''}" data-action="favorite" data-id="${Number(listing.id)}">${saved ? '♥ Tersimpan' : '♡ Simpan'}</button><button class="mini-action" data-action="share" data-title="${esc(listing.title)}">↗ Bagikan</button><button class="mini-action" data-action="ask">Tanya</button></div></div></article>`;
 }
 
-async function loadListings(extra = {}) {
-  $('#listings').innerHTML = '<div class="skeleton skeleton-card"></div>'.repeat(4);
-  const params = new URLSearchParams({ q: $('#search').value.trim(), district: $('#district').value, sort: $('#sort').value, page, limit: 8, ...extra });
-  for (const [k, v] of [...params]) if (!v) params.delete(k);
+async function loadStats() { try { const result = await api('/api/stats'); const summary = result.data?.summary || {}; $('#total-listings').textContent = Number(summary.active_listings ?? summary.total_listings ?? 0).toLocaleString('id-ID'); $('#covered-districts').textContent = Number(summary.covered_districts || 0).toLocaleString('id-ID'); } catch { $('#total-listings').textContent = '—'; $('#covered-districts').textContent = '—'; } }
 
+function renderCategories() {
+  $('#categories').innerHTML = state.categories.map(category => `<button class="category ${state.category === category.slug ? 'active' : ''}" data-category="${esc(category.slug)}" aria-label="Jelajahi ${esc(category.name)}"><div class="category-icon">${icons[category.slug] || '＋'}</div><strong>${esc(category.name)}</strong><small>Jelajahi kategori</small></button>`).join('');
+  const formCategory = $('#form-category');
+  if (formCategory) formCategory.innerHTML = '<option value="">Pilih kategori</option>' + state.categories.map(category => `<option value="${Number(category.id)}">${esc(category.name)}</option>`).join('');
+}
+
+async function loadCategories() { const result = await api('/api/categories'); state.categories = result.data || []; renderCategories(); }
+
+function setLoading() { $('#listings').innerHTML = '<div class="skeleton skeleton-card"></div>'.repeat(4); }
+function emptyState(query) { return `<div class="empty"><div><strong>${query ? `Tidak menemukan “${esc(query)}”` : 'Belum ada listing di sini'}</strong><span>Coba kata kunci lain, perluas wilayah, atau jadilah yang pertama memasang iklan.</span></div></div>`; }
+function updateActiveFilter() { const row = $('#active-filter-row'); const clear = $('#clear-filter'); const label = state.category ? (state.categories.find(item => item.slug === state.category)?.name || state.category) : ''; row.hidden = !label; if (label) clear.textContent = `${label} ×`; document.querySelectorAll('.filter-chip').forEach(chip => chip.classList.toggle('active', !state.category)); }
+
+async function loadListings({ reset = true } = {}) {
+  if (reset) { state.page = 1; setLoading(); }
+  const params = new URLSearchParams({ q: $('#search').value.trim(), district: $('#district').value, sort: $('#sort').value, page: state.page, limit: 8 });
+  if (state.category) params.set('category', state.category);
+  [...params].forEach(([key, value]) => { if (!value) params.delete(key); });
   try {
-    const b = await api('/api/listings?' + params);
-    totalPages = b.meta?.total_pages || 1;
-    $('#result-summary').textContent = `${b.meta?.total || b.data.length} hasil · Kendari dan Sultra`;
-
-    $('#listings').innerHTML = b.data.length ? b.data.map(l => {
-      const saved = JSON.parse(localStorage.getItem('sultra-favs') || '[]').includes(l.id);
-      // NEW: Support for video badge if listing has video
-      const videoBadge = l.has_video ? `<div class="video-badge">▶️ Video</div>` : '';
-
-      return `
-      <article class="listing fade-in">
-        <div class="listing-image">
-          <span>${icons[l.category_slug] || '🏷️'}</span>
-          ${videoBadge}
-          <span class="listing-badge" style="background: var(--gold); color: #FFF;">${l.created_at ? 'Baru' : 'Pilihan'}</span>
-        </div>
-        <div class="listing-body">
-          <h3 title="${esc(l.title)}">${esc(l.title)}</h3>
-          <div class="listing-price">${rupiah(l.price)}</div>
-          <div class="listing-meta">
-            <span>${esc(l.category_name)}</span> · <span>${esc(l.district)}</span>
-          </div>
-          <div class="listing-actions">
-            <button class="mini-action ${saved ? 'saved' : ''}" data-fav="${l.id}" style="color: ${saved ? 'var(--danger)' : 'var(--gold)'}">
-              ${saved ? '♥ Tersimpan' : '♡ Simpan'}
-            </button>
-            <button class="mini-action" data-share="${l.id}" data-title="${esc(l.title)}">↗ Bagikan</button>
-          </div>
-        </div>
-      </article>`;
-    }).join('') : '<div class="empty">Belum ada listing yang cocok. Coba kata kunci atau wilayah lain.</div>';
-
-    $('#load-more').hidden = page >= totalPages;
-    applyAnimations(); // Terapkan animasi pada elemen baru
-
-    // Re-attach event listeners
-    document.querySelectorAll('[data-fav]').forEach(b => b.onclick = () => toggleFav(Number(b.dataset.fav), b));
-    document.querySelectorAll('[data-share]').forEach(b => b.onclick = () => shareListing(b.dataset.title));
-  } catch (e) {
-    $('#listings').innerHTML = `<div class="empty">${esc(e.message)}</div>`;
-  }
+    const result = await api(`/api/listings?${params}`);
+    state.totalPages = Number(result.meta?.total_pages || 1);
+    const items = result.data || [];
+    $('#result-summary').textContent = `${Number(result.meta?.total || items.length).toLocaleString('id-ID')} hasil · Kendari dan Sultra`;
+    if (reset) $('#listings').innerHTML = items.length ? items.map(listingCard).join('') : emptyState($('#search').value.trim());
+    else if (items.length) $('#listings').insertAdjacentHTML('beforeend', items.map(listingCard).join(''));
+    $('#load-more').hidden = state.page >= state.totalPages || !items.length;
+    updateActiveFilter();
+  } catch (error) { $('#listings').innerHTML = `<div class="empty"><div><strong>Listing belum bisa dimuat</strong><span>${esc(error.message)}</span></div></div>`; $('#load-more').hidden = true; }
 }
 
-// --- Donation Experience Upgrade (Sesuai gaya Cream/Gold) ---
-(function initDonationExperience() {
-  const donationCta = document.querySelector('#donation-cta');
-  if (!donationCta) return;
+async function renderSuggestions() {
+  const input = $('#search'); const box = $('#suggestions'); const query = input.value.trim();
+  if (query.length < 2) { box.hidden = true; return; }
+  try { const result = await api(`/api/listings?q=${encodeURIComponent(query)}&limit=5`); const rows = result.data || []; box.innerHTML = rows.length ? rows.map(row => `<button class="suggestion" data-suggestion="${esc(row.title)}"><span class="suggestion-icon">${icons[row.category_slug] || '＋'}</span><span><strong>${esc(row.title)}</strong><small>${esc(row.category_name || 'Listing')} · ${esc(row.district || 'Kendari')}</small></span></button>`).join('') : `<div class="suggestion"><span><strong>Tekan Enter untuk mencari</strong><small>${esc(query)}</small></span></div>`; box.hidden = false; } catch { box.hidden = true; }
+}
 
-  const formatRupiah = value => `Rp ${Number(value || 0).toLocaleString('id-ID')}`;
-  const dialog = document.createElement('dialog');
-  dialog.id = 'donation-dialog';
-  dialog.innerHTML = `
-    <form method="dialog" class="donation-modal" id="donation-form">
-      <button class="dialog-close" value="cancel" aria-label="Tutup">×</button>
-      <p class="eyebrow" style="color: var(--gold);">Dukung SultraKita</p>
-      <h2 id="donation-title" style="color: var(--ink);">Bantu platform lokal terus tumbuh</h2>
-      <p class="dialog-help" id="donation-description">Memuat kampanye aktif…</p>
+function openDetail(id) {
+  let dialog = $('#listing-detail-dialog');
+  if (!dialog) { dialog = document.createElement('dialog'); dialog.id = 'listing-detail-dialog'; document.body.appendChild(dialog); }
+  dialog.innerHTML = '<div class="detail-modal"><button class="dialog-close" aria-label="Tutup">×</button><div class="detail-loading">Memuat detail listing…</div></div>'; dialog.showModal(); dialog.querySelector('.dialog-close').onclick = () => dialog.close();
+  Promise.all([api(`/api/listings/${id}`), api(`/api/listings/${id}/images`)]).then(([detail, images]) => {
+    const item = detail.data; const gallery = (images.data || []).map(image => `<div class="detail-gallery-image" style="background-image:url('${esc(safeImage(image.file_url))}')"></div>`).join(''); const fallback = `<div class="detail-gallery-image detail-fallback">${icons[item.category_slug] || '＋'}</div>`;
+    dialog.querySelector('.detail-modal').innerHTML = `<button class="dialog-close" aria-label="Tutup">×</button><div class="detail-gallery">${gallery || fallback}</div><div class="detail-content"><div class="eyebrow">${esc(item.category_name || 'Listing')} · ${esc(item.district || 'Kendari')}</div><h2>${esc(item.title)}</h2><div class="detail-price">${rupiah(item.price)}</div><p>${esc(item.description || 'Belum ada deskripsi tambahan.')}</p><div class="detail-seller"><span class="seller-avatar">${esc(String(item.seller_name || 'S').slice(0, 1).toUpperCase())}</span><div><strong>${esc(item.seller_name || 'Seller lokal')}</strong><small>${Number(item.seller_verified) ? '✓ Seller terverifikasi' : 'Seller lokal · cek detail sebelum transaksi'}</small></div></div><div class="detail-actions"><a class="button button-primary" href="/chat.html?listing=${Number(item.id)}&seller=${Number(item.seller_id || 0)}">Tanya penjual <span>↗</span></a><button class="button button-quiet" data-detail-share>Bagikan</button></div></div>`;
+    dialog.querySelector('.dialog-close').onclick = () => dialog.close(); dialog.querySelector('[data-detail-share]').onclick = () => shareListing(item.title); track('listing_view', item.id);
+  }).catch(error => { dialog.querySelector('.detail-loading').textContent = error.message; });
+}
 
-      <div class="donation-progress" aria-live="polite">
-        <div class="donation-progress-meta">
-          <span id="donation-raised" style="color: var(--gold);">Terkumpul —</span>
-          <span id="donation-target">Target —</span>
-        </div>
-        <div class="donation-progress-track"><span id="donation-progress-bar"></span></div>
-        <small id="donation-supporters"></small>
-      </div>
+function toggleFavorite(id, button) { const favorites = getFavorites(); const next = favorites.includes(id) ? favorites.filter(value => value !== id) : [...favorites, id]; setFavorites(next); button.classList.toggle('saved', next.includes(id)); button.textContent = next.includes(id) ? '♥ Tersimpan' : '♡ Simpan'; toast(next.includes(id) ? 'Listing disimpan ke favorit.' : 'Listing dihapus dari favorit.'); }
 
-      <fieldset>
-        <legend style="color: var(--ink);">Pilih nominal donasi</legend>
-        <div class="donation-presets">
-          ${[25000, 50000, 100000, 250000].map(amount => `<button type="button" class="donation-preset" data-amount="${amount}">${formatRupiah(amount)}</button>`).join('')}
-        </div>
-      </fieldset>
-      <label style="color: var(--ink);">Metode pembayaran<select id="donation-payment-method" name="payment_method"><option value="qris">QRIS</option><option value="virtual_account">Virtual Account</option></select></label>
+function bindListingEvents() { $('#listings').addEventListener('click', event => { const action = event.target.closest('[data-action]'); const card = event.target.closest('[data-open-listing]'); if (action?.dataset.action === 'favorite') { event.stopPropagation(); toggleFavorite(Number(action.dataset.id), action); return; } if (action?.dataset.action === 'share') { event.stopPropagation(); shareListing(action.dataset.title); track('listing_contact', Number(card?.dataset.openListing)); return; } if (action?.dataset.action === 'ask') { event.stopPropagation(); if (card) openDetail(Number(card.dataset.openListing)); return; } if (card) openDetail(Number(card.dataset.openListing)); }); $('#listings').addEventListener('keydown', event => { if ((event.key === 'Enter' || event.key === ' ') && event.target.closest('[data-open-listing]')) { event.preventDefault(); openDetail(Number(event.target.closest('[data-open-listing]').dataset.openListing)); } }); }
 
-      <label style="color: var(--ink);">Nominal lainnya (Rp)
-        <input id="donation-amount" name="amount" type="number" min="10000" max="100000000" step="1000" value="50000" required>
-      </label>
-      <label style="color: var(--ink);">Nama tampilan (opsional)
-        <input id="donation-name" name="name" maxlength="100" placeholder="Hamba Allah">
-      </label>
+function setupTheme() { const dark = localStorage.getItem('sultra-dark') === 'true'; if (dark) document.body.classList.add('dark'); $('#theme-toggle').onclick = () => { document.body.classList.toggle('dark'); localStorage.setItem('sultra-dark', String(document.body.classList.contains('dark'))); }; }
+function openSellDialog() { const dialog = $('#sell-dialog'); if (dialog && !dialog.open) dialog.showModal(); }
 
-      <button class="button button-primary full" id="donation-submit" type="submit">
-        Dukung sekarang <span id="donation-submit-amount">Rp 50.000</span>
-      </button>
-      <p class="form-message" id="donation-message" role="status" aria-live="polite"></p>
-    </form>
-  `;
-  document.body.appendChild(dialog);
+function setupSellerForm() {
+  const form = $('#listing-form'); if (!form) return;
+  try { state.sellerSession = JSON.parse(sessionStorage.getItem('sultra-seller-session') || 'null'); } catch { state.sellerSession = null; }
+  $('#open-sell').onclick = openSellDialog; $('#hero-sell').onclick = openSellDialog; $('#mobile-sell').onclick = openSellDialog; $('#show-guide').onclick = () => toast('Tip: gunakan foto terang, judul spesifik, dan tulis kondisi apa adanya.');
+  $('#request-otp').onclick = async () => { const phone = form.elements.phone.value.trim(); if (!/^08\d{8,13}$/.test(phone)) { toast('Masukkan nomor WhatsApp yang valid.', 'error'); return; } const button = $('#request-otp'); button.disabled = true; try { const result = await api('/api/auth/request-otp', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ phone }) }); toast(result.data?.dev_code ? `OTP demo: ${result.data.dev_code}` : 'OTP telah dikirim.'); } catch (error) { toast(error.message, 'error'); } finally { button.disabled = false; } };
+  form.addEventListener('submit', async event => { event.preventDefault(); if (state.listingBusy) return; const submit = form.querySelector('[type=submit]'); const message = $('#form-message'); state.listingBusy = true; submit.disabled = true; message.textContent = 'Menyiapkan listing…'; try { const phone = form.elements.phone.value.trim(); if (!state.sellerSession) { const verified = await api('/api/auth/verify-otp', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ phone, code: form.elements.otp.value.trim(), name: form.elements.title.value.trim().slice(0, 80), role: 'seller', district: form.elements.district.value }) }); state.sellerSession = verified.data; sessionStorage.setItem('sultra-seller-session', JSON.stringify(state.sellerSession)); } const body = { title: form.elements.title.value.trim(), description: form.elements.description.value.trim(), price: Number(form.elements.price.value), category_id: Number(form.elements.category_id.value), condition: form.elements.condition.value, district: form.elements.district.value }; const created = await api('/api/listings', { method: 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${state.sellerSession.token}` }, body: JSON.stringify(body) }); const files = [...(form.elements.images.files || [])]; if (files.length) await api(`/api/listings/${created.data.id}/images`, { method: 'POST', headers: { authorization: `Bearer ${state.sellerSession.token}` }, body: (() => { const data = new FormData(); files.forEach(file => data.append('images', file)); return data; })() }); message.textContent = 'Listing berhasil dipublikasikan.'; toast('Listing kamu sudah tayang.'); form.reset(); setTimeout(() => { $('#sell-dialog').close(); loadStats(); loadListings(); }, 700); } catch (error) { message.textContent = error.message; message.style.color = 'var(--danger)'; } finally { state.listingBusy = false; submit.disabled = false; } });
+}
 
-  let campaignId = 1;
-  const amountInput = dialog.querySelector('#donation-amount');
-  const submitAmount = dialog.querySelector('#donation-submit-amount');
-  const message = dialog.querySelector('#donation-message');
+function setupDiscovery() { $('#hero-explore').onclick = () => $('#jelajah').scrollIntoView({ behavior: 'smooth' }); $('#search-button').onclick = () => { $('#suggestions').hidden = true; track('search'); loadListings(); }; $('#search').addEventListener('keydown', event => { if (event.key === 'Enter') { $('#suggestions').hidden = true; track('search'); loadListings(); } }); $('#search').addEventListener('input', () => { clearTimeout(state.searchTimer); clearTimeout(state.suggestionTimer); state.searchTimer = setTimeout(() => loadListings(), 360); state.suggestionTimer = setTimeout(renderSuggestions, 180); }); $('#search').addEventListener('focus', renderSuggestions); document.addEventListener('click', event => { if (!event.target.closest('.top-search')) $('#suggestions').hidden = true; }); $('#suggestions').addEventListener('click', event => { const suggestion = event.target.closest('[data-suggestion]'); if (!suggestion) return; $('#search').value = suggestion.dataset.suggestion; $('#suggestions').hidden = true; loadListings(); }); $('#district').addEventListener('change', () => loadListings()); $('#sort').addEventListener('change', () => loadListings()); document.addEventListener('click', event => { const category = event.target.closest('[data-category]'); if (category) { state.category = category.dataset.category; renderCategories(); loadListings(); $('#jelajah').scrollIntoView({ behavior: 'smooth' }); } }); $('#clear-filter').onclick = () => { state.category = ''; renderCategories(); loadListings(); }; $('.filter-chip').onclick = () => { state.category = ''; renderCategories(); loadListings(); }; $('#load-more').onclick = () => { state.page += 1; loadListings({ reset: false }); }; }
 
-  const refreshAmount = () => { submitAmount.textContent = formatRupiah(amountInput.value); };
-  amountInput.addEventListener('input', refreshAmount);
+async function setupLocations() { try { const result = await api('/api/locations'); const districts = result.data?.districts || []; $('#district').innerHTML = '<option value="">Semua wilayah</option>' + districts.map(district => `<option value="${esc(district)}">${esc(district)}</option>`).join(''); $('#form-district').innerHTML = districts.filter(district => district !== 'Kendari').map(district => `<option value="${esc(district)}">${esc(district)}</option>`).join(''); $('#form-district').insertAdjacentHTML('afterbegin', '<option value="Kendari" selected>Kendari</option>'); } catch {} }
 
-  dialog.querySelectorAll('.donation-preset').forEach(button => {
-    button.addEventListener('click', () => {
-      amountInput.value = button.dataset.amount;
-      refreshAmount();
-      dialog.querySelectorAll('.donation-preset').forEach(item => item.classList.toggle('selected', item === button));
-    });
-  });
+function setupDonation() {
+  const button = $('#donation-cta'); if (!button) return; const dialog = document.createElement('dialog'); dialog.id = 'donation-dialog'; dialog.innerHTML = `<form method="dialog" class="donation-modal" id="donation-form"><div class="modal-head"><div><div class="eyebrow">Dukung SultraKita</div><h2 id="donation-title">Bantu platform lokal terus tumbuh</h2><p class="dialog-help" id="donation-description">Memuat kampanye aktif…</p></div><button class="dialog-close" value="cancel" aria-label="Tutup">×</button></div><div class="donation-progress"><div class="donation-progress-meta"><span id="donation-raised">Terkumpul —</span><span id="donation-target">Target —</span></div><div class="donation-progress-track"><span id="donation-progress-bar"></span></div><small id="donation-supporters"></small></div><fieldset><legend>Pilih nominal donasi</legend><div class="donation-presets">${[25000,50000,100000,250000].map(amount => `<button type="button" class="donation-preset" data-amount="${amount}">${rupiah(amount)}</button>`).join('')}</div></fieldset><label>Metode pembayaran<select id="donation-payment-method" name="payment_method"><option value="qris">QRIS</option><option value="virtual_account">Virtual Account</option></select></label><label>Nominal lainnya (Rp)<input id="donation-amount" name="amount" type="number" min="10000" max="100000000" step="1000" value="50000" required></label><label>Nama tampilan (opsional)<input id="donation-name" name="name" maxlength="100" placeholder="Hamba Allah"></label><button class="button button-primary full" id="donation-submit" type="submit">Dukung sekarang <span id="donation-submit-amount">Rp 50.000</span></button><p class="form-message" id="donation-message" role="status"></p></form>`; document.body.appendChild(dialog); let campaignId = 1; const amount = dialog.querySelector('#donation-amount'); const message = dialog.querySelector('#donation-message'); const refresh = () => { dialog.querySelector('#donation-submit-amount').textContent = rupiah(amount.value); }; amount.oninput = refresh; dialog.querySelectorAll('.donation-preset').forEach(preset => preset.onclick = () => { amount.value = preset.dataset.amount; refresh(); dialog.querySelectorAll('.donation-preset').forEach(item => item.classList.toggle('selected', item === preset)); }); const load = async () => { const result = await api(`/api/donation/stats?campaign_id=${campaignId}`); const { campaign, supporters } = result.data; dialog.querySelector('#donation-title').textContent = campaign.title; dialog.querySelector('#donation-description').textContent = campaign.description || 'Dukungan Anda membantu biaya operasional SultraKita.'; dialog.querySelector('#donation-raised').textContent = `Terkumpul ${rupiah(campaign.current_amount)}`; dialog.querySelector('#donation-target').textContent = `Target ${rupiah(campaign.target_amount)}`; dialog.querySelector('#donation-progress-bar').style.width = `${campaign.progress_percent}%`; dialog.querySelector('#donation-supporters').textContent = `${supporters} donatur terverifikasi`; }; button.onclick = async () => { dialog.showModal(); message.textContent = 'Memuat kampanye…'; try { await load(); message.textContent = ''; } catch (error) { message.textContent = error.message; } }; dialog.querySelector('#donation-form').onsubmit = async event => { event.preventDefault(); const submit = dialog.querySelector('#donation-submit'); const amountValue = Number(amount.value); if (!Number.isSafeInteger(amountValue) || amountValue < 10000) { message.textContent = 'Minimal donasi Rp10.000.'; return; } submit.disabled = true; message.textContent = 'Mengalihkan ke pembayaran aman…'; try { const result = await api('/api/donations', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ campaign_id: campaignId, amount: amountValue, name: dialog.querySelector('#donation-name').value || 'Hamba Allah', payment_method: dialog.querySelector('#donation-payment-method').value }) }); localStorage.setItem('sultrakita:last-donation', result.data.transaction_id); if (result.data.payment_url) location.assign(result.data.payment_url); else { message.textContent = result.data.message || 'Donasi tercatat.'; await load(); } } catch (error) { message.textContent = error.message; } finally { submit.disabled = false; } }; }
 
-  async function loadDonationStats(){ const response = await fetch(`/api/donation/stats?campaign_id=${campaignId}`); const result = await response.json(); if (!response.ok || !result.success) throw new Error(result.error || 'Statistik donasi belum tersedia'); const { campaign, supporters } = result.data; dialog.querySelector('#donation-title').textContent = campaign.title; dialog.querySelector('#donation-description').textContent = campaign.description || 'Dukungan Anda membantu biaya operasional SultraKita.'; dialog.querySelector('#donation-raised').textContent = `Terkumpul ${formatRupiah(campaign.current_amount)}`; dialog.querySelector('#donation-target').textContent = `Target ${formatRupiah(campaign.target_amount)}`; dialog.querySelector('#donation-progress-bar').style.width = `${campaign.progress_percent}%`; dialog.querySelector('#donation-supporters').textContent = `${supporters} donatur terverifikasi`; }
-  donationCta.addEventListener('click', async () => { dialog.showModal(); message.textContent = 'Memuat data kampanye...'; try { await loadDonationStats(); message.textContent = ''; } catch (error) { message.textContent = error.message; } });
+function setupAdminDashboard() { const root = $('#admin-analytics'); if (!root) return; const value = id => $(id)?.value.trim() || ''; const headers = () => ({ authorization: `Bearer ${value('#admin-session-token')}`, 'x-admin-token': value('#admin-token') }); const load = async () => { const result = await api(`/api/admin/donations/analytics?days=${value('#admin-analytics-days') || 30}`, { headers: headers() }); const { totals, daily } = result.data; $('#admin-attempts').textContent = totals.attempts; $('#admin-successful').textContent = totals.successful; $('#admin-success-rate').textContent = `${totals.success_rate}%`; $('#admin-net-amount').textContent = rupiah(totals.net_amount); $('#admin-daily-chart').innerHTML = daily.map(row => `<div class="analytics-bar-row"><span>${row.date}</span><div><i style="width:${Math.min(100, Number(row.attempts) * 10)}%"></i></div><strong>${row.successful}/${row.attempts} · ${rupiah(row.net_amount)}</strong></div>`).join('') || '<p>Belum ada transaksi.</p>'; }; $('#admin-analytics-load')?.addEventListener('click', () => load().catch(error => { $('#admin-daily-chart').textContent = error.message; })); }
 
-  dialog.querySelector('#donation-form').addEventListener('submit', async event => {
-    event.preventDefault();
-    const submit = dialog.querySelector('#donation-submit');
-    const amount = Number(amountInput.value);
-    if (!Number.isSafeInteger(amount) || amount < 10000) {
-      message.textContent = 'Minimal donasi Rp10.000.';
-      message.style.color = 'var(--danger)';
-      return;
-    }
-    submit.disabled = true;
-    message.textContent = 'Mengalihkan ke pembayaran aman...';
-    message.style.color = 'var(--muted)';
+async function init() { setupTheme(); refreshFavoriteCount(); bindListingEvents(); setupDiscovery(); setupSellerForm(); setupDonation(); setupAdminDashboard(); $('#suggestion-cta').onclick = () => location.href = 'mailto:halo@sultrakita.id?subject=Saran%20untuk%20SultraKita'; await Promise.all([setupLocations(), loadStats(), loadCategories()]); loadListings(); track('page_view'); }
 
-    try { const response = await fetch('/api/donations', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({ campaign_id:campaignId, amount, name:dialog.querySelector('#donation-name').value || 'Hamba Allah', payment_method:dialog.querySelector('#donation-payment-method').value }) }); const result = await response.json(); if (!response.ok || !result.success) throw new Error(result.error || 'Donasi belum dapat diproses.'); localStorage.setItem('sultrakita:last-donation', result.data.transaction_id); if (result.data.payment_url) window.location.assign(result.data.payment_url); else { message.textContent = result.data.message; await loadDonationStats(); } } catch (error) { message.textContent = error.message; message.style.color = 'var(--danger)'; } finally { submit.disabled = false; }
-  });
-})();
-
-// --- Initialization ---
-$('#theme-toggle').onclick = () => {
-  document.body.classList.toggle('dark');
-  localStorage.setItem('sultra-dark', document.body.classList.contains('dark'));
-};
-if (localStorage.getItem('sultra-dark') === 'true') document.body.classList.add('dark');
-
-Promise.all([loadCategories(), loadListings()]).then(() => {
-  applyAnimations(); // Pastikan animasi berjalan setelah load awal
-});
-
-(function installDonationAdminDashboard(){
-  const root=document.querySelector('#admin-analytics');if(!root)return;const value=id=>document.querySelector(id)?.value.trim()||'';const headers=()=>({authorization:`Bearer ${value('#admin-session-token')}`,'x-admin-token':value('#admin-token')});const rupiah=v=>`Rp ${Number(v||0).toLocaleString('id-ID')}`;
-  const load=async()=>{const r=await fetch(`/api/admin/donations/analytics?days=${value('#admin-analytics-days')||30}`,{headers:headers()});const j=await r.json();if(!r.ok||!j.success)throw new Error(j.error||'Analytics tidak dapat dimuat');const{totals,daily}=j.data;document.querySelector('#admin-attempts').textContent=totals.attempts;document.querySelector('#admin-successful').textContent=totals.successful;document.querySelector('#admin-success-rate').textContent=`${totals.success_rate}%`;document.querySelector('#admin-net-amount').textContent=rupiah(totals.net_amount);document.querySelector('#admin-daily-chart').innerHTML=daily.map(row=>`<div class="analytics-bar-row"><span>${row.date}</span><div><i style="width:${Math.min(100,Number(row.attempts)*10)}%"></i></div><strong>${row.successful}/${row.attempts} · ${rupiah(row.net_amount)}</strong></div>`).join('')||'<p>Belum ada transaksi.</p>';};
-  document.querySelector('#admin-analytics-load')?.addEventListener('click',()=>load().catch(e=>{document.querySelector('#admin-daily-chart').textContent=e.message;}));
-  document.querySelector('#admin-operation-form')?.addEventListener('submit',async e=>{e.preventDefault();const out=document.querySelector('#admin-operation-message'),tx=value('#admin-transaction-id'),op=value('#admin-operation');if(!window.confirm(`${op==='refund'?'Refund':'Batalkan'} transaksi ${tx}?`))return;const r=await fetch(`/api/admin/donations/${encodeURIComponent(tx)}/${op}`,{method:'POST',headers:{...headers(),'content-type':'application/json'},body:JSON.stringify({reason:value('#admin-operation-reason')})});const j=await r.json();out.textContent=j.success?`Operasi ${op} berhasil diproses.`:(j.error||'Operasi gagal');if(j.success)load().catch(()=>{});});
-  document.querySelector('#admin-webhook-start')?.addEventListener('click',async e=>{e.currentTarget.disabled=true;const log=document.querySelector('#admin-webhook-logs');try{const r=await fetch('/api/admin/webhook-logs/stream',{headers:headers()});if(!r.ok||!r.body)throw new Error('Stream webhook tidak tersedia');const reader=r.body.getReader(),decoder=new TextDecoder();let buffer='';while(true){const{value,done}=await reader.read();if(done)break;buffer+=decoder.decode(value,{stream:true});const events=buffer.split('\n\n');buffer=events.pop()||'';for(const text of events){const line=text.split('\n').find(x=>x.startsWith('data: '));if(!line)continue;const row=JSON.parse(line.slice(6)),item=document.createElement('div');item.className=`webhook-log ${row.http_status>=400?'is-error':''}`;item.textContent=`${row.created_at} · ${row.provider} · ${row.event_status||'-'} · HTTP ${row.http_status} · ${row.transaction_id||'-'}`;log.prepend(item);while(log.children.length>50)log.lastChild.remove();}}}catch(error){log.textContent=error.message;e.currentTarget.disabled=false;}});
-})();
+document.addEventListener('DOMContentLoaded', () => init().catch(error => toast(error.message, 'error')));

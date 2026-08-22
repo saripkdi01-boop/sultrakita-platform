@@ -10,6 +10,8 @@ const { authenticate, requireAuth, requireRole, revokeToken } = require('./auth'
 
 dotenv.config();
 const app = express();
+app.disable('x-powered-by');
+app.use((_req, res, next) => { res.setHeader('X-Content-Type-Options', 'nosniff'); res.setHeader('X-Frame-Options', 'DENY'); res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin'); res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(self)'); next(); });
 const PORT = Number(process.env.PORT || 3000);
 const districts = ['Kendari', 'Mandonga', 'Baruga', 'Poasia', 'Kadia', 'Kambu', 'Wua-Wua', 'Abeli', 'Puuwatu', 'Pondambea', 'Baito', 'Bau-Bau', 'Kolaka', 'Konawe', 'Muna', 'Wakatobi'];
 
@@ -107,7 +109,7 @@ app.post('/api/seller-verifications', async (req, res, next) => { try { const { 
 const hasValidImageSignature = async file => { const bytes = await fs.promises.readFile(file.path); const jpeg = bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff; const png = bytes.length >= 8 && Buffer.from(bytes.subarray(0, 8)).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])); const webp = bytes.length >= 12 && bytes.subarray(0, 4).toString() === 'RIFF' && bytes.subarray(8, 12).toString() === 'WEBP'; return (file.mimetype === 'image/jpeg' && jpeg) || (file.mimetype === 'image/png' && png) || (file.mimetype === 'image/webp' && webp); };
 app.post('/api/listings/:id/images', requireAuth, upload.array('images', 5), async (req, res, next) => { try { if (!positiveInt(req.params.id)) return fail(res, 400, 'ID listing tidak valid'); if (!req.files?.length) return fail(res, 422, 'Minimal satu foto JPG, PNG, atau WEBP diperlukan'); for (const file of req.files) if (!(await hasValidImageSignature(file))) return fail(res, 422, 'Isi file gambar tidak sesuai dengan MIME yang diizinkan'); const listing = await query('SELECT id, seller_id FROM listings WHERE id = ?', [Number(req.params.id)]); if (!listing.length) return fail(res, 404, 'Listing tidak ditemukan'); if (req.user.role !== 'admin' && Number(listing[0].seller_id) !== Number(req.user.id)) return fail(res, 403, 'Akses tidak diizinkan'); const existing = await query('SELECT COUNT(*) AS total FROM listing_images WHERE listing_id = ?', [Number(req.params.id)]); const images = []; for (const [index, file] of req.files.entries()) { let fileUrl = `/uploads/${file.filename}`; if (process.env.R2_UPLOAD_URL && process.env.R2_UPLOAD_TOKEN) { const payload = await fs.promises.readFile(file.path); const remote = await fetch(`${process.env.R2_UPLOAD_URL}/${file.filename}`, { method:'PUT', headers:{ authorization:`Bearer ${process.env.R2_UPLOAD_TOKEN}`, 'content-type':file.mimetype }, body:payload }); if (!remote.ok) throw new Error('Upload object storage gagal'); fileUrl = `${process.env.R2_PUBLIC_BASE_URL || process.env.R2_UPLOAD_URL}/${file.filename}`; await fs.promises.unlink(file.path).catch(() => {}); } await run('INSERT INTO listing_images (listing_id, file_url, sort_order) VALUES (?, ?, ?)', [Number(req.params.id), fileUrl, Number(existing[0].total) + index]); images.push(fileUrl); } ok(res, images); } catch (error) { await Promise.all((req.files || []).map(file => fs.promises.unlink(file.path).catch(() => {}))); next(error); } });
 
-app.get('/api/listings/:id/images', async (req, res, next) => { try { ok(res, await query('SELECT id, file_url, sort_order, created_at FROM listing_images WHERE listing_id = ? ORDER BY sort_order', [Number(req.params.id)])); } catch (error) { next(error); } });
+app.get('/api/listings/:id/images', async (req, res, next) => { try { if (!positiveInt(req.params.id)) return fail(res, 400, 'ID listing tidak valid'); const listing = await query("SELECT id FROM listings WHERE id = ? AND status = 'active'", [Number(req.params.id)]); if (!listing.length) return fail(res, 404, 'Listing tidak ditemukan'); ok(res, await query('SELECT id, file_url, sort_order, created_at FROM listing_images WHERE listing_id = ? ORDER BY sort_order', [Number(req.params.id)])); } catch (error) { next(error); } });
 
 app.get('/api/admin/overview', requireRole('admin'), adminOnly, async (_req, res, next) => { try { const [users] = await query('SELECT COUNT(*) AS total FROM users'); const [sellers] = await query("SELECT COUNT(*) AS total FROM users WHERE verification_status = 'pending'"); const [reports] = await query("SELECT COUNT(*) AS total FROM reports WHERE status IN ('open','reviewing')"); const [suggestions] = await query("SELECT COUNT(*) AS total FROM suggestions WHERE status IN ('new','reviewing')"); ok(res, { users: Number(users.total), pending_sellers: Number(sellers.total), open_reports: Number(reports.total), pending_suggestions: Number(suggestions.total) }); } catch (error) { next(error); } });
 app.get('/api/admin/verifications', requireRole('admin'), adminOnly, async (req, res, next) => { try { ok(res, await query('SELECT v.*, u.name, u.phone, u.district FROM seller_verifications v JOIN users u ON u.id = v.user_id WHERE v.status = ? ORDER BY v.created_at DESC', [req.query.status || 'pending'])); } catch (error) { next(error); } });
@@ -141,7 +143,7 @@ app.get('/api/listings', async (req, res, next) => {
     const limit = Math.min(50, Math.max(1, Number.parseInt(req.query.limit || '12', 10)));
     const offset = (page - 1) * limit;
     const params = [];
-    const filters = ['l.status = ?']; params.push(req.query.status || 'active');
+    const filters = ['l.status = ?']; params.push('active');
     if (req.query.q) { filters.push('(LOWER(l.title) LIKE LOWER(?) OR LOWER(l.description) LIKE LOWER(?) OR LOWER(l.city) LIKE LOWER(?))'); const q = `%${req.query.q}%`; params.push(q, q, q); }
     if (req.query.category) { filters.push('c.slug = ?'); params.push(req.query.category); }
     if (req.query.district) { filters.push('l.district = ?'); params.push(req.query.district); }
@@ -160,7 +162,7 @@ app.get('/api/listings', async (req, res, next) => {
 app.get('/api/listings/:id', async (req, res, next) => {
   try {
     if (!positiveInt(req.params.id)) return fail(res, 400, 'ID listing tidak valid');
-    const rows = await query(`SELECT l.*, c.name AS category_name, c.slug AS category_slug, u.name AS seller_name, CASE WHEN COALESCE(u.verification_status, 'unverified') = 'approved' OR COALESCE(u.is_verified, 0) = 1 THEN 1 ELSE 0 END AS seller_verified, u.district AS seller_district FROM listings l JOIN categories c ON c.id = l.category_id LEFT JOIN users u ON u.id = l.seller_id WHERE l.id = ?`, [Number(req.params.id)]);
+    const rows = await query(`SELECT l.*, c.name AS category_name, c.slug AS category_slug, u.name AS seller_name, CASE WHEN COALESCE(u.verification_status, 'unverified') = 'approved' OR COALESCE(u.is_verified, 0) = 1 THEN 1 ELSE 0 END AS seller_verified, u.district AS seller_district FROM listings l JOIN categories c ON c.id = l.category_id LEFT JOIN users u ON u.id = l.seller_id WHERE l.id = ? AND l.status = 'active'`, [Number(req.params.id)]);
     if (!rows.length) return fail(res, 404, 'Listing tidak ditemukan');
     await run('UPDATE listings SET views = views + 1 WHERE id = ?', [Number(req.params.id)]);
     ok(res, rows[0]);
