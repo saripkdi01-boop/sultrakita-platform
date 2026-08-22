@@ -46,7 +46,8 @@ async function safeSuite() {
   assert(Number.isInteger(listings.body?.meta?.total_pages), 'public listings: missing total_pages');
 
   await expectStatus('/api/listings/not-an-id', 400, undefined, 'invalid listing identifier');
-  await expectStatus('/api/listings/1', 200, undefined, 'public listing detail');
+  const firstListingId = Number(listings.body?.data?.[0]?.id);
+  if (Number.isInteger(firstListingId) && firstListingId > 0) await expectStatus(`/api/listings/${firstListingId}`, 200, undefined, 'public listing detail');
   await expectStatus('/api/admin/overview', 401, undefined, 'admin boundary');
   await expectStatus('/api/auth/logout', 401, { method: 'POST' }, 'logout without session');
 

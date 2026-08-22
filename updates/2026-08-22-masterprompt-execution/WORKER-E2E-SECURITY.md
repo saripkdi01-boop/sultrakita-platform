@@ -36,4 +36,4 @@ A production-safe pass tidak sama dengan full mutation pass. Release P0 hanya da
 
 ## Current deployment checkpoint
 
-Worker version terakhir yang diuji adalah `2734c2f0-e89b-4b1c-9762-7adc43f18e5f`. Setelah parity mutation patch berikutnya, deploy version baru harus dicatat di sini bersama hasil safe production suite dan hasil full staging suite.
+Worker version terakhir yang diuji adalah `6941f470-b319-4d91-bbff-1c03f4c96b28`. Setelah parity mutation patch berikutnya, deploy version baru harus dicatat di sini bersama hasil safe production suite dan hasil full staging suite.
