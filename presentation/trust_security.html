@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+*{box-sizing:border-box}
+.slide-container{width:1280px;min-height:720px;background:#fff;color:#1A1A1A;border:6px solid #1A1A1A;font-family:Arial,sans-serif;padding:28px 72px}
+.header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:6px solid #1A1A1A;padding-bottom:14px}
+.kicker{font-size:15px;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:#E63946}
+.page{font-size:18px;font-weight:900}
+.title{font-size:57px;line-height:1;letter-spacing:-3px;margin:38px 0 10px;max-width:760px}
+.lead{font-family:Georgia,serif;font-size:22px;line-height:1.35;color:#333;max-width:810px;margin:0}
+.security-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:22px}
+.security{min-height:132px;border:6px solid #1A1A1A;padding:12px;position:relative}
+.security:nth-child(2){background:#E63946;color:#fff}
+.security:nth-child(2) p{color:#fff}
+.security h2{font-size:23px;line-height:1.05;letter-spacing:-1px;margin:20px 0 10px}
+.security p{font-family:Georgia,serif;font-size:16px;line-height:1.32;color:#333;margin:0}
+.index{position:absolute;top:10px;right:12px;font-size:14px;font-weight:900}
+.callout{margin-top:14px;border-top:2px solid #1A1A1A;border-bottom:6px solid #1A1A1A;padding-top:8px;padding-bottom:8px;display:flex;justify-content:space-between;gap:18px;align-items:center}
+.callout strong{font-size:20px;letter-spacing:-.5px}.callout span{font-family:Georgia,serif;color:#333;font-size:17px;max-width:640px}
+.watermark{position:absolute;width:140px;height:140px;border:6px solid #E63946;border-radius:50%;right:70px;top:94px;opacity:.16;z-index:0}
+.content{position:relative;z-index:1}
+</style>
+</head>
+<body>
+<div class="slide-container"><div class="watermark"></div><div class="content"><div class="header"><div class="kicker">04 / trust & safety</div><div class="page">SULTRAKITA FOUNDATION</div></div><h1 class="title">Kepercayaan seller dibangun berlapis</h1><p class="lead">Fondasi keamanan mulai mengubah marketplace dari sekadar katalog menjadi ruang transaksi lokal yang lebih bertanggung jawab.</p><div class="security-grid"><article class="security"><div class="index">01</div><h2>OTP + session</h2><p>Kode di-hash, memiliki masa berlaku, batas percobaan, dan token sesi untuk alur autentikasi.</p></article><article class="security"><div class="index">02</div><h2>Seller verification</h2><p>Pengajuan status seller mendukung KTP, NIB, atau dokumen lain untuk ditinjau admin.</p></article><article class="security"><div class="index">03</div><h2>Media tervalidasi</h2><p>Upload maksimal lima foto dengan format JPG, PNG, atau WEBP dan batas ukuran 5 MB per file.</p></article><article class="security"><div class="index">04</div><h2>Anti-abuse</h2><p>Rate limiting, validasi input, nama file acak, dan escaping HTML membantu menekan spam serta XSS.</p></article></div><div class="callout"><strong>Prinsip operasional</strong><span>Verifikasi dokumen tetap membutuhkan workflow moderasi manusia; sistem tidak membuat klaim verifikasi otomatis.</span></div></div></div>
+</body>
+</html>

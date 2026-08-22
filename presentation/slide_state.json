@@ -1,0 +1,122 @@
+{
+  "project_info": {
+    "title": "SultraKita",
+    "created": 1787387467.95,
+    "last_updated": 1787388001.555,
+    "total_slides": 10
+  },
+  "slides": [
+    {
+      "id": "cover",
+      "state": "edited",
+      "pageNum": 1
+    },
+    {
+      "id": "visi_produk",
+      "state": "edited",
+      "pageNum": 2
+    },
+    {
+      "id": "evolusi_platform",
+      "state": "edited",
+      "pageNum": 3
+    },
+    {
+      "id": "fitur_komunitas",
+      "state": "edited",
+      "pageNum": 4
+    },
+    {
+      "id": "trust_security",
+      "state": "edited",
+      "pageNum": 5
+    },
+    {
+      "id": "seo_discoverability",
+      "state": "edited",
+      "pageNum": 6
+    },
+    {
+      "id": "analytics",
+      "state": "edited",
+      "pageNum": 7
+    },
+    {
+      "id": "lighthouse",
+      "state": "edited",
+      "pageNum": 8
+    },
+    {
+      "id": "roadmap",
+      "state": "edited",
+      "pageNum": 9
+    },
+    {
+      "id": "closing",
+      "state": "edited",
+      "pageNum": 10
+    }
+  ],
+  "outline": [
+    {
+      "id": "cover",
+      "title": "SultraKita",
+      "summary": "Marketplace lokal Kendari dan Sulawesi Tenggara; rekapitulasi pengembangan hingga audit Lighthouse.",
+      "image_plan": "Use a suitable image if needed"
+    },
+    {
+      "id": "visi_produk",
+      "title": "Visi Produk Lokal",
+      "summary": "Fokus SultraKita pada kebutuhan jual-beli warga Kendari, UMKM, dan komunitas Sulawesi Tenggara.",
+      "image_plan": "Use a suitable image if needed"
+    },
+    {
+      "id": "evolusi_platform",
+      "title": "Dari Prototipe Menuju Fondasi Marketplace",
+      "summary": "Perjalanan dari repository awal menuju API, database, frontend, deployment, dan dokumentasi operasional.",
+      "image_plan": "Use a suitable image if needed"
+    },
+    {
+      "id": "fitur_komunitas",
+      "title": "Fitur Transaksi dan Komunitas",
+      "summary": "Listing lokal, komentar, saran, laporan, dukungan proyek, dan fondasi chat pembeli-penjual.",
+      "image_plan": "Use a suitable image if needed"
+    },
+    {
+      "id": "trust_security",
+      "title": "Kepercayaan Seller dan Keamanan Data",
+      "summary": "OTP, verifikasi seller, upload foto tervalidasi, rate limiting, dan perlindungan XSS.",
+      "image_plan": "Use a suitable image if needed"
+    },
+    {
+      "id": "seo_discoverability",
+      "title": "SEO Lokal dan Discoverability",
+      "summary": "Metadata SEO, Open Graph, JSON-LD, sitemap, robots, dan route SEO langsung pada Worker.",
+      "image_plan": "Use a suitable image if needed"
+    },
+    {
+      "id": "analytics",
+      "title": "Analytics Realtime yang Privacy-Aware",
+      "summary": "Pelacakan event, dashboard metrik, rate limit tracking, autentikasi summary, dan retention D1 90 hari.",
+      "image_plan": "Use a suitable image if needed"
+    },
+    {
+      "id": "lighthouse",
+      "title": "Kualitas Terukur dengan Google Lighthouse",
+      "summary": "Hasil audit production: Performance 96, Accessibility 94, Best Practices 96, SEO 100.",
+      "image_plan": "Use a suitable image if needed"
+    },
+    {
+      "id": "roadmap",
+      "title": "Langkah Berikutnya Menuju Skala Regional",
+      "summary": "Roadmap menuju OTP resmi, R2, chat skala tinggi, payment, backup, observability, dan custom domain.",
+      "image_plan": "Use a suitable image if needed"
+    },
+    {
+      "id": "closing",
+      "title": "Dari Warga Sultra, untuk Pertumbuhan Sultra",
+      "summary": "Penutup dengan URL demo, repository, dan ajakan mengembangkan marketplace lokal secara berkelanjutan.",
+      "image_plan": "Use a suitable image if needed"
+    }
+  ]
+}
