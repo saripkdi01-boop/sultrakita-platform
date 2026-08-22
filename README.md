@@ -158,6 +158,32 @@ XENDIT_CALLBACK_TOKEN=token-lokal-uji npm run test:webhook
 
 Pada pengujian Xendit nyata, gunakan Callback Token yang sama dengan yang dikonfigurasi di dashboard. Pada pengujian Midtrans nyata, gunakan Server Key dari environment yang sesuai dengan payload sandbox atau production. Pantau request masuk melalui terminal ngrok dan periksa hasilnya dengan `GET /api/donations/:transaction_id` serta `GET /api/donation/stats?campaign_id=1`. Jangan pernah menaruh Server Key, Secret Key, atau Callback Token di kode frontend.
 
+### QRIS dan Virtual Account
+
+Frontend web menyediakan pilihan `QRIS` dan `Virtual Account` pada modal donasi. Pilihan ini dikirim sebagai `payment_method` ke `POST /api/donations`. Pada Midtrans, QRIS dipetakan ke `gopay/qris`, sedangkan Virtual Account dipetakan ke kanal VA aktif seperti `bca_va`, `bni_va`, `bri_va`, `permata_va`, `cimb_va`, `danamon_va`, `bsi_va`, dan `echannel`. Pada Xendit, QRIS dikirim sebagai `QRIS`, sedangkan Virtual Account meminta kanal `BCA`, `BNI`, `BRI`, `MANDIRI`, dan `PERMATA`. Ketersediaan kanal tetap mengikuti aktivasi merchant di dashboard provider.
+
+### Load testing
+
+Skrip [`scripts/load-test-donations.js`](./scripts/load-test-donations.js) menguji pembuatan donasi dan webhook dalam batch dengan concurrency yang dapat diatur. Jalankan hanya pada local atau sandbox, bukan production, karena setiap webhook sukses akan menambah progres kampanye.
+
+```bash
+# server lokal tanpa provider eksternal
+npm start
+REQUESTS=200 CONCURRENCY=20 WEBHOOK_PROVIDER=midtrans \\
+MIDTRANS_SERVER_KEY=load-test-midtrans-key \\
+npm run load:donation
+```
+
+Untuk Xendit webhook simulasi:
+
+```bash
+REQUESTS=200 CONCURRENCY=20 WEBHOOK_PROVIDER=xendit \\
+XENDIT_CALLBACK_TOKEN=load-test-xendit-token \\
+npm run load:donation
+```
+
+Output berisi jumlah request sukses/gagal, p50, p95, dan waktu maksimum. Gunakan environment database terpisah untuk pengujian beban dan pantau CPU, memory, database lock, rate limit, latency provider, serta webhook retry. Jangan menjalankan load test terhadap URL provider secara langsung; skrip ini menguji endpoint SultraKita dengan payload provider yang ditandatangani atau diberi callback token simulasi.
+
 ## Notifikasi WhatsApp penjual
 
 Notifikasi WhatsApp otomatis dipicu setelah komentar atau pesan pembeli tersimpan berhasil. Adapter menggunakan WhatsApp Cloud API resmi dan bersifat non-blocking: kegagalan provider dicatat di server tanpa menggagalkan penyimpanan pesan. Konfigurasikan `WHATSAPP_API_VERSION`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_TEMPLATE_NAME`, dan `WHATSAPP_TEMPLATE_LANGUAGE` melalui secret manager. Template default yang dicontohkan adalah `sultrakita_new_message` dengan empat parameter body berurutan: nama penjual, judul listing, nama pembeli, dan isi pesan. Nama serta urutan variabel harus sama persis dengan template yang disetujui di WhatsApp Manager. Nomor `08...` dinormalisasi menjadi format internasional `62...`. Untuk pesan di luar jendela layanan pelanggan, gunakan template pesan yang disetujui Meta dan pastikan penerima telah memberikan opt-in.

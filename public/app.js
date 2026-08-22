@@ -12,6 +12,7 @@ const $=s=>document.querySelector(s);const icons={properti:'🏠',elektronik:'�
     <p class="dialog-help" id="donation-description">Memuat kampanye aktif…</p>
     <div class="donation-progress" aria-live="polite"><div class="donation-progress-meta"><span id="donation-raised">Terkumpul —</span><span id="donation-target">Target —</span></div><div class="donation-progress-track"><span id="donation-progress-bar"></span></div><small id="donation-supporters"></small></div>
     <fieldset><legend>Pilih nominal donasi</legend><div class="donation-presets">${[25000,50000,100000,250000].map(amount => `<button type="button" class="donation-preset" data-amount="${amount}">${formatRupiah(amount)}</button>`).join('')}</div></fieldset>
+    <label>Metode pembayaran<select id="donation-payment-method" name="payment_method"><option value="qris">QRIS</option><option value="virtual_account">Virtual Account</option></select></label>
     <label>Nominal lainnya (Rp)<input id="donation-amount" name="amount" type="number" min="10000" max="100000000" step="1000" value="50000" required></label>
     <label>Nama tampilan (opsional)<input id="donation-name" name="name" maxlength="100" placeholder="Hamba Allah"></label>
     <label>Pesan (opsional)<textarea id="donation-note" name="message" maxlength="500" rows="2" placeholder="Semoga SultraKita semakin maju."></textarea></label>
@@ -43,7 +44,7 @@ const $=s=>document.querySelector(s);const icons={properti:'🏠',elektronik:'�
     if (!Number.isSafeInteger(amount) || amount < 10000) { message.textContent = 'Minimal donasi Rp10.000.'; return; }
     submit.disabled = true; message.textContent = 'Menyimpan dukungan…';
     try {
-      const response = await fetch('/api/donations', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({ campaign_id:campaignId, amount, name:dialog.querySelector('#donation-name').value || 'Hamba Allah', message:dialog.querySelector('#donation-note').value || null, payment_method:'qris' }) });
+      const response = await fetch('/api/donations', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({ campaign_id:campaignId, amount, name:dialog.querySelector('#donation-name').value || 'Hamba Allah', message:dialog.querySelector('#donation-note').value || null, payment_method:dialog.querySelector('#donation-payment-method').value }) });
       const result = await response.json(); if (!response.ok || !result.success) throw new Error(result.error || 'Donasi belum dapat diproses.');
       message.textContent = result.data.message;
       if (result.data.payment_url) window.location.href = result.data.payment_url;

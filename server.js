@@ -246,16 +246,18 @@ const paymentOrderId = () => `SK-${Date.now()}-${crypto.randomBytes(5).toString(
 const configuredPaymentProvider = () => ['midtrans', 'xendit'].includes(String(process.env.PAYMENT_PROVIDER || '').toLowerCase()) ? String(process.env.PAYMENT_PROVIDER).toLowerCase() : null;
 const providerRequest = async (url, options) => { const response = await fetch(url, { ...options, signal: AbortSignal.timeout(10000) }); const text = await response.text(); let body; try { body = JSON.parse(text); } catch { body = null; } if (!response.ok) throw new Error(`Payment provider error ${response.status}: ${String(body?.error_messages?.[0] || body?.message || text).slice(0, 180)}`); return body; };
 const createPaymentUrl = async ({ provider, transactionId, amount, name, email, paymentMethod }) => {
+  if (!['qris', 'virtual_account'].includes(paymentMethod)) throw new Error('Metode pembayaran belum didukung');
   if (provider === 'midtrans') {
     if (!process.env.MIDTRANS_SERVER_KEY) throw new Error('MIDTRANS_SERVER_KEY belum dikonfigurasi');
     const baseUrl = process.env.MIDTRANS_MODE === 'production' ? 'https://app.midtrans.com' : 'https://app.sandbox.midtrans.com';
-    const body = { transaction_details: { order_id: transactionId, gross_amount: amount }, customer_details: { first_name: name, email: email || undefined }, ...(paymentMethod === 'qris' ? { enabled_payments: ['gopay', 'qris'] } : {}) };
+    const enabledPayments = paymentMethod === 'qris' ? ['gopay', 'qris'] : ['bca_va', 'bni_va', 'bri_va', 'permata_va', 'cimb_va', 'danamon_va', 'bsi_va', 'other_va', 'echannel'];
+    const body = { transaction_details: { order_id: transactionId, gross_amount: amount }, customer_details: { first_name: name, email: email || undefined }, enabled_payments: enabledPayments };
     const result = await providerRequest(`${baseUrl}/snap/v1/transactions`, { method: 'POST', headers: { authorization: `Basic ${Buffer.from(`${process.env.MIDTRANS_SERVER_KEY}:`).toString('base64')}`, 'content-type': 'application/json', accept: 'application/json' }, body: JSON.stringify(body) });
     return { provider: 'midtrans', payment_url: result.redirect_url || `${baseUrl}/snap/v2/vtweb/${result.token}`, provider_reference: result.token || transactionId };
   }
   if (provider === 'xendit') {
     if (!process.env.XENDIT_SECRET_KEY) throw new Error('XENDIT_SECRET_KEY belum dikonfigurasi');
-    const body = { external_id: transactionId, amount, payer_email: email || undefined, description: `Dukungan SultraKita oleh ${name}`, should_send_email: false, success_redirect_url: process.env.PAYMENT_SUCCESS_URL || undefined, failure_redirect_url: process.env.PAYMENT_FAILURE_URL || undefined };
+    const body = { external_id: transactionId, amount, payer_email: email || undefined, description: `Dukungan SultraKita oleh ${name}`, payment_methods: paymentMethod === 'qris' ? ['QRIS'] : ['BCA', 'BNI', 'BRI', 'MANDIRI', 'PERMATA'], should_send_email: false, success_redirect_url: process.env.PAYMENT_SUCCESS_URL || undefined, failure_redirect_url: process.env.PAYMENT_FAILURE_URL || undefined };
     const result = await providerRequest('https://api.xendit.co/v2/invoices', { method: 'POST', headers: { authorization: `Basic ${Buffer.from(`${process.env.XENDIT_SECRET_KEY}:`).toString('base64')}`, 'content-type': 'application/json', accept: 'application/json' }, body: JSON.stringify(body) });
     return { provider: 'xendit', payment_url: result.invoice_url, provider_reference: result.id || transactionId };
   }
@@ -295,7 +297,7 @@ app.post('/api/donations', async (req, res, next) => {
     const [campaign] = await query("SELECT id, status FROM donation_campaigns WHERE id = ? AND status = 'active'", [Number(campaign_id)]);
     if (!campaign) return fail(res, 404, 'Kampanye donasi tidak aktif');
     const transactionId = paymentOrderId();
-    const selectedMethod = ['qris', 'gopay', 'bank_transfer'].includes(payment_method) ? payment_method : 'qris';
+    const selectedMethod = ['qris', 'virtual_account'].includes(payment_method) ? payment_method : 'qris';
     const result = await run('INSERT INTO donations (campaign_id, name, email, amount, message, transaction_id, payment_method, payment_status) VALUES (?, ?, ?, ?, ?, ?, ?, \'pending\')', [campaign.id, safeText(name, 100) || 'Hamba Allah', email ? safeText(email, 160) : null, numericAmount, safeText(message, 500) || null, transactionId, selectedMethod]);
     const provider = configuredPaymentProvider(); let payment = { provider: 'not_configured', payment_url: null, provider_reference: null };
     if (provider) {
