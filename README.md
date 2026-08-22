@@ -247,3 +247,94 @@ npm run verify:local
 ```
 
 Untuk pengujian gateway nyata, jangan menaruh secret di command history jika lingkungan bersama; gunakan `.env` lokal yang di-ignore atau secret manager. Jangan menjalankan refund production tanpa persetujuan operasional yang eksplisit.
+
+
+## PostgreSQL production dan backup otomatis
+
+SultraKita menyediakan jalur PostgreSQL production melalui `database/postgres-schema.sql`, migrasi `npm run db:migrate:postgres`, backup `npm run db:backup:postgres`, dan restore terproteksi `npm run db:restore:postgres`. Runtime legacy yang masih menggunakan SQLite/SQL.js tetap dipertahankan agar deployment yang sedang berjalan tidak mengalami perubahan mendadak; PostgreSQL dapat diprovisioning dan divalidasi terlebih dahulu, kemudian dijadikan database runtime setelah cutover deployment selesai diuji.
+
+### Environment variables
+
+Jangan commit nilai rahasia. Atur variable berikut pada secret manager deployment atau environment server:
+
+| Variable | Wajib | Fungsi |
+|---|---|---|
+| `DATABASE_URL` | Ya untuk PostgreSQL | Connection string PostgreSQL, termasuk user, password, host, port, dan database. |
+| `DATABASE_SSL` | Disarankan `true` | Mengaktifkan koneksi TLS ke database terkelola. |
+| `BACKUP_DIR` | Tidak | Direktori lokal sementara untuk file dump. |
+| `BACKUP_RETENTION_DAYS` | Tidak | Retensi lokal, default 30 hari. |
+| `BACKUP_S3_URI` | Tidak | Prefix object storage, misalnya `s3://bucket-sultrakita/postgres`. |
+| `AWS_ACCESS_KEY_ID` | Saat S3 digunakan | Credential upload object storage. |
+| `AWS_SECRET_ACCESS_KEY` | Saat S3 digunakan | Credential upload object storage. |
+| `AWS_REGION` | Saat S3 digunakan | Region bucket. |
+
+Contoh lokal:
+
+```bash
+cp .env.example .env
+set -a; . ./.env; set +a
+npm run db:migrate:postgres
+```
+
+`DATABASE_URL` harus menggunakan user aplikasi dengan hak minimum yang diperlukan. Pisahkan user aplikasi dari user backup/migrasi. User aplikasi tidak seharusnya memiliki hak `SUPERUSER`, membuat role, atau menghapus database.
+
+### Provisioning dan migrasi
+
+Buat database production pada layanan PostgreSQL terkelola, aktifkan TLS, buat database dan role terpisah, lalu jalankan migrasi hanya dari runner yang dipercaya:
+
+```sql
+CREATE ROLE sultrakita_app LOGIN PASSWORD 'GANTI_DENGAN_SECRET_MANAGER';
+CREATE DATABASE sultrakita OWNER sultrakita_app;
+```
+
+Setelah itu jalankan:
+
+```bash
+DATABASE_URL='postgresql://sultrakita_app:PASSWORD@HOST:5432/sultrakita' \
+DATABASE_SSL=true \
+npm run db:migrate:postgres
+```
+
+Script menjalankan schema dalam transaksi dan melakukan seed kampanye donasi awal bila belum tersedia. Sebelum cutover, backup database lama dan lakukan rekonsiliasi jumlah user, listing, transaksi, nominal kampanye, refund, dan webhook log.
+
+### Backup harian
+
+Backup memakai `pg_dump --format=custom --compress=9`, membuat checksum SHA-256, mengunggah dump dan checksum ke object storage bila `BACKUP_S3_URI` diisi, lalu menghapus file lokal yang melewati `BACKUP_RETENTION_DAYS`.
+
+Backup manual:
+
+```bash
+DATABASE_URL='postgresql://...' \
+BACKUP_DIR=./backups/postgres \
+BACKUP_RETENTION_DAYS=30 \
+BACKUP_S3_URI='s3://bucket-sultrakita/postgres' \
+AWS_REGION=ap-southeast-1 \
+npm run db:backup:postgres
+```
+
+Workflow [`postgres-backup.yml`](.github/workflows/postgres-backup.yml) sudah ditambahkan. Workflow berjalan setiap hari pukul 02:30 UTC dan dapat dijalankan manual dari GitHub Actions. Konfigurasikan repository secrets `DATABASE_URL`, `BACKUP_S3_URI`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, dan `AWS_REGION`. Bucket backup sebaiknya private, memakai versioning, lifecycle retention, enkripsi at rest, serta akses write-only dari runner backup.
+
+Jadwal backup bukan pengganti point-in-time recovery dari provider PostgreSQL. Aktifkan PITR/WAL archiving pada provider terkelola bila tersedia, simpan backup pada akun atau bucket berbeda, dan uji restore secara berkala.
+
+### Restore dan disaster recovery
+
+Restore bersifat destruktif dan memerlukan konfirmasi eksplisit:
+
+```bash
+CONFIRM_RESTORE=YES \
+DATABASE_URL='postgresql://...' \
+BACKUP_FILE=./backups/postgres/sultrakita-20260822T023000Z.dump \
+npm run db:restore:postgres
+```
+
+Script memverifikasi checksum sebelum menjalankan `pg_restore --clean --if-exists --no-owner`. Lakukan restore ke database staging terlebih dahulu, jalankan health check dan smoke test, lalu baru lakukan cutover production. Simpan RPO/RTO yang disepakati; konfigurasi default backup harian memiliki potensi kehilangan data sampai sekitar satu interval backup apabila PITR tidak diaktifkan.
+
+### Monitoring operasional
+
+Pantau setidaknya koneksi aktif, connection pool saturation, query latency, lock/wait events, error rate, storage growth, backup age, checksum failure, dan hasil restore drill. Alarm minimum yang disarankan adalah backup terakhir lebih tua dari 26 jam, storage melewati 70 persen, koneksi gagal berulang, serta webhook payment error rate meningkat.
+
+Untuk transaksi donasi, cocokkan dashboard analytics SultraKita dengan laporan provider pembayaran. Refund dan pembatalan harus memiliki audit trail pada `donation_refunds`; webhook tersimpan pada `webhook_logs` dan dapat dipantau melalui dashboard admin.
+
+### Cutover runtime
+
+Karena deployment saat ini masih memiliki jalur SQLite/SQL.js legacy, jangan sekadar mengisi `DATABASE_URL` lalu menganggap aplikasi otomatis berpindah ke PostgreSQL. Urutan aman adalah provision PostgreSQL, migrate, import atau rekonsiliasi data, jalankan staging smoke test, deploy adapter runtime PostgreSQL secara eksplisit, pantau error dan latency, lalu siapkan rollback ke deployment sebelumnya. Perubahan database runtime adalah migration yang memengaruhi data live, sehingga harus dilakukan dalam maintenance window dan dengan backup tervalidasi.

@@ -15,11 +15,19 @@
     "test:webhook": "node scripts/send-donation-webhook.js",
     "load:donation": "node scripts/load-test-donations.js",
     "e2e:sandbox": "node scripts/sandbox-donation-e2e.js",
+    "db:migrate:postgres": "node scripts/migrate-postgres.js",
+    "db:backup:postgres": "bash scripts/backup-postgres.sh",
+    "db:restore:postgres": "bash scripts/restore-postgres.sh",
     "test:worker-security": "node scripts/worker-security-e2e.js",
     "check:modernization": "node scripts/modernization-check.js",
     "verify:local": "npm run lint && npm test && npm run build && npm run test:security && npm run smoke:api && npm run smoke:donation"
   },
-  "keywords": ["marketplace", "kendari", "sulawesi-tenggara", "umkm"],
+  "keywords": [
+    "marketplace",
+    "kendari",
+    "sulawesi-tenggara",
+    "umkm"
+  ],
   "license": "MIT",
   "type": "commonjs",
   "dependencies": {
@@ -27,6 +35,7 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "multer": "^2.0.2",
+    "pg": "^8.23.0",
     "sql.js": "^1.14.1"
   }
 }
