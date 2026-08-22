@@ -228,7 +228,7 @@ const categories = [
 
 async function getDb() {
   if (!databasePromise) {
-    databasePromise = initSqlJs().then(SQL => {
+    databasePromise = initSqlJs({ locateFile: file => path.join(path.dirname(require.resolve('sql.js')), file) }).then(SQL => {
       fs.mkdirSync(dataDir, { recursive: true });
       const database = fs.existsSync(dbFile)
         ? new SQL.Database(fs.readFileSync(dbFile))

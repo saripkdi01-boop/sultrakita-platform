@@ -13,3 +13,6 @@ Endpoint `GET /api/health` merespons:
 ```
 
 R2 Cloudflare belum aktif pada akun sehingga durable image upload Worker tidak diaktifkan. Upload Express/Vercel tetap tersedia dengan validasi magic bytes dan object-storage adapter opsional.
+
+
+Vercel `https://sultrakita-platform.vercel.app/` masih mengembalikan `500 FUNCTION_INVOCATION_FAILED` setelah push `ee41369`. Perbaikan `/tmp` belum menyelesaikan crash; diagnosis lanjutan diperlukan dari konfigurasi runtime atau log deployment.
