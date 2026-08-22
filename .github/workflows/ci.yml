@@ -29,7 +29,7 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
       - name: Check JavaScript syntax
-        run: node --check server.js && node --input-type=module --check < worker.js && node --check scripts/api-smoke.js && node --check scripts/security-regression.js
+        run: node --check server.js && node --input-type=module --check < worker.js && node --check scripts/api-smoke.js && node --check scripts/security-regression.js && node --check scripts/worker-security-e2e.js
       - name: Run lint
         run: npm run lint
       - name: Run test suite

@@ -11,6 +11,7 @@
     "build": "node scripts/build-check.js",
     "test:security": "node scripts/security-regression.js",
     "smoke:api": "node scripts/api-smoke.js",
+    "test:worker-security": "node scripts/worker-security-e2e.js",
     "verify:local": "npm run lint && npm test && npm run build && npm run test:security && npm run smoke:api"
   },
   "keywords": ["marketplace", "kendari", "sulawesi-tenggara", "umkm"],
