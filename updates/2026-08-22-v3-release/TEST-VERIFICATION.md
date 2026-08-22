@@ -31,9 +31,11 @@ PRODUCTION_SMOKE=true npm run smoke:api
 
 ## Production Result
 
-Smoke test production berjalan dalam read-only mode tetapi **gagal pada pemeriksaan `listings.meta`**: deployment saat ini mengembalikan data listing tanpa metadata pagination yang diwajibkan oleh contract Express/repository terbaru. Ini adalah temuan runtime parity/contract drift, bukan alasan untuk melonggarkan test.
+Versi Worker sebelum parity patch gagal pada pemeriksaan `listings.meta`, sehingga terdeteksi contract drift. Worker kemudian diselaraskan untuk mengembalikan metadata pagination, memvalidasi ID listing detail, menyediakan admin boundary response, dan menyembunyikan error internal.
 
-Tindakan yang benar adalah menyamakan response Worker dengan contract terbaru, lalu mengulang smoke test. Jangan menandai production sehat hanya karena `/api/health` merespons sukses.
+Setelah deploy Worker version `ca17b3e7-cf25-47ab-8bb9-640b5ab007f4`, production-safe smoke test **lulus** untuk health, categories, locations, listing pagination, invalid-ID contract, admin boundary, dan safe error envelope. Test tetap read-only untuk production.
+
+Catatan: hasil ini memverifikasi contract/API surface yang diuji. Full authorization/ownership untuk seluruh mutation endpoint masih merupakan pekerjaan P0 lanjutan dan belum boleh dianggap selesai.
 
 ## Safety Notes
 

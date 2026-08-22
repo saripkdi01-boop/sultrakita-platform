@@ -23,7 +23,7 @@ Folder ini adalah checkpoint pembaruan berikutnya setelah `UPGRADE-MASTER-PROMPT
 | Runtime parity Express/Worker | Belum selesai |
 | Production deployment | Belum dilakukan oleh checkpoint ini |
 | Automated local verification | Lulus: baseline, security regression, API smoke |
-| Production-safe smoke | Menemukan contract drift pada pagination metadata Worker |
+| Production-safe smoke | Lulus setelah Worker parity patch; version `ca17b3e7-cf25-47ab-8bb9-640b5ab007f4` |
 
 ## Next recommended update
 
