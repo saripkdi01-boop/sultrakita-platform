@@ -1,0 +1,62 @@
+[
+  {
+    "external_id": "demo-meta-kdi-001",
+    "title": "Contoh listing kendaraan — Kendari",
+    "description": "Fixture sintetis untuk menguji kartu agregasi sumber eksternal.",
+    "price": 0,
+    "currency": "IDR",
+    "category": "kendaraan",
+    "city": "Kendari",
+    "province": "Sulawesi Tenggara",
+    "url": "https://www.facebook.com/marketplace/",
+    "seller_name": "Demo source — bukan listing nyata",
+    "is_demo": true,
+    "provenance": "synthetic_fixture",
+    "observed_at": "2026-08-22T00:00:00Z"
+  },
+  {
+    "external_id": "demo-shopee-kdi-001",
+    "title": "Contoh katalog UMKM — Sulawesi Tenggara",
+    "description": "Fixture sintetis untuk menguji adapter Shopee berizin.",
+    "price": 0,
+    "currency": "IDR",
+    "category": "kuliner",
+    "city": "Kendari",
+    "province": "Sulawesi Tenggara",
+    "url": "https://shopee.co.id/",
+    "seller_name": "Demo source — bukan listing nyata",
+    "is_demo": true,
+    "provenance": "synthetic_fixture",
+    "observed_at": "2026-08-22T00:00:00Z"
+  },
+  {
+    "external_id": "demo-tokopedia-kdi-001",
+    "title": "Contoh produk lokal — Kota Kendari",
+    "description": "Fixture sintetis untuk menguji adapter Tokopedia/TikTok Shop berizin.",
+    "price": 0,
+    "currency": "IDR",
+    "category": "fashion",
+    "city": "Kendari",
+    "province": "Sulawesi Tenggara",
+    "url": "https://www.tokopedia.com/",
+    "seller_name": "Demo source — bukan listing nyata",
+    "is_demo": true,
+    "provenance": "synthetic_fixture",
+    "observed_at": "2026-08-22T00:00:00Z"
+  },
+  {
+    "external_id": "demo-partner-property-kdi-001",
+    "title": "Contoh properti agregator — Kendari",
+    "description": "Fixture sintetis untuk menguji feed partner properti yang memberikan izin.",
+    "price": 0,
+    "currency": "IDR",
+    "category": "properti",
+    "city": "Kendari",
+    "province": "Sulawesi Tenggara",
+    "url": "https://example.com/partner-feed",
+    "seller_name": "Demo source — bukan listing nyata",
+    "is_demo": true,
+    "provenance": "synthetic_fixture",
+    "observed_at": "2026-08-22T00:00:00Z"
+  }
+]

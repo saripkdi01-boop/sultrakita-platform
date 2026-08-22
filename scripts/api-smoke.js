@@ -50,6 +50,11 @@ async function main() {
   assert(locations.data?.province === 'Sulawesi Tenggara', 'unexpected province');
   assert(locations.data?.city === 'Kendari', 'unexpected city');
 
+  const external = await expectJson('/api/external-listings');
+  assert(Array.isArray(external.data), 'external listings data is not an array');
+  assert(external.meta?.live_sync === false, 'external demo feed must explicitly declare live_sync=false');
+  assert(external.data.every(item => item.is_demo === true && item.provenance), 'external records must be labeled demo with provenance');
+
   const listings = await expectJson('/api/listings?limit=3');
   assert(Array.isArray(listings.data), 'listings.data is not an array');
   assert(Number.isInteger(listings.meta?.page), 'listings pagination metadata missing');
@@ -79,7 +84,7 @@ async function main() {
     assert(!source.includes(forbidden), `smoke response appears to disclose forbidden detail: ${forbidden}`);
   }
 
-  console.log(`PASS: health, categories, locations, listing pagination, validation${isProduction ? ' (read-only production subset)' : ''}, admin boundary, and safe error envelope`);
+  console.log(`PASS: health, categories, locations, external provenance, listing pagination, validation${isProduction ? ' (read-only production subset)' : ''}, admin boundary, and safe error envelope`);
 }
 
 main().catch(error => {

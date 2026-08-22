@@ -46,6 +46,15 @@ app.get('/api/categories', async (_req, res, next) => {
   try { ok(res, await query('SELECT id, name, slug, icon FROM categories ORDER BY name')); } catch (error) { next(error); }
 });
 
+app.get('/api/external-listings', (_req, res) => {
+  ok(res, [
+    { external_id: 'demo-meta-kdi-001', source: 'facebook_marketplace', source_label: 'Facebook Marketplace · demo', title: 'Contoh listing kendaraan — Kendari', category: 'Kendaraan', city: 'Kendari', province: 'Sulawesi Tenggara', is_demo: true, provenance: 'synthetic_fixture', observed_at: '2026-08-22T00:00:00Z', url: 'https://www.facebook.com/marketplace/' },
+    { external_id: 'demo-shopee-kdi-001', source: 'shopee', source_label: 'Shopee · demo', title: 'Contoh katalog UMKM — Sulawesi Tenggara', category: 'Kuliner', city: 'Kendari', province: 'Sulawesi Tenggara', is_demo: true, provenance: 'synthetic_fixture', observed_at: '2026-08-22T00:00:00Z', url: 'https://shopee.co.id/' },
+    { external_id: 'demo-tokopedia-kdi-001', source: 'tokopedia', source_label: 'Tokopedia · demo', title: 'Contoh produk lokal — Kota Kendari', category: 'Fashion', city: 'Kendari', province: 'Sulawesi Tenggara', is_demo: true, provenance: 'synthetic_fixture', observed_at: '2026-08-22T00:00:00Z', url: 'https://www.tokopedia.com/' },
+    { external_id: 'demo-partner-property-kdi-001', source: 'partner_feed', source_label: 'Partner properti · demo', title: 'Contoh properti agregator — Kendari', category: 'Properti', city: 'Kendari', province: 'Sulawesi Tenggara', is_demo: true, provenance: 'synthetic_fixture', observed_at: '2026-08-22T00:00:00Z', url: 'https://example.com/partner-feed' },
+  ], { live_sync: false, notice: 'Contoh sintetis; live sync memerlukan API atau feed resmi berizin' });
+});
+
 app.get('/api/locations', (_req, res) => ok(res, { province: 'Sulawesi Tenggara', city: 'Kendari', districts }));
 
 app.post('/api/auth/request-otp', async (req, res, next) => {
