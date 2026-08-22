@@ -1,0 +1,11 @@
+{
+  "name": "SultraKita — Marketplace Lokal Sulawesi Tenggara",
+  "short_name": "SultraKita",
+  "description": "Marketplace lokal Kendari dan Sulawesi Tenggara untuk jual beli barang, jasa, properti, kendaraan, dan UMKM.",
+  "lang": "id-ID",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7f5ed",
+  "theme_color": "#0d5c4b",
+  "icons": [{"src":"/favicon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}
