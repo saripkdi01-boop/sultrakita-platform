@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const multer = require('multer');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const { query, run } = require('./database');
+const { getDb, query, run, persist } = require('./database');
 const { authenticate, requireAuth, requireRole, revokeToken } = require('./auth');
 
 dotenv.config();
@@ -241,8 +241,68 @@ app.post('/api/suggestions', async (req, res, next) => {
   try { const { user_id = null, name, email = null, body } = req.body || {}; if (!name || name.trim().length < 2 || !body || body.trim().length < 5 || body.trim().length > 2000) return fail(res, 422, 'name dan body saran belum valid'); const result = await run('INSERT INTO suggestions (user_id, name, email, body) VALUES (?, ?, ?, ?)', [user_id || null, name.trim(), email, body.trim()]); res.status(201); ok(res, { id: result.id, message: 'Saran berhasil diterima dan akan ditinjau tim SultraKita.' }); } catch (error) { next(error); }
 });
 
+const safeText = (value, max) => String(value ?? '').trim().slice(0, max);
+const paymentOrderId = () => `SK-${Date.now()}-${crypto.randomBytes(5).toString('hex').toUpperCase()}`;
+const safeEqual = (expected, actual) => {
+  const expectedBuffer = Buffer.from(String(expected)); const actualBuffer = Buffer.from(String(actual || ''));
+  return expectedBuffer.length === actualBuffer.length && crypto.timingSafeEqual(expectedBuffer, actualBuffer);
+};
+const verifyMidtransSignature = ({ order_id, status_code, gross_amount, signature_key }) => {
+  if (!process.env.MIDTRANS_SERVER_KEY || !signature_key) return false;
+  const expected = crypto.createHash('sha512').update(`${order_id}${status_code}${gross_amount}${process.env.MIDTRANS_SERVER_KEY}`).digest('hex');
+  return safeEqual(expected, signature_key);
+};
+const isSuccessfulPayment = (transactionStatus, fraudStatus) => ['settlement', 'capture'].includes(transactionStatus) && (!fraudStatus || fraudStatus === 'accept');
+
+app.get('/api/donation/campaigns', async (_req, res, next) => {
+  try { ok(res, await query("SELECT id, title, description, target_amount, current_amount, status, created_at FROM donation_campaigns WHERE status = 'active' ORDER BY id LIMIT 20")); } catch (error) { next(error); }
+});
+
+app.get('/api/donation/stats', async (req, res, next) => {
+  try {
+    const campaignId = positiveInt(req.query.campaign_id) ? Number(req.query.campaign_id) : 1;
+    const [campaign] = await query('SELECT id, title, description, target_amount, current_amount, status FROM donation_campaigns WHERE id = ?', [campaignId]);
+    if (!campaign) return fail(res, 404, 'Kampanye donasi tidak ditemukan');
+    const [supporters] = await query("SELECT COUNT(*) AS total FROM donations WHERE campaign_id = ? AND payment_status = 'success'", [campaign.id]);
+    ok(res, { campaign: { ...campaign, target_amount: Number(campaign.target_amount), current_amount: Number(campaign.current_amount), progress_percent: Math.min(100, Number(campaign.current_amount) / Number(campaign.target_amount) * 100) }, supporters: Number(supporters.total) });
+  } catch (error) { next(error); }
+});
+
 app.post('/api/donations', async (req, res, next) => {
-  try { const { name, email = null, amount, message = null } = req.body || {}; if (!name || name.trim().length < 2 || !Number.isInteger(Number(amount)) || Number(amount) < 1000) return fail(res, 422, 'name wajib diisi dan amount minimal Rp1.000'); const result = await run('INSERT INTO donations (name, email, amount, message) VALUES (?, ?, ?, ?)', [name.trim(), email, Number(amount), message]); res.status(201); ok(res, { id: result.id, status: 'pledged', message: 'Dukungan tercatat. Integrasi pembayaran dapat diaktifkan setelah rekening atau provider resmi dikonfigurasi.' }); } catch (error) { next(error); }
+  try {
+    const { campaign_id = 1, name = 'Hamba Allah', email = null, amount, message = null, payment_method = 'qris' } = req.body || {};
+    const numericAmount = Number(amount);
+    if (!positiveInt(campaign_id) || !Number.isSafeInteger(numericAmount) || numericAmount < 10000 || numericAmount > 100000000) return fail(res, 422, 'Kampanye atau jumlah donasi belum valid. Minimal Rp10.000.');
+    if (safeText(name, 100).length < 2 || (email && !/^\S+@\S+\.\S+$/.test(String(email))) || safeText(message, 500).length > 500) return fail(res, 422, 'Data donatur belum valid');
+    const [campaign] = await query("SELECT id, status FROM donation_campaigns WHERE id = ? AND status = 'active'", [Number(campaign_id)]);
+    if (!campaign) return fail(res, 404, 'Kampanye donasi tidak aktif');
+    const transactionId = paymentOrderId();
+    const result = await run('INSERT INTO donations (campaign_id, name, email, amount, message, transaction_id, payment_method, payment_status) VALUES (?, ?, ?, ?, ?, ?, ?, \'pending\')', [campaign.id, safeText(name, 100) || 'Hamba Allah', email ? safeText(email, 160) : null, numericAmount, safeText(message, 500) || null, transactionId, ['qris', 'gopay', 'bank_transfer'].includes(payment_method) ? payment_method : 'qris']);
+    const data = { donation_id: result.id, transaction_id: transactionId, payment_status: 'pending', payment_url: null, provider: process.env.MIDTRANS_SERVER_KEY ? 'midtrans' : 'not_configured', message: 'Donasi tercatat dan menunggu pembayaran. Provider pembayaran resmi belum dikonfigurasi.' };
+    res.status(201); ok(res, data);
+  } catch (error) { next(error); }
+});
+
+app.post('/api/donation/webhook', async (req, res, next) => {
+  try {
+    const payload = req.body || {};
+    const midtransValid = verifyMidtransSignature(payload);
+    const callbackToken = req.get('x-callback-token');
+    const xenditValid = Boolean(process.env.XENDIT_CALLBACK_TOKEN && callbackToken && safeEqual(process.env.XENDIT_CALLBACK_TOKEN, callbackToken));
+    if (!midtransValid && !xenditValid) return fail(res, 401, 'Signature webhook tidak valid');
+    const transactionId = safeText(payload.order_id || payload.external_id || payload.id, 100);
+    const status = midtransValid ? (isSuccessfulPayment(payload.transaction_status, payload.fraud_status) ? 'success' : ['expire'].includes(payload.transaction_status) ? 'expired' : ['deny', 'cancel'].includes(payload.transaction_status) ? 'failed' : 'pending') : (['PAID', 'SETTLED'].includes(String(payload.status).toUpperCase()) ? 'success' : ['EXPIRED'].includes(String(payload.status).toUpperCase()) ? 'expired' : 'pending');
+    if (!transactionId) return fail(res, 422, 'ID transaksi tidak ditemukan');
+    const database = await getDb(); database.run('BEGIN');
+    try {
+      const rows = database.exec('SELECT id, campaign_id, amount, payment_status FROM donations WHERE transaction_id = ?', [transactionId]);
+      const row = rows[0]?.values[0]; if (!row) { database.run('ROLLBACK'); return fail(res, 404, 'Transaksi donasi tidak ditemukan'); }
+      const [id, campaignId, amount, previousStatus] = row;
+      if (status === 'success' && previousStatus !== 'success') { database.run("UPDATE donations SET payment_status = 'success', status = 'confirmed' WHERE id = ?", [id]); database.run('UPDATE donation_campaigns SET current_amount = current_amount + ? WHERE id = ?', [amount, campaignId]); }
+      else if (previousStatus !== 'success') database.run('UPDATE donations SET payment_status = ? WHERE id = ?', [status, id]);
+      database.run('COMMIT'); persist(database); ok(res, { received: true, transaction_id: transactionId, payment_status: status, idempotent: previousStatus === status });
+    } catch (error) { database.run('ROLLBACK'); throw error; }
+  } catch (error) { next(error); }
 });
 
 app.post('/api/reports', async (req, res, next) => {

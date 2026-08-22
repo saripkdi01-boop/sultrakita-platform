@@ -3,6 +3,7 @@
 
 const crypto = require('node:crypto');
 const app = require('../server');
+const { run } = require('../database');
 
 let server;
 let baseUrl;
@@ -65,6 +66,9 @@ async function main() {
   });
   assert(lockedOtp.response.status === 401, 'OTP challenge must remain unavailable after five failed attempts');
 
+  const fixtureSeller = await run('INSERT INTO users (name, phone, role, district, phone_verified) VALUES (?, ?, ?, ?, 1)', ['Fixture Seller', `08${crypto.randomInt(100000000, 999999999)}${crypto.randomInt(10, 99)}`, 'seller', 'Kendari']);
+  const fixtureListing = await run('INSERT INTO listings (seller_id, category_id, title, description, price, condition, district, city) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [fixtureSeller.id, 1, 'Fixture ownership listing', 'Listing fixture untuk pengujian batas kepemilikan.', 100000, 'new', 'Kendari', 'Kendari']);
+
   process.env.OTP_DEV_MODE = 'true';
   const authPhone = `08${crypto.randomInt(100000000, 999999999)}${crypto.randomInt(10, 99)}`;
   const authOtpRequest = await request('/api/auth/request-otp', {
@@ -86,7 +90,7 @@ async function main() {
   assert(spoofedListing.response.status === 201, 'authenticated seller should be able to create a valid listing');
   assert(Number(spoofedListing.body?.data?.seller_id) === Number(authLogin.body.data.user.id), 'listing seller_id must come from session, not request body');
 
-  const otherSellerListing = await request('/api/listings/1', {
+  const otherSellerListing = await request(`/api/listings/${fixtureListing.id}`, {
     method: 'PUT', headers: authHeaders,
     body: JSON.stringify({ category_id: 1, title: 'Unauthorized edit attempt', description: 'This should be rejected by ownership checks.', price: 100000, condition: 'new', district: 'Kendari', city: 'Kendari' })
   });

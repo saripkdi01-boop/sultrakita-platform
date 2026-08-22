@@ -76,15 +76,30 @@ const schema = `
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE SET NULL
   );
+  CREATE TABLE IF NOT EXISTS donation_campaigns (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    description TEXT,
+    target_amount INTEGER NOT NULL CHECK(target_amount > 0),
+    current_amount INTEGER NOT NULL DEFAULT 0 CHECK(current_amount >= 0),
+    status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active','completed','paused')),
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
   CREATE TABLE IF NOT EXISTS donations (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    campaign_id INTEGER,
     name TEXT NOT NULL,
     email TEXT,
     amount INTEGER NOT NULL CHECK(amount > 0),
     message TEXT,
+    transaction_id TEXT UNIQUE,
+    payment_method TEXT,
+    payment_status TEXT NOT NULL DEFAULT 'pending' CHECK(payment_status IN ('pending','success','failed','expired')),
     status TEXT NOT NULL DEFAULT 'pledged' CHECK(status IN ('pledged','confirmed','cancelled')),
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(campaign_id) REFERENCES donation_campaigns(id) ON DELETE SET NULL
   );
+  CREATE INDEX IF NOT EXISTS idx_donations_campaign_status ON donations(campaign_id, payment_status);
   CREATE TABLE IF NOT EXISTS reports (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     listing_id INTEGER,
@@ -190,6 +205,15 @@ async function getDb() {
         ? new SQL.Database(fs.readFileSync(dbFile))
         : new SQL.Database();
       database.run(schema);
+      const donationColumns = database.exec('PRAGMA table_info(donations)')[0]?.values.map(row => row[1]) || [];
+      if (!donationColumns.includes('campaign_id')) database.run('ALTER TABLE donations ADD COLUMN campaign_id INTEGER');
+      if (!donationColumns.includes('transaction_id')) database.run('ALTER TABLE donations ADD COLUMN transaction_id TEXT');
+      if (!donationColumns.includes('payment_method')) database.run('ALTER TABLE donations ADD COLUMN payment_method TEXT');
+      if (!donationColumns.includes('payment_status')) database.run("ALTER TABLE donations ADD COLUMN payment_status TEXT NOT NULL DEFAULT 'pending'");
+      database.run('CREATE UNIQUE INDEX IF NOT EXISTS idx_donations_transaction_id ON donations(transaction_id) WHERE transaction_id IS NOT NULL');
+      database.run('CREATE INDEX IF NOT EXISTS idx_donations_campaign_status ON donations(campaign_id, payment_status)');
+      const campaignCount = database.exec('SELECT COUNT(*) AS count FROM donation_campaigns')[0]?.values[0][0] || 0;
+      if (campaignCount === 0) database.run('INSERT INTO donation_campaigns (title, description, target_amount) VALUES (?, ?, ?)', ['Dukung SultraKita', 'Bantu biaya operasional dan pengembangan marketplace lokal Sulawesi Tenggara.', 50000000]);
       const userColumns = database.exec('PRAGMA table_info(users)')[0]?.values.map(row => row[1]) || [];
       if (!userColumns.includes('phone_verified')) database.run("ALTER TABLE users ADD COLUMN phone_verified INTEGER NOT NULL DEFAULT 0");
       if (!userColumns.includes('verification_status')) database.run("ALTER TABLE users ADD COLUMN verification_status TEXT NOT NULL DEFAULT 'unverified'");
