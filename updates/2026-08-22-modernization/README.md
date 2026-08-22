@@ -23,6 +23,12 @@ Next, place the PHP endpoint behind the future PHP application bootstrap. Set `D
 
 Finally, install the React track dependencies in the future React application, copy the component, and provide callbacks for opening a listing and toggling a favorite. The component assumes Tailwind is configured with dark-mode support and that `PropTypes` is available.
 
+## External listing boundary
+
+The Worker endpoint `/api/external-listings` now exposes four clearly labeled synthetic examples for the Kendari/Southeast Sulawesi discovery UI: Facebook Marketplace demo, Shopee demo, Tokopedia demo, and partner property feed demo. Every record includes `is_demo: true` and `provenance: synthetic_fixture` so it cannot be mistaken for a live listing.
+
+Real-time third-party listings are not copied or scraped. Live synchronization requires an approved Meta Content Library/Marketplace partner access path, an authorized Shopee seller/app connection, a Tokopedia/TikTok Shop partner or seller connection, or an explicitly permitted partner feed. The adapter contract lives at `modernization/integrations/marketplace-adapters.js` and refuses to run without an approved base URL and token.
+
 ## Current production boundary
 
-The current production runtime remains the Node.js/Cloudflare Worker application. These modernization artifacts are migration-ready reference implementations and are not automatically mounted into the current Worker. A later checkpoint should add an explicit adapter or perform a separately tested cutover.
+The current production runtime remains the Node.js/Cloudflare Worker application. These modernization artifacts are migration-ready reference implementations and are not automatically mounted into the current Worker. A later checkpoint should add an explicit authorized adapter or perform a separately tested cutover. The modernization UI and demo source panel are now promoted to the existing Worker hostname, while live external sync remains disabled by design.
