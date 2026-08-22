@@ -105,6 +105,59 @@ curl -X POST http://localhost:3000/api/donations \\
 
 Jangan menandai donasi sebagai sukses berdasarkan redirect browser. Hanya webhook provider yang sudah diverifikasi yang boleh mengubah status menjadi `success` dan menambah `current_amount`.
 
+### React/Vite checkout
+
+Contoh komponen siap pakai tersedia di [`docs/DonationCheckout.jsx`](./docs/DonationCheckout.jsx). Komponen mengirim `POST /api/donations`, menyimpan `transaction_id` di `localStorage`, lalu menjalankan `window.location.assign(result.data.payment_url)` untuk mengarahkan pengguna ke halaman Midtrans Snap atau Xendit Invoice. Setelah pengguna kembali ke aplikasi, komponen membaca status melalui `GET /api/donations/:transaction_id` setiap lima detik. Redirect hanya memberi indikasi navigasi; status final tetap berasal dari webhook server-side.
+
+```jsx
+import DonationCheckout from './DonationCheckout';
+
+export default function DonatePage() {
+  return <DonationCheckout campaignId={1} apiBaseUrl="https://api.sultrakita.id" />;
+}
+```
+
+### Pengujian webhook melalui ngrok
+
+Jalankan server lokal terlebih dahulu, kemudian buka tunnel HTTPS ke port aplikasi:
+
+```bash
+npm start
+ngrok http 3000
+```
+
+Salin URL HTTPS ngrok, misalnya `https://contoh.ngrok-free.app`, lalu masukkan alamat berikut ke dashboard Midtrans atau Xendit:
+
+```text
+https://contoh.ngrok-free.app/api/donation/webhook
+```
+
+Buat transaksi lokal untuk memperoleh `transaction_id`:
+
+```bash
+curl -s -X POST http://localhost:3000/api/donations \\
+  -H 'content-type: application/json' \\
+  -d '{"campaign_id":1,"amount":25000,"name":"Webhook Uji"}'
+```
+
+Untuk simulasi Midtrans tanpa menunggu dashboard:
+
+```bash
+WEBHOOK_URL=https://contoh.ngrok-free.app/api/donation/webhook \\
+WEBHOOK_PROVIDER=midtrans TRANSACTION_ID=SK-... AMOUNT=25000 \\
+MIDTRANS_SERVER_KEY=local-test-server-key npm run test:webhook
+```
+
+Untuk simulasi Xendit:
+
+```bash
+WEBHOOK_URL=https://contoh.ngrok-free.app/api/donation/webhook \\
+WEBHOOK_PROVIDER=xendit TRANSACTION_ID=SK-... AMOUNT=25000 \\
+XENDIT_CALLBACK_TOKEN=token-lokal-uji npm run test:webhook
+```
+
+Pada pengujian Xendit nyata, gunakan Callback Token yang sama dengan yang dikonfigurasi di dashboard. Pada pengujian Midtrans nyata, gunakan Server Key dari environment yang sesuai dengan payload sandbox atau production. Pantau request masuk melalui terminal ngrok dan periksa hasilnya dengan `GET /api/donations/:transaction_id` serta `GET /api/donation/stats?campaign_id=1`. Jangan pernah menaruh Server Key, Secret Key, atau Callback Token di kode frontend.
+
 ## Notifikasi WhatsApp penjual
 
 Notifikasi WhatsApp otomatis dipicu setelah komentar atau pesan pembeli tersimpan berhasil. Adapter menggunakan WhatsApp Cloud API resmi dan bersifat non-blocking: kegagalan provider dicatat di server tanpa menggagalkan penyimpanan pesan. Konfigurasikan `WHATSAPP_API_VERSION`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_TEMPLATE_NAME`, dan `WHATSAPP_TEMPLATE_LANGUAGE` melalui secret manager. Template default yang dicontohkan adalah `sultrakita_new_message` dengan empat parameter body berurutan: nama penjual, judul listing, nama pembeli, dan isi pesan. Nama serta urutan variabel harus sama persis dengan template yang disetujui di WhatsApp Manager. Nomor `08...` dinormalisasi menjadi format internasional `62...`. Untuk pesan di luar jendela layanan pelanggan, gunakan template pesan yang disetujui Meta dan pastikan penerima telah memberikan opt-in.

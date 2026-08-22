@@ -307,6 +307,16 @@ app.post('/api/donations', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
+app.get('/api/donations/:transaction_id', async (req, res, next) => {
+  try {
+    const transactionId = safeText(req.params.transaction_id, 100);
+    if (!transactionId) return fail(res, 422, 'ID transaksi belum valid');
+    const [donation] = await query('SELECT transaction_id, amount, payment_method, payment_status, created_at FROM donations WHERE transaction_id = ?', [transactionId]);
+    if (!donation) return fail(res, 404, 'Transaksi donasi tidak ditemukan');
+    ok(res, { ...donation, amount: Number(donation.amount) });
+  } catch (error) { next(error); }
+});
+
 app.post('/api/donation/webhook', async (req, res, next) => {
   try {
     const payload = req.body || {};
