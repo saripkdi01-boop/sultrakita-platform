@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('node:path');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const { query, run } = require('./database');
@@ -10,6 +11,7 @@ const districts = ['Kendari', 'Mandonga', 'Baruga', 'Poasia', 'Kadia', 'Kambu', 
 
 app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
 app.use(express.json({ limit: '1mb' }));
+app.use(express.static(path.join(__dirname, 'public')));
 
 const ok = (res, data, meta) => res.json({ success: true, data, ...(meta ? { meta } : {}) });
 const fail = (res, status, message, details) => res.status(status).json({ success: false, error: message, ...(details ? { details } : {}) });
