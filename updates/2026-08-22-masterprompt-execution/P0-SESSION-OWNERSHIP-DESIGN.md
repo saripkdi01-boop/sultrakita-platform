@@ -172,3 +172,11 @@ Checkpoint saat ini sudah menerapkan helper session pada `auth.js`, optional req
 Regression test sekarang mencakup login OTP lokal, binding `seller_id` ke session, penolakan edit listing milik seller lain, logout revocation, dan penolakan mutation setelah token dicabut.
 
 Masih terbuka: penyamaan middleware pada Worker untuk seluruh mutation route, magic-byte validation upload, rate limit khusus auth/session, refresh-token policy, redaction phone pada seluruh public response, dan migration formal untuk index session. Karena itu checkpoint ini belum boleh diberi label “P0 selesai penuh” sebelum Worker dan seluruh route mutation memiliki test denial yang ekuivalen.
+
+## Worker Parity yang Sudah Diterapkan
+
+Pada `worker.js`, padanan session menggunakan `crypto.subtle.digest('SHA-256', ...)`, bukan Node `crypto`. Worker membaca `Authorization: Bearer`, menghitung hash token, lalu melakukan lookup `sessions.token_hash` dengan syarat `expires_at > Date.now()`. Raw token hanya dikembalikan saat OTP berhasil dan tidak pernah disimpan.
+
+Worker kini memiliki tabel `sessions` dan `otp_challenges`, migrasi kompatibilitas untuk `users.phone_verified` dan `users.verification_status`, endpoint request/verify OTP, logout yang menghapus session hash, serta create listing yang mengambil `seller_id` dari user session dan menolak anonymous mutation.
+
+Production Worker version `b7839124-8988-43b9-93dc-eccbf513b8d3` lulus production-safe API smoke test. Cakupan Worker belum setara penuh dengan Express untuk update/delete listing, favorites, comments, reports, dan conversation membership karena endpoint-endpoint tersebut belum seluruhnya tersedia di Worker. Endpoint yang belum diparitas tidak boleh diaktifkan sebagai mutation production sebelum ditambahkan dengan pola yang sama.
