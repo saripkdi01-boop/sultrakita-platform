@@ -4,6 +4,7 @@
 const crypto = require('node:crypto');
 const app = require('../server');
 const { run } = require('../database');
+const { hashToken } = require('../auth');
 
 let server;
 let baseUrl;
@@ -96,6 +97,27 @@ async function main() {
   });
   assert(otherSellerListing.response.status === 403, `seller must not edit another seller listing; received ${otherSellerListing.response.status}: ${otherSellerListing.text}`);
 
+  const publicProfile = await request(`/api/users/${authLogin.body.data.user.id}`);
+  assert(publicProfile.response.status === 200 && publicProfile.body?.data?.phone === undefined, 'public user profile must redact phone number');
+  const publicListing = await request(`/api/listings/${fixtureListing.id}`);
+  assert(publicListing.response.status === 200 && publicListing.body?.data?.seller_phone === undefined, 'public listing detail must redact seller phone');
+
+  const conversation = await request('/api/conversations', { method: 'POST', headers: authHeaders, body: JSON.stringify({ listing_id: fixtureListing.id, buyer_id: authLogin.body.data.user.id, seller_id: fixtureSeller.id }) });
+  assert(conversation.response.status === 201 || conversation.response.status === 200, 'authenticated buyer should create or reuse a conversation');
+  const conversationId = conversation.body?.data?.id;
+  const outsider = await run('INSERT INTO users (name, phone, role, district, phone_verified) VALUES (?, ?, ?, ?, 1)', ['Outsider', `08${crypto.randomInt(100000000, 999999999)}${crypto.randomInt(10, 99)}`, 'buyer', 'Kendari']);
+  const outsiderToken = crypto.randomBytes(32).toString('hex');
+  await run('INSERT INTO sessions (token_hash, user_id, expires_at) VALUES (?, ?, ?)', [hashToken(outsiderToken), outsider.id, Date.now() + 60 * 60 * 1000]);
+  const outsiderHeaders = { 'content-type': 'application/json', authorization: `Bearer ${outsiderToken}` };
+  const outsiderRead = await request(`/api/conversations/${conversationId}/messages`, { headers: outsiderHeaders });
+  assert(outsiderRead.response.status === 403, 'conversation history must require membership');
+  const outsiderStream = await request(`/api/conversations/${conversationId}/stream`, { headers: outsiderHeaders });
+  assert(outsiderStream.response.status === 403, 'conversation stream must require membership');
+  const spoofedSuggestion = await request('/api/suggestions', { method: 'POST', headers: outsiderHeaders, body: JSON.stringify({ user_id: authLogin.body.data.user.id, name: 'Outsider', body: 'Percobaan identity spoofing' }) });
+  assert(spoofedSuggestion.response.status === 403, 'suggestion user identity must come from session');
+  const anonymousUpload = await request(`/api/listings/${fixtureListing.id}/images`, { method: 'POST' });
+  assert(anonymousUpload.response.status === 401, 'image upload must reject anonymous requests before file processing');
+
   const logout = await request('/api/auth/logout', { method: 'POST', headers: authHeaders });
   assert(logout.response.status === 200, 'logout should revoke the active session');
   const revoked = await request('/api/listings', { method: 'POST', headers: authHeaders, body: JSON.stringify({ category_id: 1, title: 'Revoked session listing', description: 'This must be rejected after logout.', price: 100000, condition: 'new', district: 'Kendari' }) });
@@ -108,14 +130,14 @@ async function main() {
   });
   assert(invalidReport.response.status === 422, 'report endpoint must reject invalid payloads');
 
-  for (const result of [unauthenticatedAdmin, invalidConversation, invalidMessage, otpRequest, lockedOtp, authLogin, spoofedListing, otherSellerListing, logout, revoked, invalidReport]) {
+  for (const result of [unauthenticatedAdmin, invalidConversation, invalidMessage, otpRequest, lockedOtp, authLogin, spoofedListing, otherSellerListing, publicProfile, publicListing, conversation, outsiderRead, outsiderStream, spoofedSuggestion, anonymousUpload, logout, revoked, invalidReport]) {
     const lower = result.text.toLowerCase();
     for (const forbidden of ['stack trace', 'node_modules', 'database password', 'authorization: bearer']) {
       assert(!lower.includes(forbidden), `response appears to disclose forbidden detail: ${forbidden}`);
     }
   }
 
-  console.log('PASS: admin boundary, identifier validation, message validation, OTP lockout, session identity binding, ownership denial, logout revocation, report validation, and disclosure checks');
+  console.log('PASS: admin boundary, identifier validation, message validation, OTP lockout, session identity binding, ownership denial, conversation membership, PII redaction, upload boundary, logout revocation, report validation, and disclosure checks');
 }
 
 main().catch(error => {

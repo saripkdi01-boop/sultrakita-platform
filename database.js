@@ -145,6 +145,8 @@ const schema = `
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
   );
+  CREATE INDEX IF NOT EXISTS idx_sessions_user_expiry ON sessions(user_id, expires_at);
+  CREATE INDEX IF NOT EXISTS idx_sessions_expiry ON sessions(expires_at);
   CREATE TABLE IF NOT EXISTS otp_challenges (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     phone TEXT NOT NULL,
@@ -242,6 +244,8 @@ async function getDb() {
       if (!donationColumns.includes('refunded_amount')) database.run('ALTER TABLE donations ADD COLUMN refunded_amount INTEGER NOT NULL DEFAULT 0');
       database.run('CREATE UNIQUE INDEX IF NOT EXISTS idx_donations_transaction_id ON donations(transaction_id) WHERE transaction_id IS NOT NULL');
       database.run('CREATE INDEX IF NOT EXISTS idx_donations_campaign_status ON donations(campaign_id, payment_status)');
+      database.run('CREATE INDEX IF NOT EXISTS idx_sessions_user_expiry ON sessions(user_id, expires_at)');
+      database.run('CREATE INDEX IF NOT EXISTS idx_sessions_expiry ON sessions(expires_at)');
       database.run('CREATE INDEX IF NOT EXISTS idx_webhook_logs_created ON webhook_logs(created_at DESC)');
       database.run('CREATE INDEX IF NOT EXISTS idx_webhook_logs_transaction ON webhook_logs(transaction_id, created_at DESC)');
       const campaignCount = database.exec('SELECT COUNT(*) AS count FROM donation_campaigns')[0]?.values[0][0] || 0;
