@@ -1,6 +1,157 @@
 <!doctype html>
 <html lang="id">
 <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#D4AF37">
+  <meta name="description" content="SultraKita: Marketplace lokal premium Kendari & Sulawesi Tenggara. Jual beli properti, elektronik, UMKM dengan fitur video dan verifikasi aman.">
+
+  <!-- Open Graph untuk Social Media Sharing -->
+  <meta property="og:title" content="SultraKita — Marketplace Lokal Sulawesi Tenggara">
+  <meta property="og:description" content="Temukan properti, kendaraan, dan produk UMKM terbaik di Kendari dengan pengalaman belanja modern.">
+  <meta property="og:image" content="https://sultrakita.aplikasi-cerdasku.workers.dev/og-image.svg">
+  <meta property="og:type" content="website">
+
+  <link rel="canonical" href="https://sultrakita.aplikasi-cerdasku.workers.dev/">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <title>SultraKita — Jual Beli Lokal Kendari dan Sulawesi Tenggara</title>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Topbar tetap sama, pastikan tombol tema ada -->
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="SultraKita beranda">
+        <span class="brand-mark" style="background: var(--gold); color: #FFF;">S</span>
+        <span>Sultra<b style="color: var(--gold);">Kita</b></span>
+      </a>
+      <div class="top-search">
+        <label class="sr-only" for="search">Cari barang atau jasa</label>
+        <input id="search" placeholder="Cari rumah, HP, motor, jasa..." autocomplete="off">
+        <button id="search-button" class="icon-button" aria-label="Cari">⌕</button>
+        <div id="suggestions" class="suggestions" hidden></div>
+      </div>
+      <div class="top-actions">
+        <button class="icon-button" id="theme-toggle" aria-label="Aktifkan mode gelap">◐</button>
+        <button class="button button-primary" id="open-sell">＋ <span>Pasang Iklan</span></button>
+      </div>
+    </header>
+
+    <div class="app-body">
+      <!-- Sidebar tetap sama -->
+      <aside class="sidebar" aria-label="Navigasi utama">
+        <nav>
+          <a class="nav-item active" href="#beranda">⌂ <span>Beranda</span></a>
+          <a class="nav-item" href="#kategori">▦ <span>Kategori</span></a>
+          <a class="nav-item" href="#jelajah">♡ <span>Favorit</span><span id="favorite-count" class="nav-count" style="background: var(--gold); color: #FFF;">0</span></a>
+          <a class="nav-item" href="/chat.html">◌ <span>Pesan</span></a>
+          <a class="nav-item" href="#komunitas">♧ <span>Komunitas</span></a>
+        </nav>
+      </aside>
+
+      <main id="beranda" class="main-content">
+        <!-- Hero Section -->
+        <section class="hero fade-in">
+          <div>
+            <p class="eyebrow" style="color: var(--gold);">Marketplace Lokal Premium</p>
+            <h1>Temukan yang dekat.<br><em style="color: var(--gold);">Jual lebih mudah.</em></h1>
+            <p class="hero-copy">Ruang jual-beli yang dibuat untuk warga Kendari, UMKM, dan komunitas Sultra dengan fitur video dan verifikasi aman.</p>
+            <div class="hero-actions">
+              <button class="button button-primary" id="hero-explore">Jelajahi Listing</button>
+              <button class="button" style="background: transparent; color: var(--ink); border: 1px solid var(--line);" id="hero-sell">Saya ingin menjual</button>
+            </div>
+          </div>
+          <div class="hero-art" aria-label="Ilustrasi komunitas Kendari">
+            <div class="art-circle art-one" style="background: var(--gold-light); border-color: var(--gold);"></div>
+            <div class="art-circle art-two" style="background: var(--gold); border-color: var(--gold-hover);"></div>
+            <div class="art-circle art-three" style="background: var(--ink); color: var(--gold);">S</div>
+            <div class="art-label">KENDARI<br><small>dan sekitarnya</small></div>
+          </div>
+        </section>
+
+        <!-- NEW: Short Video / Reels Section (Placeholder untuk integrasi video) -->
+        <section class="section fade-in" id="shorts">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Lihat Sebelum Beli</p>
+              <h2>Video Produk Terbaru</h2>
+            </div>
+          </div>
+          <div class="listing-grid" id="video-listings" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));">
+            <!-- Akan diisi oleh app.js -->
+            <div class="listing fade-in">
+              <div class="listing-image" style="background: #000;">
+                <span style="font-size: 32px;">▶️</span>
+                <div class="video-badge">🎵 0:15</div>
+              </div>
+              <div class="listing-body">
+                <h3>Review Rumah Minimalis Dekat UHO</h3>
+                <div class="listing-meta">Properti · Kendari</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Kategori & Listing (Struktur tetap, kelas 'fade-in' ditambahkan via JS) -->
+        <section class="section fade-in" id="kategori">
+          <div class="section-heading">
+            <div><p class="eyebrow">Temukan lebih cepat</p><h2>Kategori Pilihan</h2></div>
+          </div>
+          <div class="category-grid" id="categories"></div>
+        </section>
+
+        <section class="section fade-in" id="jelajah">
+          <div class="section-heading listing-heading">
+            <div>
+              <p class="eyebrow">Pilihan Warga Sultra</p>
+              <h2>Listing Terbaru</h2>
+              <p id="result-summary" class="result-summary">Memuat listing...</p>
+            </div>
+            <div class="filter-row">
+              <select id="district" aria-label="Filter wilayah"><option value="">Semua wilayah</option></select>
+              <select id="sort" aria-label="Urutkan listing">
+                <option value="newest">Terbaru</option>
+                <option value="cheapest">Harga terendah</option>
+                <option value="popular">Terpopuler</option>
+              </select>
+            </div>
+          </div>
+          <div class="listing-grid" id="listings"></div>
+          <button id="load-more" class="button button-outline" hidden style="border-color: var(--gold); color: var(--gold);">Muat listing berikutnya</button>
+        </section>
+
+        <!-- Community Banner with Social Media Integration -->
+        <section class="community-banner fade-in" id="komunitas" style="background: var(--ink); color: var(--cream);">
+          <div>
+            <p class="eyebrow" style="color: var(--gold);">Bangun Bersama</p>
+            <h2>Platform ini tumbuh dari masukan Anda.</h2>
+            <p style="color: var(--muted);">Ikuti perkembangan kami dan dukung pengembangan fitur video serta AI filtering.</p>
+
+            <!-- Social Media Links -->
+            <div class="social-links">
+              <a href="https://facebook.com/sultrakita" target="_blank" rel="noopener">📘 Facebook</a>
+              <a href="https://tiktok.com/@sultrakita" target="_blank" rel="noopener">🎵 TikTok</a>
+              <a href="https://youtube.com/@sultrakita" target="_blank" rel="noopener">▶️ YouTube</a>
+            </div>
+          </div>
+          <div class="banner-actions">
+            <button class="button button-primary" id="donation-cta">💛 Dukung Proyek</button>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- Dialog Donasi & Form Jual (Tetap ada, styling diupgrade via CSS) -->
+    <dialog id="sell-dialog">...</dialog>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="/app.js"></script>
+  </div>
+</body>
+</html><!doctype html>
+<html lang="id">
+<head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0D5C4B"><meta name="description" content="SultraKita adalah marketplace lokal Kendari dan Sulawesi Tenggara untuk jual beli properti, elektronik, kendaraan, jasa, UMKM, dan kebutuhan warga sekitar.">
 <link rel="canonical" href="https://sultrakita.aplikasi-cerdasku.workers.dev/"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/styles.css">

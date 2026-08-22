@@ -1,70 +1,206 @@
-const $=s=>document.querySelector(s);const icons={properti:'🏠',elektronik:'📱',kendaraan:'🚗',fashion:'👕',perabotan:'🛋️',jasa:'🧰',kuliner:'🍜','hobi-koleksi':'📷','lowongan-kerja':'💼',lainnya:'🏷️'};let categories=[];let page=1;let totalPages=1;let sellerSession=null;const rupiah=v=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(v);const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));async function api(url,options){const r=await fetch(url,options);const b=await r.json();if(!r.ok)throw Error(b.error||'Permintaan gagal');return b}function toast(message){const t=$('#toast');t.textContent=message;t.classList.add('show');clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>t.classList.remove('show'),2800)}function track(event_name,details={}){const body=JSON.stringify({event_name,path:location.pathname+location.search,referrer:document.referrer||null,...details});if(navigator.sendBeacon)navigator.sendBeacon('/api/analytics/track',new Blob([body],{type:'application/json'}));else fetch('/api/analytics/track',{method:'POST',headers:{'content-type':'application/json'},body,keepalive:true}).catch(()=>{})}async function loadCategories(){const b=await api('/api/categories');categories=b.data;$('#categories').innerHTML=categories.map(c=>`<button class="category" data-slug="${esc(c.slug)}" aria-label="Jelajahi ${esc(c.name)}"><div class="category-icon">${icons[c.slug]||'🏷️'}</div><strong>${esc(c.name)}</strong><small>Jelajahi →</small></button>`).join('');$('#form-category').innerHTML='<option value="">Pilih kategori</option>'+categories.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');document.querySelectorAll('.category').forEach(b=>b.onclick=()=>{page=1;loadListings({category:b.dataset.slug});$('#jelajah').scrollIntoView({behavior:'smooth'});toast(`Menampilkan ${b.textContent.trim()}`)})}async function loadLocations(){const b=await api('/api/locations');const options=b.data.districts.map(d=>`<option value="${esc(d)}">${esc(d)}</option>`).join('');$('#district').insertAdjacentHTML('beforeend',options);$('#form-district').innerHTML='<option value="">Pilih wilayah</option>'+options}async function loadStats(){const b=await api('/api/stats');$('#total-listings').textContent=b.data.summary.active_listings;$('#covered-districts').textContent=b.data.summary.covered_districts}function renderSuggestions(){const q=$('#search').value.trim().toLowerCase();const box=$('#suggestions');if(!q){box.hidden=true;return}const hits=categories.filter(c=>c.name.toLowerCase().includes(q)).slice(0,5);box.innerHTML=hits.map(c=>`<button class="suggestion" data-query="${esc(c.name)}">${icons[c.slug]||'🏷️'} ${esc(c.name)}</button>`).join('');box.hidden=!hits.length;box.querySelectorAll('button').forEach(b=>b.onclick=()=>{$('#search').value=b.dataset.query;box.hidden=true;page=1;loadListings()})}function skeleton(){ $('#listings').innerHTML='<div class="skeleton skeleton-card"></div>'.repeat(4)}async function loadListings(extra={}){skeleton();const params=new URLSearchParams({q:$('#search').value.trim(),district:$('#district').value,sort:$('#sort').value,page,limit:8,...extra});for(const [k,v] of [...params])if(!v)params.delete(k);try{const b=await api('/api/listings?'+params);totalPages=b.meta?.total_pages||1;$('#result-summary').textContent=`${b.meta?.total||b.data.length} hasil · Kendari dan Sultra`;$('#listings').innerHTML=b.data.length?b.data.map(l=>{const saved=JSON.parse(localStorage.getItem('sultra-favs')||'[]').includes(l.id);return `<article class="listing"><div class="listing-image"><span>${icons[l.category_slug]||'🏷️'}</span><span class="listing-badge">${l.created_at?'Baru':'Pilihan'}</span></div><div class="listing-body"><h3 title="${esc(l.title)}">${esc(l.title)}</h3><div class="listing-price">${rupiah(l.price)}</div><div class="listing-meta">${esc(l.category_name)} · ${esc(l.district)}<br>${esc(l.seller_name||'Penjual lokal')} · Belum ada ulasan</div><div class="listing-actions"><button class="mini-action ${saved?'saved':''}" data-fav="${l.id}">${saved?'♥ Tersimpan':'♡ Simpan'}</button><button class="mini-action" data-share="${l.id}" data-title="${esc(l.title)}">↗ Bagikan</button><button class="mini-action" data-comment="${l.id}">💬 Tanya</button></div></div></article>`}).join(''):'<div class="empty">Belum ada listing yang cocok. Coba kata kunci atau wilayah lain.</div>';$('#load-more').hidden=page>=totalPages;document.querySelectorAll('[data-fav]').forEach(b=>b.onclick=()=>toggleFav(Number(b.dataset.fav),b));document.querySelectorAll('[data-share]').forEach(b=>b.onclick=()=>shareListing(b.dataset.title));document.querySelectorAll('[data-comment]').forEach(b=>b.onclick=()=>commentListing(Number(b.dataset.comment)));track('page_view',{district:$('#district').value||null})}catch(e){$('#listings').innerHTML=`<div class="empty">${esc(e.message)}</div>`}}function toggleFav(id,button){const favs=JSON.parse(localStorage.getItem('sultra-favs')||'[]');const next=favs.includes(id)?favs.filter(x=>x!==id):[...favs,id];localStorage.setItem('sultra-favs',JSON.stringify(next));button.classList.toggle('saved',next.includes(id));button.textContent=next.includes(id)?'♥ Tersimpan':'♡ Simpan';$('#favorite-count').textContent=next.length;toast(next.includes(id)?'Listing disimpan ke favorit':'Listing dihapus dari favorit')}async function shareListing(title){const url=location.origin;const text=`${title} — lihat di SultraKita`;try{if(navigator.share)await navigator.share({title:'SultraKita',text,url});else{await navigator.clipboard.writeText(`${text} ${url}`);toast('Link listing disalin')}}catch{}}function commentListing(id){const name=prompt('Nama Anda');if(!name)return;const body=prompt('Tulis pertanyaan untuk penjual');if(!body)return;api('/api/comments',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({listing_id:id,author_name:name,body})}).then(()=>toast('Pertanyaan terkirim')).catch(e=>toast(e.message))}function openDialog(){$('#sell-dialog').showModal()}$('#search').addEventListener('input',renderSuggestions);$('#search-button').onclick=()=>{page=1;track('search',{district:$('#district').value||null});loadListings()};$('#search').addEventListener('keydown',e=>{if(e.key==='Enter'){$('#suggestions').hidden=true;page=1;loadListings()}});$('#district').onchange=()=>{page=1;loadListings()};$('#sort').onchange=()=>{page=1;loadListings()};$('#load-more').onclick=()=>{page++;loadListings()};$('#open-sell').onclick=openDialog;$('#open-sell-cta')?.addEventListener('click',openDialog);$('#hero-sell').onclick=openDialog;$('#mobile-sell').onclick=openDialog;$('#show-guide').onclick=()=>toast('Pilih kategori, cari barang, atau tekan Pasang iklan untuk mulai.');$('#theme-toggle').onclick=()=>{document.body.classList.toggle('dark');localStorage.setItem('sultra-dark',document.body.classList.contains('dark'))};if(localStorage.getItem('sultra-dark')==='true')document.body.classList.add('dark');$('#hero-explore').onclick=()=>$('#jelajah').scrollIntoView({behavior:'smooth'});$('#request-otp').onclick=async()=>{try{const b=await api('/api/auth/request-otp',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({phone:$('#listing-form [name="phone"]').value})});$('#form-message').textContent=b.data.dev_code?`Kode demo: ${b.data.dev_code}`:'OTP dikirim melalui provider.'}catch(e){$('#form-message').textContent=e.message}};$('#listing-form').onsubmit=async e=>{e.preventDefault();const f=e.target,v=Object.fromEntries(new FormData(f));try{if(!sellerSession){const b=await api('/api/auth/verify-otp',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({phone:v.phone,code:v.otp,name:v.title.slice(0,60),role:'seller',district:v.district})});sellerSession=b.data}const l=await api('/api/listings',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({title:v.title,description:v.description,price:Number(v.price),category_id:Number(v.category_id),seller_id:sellerSession.user.id,district:v.district})});const files=f.querySelector('[name="images"]').files;if(files.length){const fd=new FormData();[...files].slice(0,5).forEach(x=>fd.append('images',x));await fetch(`/api/listings/${l.data.id}/images`,{method:'POST',body:fd})}$('#form-message').textContent='Iklan berhasil dipublikasikan.';toast('Iklan berhasil dipublikasikan');f.reset();sellerSession=null;await Promise.all([loadListings(),loadStats()]);setTimeout(()=>$('#sell-dialog').close(),700)}catch(e){$('#form-message').textContent=e.message}};track('page_view');Promise.all([loadCategories(),loadLocations(),loadStats(),loadListings()]).catch(e=>{$('#listings').innerHTML=`<div class="empty">Gagal memuat platform: ${esc(e.message)}</div>`})
+// --- Utility & State ---
+const $ = s => document.querySelector(s);
+const icons = { properti: '🏠', elektronik: '📱', kendaraan: '🚗', fashion: '👕', perabotan: '🛋️', jasa: '🧰', kuliner: '🍜', 'hobi-koleksi': '📷', 'lowongan-kerja': '💼', lainnya: '🏷️' };
+let categories = [], page = 1, totalPages = 1, sellerSession = null;
 
-(function initDonationExperience(){
+const rupiah = v => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(v);
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c]));
+
+async function api(url, options) {
+  const r = await fetch(url, options);
+  const b = await r.json();
+  if (!r.ok) throw Error(b.error || 'Permintaan gagal');
+  return b;
+}
+
+function toast(message) {
+  const t = $('#toast');
+  t.textContent = message;
+  t.classList.add('show');
+  clearTimeout(window.toastTimer);
+  window.toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// --- NEW: Intersection Observer for Light Animations ---
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('fade-in-visible');
+      observer.unobserve(entry.target); // Hanya animasi sekali
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+function applyAnimations() {
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+}
+
+// --- Core Functions ---
+async function loadCategories() {
+  const b = await api('/api/categories');
+  categories = b.data;
+  $('#categories').innerHTML = categories.map(c => `
+    <button class="category fade-in" data-slug="${esc(c.slug)}" aria-label="Jelajahi ${esc(c.name)}">
+      <div class="category-icon">${icons[c.slug] || '🏷️'}</div>
+      <strong>${esc(c.name)}</strong>
+      <small>Jelajahi →</small>
+    </button>
+  `).join('');
+  document.querySelectorAll('.category').forEach(b => b.onclick = () => {
+    page = 1; loadListings({ category: b.dataset.slug });
+    $('#jelajah').scrollIntoView({ behavior: 'smooth' });
+    toast(`Menampilkan ${b.querySelector('strong').textContent}`);
+  });
+  applyAnimations();
+}
+
+async function loadListings(extra = {}) {
+  $('#listings').innerHTML = '<div class="skeleton skeleton-card"></div>'.repeat(4);
+  const params = new URLSearchParams({ q: $('#search').value.trim(), district: $('#district').value, sort: $('#sort').value, page, limit: 8, ...extra });
+  for (const [k, v] of [...params]) if (!v) params.delete(k);
+
+  try {
+    const b = await api('/api/listings?' + params);
+    totalPages = b.meta?.total_pages || 1;
+    $('#result-summary').textContent = `${b.meta?.total || b.data.length} hasil · Kendari dan Sultra`;
+
+    $('#listings').innerHTML = b.data.length ? b.data.map(l => {
+      const saved = JSON.parse(localStorage.getItem('sultra-favs') || '[]').includes(l.id);
+      // NEW: Support for video badge if listing has video
+      const videoBadge = l.has_video ? `<div class="video-badge">▶️ Video</div>` : '';
+
+      return `
+      <article class="listing fade-in">
+        <div class="listing-image">
+          <span>${icons[l.category_slug] || '🏷️'}</span>
+          ${videoBadge}
+          <span class="listing-badge" style="background: var(--gold); color: #FFF;">${l.created_at ? 'Baru' : 'Pilihan'}</span>
+        </div>
+        <div class="listing-body">
+          <h3 title="${esc(l.title)}">${esc(l.title)}</h3>
+          <div class="listing-price">${rupiah(l.price)}</div>
+          <div class="listing-meta">
+            <span>${esc(l.category_name)}</span> · <span>${esc(l.district)}</span>
+          </div>
+          <div class="listing-actions">
+            <button class="mini-action ${saved ? 'saved' : ''}" data-fav="${l.id}" style="color: ${saved ? 'var(--danger)' : 'var(--gold)'}">
+              ${saved ? '♥ Tersimpan' : '♡ Simpan'}
+            </button>
+            <button class="mini-action" data-share="${l.id}" data-title="${esc(l.title)}">↗ Bagikan</button>
+          </div>
+        </div>
+      </article>`;
+    }).join('') : '<div class="empty">Belum ada listing yang cocok. Coba kata kunci atau wilayah lain.</div>';
+
+    $('#load-more').hidden = page >= totalPages;
+    applyAnimations(); // Terapkan animasi pada elemen baru
+
+    // Re-attach event listeners
+    document.querySelectorAll('[data-fav]').forEach(b => b.onclick = () => toggleFav(Number(b.dataset.fav), b));
+    document.querySelectorAll('[data-share]').forEach(b => b.onclick = () => shareListing(b.dataset.title));
+  } catch (e) {
+    $('#listings').innerHTML = `<div class="empty">${esc(e.message)}</div>`;
+  }
+}
+
+// --- Donation Experience Upgrade (Sesuai gaya Cream/Gold) ---
+(function initDonationExperience() {
   const donationCta = document.querySelector('#donation-cta');
   if (!donationCta) return;
+
   const formatRupiah = value => `Rp ${Number(value || 0).toLocaleString('id-ID')}`;
   const dialog = document.createElement('dialog');
   dialog.id = 'donation-dialog';
-  dialog.innerHTML = `<form method="dialog" class="donation-modal" id="donation-form">
-    <button class="dialog-close" value="cancel" aria-label="Tutup">×</button>
-    <p class="eyebrow">Dukung SultraKita</p><h2 id="donation-title">Bantu platform lokal terus tumbuh</h2>
-    <p class="dialog-help" id="donation-description">Memuat kampanye aktif…</p>
-    <div class="donation-progress" aria-live="polite"><div class="donation-progress-meta"><span id="donation-raised">Terkumpul —</span><span id="donation-target">Target —</span></div><div class="donation-progress-track"><span id="donation-progress-bar"></span></div><small id="donation-supporters"></small></div>
-    <fieldset><legend>Pilih nominal donasi</legend><div class="donation-presets">${[25000,50000,100000,250000].map(amount => `<button type="button" class="donation-preset" data-amount="${amount}">${formatRupiah(amount)}</button>`).join('')}</div></fieldset>
-    <label>Metode pembayaran<select id="donation-payment-method" name="payment_method"><option value="qris">QRIS</option><option value="virtual_account">Virtual Account</option></select></label>
-    <label>Nominal lainnya (Rp)<input id="donation-amount" name="amount" type="number" min="10000" max="100000000" step="1000" value="50000" required></label>
-    <label>Nama tampilan (opsional)<input id="donation-name" name="name" maxlength="100" placeholder="Hamba Allah"></label>
-    <label>Pesan (opsional)<textarea id="donation-note" name="message" maxlength="500" rows="2" placeholder="Semoga SultraKita semakin maju."></textarea></label>
-    <button class="button button-primary full" id="donation-submit" type="submit">Dukung sekarang <span id="donation-submit-amount">Rp 50.000</span></button>
-    <p class="form-message" id="donation-message" role="status" aria-live="polite"></p>
-  </form>`;
+  dialog.innerHTML = `
+    <form method="dialog" class="donation-modal" id="donation-form">
+      <button class="dialog-close" value="cancel" aria-label="Tutup">×</button>
+      <p class="eyebrow" style="color: var(--gold);">Dukung SultraKita</p>
+      <h2 id="donation-title" style="color: var(--ink);">Bantu platform lokal terus tumbuh</h2>
+      <p class="dialog-help" id="donation-description">Memuat kampanye aktif…</p>
+
+      <div class="donation-progress" aria-live="polite">
+        <div class="donation-progress-meta">
+          <span id="donation-raised" style="color: var(--gold);">Terkumpul —</span>
+          <span id="donation-target">Target —</span>
+        </div>
+        <div class="donation-progress-track"><span id="donation-progress-bar"></span></div>
+        <small id="donation-supporters"></small>
+      </div>
+
+      <fieldset>
+        <legend style="color: var(--ink);">Pilih nominal donasi</legend>
+        <div class="donation-presets">
+          ${[25000, 50000, 100000, 250000].map(amount => `<button type="button" class="donation-preset" data-amount="${amount}">${formatRupiah(amount)}</button>`).join('')}
+        </div>
+      </fieldset>
+      <label style="color: var(--ink);">Metode pembayaran<select id="donation-payment-method" name="payment_method"><option value="qris">QRIS</option><option value="virtual_account">Virtual Account</option></select></label>
+
+      <label style="color: var(--ink);">Nominal lainnya (Rp)
+        <input id="donation-amount" name="amount" type="number" min="10000" max="100000000" step="1000" value="50000" required>
+      </label>
+      <label style="color: var(--ink);">Nama tampilan (opsional)
+        <input id="donation-name" name="name" maxlength="100" placeholder="Hamba Allah">
+      </label>
+
+      <button class="button button-primary full" id="donation-submit" type="submit">
+        Dukung sekarang <span id="donation-submit-amount">Rp 50.000</span>
+      </button>
+      <p class="form-message" id="donation-message" role="status" aria-live="polite"></p>
+    </form>
+  `;
   document.body.appendChild(dialog);
+
   let campaignId = 1;
   const amountInput = dialog.querySelector('#donation-amount');
   const submitAmount = dialog.querySelector('#donation-submit-amount');
   const message = dialog.querySelector('#donation-message');
+
   const refreshAmount = () => { submitAmount.textContent = formatRupiah(amountInput.value); };
   amountInput.addEventListener('input', refreshAmount);
-  dialog.querySelectorAll('.donation-preset').forEach(button => button.addEventListener('click', () => { amountInput.value = button.dataset.amount; refreshAmount(); dialog.querySelectorAll('.donation-preset').forEach(item => item.classList.toggle('selected', item === button)); }));
-  async function loadDonationStats(){
-    const response = await fetch(`/api/donation/stats?campaign_id=${campaignId}`);
-    const result = await response.json(); if (!response.ok || !result.success) throw new Error(result.error || 'Statistik donasi belum tersedia');
-    const { campaign, supporters } = result.data; campaignId = campaign.id;
-    dialog.querySelector('#donation-title').textContent = campaign.title;
-    dialog.querySelector('#donation-description').textContent = campaign.description || 'Dukungan Anda membantu biaya operasional dan pengembangan SultraKita.';
-    dialog.querySelector('#donation-raised').textContent = `Terkumpul ${formatRupiah(campaign.current_amount)}`;
-    dialog.querySelector('#donation-target').textContent = `Target ${formatRupiah(campaign.target_amount)}`;
-    dialog.querySelector('#donation-progress-bar').style.width = `${campaign.progress_percent}%`;
-    dialog.querySelector('#donation-supporters').textContent = `${supporters} donatur terverifikasi`;
-  }
-  donationCta.addEventListener('click', async () => { dialog.showModal(); message.textContent = ''; try { await loadDonationStats(); } catch (error) { message.textContent = error.message; } });
-  dialog.querySelector('#donation-form').addEventListener('submit', async event => {
-    event.preventDefault(); const submit = dialog.querySelector('#donation-submit'); const amount = Number(amountInput.value);
-    if (!Number.isSafeInteger(amount) || amount < 10000) { message.textContent = 'Minimal donasi Rp10.000.'; return; }
-    submit.disabled = true; message.textContent = 'Menyimpan dukungan…';
-    try {
-      const response = await fetch('/api/donations', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({ campaign_id:campaignId, amount, name:dialog.querySelector('#donation-name').value || 'Hamba Allah', message:dialog.querySelector('#donation-note').value || null, payment_method:dialog.querySelector('#donation-payment-method').value }) });
-      const result = await response.json(); if (!response.ok || !result.success) throw new Error(result.error || 'Donasi belum dapat diproses.');
-      message.textContent = result.data.message;
-      if (result.data.payment_url) window.location.href = result.data.payment_url;
-      else { await loadDonationStats(); submit.textContent = 'Dukungan tercatat'; submit.classList.add('donation-complete'); }
-    } catch (error) { message.textContent = error.message; } finally { submit.disabled = false; }
+
+  dialog.querySelectorAll('.donation-preset').forEach(button => {
+    button.addEventListener('click', () => {
+      amountInput.value = button.dataset.amount;
+      refreshAmount();
+      dialog.querySelectorAll('.donation-preset').forEach(item => item.classList.toggle('selected', item === button));
+    });
   });
-  dialog.addEventListener('close', () => { const submit = dialog.querySelector('#donation-submit'); submit.textContent = `Dukung sekarang ${formatRupiah(amountInput.value)}`; submit.classList.remove('donation-complete'); });
-})();
-(function installDonationPolling(){
-  const stats = () => fetch('/api/donation/stats').then(response => response.ok ? response.json() : null).catch(() => null);
-  window.setInterval(async () => { const result = await stats(); if (!result?.success) return; const bar = document.querySelector('#donation-progress-bar'); if (bar) bar.style.width = `${result.data.campaign.progress_percent}%`; }, 30000);
+
+  async function loadDonationStats(){ const response = await fetch(`/api/donation/stats?campaign_id=${campaignId}`); const result = await response.json(); if (!response.ok || !result.success) throw new Error(result.error || 'Statistik donasi belum tersedia'); const { campaign, supporters } = result.data; dialog.querySelector('#donation-title').textContent = campaign.title; dialog.querySelector('#donation-description').textContent = campaign.description || 'Dukungan Anda membantu biaya operasional SultraKita.'; dialog.querySelector('#donation-raised').textContent = `Terkumpul ${formatRupiah(campaign.current_amount)}`; dialog.querySelector('#donation-target').textContent = `Target ${formatRupiah(campaign.target_amount)}`; dialog.querySelector('#donation-progress-bar').style.width = `${campaign.progress_percent}%`; dialog.querySelector('#donation-supporters').textContent = `${supporters} donatur terverifikasi`; }
+  donationCta.addEventListener('click', async () => { dialog.showModal(); message.textContent = 'Memuat data kampanye...'; try { await loadDonationStats(); message.textContent = ''; } catch (error) { message.textContent = error.message; } });
+
+  dialog.querySelector('#donation-form').addEventListener('submit', async event => {
+    event.preventDefault();
+    const submit = dialog.querySelector('#donation-submit');
+    const amount = Number(amountInput.value);
+    if (!Number.isSafeInteger(amount) || amount < 10000) {
+      message.textContent = 'Minimal donasi Rp10.000.';
+      message.style.color = 'var(--danger)';
+      return;
+    }
+    submit.disabled = true;
+    message.textContent = 'Mengalihkan ke pembayaran aman...';
+    message.style.color = 'var(--muted)';
+
+    try { const response = await fetch('/api/donations', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({ campaign_id:campaignId, amount, name:dialog.querySelector('#donation-name').value || 'Hamba Allah', payment_method:dialog.querySelector('#donation-payment-method').value }) }); const result = await response.json(); if (!response.ok || !result.success) throw new Error(result.error || 'Donasi belum dapat diproses.'); localStorage.setItem('sultrakita:last-donation', result.data.transaction_id); if (result.data.payment_url) window.location.assign(result.data.payment_url); else { message.textContent = result.data.message; await loadDonationStats(); } } catch (error) { message.textContent = error.message; message.style.color = 'var(--danger)'; } finally { submit.disabled = false; }
+  });
 })();
 
+// --- Initialization ---
+$('#theme-toggle').onclick = () => {
+  document.body.classList.toggle('dark');
+  localStorage.setItem('sultra-dark', document.body.classList.contains('dark'));
+};
+if (localStorage.getItem('sultra-dark') === 'true') document.body.classList.add('dark');
+
+Promise.all([loadCategories(), loadListings()]).then(() => {
+  applyAnimations(); // Pastikan animasi berjalan setelah load awal
+});
+
 (function installDonationAdminDashboard(){
-  const root = document.querySelector('#admin-analytics'); if (!root) return;
-  const value = id => document.querySelector(id)?.value.trim() || '';
-  const headers = () => ({ authorization: `Bearer ${value('#admin-session-token')}`, 'x-admin-token': value('#admin-token') });
-  const rupiah = amount => `Rp ${Number(amount || 0).toLocaleString('id-ID')}`;
-  const load = async () => { const response = await fetch(`/api/admin/donations/analytics?days=${value('#admin-analytics-days') || 30}`, { headers:headers() }); const result = await response.json(); if (!response.ok || !result.success) throw new Error(result.error || 'Analytics tidak dapat dimuat'); const { totals, daily } = result.data; document.querySelector('#admin-attempts').textContent = totals.attempts; document.querySelector('#admin-successful').textContent = totals.successful; document.querySelector('#admin-success-rate').textContent = `${totals.success_rate}%`; document.querySelector('#admin-net-amount').textContent = rupiah(totals.net_amount); document.querySelector('#admin-daily-chart').innerHTML = daily.map(row => `<div class="analytics-bar-row"><span>${row.date}</span><div><i style="width:${Math.min(100, Number(row.attempts) * 10)}%"></i></div><strong>${row.successful}/${row.attempts} · ${rupiah(row.net_amount)}</strong></div>`).join('') || '<p>Belum ada transaksi pada periode ini.</p>'; };
-  document.querySelector('#admin-analytics-load')?.addEventListener('click', () => load().catch(error => { document.querySelector('#admin-daily-chart').textContent = error.message; }));
-  document.querySelector('#admin-operation-form')?.addEventListener('submit', async event => { event.preventDefault(); const output = document.querySelector('#admin-operation-message'); const transactionId = value('#admin-transaction-id'); const operation = value('#admin-operation'); if (!window.confirm(`${operation === 'refund' ? 'Refund' : 'Batalkan'} transaksi ${transactionId}?`)) return; const response = await fetch(`/api/admin/donations/${encodeURIComponent(transactionId)}/${operation}`, { method:'POST', headers:{...headers(), 'content-type':'application/json'}, body:JSON.stringify({ reason:value('#admin-operation-reason') }) }); const result = await response.json(); output.textContent = result.success ? `Operasi ${operation} berhasil diproses.` : (result.error || 'Operasi gagal'); if (result.success) load().catch(() => {}); });
-  document.querySelector('#admin-webhook-start')?.addEventListener('click', async event => { event.currentTarget.disabled = true; const log = document.querySelector('#admin-webhook-logs'); try { const response = await fetch('/api/admin/webhook-logs/stream', { headers:headers() }); if (!response.ok || !response.body) throw new Error('Stream webhook tidak tersedia'); const reader = response.body.getReader(); const decoder = new TextDecoder(); let buffer = ''; while (true) { const { value, done } = await reader.read(); if (done) break; buffer += decoder.decode(value, { stream:true }); const events = buffer.split('\n\n'); buffer = events.pop() || ''; for (const eventText of events) { const line = eventText.split('\n').find(line => line.startsWith('data: ')); if (!line) continue; const row = JSON.parse(line.slice(6)); const item = document.createElement('div'); item.className = `webhook-log ${row.http_status >= 400 ? 'is-error' : ''}`; item.textContent = `${row.created_at} · ${row.provider} · ${row.event_status || '-'} · HTTP ${row.http_status} · ${row.transaction_id || '-'}`; log.prepend(item); while (log.children.length > 50) log.lastChild.remove(); } } } catch (error) { log.textContent = error.message; event.currentTarget.disabled = false; } });
+  const root=document.querySelector('#admin-analytics');if(!root)return;const value=id=>document.querySelector(id)?.value.trim()||'';const headers=()=>({authorization:`Bearer ${value('#admin-session-token')}`,'x-admin-token':value('#admin-token')});const rupiah=v=>`Rp ${Number(v||0).toLocaleString('id-ID')}`;
+  const load=async()=>{const r=await fetch(`/api/admin/donations/analytics?days=${value('#admin-analytics-days')||30}`,{headers:headers()});const j=await r.json();if(!r.ok||!j.success)throw new Error(j.error||'Analytics tidak dapat dimuat');const{totals,daily}=j.data;document.querySelector('#admin-attempts').textContent=totals.attempts;document.querySelector('#admin-successful').textContent=totals.successful;document.querySelector('#admin-success-rate').textContent=`${totals.success_rate}%`;document.querySelector('#admin-net-amount').textContent=rupiah(totals.net_amount);document.querySelector('#admin-daily-chart').innerHTML=daily.map(row=>`<div class="analytics-bar-row"><span>${row.date}</span><div><i style="width:${Math.min(100,Number(row.attempts)*10)}%"></i></div><strong>${row.successful}/${row.attempts} · ${rupiah(row.net_amount)}</strong></div>`).join('')||'<p>Belum ada transaksi.</p>';};
+  document.querySelector('#admin-analytics-load')?.addEventListener('click',()=>load().catch(e=>{document.querySelector('#admin-daily-chart').textContent=e.message;}));
+  document.querySelector('#admin-operation-form')?.addEventListener('submit',async e=>{e.preventDefault();const out=document.querySelector('#admin-operation-message'),tx=value('#admin-transaction-id'),op=value('#admin-operation');if(!window.confirm(`${op==='refund'?'Refund':'Batalkan'} transaksi ${tx}?`))return;const r=await fetch(`/api/admin/donations/${encodeURIComponent(tx)}/${op}`,{method:'POST',headers:{...headers(),'content-type':'application/json'},body:JSON.stringify({reason:value('#admin-operation-reason')})});const j=await r.json();out.textContent=j.success?`Operasi ${op} berhasil diproses.`:(j.error||'Operasi gagal');if(j.success)load().catch(()=>{});});
+  document.querySelector('#admin-webhook-start')?.addEventListener('click',async e=>{e.currentTarget.disabled=true;const log=document.querySelector('#admin-webhook-logs');try{const r=await fetch('/api/admin/webhook-logs/stream',{headers:headers()});if(!r.ok||!r.body)throw new Error('Stream webhook tidak tersedia');const reader=r.body.getReader(),decoder=new TextDecoder();let buffer='';while(true){const{value,done}=await reader.read();if(done)break;buffer+=decoder.decode(value,{stream:true});const events=buffer.split('\n\n');buffer=events.pop()||'';for(const text of events){const line=text.split('\n').find(x=>x.startsWith('data: '));if(!line)continue;const row=JSON.parse(line.slice(6)),item=document.createElement('div');item.className=`webhook-log ${row.http_status>=400?'is-error':''}`;item.textContent=`${row.created_at} · ${row.provider} · ${row.event_status||'-'} · HTTP ${row.http_status} · ${row.transaction_id||'-'}`;log.prepend(item);while(log.children.length>50)log.lastChild.remove();}}}catch(error){log.textContent=error.message;e.currentTarget.disabled=false;}});
 })();
