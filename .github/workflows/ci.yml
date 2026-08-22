@@ -1,0 +1,66 @@
+name: SultraKita CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  verify:
+    name: Node ${{ matrix.node-version }} verification
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Check JavaScript syntax
+        run: node --check server.js && node --input-type=module --check < worker.js && node --check scripts/api-smoke.js && node --check scripts/security-regression.js
+      - name: Run lint
+        run: npm run lint
+      - name: Run test suite
+        run: npm test
+      - name: Run build check
+        run: npm run build
+      - name: Run security regression
+        run: npm run test:security
+      - name: Run local API smoke test
+        run: npm run smoke:api
+      - name: Check whitespace
+        run: git diff --check
+
+  dependency-audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=moderate
+      - name: Scan repository with GitHub CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+      - name: Analyze repository with CodeQL
+        uses: github/codeql-action/analyze@v3

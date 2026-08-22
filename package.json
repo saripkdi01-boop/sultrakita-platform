@@ -6,10 +6,12 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
+    "lint": "node scripts/lint-check.js",
     "test": "node --test",
+    "build": "node scripts/build-check.js",
     "test:security": "node scripts/security-regression.js",
     "smoke:api": "node scripts/api-smoke.js",
-    "verify:local": "npm test && npm run test:security && npm run smoke:api"
+    "verify:local": "npm run lint && npm test && npm run build && npm run test:security && npm run smoke:api"
   },
   "keywords": ["marketplace", "kendari", "sulawesi-tenggara", "umkm"],
   "license": "MIT",
