@@ -3,6 +3,7 @@ const icons = { properti:'🏠', elektronik:'📱', kendaraan:'🚗', fashion:'�
 let categories = [];
 
 const rupiah = value => new Intl.NumberFormat('id-ID', { style:'currency', currency:'IDR', maximumFractionDigits:0 }).format(value);
+const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, character => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;' }[character]));
 async function api(url, options) { const response = await fetch(url, options); const body = await response.json(); if (!response.ok) throw new Error(body.error || 'Permintaan gagal'); return body; }
 
 async function loadCategories() {
@@ -24,7 +25,7 @@ async function loadListings(extra = {}) {
   try {
     const body = await api('/api/listings?' + params);
     if (!body.data.length) { $('#listings').innerHTML = '<div class="empty">Belum ada listing yang cocok. Coba kata kunci atau wilayah lain.</div>'; return; }
-    $('#listings').innerHTML = body.data.map(listing => `<article class="listing"><div class="listing-image">${icons[listing.category_slug] || '🏷️'}</div><div class="listing-body"><h3 title="${listing.title}">${listing.title}</h3><div class="listing-price">${rupiah(listing.price)}</div><div class="listing-meta">${listing.category_name} · ${listing.district}<br>${listing.seller_name || 'Penjual lokal'}</div><button class="comment-button" data-listing-id="${listing.id}">Tanya / komentar</button></div></article>`).join('');
+    $('#listings').innerHTML = body.data.map(listing => `<article class="listing"><div class="listing-image">${icons[listing.category_slug] || '🏷️'}</div><div class="listing-body"><h3 title="${escapeHtml(listing.title)}">${escapeHtml(listing.title)}</h3><div class="listing-price">${rupiah(listing.price)}</div><div class="listing-meta">${escapeHtml(listing.category_name)} · ${escapeHtml(listing.district)}<br>${escapeHtml(listing.seller_name || 'Penjual lokal')}</div><button class="comment-button" data-listing-id="${listing.id}">Tanya / komentar</button></div></article>`).join('');
     document.querySelectorAll('.comment-button').forEach(button => button.addEventListener('click', async () => {
       const author_name = window.prompt('Nama Anda:');
       const body = author_name && window.prompt('Tulis pertanyaan atau komentar:');
