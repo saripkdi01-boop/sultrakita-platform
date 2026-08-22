@@ -229,3 +229,21 @@ Setelah fondasi ini, platform perlu dilengkapi dengan template WhatsApp yang dis
 ## Keamanan
 
 Jangan menaruh kredensial database atau token API di source code. Kredensial yang pernah masuk ke histori Git harus segera dirotasi dan dihapus dari histori jika sudah terpublikasi. Gunakan secret manager pada deployment produksi.
+
+
+## Pengujian end-to-end sandbox provider
+
+Harness `npm run e2e:sandbox` menjalankan alur Midtrans dan Xendit secara deterministik tanpa menghubungi gateway eksternal. Harness memverifikasi pembuatan QRIS, pembuatan Virtual Account, webhook settlement, refund, dan pembatalan transaksi pending menggunakan provider adapter mock yang memiliki kontrak respons sandbox. Pengujian ini cocok untuk regresi CI.
+
+Untuk pengujian terhadap sandbox provider yang sebenarnya, isi `PAYMENT_PROVIDER=midtrans`, `MIDTRANS_MODE=sandbox`, dan `MIDTRANS_SERVER_KEY` sandbox, atau isi `PAYMENT_PROVIDER=xendit`, `XENDIT_SECRET_KEY`, serta `XENDIT_CALLBACK_TOKEN`. Jalankan `npm start`, gunakan tunnel HTTPS seperti `ngrok http 3000`, lalu arahkan webhook sandbox ke `https://DOMAIN-NGROK/api/donation/webhook`. Buat transaksi QRIS atau Virtual Account dari web dan gunakan simulator sandbox provider untuk menyelesaikan transaksi. Setelah webhook diterima, periksa `GET /api/donations/:transaction_id` dan statistik kampanye.
+
+Refund sandbox harus dijalankan dari dashboard admin pada transaction ID yang sudah berstatus `success`. Pembatalan hanya tersedia ketika transaksi masih `pending`. Gunakan alasan operasi, simpan response provider, lalu cocokkan hasilnya dengan log webhook dan dashboard sandbox. Jangan menganggap respons HTTP 200 saja sebagai bukti dana telah kembali; status akhir perlu direkonsiliasi dengan provider.
+
+Perintah regresi yang direkomendasikan:
+
+```bash
+npm run e2e:sandbox
+npm run verify:local
+```
+
+Untuk pengujian gateway nyata, jangan menaruh secret di command history jika lingkungan bersama; gunakan `.env` lokal yang di-ignore atau secret manager. Jangan menjalankan refund production tanpa persetujuan operasional yang eksplisit.
