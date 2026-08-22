@@ -21,8 +21,18 @@ Database SQLite dibuat otomatis di folder `data/` menggunakan `sql.js`. Folder d
 | POST | `/api/listings` | Membuat listing baru dengan validasi |
 | POST | `/api/favorites` | Menyimpan listing ke favorit |
 | DELETE | `/api/favorites` | Menghapus listing dari favorit |
+| GET | `/api/listings/:id/comments` | Komentar visible pada listing |
+| POST | `/api/comments` | Menambahkan komentar |
+| POST | `/api/suggestions` | Mengirim saran fitur |
+| POST | `/api/donations` | Mencatat pledge dukungan proyek |
+| POST | `/api/reports` | Melaporkan listing bermasalah |
+| GET | `/api/community/summary` | Ringkasan aktivitas komunitas |
 
 Contoh pencarian: `/api/listings?q=rumah&category=properti&district=Mandonga&min_price=100000000&max_price=1000000000&sort=cheapest&page=1&limit=12`.
+
+## Komunitas dan donasi
+
+Fitur saran, komentar, dan laporan telah tersedia sebagai fondasi moderasi komunitas. Komentar disimpan dengan status moderasi, sedangkan laporan dipisahkan agar tim admin dapat menindaklanjuti konten bermasalah. Fitur donasi saat ini mencatat komitmen dukungan (`pledged`) dan sengaja belum memproses pembayaran nyata. Untuk production, hubungkan endpoint ini ke provider pembayaran resmi, webhook tervalidasi, rekening organisasi yang sah, kebijakan pengembalian dana, dan rekonsiliasi admin sebelum menerima dana pengguna.
 
 ## Prioritas produk berikutnya
 

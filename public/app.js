@@ -26,3 +26,10 @@ function openDialog() { $('#sell-dialog').showModal(); }
 $('#search-button').addEventListener('click', () => loadListings()); $('#search').addEventListener('keydown', event => { if (event.key === 'Enter') loadListings(); }); $('#district').addEventListener('change', () => loadListings()); $('#sort').addEventListener('change', () => loadListings()); $('#open-sell').addEventListener('click', openDialog); $('#open-sell-cta').addEventListener('click', openDialog);
 $('#listing-form').addEventListener('submit', async event => { event.preventDefault(); const data = Object.fromEntries(new FormData(event.target)); data.price = Number(data.price); data.category_id = Number(data.category_id); try { await api('/api/listings', { method:'POST', headers:{ 'content-type':'application/json' }, body:JSON.stringify(data) }); $('#form-message').textContent = 'Iklan berhasil dipublikasikan.'; event.target.reset(); await Promise.all([loadListings(), loadStats()]); setTimeout(() => $('#sell-dialog').close(), 800); } catch(error) { $('#form-message').textContent = error.message; } });
 Promise.all([loadCategories(), loadLocations(), loadStats(), loadListings()]).catch(error => { $('#listings').innerHTML = `<div class="empty">Gagal memuat platform: ${error.message}</div>`; });
+
+async function submitCommunity(formId, endpoint, messageId, transform = values => values) {
+  const form = document.getElementById(formId); if (!form) return;
+  form.addEventListener('submit', async event => { event.preventDefault(); const message = document.getElementById(messageId); try { await api(endpoint, { method:'POST', headers:{ 'content-type':'application/json' }, body:JSON.stringify(transform(Object.fromEntries(new FormData(form)))) }); message.textContent = endpoint.includes('donation') ? 'Dukungan Anda tercatat. Terima kasih.' : 'Saran berhasil dikirim. Terima kasih sudah ikut membangun.'; form.reset(); } catch (error) { message.textContent = error.message; } });
+}
+submitCommunity('suggestion-form', '/api/suggestions', 'suggestion-message');
+submitCommunity('donation-form', '/api/donations', 'donation-message', values => ({ ...values, amount:Number(values.amount) }));

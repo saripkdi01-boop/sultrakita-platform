@@ -55,6 +55,47 @@ const schema = `
   );
   CREATE INDEX IF NOT EXISTS idx_listings_search ON listings(status, category_id, district, price);
   CREATE INDEX IF NOT EXISTS idx_listings_created ON listings(created_at DESC);
+  CREATE TABLE IF NOT EXISTS comments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    listing_id INTEGER,
+    user_id INTEGER,
+    author_name TEXT NOT NULL,
+    body TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'visible' CHECK(status IN ('visible','pending','hidden')),
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(listing_id) REFERENCES listings(id) ON DELETE CASCADE,
+    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE SET NULL
+  );
+  CREATE TABLE IF NOT EXISTS suggestions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    name TEXT NOT NULL,
+    email TEXT,
+    body TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'new' CHECK(status IN ('new','reviewing','planned','done','dismissed')),
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE SET NULL
+  );
+  CREATE TABLE IF NOT EXISTS donations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    email TEXT,
+    amount INTEGER NOT NULL CHECK(amount > 0),
+    message TEXT,
+    status TEXT NOT NULL DEFAULT 'pledged' CHECK(status IN ('pledged','confirmed','cancelled')),
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE TABLE IF NOT EXISTS reports (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    listing_id INTEGER,
+    reporter_name TEXT NOT NULL,
+    reason TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'open' CHECK(status IN ('open','reviewing','resolved','rejected')),
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(listing_id) REFERENCES listings(id) ON DELETE CASCADE
+  );
+  CREATE INDEX IF NOT EXISTS idx_comments_listing ON comments(listing_id, status, created_at DESC);
+  CREATE INDEX IF NOT EXISTS idx_suggestions_status ON suggestions(status, created_at DESC);
 `;
 
 const categories = [

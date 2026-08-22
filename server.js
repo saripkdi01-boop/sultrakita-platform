@@ -108,6 +108,36 @@ app.post('/api/favorites', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
+app.get('/api/listings/:id/comments', async (req, res, next) => {
+  try { if (!positiveInt(req.params.id)) return fail(res, 400, 'ID listing tidak valid'); ok(res, await query('SELECT id, listing_id, author_name, body, created_at FROM comments WHERE listing_id = ? AND status = \'visible\' ORDER BY created_at DESC', [Number(req.params.id)])); } catch (error) { next(error); }
+});
+
+app.post('/api/comments', async (req, res, next) => {
+  try {
+    const { listing_id, user_id = null, author_name, body } = req.body || {};
+    if (!positiveInt(listing_id) || !author_name || author_name.trim().length < 2 || !body || body.trim().length < 3 || body.trim().length > 1000) return fail(res, 422, 'listing_id, author_name, dan body komentar belum valid');
+    const listing = await query('SELECT id FROM listings WHERE id = ?', [Number(listing_id)]); if (!listing.length) return fail(res, 404, 'Listing tidak ditemukan');
+    const result = await run('INSERT INTO comments (listing_id, user_id, author_name, body) VALUES (?, ?, ?, ?)', [Number(listing_id), user_id || null, author_name.trim(), body.trim()]);
+    const [comment] = await query('SELECT id, listing_id, author_name, body, status, created_at FROM comments WHERE id = ?', [result.id]); res.status(201); ok(res, comment);
+  } catch (error) { next(error); }
+});
+
+app.post('/api/suggestions', async (req, res, next) => {
+  try { const { user_id = null, name, email = null, body } = req.body || {}; if (!name || name.trim().length < 2 || !body || body.trim().length < 5 || body.trim().length > 2000) return fail(res, 422, 'name dan body saran belum valid'); const result = await run('INSERT INTO suggestions (user_id, name, email, body) VALUES (?, ?, ?, ?)', [user_id || null, name.trim(), email, body.trim()]); res.status(201); ok(res, { id: result.id, message: 'Saran berhasil diterima dan akan ditinjau tim SultraKita.' }); } catch (error) { next(error); }
+});
+
+app.post('/api/donations', async (req, res, next) => {
+  try { const { name, email = null, amount, message = null } = req.body || {}; if (!name || name.trim().length < 2 || !Number.isInteger(Number(amount)) || Number(amount) < 1000) return fail(res, 422, 'name wajib diisi dan amount minimal Rp1.000'); const result = await run('INSERT INTO donations (name, email, amount, message) VALUES (?, ?, ?, ?)', [name.trim(), email, Number(amount), message]); res.status(201); ok(res, { id: result.id, status: 'pledged', message: 'Dukungan tercatat. Integrasi pembayaran dapat diaktifkan setelah rekening atau provider resmi dikonfigurasi.' }); } catch (error) { next(error); }
+});
+
+app.post('/api/reports', async (req, res, next) => {
+  try { const { listing_id, reporter_name, reason } = req.body || {}; if (!positiveInt(listing_id) || !reporter_name || reporter_name.trim().length < 2 || !reason || reason.trim().length < 5) return fail(res, 422, 'Data laporan belum valid'); const result = await run('INSERT INTO reports (listing_id, reporter_name, reason) VALUES (?, ?, ?)', [Number(listing_id), reporter_name.trim(), reason.trim()]); res.status(201); ok(res, { id: result.id, message: 'Laporan diterima untuk moderasi.' }); } catch (error) { next(error); }
+});
+
+app.get('/api/community/summary', async (_req, res, next) => {
+  try { const [comments] = await query("SELECT COUNT(*) AS total FROM comments WHERE status = 'visible'"); const [suggestions] = await query('SELECT COUNT(*) AS total FROM suggestions'); const [supporters] = await query("SELECT COUNT(*) AS total FROM donations WHERE status != 'cancelled'"); ok(res, { comments: Number(comments.total), suggestions: Number(suggestions.total), supporters: Number(supporters.total) }); } catch (error) { next(error); }
+});
+
 app.delete('/api/favorites', async (req, res, next) => {
   try {
     const { user_id, listing_id } = req.body || {};
