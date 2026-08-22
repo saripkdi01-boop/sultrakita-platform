@@ -42,9 +42,25 @@ Endpoint API memiliki rate limiting berbasis IP dan path sebagai perlindungan aw
 
 Fitur saran, komentar, dan laporan telah tersedia sebagai fondasi moderasi komunitas. Komentar disimpan dengan status moderasi, sedangkan laporan dipisahkan agar tim admin dapat menindaklanjuti konten bermasalah. Fitur donasi saat ini mencatat komitmen dukungan (`pledged`) dan sengaja belum memproses pembayaran nyata. Untuk production, hubungkan endpoint ini ke provider pembayaran resmi, webhook tervalidasi, rekening organisasi yang sah, kebijakan pengembalian dana, dan rekonsiliasi admin sebelum menerima dana pengguna.
 
+## Notifikasi WhatsApp penjual
+
+Notifikasi WhatsApp otomatis dipicu setelah komentar atau pesan pembeli tersimpan berhasil. Adapter menggunakan WhatsApp Cloud API resmi dan bersifat non-blocking: kegagalan provider dicatat di server tanpa menggagalkan penyimpanan pesan. Konfigurasikan `WHATSAPP_API_VERSION`, `WHATSAPP_PHONE_NUMBER_ID`, dan `WHATSAPP_ACCESS_TOKEN` melalui secret manager. Nomor `08...` dinormalisasi menjadi format internasional `62...`. Untuk pesan di luar jendela layanan pelanggan, gunakan template pesan yang disetujui Meta sesuai kebijakan WhatsApp.
+
+## Secret Cloudflare Workers
+
+Jangan memasukkan nilai token ke `wrangler.toml`, `.env`, commit Git, screenshot, atau chat. Set secret production menggunakan Wrangler:
+
+```bash
+printf '%s' 'TOKEN_ADMIN_PANJANG' | npx wrangler secret put ADMIN_TOKEN --config wrangler-short.toml
+printf '%s' 'TOKEN_META_WHATSAPP' | npx wrangler secret put WHATSAPP_ACCESS_TOKEN --config wrangler-short.toml
+printf '%s' 'PHONE_NUMBER_ID_META' | npx wrangler secret put WHATSAPP_PHONE_NUMBER_ID --config wrangler-short.toml
+```
+
+Periksa nama secret tanpa mencetak nilainya melalui dashboard Cloudflare atau daftar konfigurasi Wrangler. Setelah rotasi token, lakukan smoke test endpoint admin menggunakan header `x-admin-token` dari terminal lokal yang aman. `ADMIN_TOKEN` sebaiknya dibuat acak, panjang, berbeda dari password, dan dirotasi ketika ada perubahan anggota tim. Hapus token lama dari secret store setelah deployment baru tervalidasi.
+
 ## Prioritas produk berikutnya
 
-Setelah empat fitur prioritas ini, platform perlu dilengkapi dengan dashboard admin verifikasi, provider OTP resmi, object storage R2, chat pembeli-penjual, notifikasi, moderasi laporan, analytics, backup, dan dashboard operasional. Checkout serta pembayaran dapat diintegrasikan setelah alur transaksi dan kebijakan marketplace lokal telah ditetapkan.
+Setelah fondasi ini, platform perlu dilengkapi dengan template WhatsApp yang disetujui, delivery log dan retry queue, dashboard notifikasi admin, provider OTP resmi, object storage R2, chat berskala tinggi, moderasi laporan, analytics, backup, dan dashboard operasional. Checkout serta pembayaran dapat diintegrasikan setelah alur transaksi dan kebijakan marketplace lokal telah ditetapkan.
 
 ## Keamanan
 
