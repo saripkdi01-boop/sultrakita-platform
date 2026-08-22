@@ -9,7 +9,8 @@ const checks = [
   ['worker.js', ['bash', '-lc', 'node --input-type=module --check < worker.js']],
   ['scripts/api-smoke.js', ['node', '--check', 'scripts/api-smoke.js']],
   ['scripts/security-regression.js', ['node', '--check', 'scripts/security-regression.js']],
-  ['scripts/worker-security-e2e.js', ['node', '--check', 'scripts/worker-security-e2e.js']]
+  ['scripts/worker-security-e2e.js', ['node', '--check', 'scripts/worker-security-e2e.js']],
+  ['scripts/modernization-check.js', ['node', '--check', 'scripts/modernization-check.js']]
 ];
 
 for (const [label, command] of checks) {
