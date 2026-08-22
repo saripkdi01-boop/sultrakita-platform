@@ -22,3 +22,16 @@ Endpoint Vercel `GET /api/health` pada verifikasi terbaru masih merespons `503 {
 
 
 Setelah commit `8f9cf93`, Vercel pulih. `GET https://sultrakita-platform.vercel.app/api/health` merespons `{"success":true,"data":{"status":"healthy","service":"sultrakita-api"}}`. Homepage Vercel berhasil dirender dengan judul `SultraKita — Jual Beli Lokal Kendari dan Sulawesi Tenggara`, fitur video produk, kategori, filter listing, CTA donasi, dan panel operasional.
+
+
+Smoke test lintas deployment:
+
+| Target | Hasil |
+|---|---|
+| Cloudflare Worker health | HTTP sukses, status `healthy`. |
+| Cloudflare admin anonymous | HTTP `401`, autentikasi diwajibkan. |
+| Cloudflare listings | HTTP sukses dengan pagination metadata. |
+| Vercel health | HTTP sukses, status `healthy`. |
+| Git branch | `main` bersih dan sama dengan `origin/main` pada saat pemeriksaan. |
+
+GitHub Actions untuk commit `f31a2a5` selesai `success`, termasuk verifikasi Node.js 18/20/22, PHP modernization artifacts, dependency audit, dan CodeQL. GitHub memberi warning deprecation bahwa beberapa action masih menargetkan Node.js 20; warning tersebut tidak menggagalkan pipeline dan layak dijadwalkan untuk upgrade workflow berikutnya.
