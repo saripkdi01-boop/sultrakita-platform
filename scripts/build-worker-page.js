@@ -1,0 +1,15 @@
+const fs=require('node:fs');
+const path=require('node:path');
+const root=path.resolve(__dirname,'..');
+const index=fs.readFileSync(path.join(root,'public/index.html'),'utf8');
+const css=fs.readFileSync(path.join(root,'public/styles.css'),'utf8');
+const js=fs.readFileSync(path.join(root,'public/app.js'),'utf8');
+const inline=index.replace('<link rel="stylesheet" href="/styles.css">',`<style>${css}</style>`).replace('<script src="/app.js"></script>',`<script>${js}</script>`);
+const workerPath=path.join(root,'worker.js');
+const worker=fs.readFileSync(workerPath,'utf8');
+const start=worker.indexOf('const page = `');
+const end=worker.indexOf('`;',start);
+if(start<0||end<0)throw new Error('page template not found');
+const safe=inline.replace(/\\/g,'\\\\').replace(/`/g,'\\`').replace(/\${/g,'\\${');
+const next=worker.slice(0,start)+`const page = \`${safe}\`;`+worker.slice(end+2);
+fs.writeFileSync(workerPath,next);
