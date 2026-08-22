@@ -1,14 +1,112 @@
-const mysql = require('mysql2');
-require('dotenv').config();
+const fs = require('node:fs');
+const path = require('node:path');
+const initSqlJs = require('sql.js');
 
-const pool = mysql.createPool({
-  host: process.env.pusatpropertyid.com,
-  user: process.env.pusatpr8_sultrakita,
-  password: process.env.Aklaman987@_,
-  database: process.env.pusatpr8_sultrakita,
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
-});
+const dataDir = path.join(__dirname, 'data');
+const dbFile = path.join(dataDir, 'sultrakita.sqlite');
 
-module.exports = pool.promise();
+let databasePromise;
+
+const schema = `
+  PRAGMA foreign_keys = ON;
+  CREATE TABLE IF NOT EXISTS categories (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    slug TEXT NOT NULL UNIQUE,
+    icon TEXT DEFAULT 'tag',
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    phone TEXT NOT NULL UNIQUE,
+    role TEXT NOT NULL DEFAULT 'buyer' CHECK(role IN ('buyer','seller','admin')),
+    district TEXT NOT NULL DEFAULT 'Kendari',
+    is_verified INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE TABLE IF NOT EXISTS listings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    seller_id INTEGER,
+    category_id INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    price INTEGER NOT NULL CHECK(price >= 0),
+    condition TEXT NOT NULL DEFAULT 'new' CHECK(condition IN ('new','second')),
+    status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active','sold','archived')),
+    district TEXT NOT NULL DEFAULT 'Kendari',
+    city TEXT NOT NULL DEFAULT 'Kendari',
+    province TEXT NOT NULL DEFAULT 'Sulawesi Tenggara',
+    image_url TEXT,
+    views INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(seller_id) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY(category_id) REFERENCES categories(id)
+  );
+  CREATE TABLE IF NOT EXISTS favorites (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    listing_id INTEGER NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, listing_id),
+    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY(listing_id) REFERENCES listings(id) ON DELETE CASCADE
+  );
+  CREATE INDEX IF NOT EXISTS idx_listings_search ON listings(status, category_id, district, price);
+  CREATE INDEX IF NOT EXISTS idx_listings_created ON listings(created_at DESC);
+`;
+
+const categories = [
+  ['Properti', 'properti', 'home'], ['Elektronik', 'elektronik', 'smartphone'],
+  ['Kendaraan', 'kendaraan', 'car'], ['Fashion', 'fashion', 'shirt'],
+  ['Perabotan', 'perabotan', 'sofa'], ['Jasa', 'jasa', 'briefcase'],
+  ['Kuliner', 'kuliner', 'utensils'], ['Hobi & Koleksi', 'hobi-koleksi', 'camera'],
+  ['Lowongan Kerja', 'lowongan-kerja', 'job'], ['Lainnya', 'lainnya', 'tag']
+];
+
+async function getDb() {
+  if (!databasePromise) {
+    databasePromise = initSqlJs().then(SQL => {
+      fs.mkdirSync(dataDir, { recursive: true });
+      const database = fs.existsSync(dbFile)
+        ? new SQL.Database(fs.readFileSync(dbFile))
+        : new SQL.Database();
+      database.run(schema);
+      const count = database.exec('SELECT COUNT(*) AS count FROM categories')[0]?.values[0][0] || 0;
+      if (count === 0) {
+        const statement = database.prepare('INSERT INTO categories (name, slug, icon) VALUES (?, ?, ?)');
+        categories.forEach(category => statement.run(category));
+        statement.free();
+      }
+      persist(database);
+      return database;
+    });
+  }
+  return databasePromise;
+}
+
+function persist(database) {
+  fs.mkdirSync(dataDir, { recursive: true });
+  fs.writeFileSync(dbFile, Buffer.from(database.export()));
+}
+
+async function query(sql, params = []) {
+  const database = await getDb();
+  const statement = database.prepare(sql);
+  statement.bind(params);
+  const rows = [];
+  while (statement.step()) rows.push(statement.getAsObject());
+  statement.free();
+  return rows;
+}
+
+async function run(sql, params = []) {
+  const database = await getDb();
+  database.run(sql, params);
+  const result = database.exec('SELECT last_insert_rowid() AS id');
+  persist(database);
+  return { id: result[0]?.values[0][0] || null };
+}
+
+module.exports = { getDb, query, run, persist };
