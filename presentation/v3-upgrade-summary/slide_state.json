@@ -1,0 +1,124 @@
+{
+  "project_info": {
+    "title": "SultraKita v3",
+    "created": 1787392522.852,
+    "last_updated": 1787392808.125,
+    "total_slides": 11
+  },
+  "slides": [
+    {
+      "id": "cover",
+      "state": "edited",
+      "pageNum": 1
+    },
+    {
+      "id": "existing_foundation",
+      "state": "edited",
+      "pageNum": 2
+    },
+    {
+      "id": "audit_diagnosis",
+      "state": "edited",
+      "pageNum": 3
+    },
+    {
+      "id": "master_prompt",
+      "state": "edited",
+      "pageNum": 4
+    },
+    {
+      "id": "server_hardening",
+      "state": "edited",
+      "pageNum": 5
+    },
+    {
+      "id": "open_gaps",
+      "state": "edited",
+      "pageNum": 6
+    },
+    {
+      "id": "production_runbook",
+      "state": "edited",
+      "pageNum": 7
+    },
+    {
+      "id": "definition_done",
+      "state": "edited",
+      "pageNum": 8
+    },
+    {
+      "id": "repo_update",
+      "state": "edited",
+      "pageNum": 9
+    },
+    {
+      "id": "roadmap",
+      "state": "edited",
+      "pageNum": 10
+    },
+    {
+      "id": "closing",
+      "state": "edited",
+      "pageNum": 11
+    }
+  ],
+  "outline": [
+    {
+      "id": "cover",
+      "title": "SultraKita v3",
+      "summary": "Dari marketplace lokal menuju social-commerce yang terpercaya. Ringkasan Master Prompt v3, audit baseline, hardening awal, dan jalur release production.",
+      "image_plan": "/home/ubuntu/upload/search_images/STK6aasFnAVU.jpg - Slide 1: SultraKita v3 introduction representing Kendari, Southeast Sulawesi (local context)."
+    },
+    {
+      "id": "existing_foundation",
+      "title": "Apa yang Sudah Dimiliki",
+      "summary": "Fondasi aktual repository: frontend static, API, Worker path, SQLite/sql.js, listing, auth, upload, messaging, analytics, dan SEO/PWA basics."
+    },
+    {
+      "id": "audit_diagnosis",
+      "title": "Diagnosis Audit",
+      "summary": "Gap utama: authorization/ownership, dual verification fields, local persistence/upload, dan Express-Worker drift. Baseline test lulus 4/0."
+    },
+    {
+      "id": "master_prompt",
+      "title": "Master Prompt v3",
+      "summary": "Brief besar diubah menjadi program release bertahap dengan quality gates, migration discipline, runtime compatibility, acceptance criteria, dan rollback."
+    },
+    {
+      "id": "server_hardening",
+      "title": "Perbaikan server.js yang Sudah Diterapkan",
+      "summary": "Health error disclosure diperbaiki, OTP dibatasi lima percobaan, dan status verified seller disatukan secara kompatibel."
+    },
+    {
+      "id": "open_gaps",
+      "title": "Gap P0/P1 yang Masih Terbuka",
+      "summary": "Full authorization, OTP abuse controls, upload hardening, durable storage, runtime parity, membership checks, dan security regression tests masih diperlukan."
+    },
+    {
+      "id": "production_runbook",
+      "title": "Production Runbook",
+      "summary": "Urutan release: freeze, environment, backup/migration, pre-deploy checks, staging, production smoke test, observability, dan rollback."
+    },
+    {
+      "id": "definition_done",
+      "title": "Definition of Done",
+      "summary": "Release candidate harus memenuhi security, data, marketplace, trust, messaging, UX, accessibility, SEO, performance, operations, tests, Git, dan rollback."
+    },
+    {
+      "id": "repo_update",
+      "title": "Folder Update Repository",
+      "summary": "Folder baru updates/2026-08-22-v3-release berisi README, production runbook, dan server change log; update berikutnya mengikuti pola tanggal-nama-release."
+    },
+    {
+      "id": "roadmap",
+      "title": "Roadmap Keputusan",
+      "summary": "Sekarang review baseline; berikutnya P0 auth/ownership; setelah stabil lanjut design system, discovery, listing, trust, social, dan messaging."
+    },
+    {
+      "id": "closing",
+      "title": "Penutup",
+      "summary": "SultraKita diarahkan menjadi produk teknologi serius yang lokal, cepat, mobile-first, terpercaya, dan maintainable.",
+      "image_plan": "/home/ubuntu/upload/search_images/uMhJtDu5ycsH.jpg - Slide 11: Closing slide highlighting local identity (Kendari monument)."
+    }
+  ]
+}

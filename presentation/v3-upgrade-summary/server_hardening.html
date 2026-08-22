@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<style>
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+/* Remove default body margin and nudge the slide up 1px so total page height <720px */
+.slide-container{width:1280px;min-height:720px;margin-top:-1px;background:#E2E8F0;color:#0F172A;font-family:Arial,Helvetica,sans-serif}
+.frame{padding:52px 72px 0}
+.eyebrow{color:#DC2626;font-size:15px;font-weight:700;letter-spacing:3px}
+.title{font-size:46px;line-height:1.05;letter-spacing:-2px;font-weight:900;margin:18px 0 28px}
+.row{display:grid;grid-template-columns:60px 235px 1fr 220px;gap:18px;align-items:start;border-top:1px solid #334155;padding:14px 0;min-height:106px}
+.num{font-size:25px;font-weight:900;color:#DC2626}
+.area{font-size:21px;font-weight:900;line-height:1.1}
+.detail{font-size:17px;line-height:1.35;color:#334155}
+.impact{font-size:15px;line-height:1.35;color:#0F172A;border-left:1px solid #334155;padding-left:16px}
+.impact strong{display:block;color:#DC2626;font-size:12px;letter-spacing:1px;margin-bottom:5px}
+.footer{margin-top:20px;border-top:2px solid #0F172A;padding-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:20px;font-size:17px;font-weight:700}
+.footer span{color:#334155;font-weight:400}
+</style>
+</head>
+<body>
+<div class="slide-container">
+  <div class="frame">
+    <div class="eyebrow">04 / VERIFIED CODE CHANGES</div>
+    <h1 class="title">Tiga hardening awal di <code>server.js</code>.</h1>
+    <div class="row">
+      <div class="num">01</div>
+      <div class="area">Health endpoint</div>
+      <div class="detail">Handler database failure tidak lagi meneruskan <code>error.message</code> internal kepada client.</div>
+      <div class="impact"><strong>DAMPAK</strong>Mengurangi kebocoran informasi internal pada response production.</div>
+    </div>
+    <div class="row">
+      <div class="num">02</div>
+      <div class="area">OTP verification</div>
+      <div class="detail">Lookup challenge pada <code>/api/auth/verify-otp</code> hanya menerima record dengan <code>attempts &lt; 5</code>.</div>
+      <div class="impact"><strong>DAMPAK</strong>Membatasi brute-force pada satu challenge OTP.</div>
+    </div>
+    <div class="row">
+      <div class="num">03</div>
+      <div class="area">Verified seller</div>
+      <div class="detail">Query listing/detail membaca status approved baru dan tetap kompatibel dengan field legacy <code>is_verified</code>.</div>
+      <div class="impact"><strong>DAMPAK</strong>Badge seller mengikuti status moderasi secara konsisten.</div>
+    </div>
+    <div class="footer"><div>COMMIT <span><code>ec0236d</code> · focused local checkpoint</span></div><div>VERIFY <span><code>npm test</code> → 4 lulus · 0 gagal</span></div></div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<style>
+*{box-sizing:border-box}
+body{margin:0}
+.slide-container{width:1280px;min-height:720px;background:#E2E8F0;color:#0F172A;font-family:Arial,Helvetica,sans-serif}
+.frame{padding:41px 72px 0}
+.eyebrow{color:#DC2626;font-size:15px;font-weight:700;letter-spacing:3px}
+.title{font-size:50px;line-height:1;letter-spacing:-2px;font-weight:900;margin:16px 0 10px}
+.lead{font-size:19px;line-height:1.3;color:#334155;margin:0;max-width:800px}
+.matrix{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:34px}
+.column{min-width:0}
+.item{border-top:1px solid #334155;padding-top:11px;margin-bottom:16px;min-height:67px;display:grid;grid-template-columns:22px 1fr;gap:10px}
+.marker{width:13px;height:13px;background:#DC2626;margin-top:3px}
+.item h3{font-size:18px;line-height:1.05;font-weight:900;margin:0 0 5px}
+.item p{font-size:14px;line-height:1.28;color:#334155;margin:0}
+.gate{margin-top:10px;border:1px solid #0F172A;background:#F8FAFC;padding:14px 16px;display:grid;grid-template-columns:180px 1fr;gap:18px;align-items:center}
+.gate strong{font-size:18px;font-weight:900;color:#DC2626}.gate span{font-size:17px;line-height:1.25;color:#334155}
+</style>
+</head>
+<body>
+<div class="slide-container">
+  <div class="frame">
+    <div class="eyebrow">07 / RELEASE ACCEPTANCE</div>
+    <h1 class="title">Definition of Done</h1>
+    <p class="lead">Release candidate diterima hanya bila bukti teknis, produk, dan operasional tersedia—bukan hanya karena homepage dapat dimuat.</p>
+    <section class="matrix">
+      <div class="column">
+        <div class="item"><div class="marker"></div><div><h3>Security</h3><p>Auth, ownership, upload validation, secret boundary.</p></div></div>
+        <div class="item"><div class="marker"></div><div><h3>Data</h3><p>Migration idempotent, existing data preserved, backup note.</p></div></div>
+        <div class="item"><div class="marker"></div><div><h3>Marketplace</h3><p>Browse, search, detail, favorite, create, report end-to-end.</p></div></div>
+        <div class="item"><div class="marker"></div><div><h3>Trust</h3><p>Verification and moderation states consistent and auditable.</p></div></div>
+      </div>
+      <div class="column">
+        <div class="item"><div class="marker"></div><div><h3>Messaging</h3><p>Conversation membership, pagination, context, rate limit.</p></div></div>
+        <div class="item"><div class="marker"></div><div><h3>UX</h3><p>Mobile-first, no overflow, loading/empty/error/success states.</p></div></div>
+        <div class="item"><div class="marker"></div><div><h3>Accessibility</h3><p>Semantic HTML, keyboard focus, labels, contrast, alt text.</p></div></div>
+        <div class="item"><div class="marker"></div><div><h3>SEO</h3><p>Metadata, canonical, sitemap, robots, valid structured data.</p></div></div>
+      </div>
+      <div class="column">
+        <div class="item"><div class="marker"></div><div><h3>Performance</h3><p>Paginated lists, optimized images, measured payload/bundle.</p></div></div>
+        <div class="item"><div class="marker"></div><div><h3>Operations</h3><p>Health, logs, smoke tests, environment matrix, observability.</p></div></div>
+        <div class="item"><div class="marker"></div><div><h3>Testing</h3><p>Baseline plus critical journeys and security regressions.</p></div></div>
+        <div class="item"><div class="marker"></div><div><h3>Git & rollback</h3><p>Focused commits, reviewed SHA, rollback command and notes.</p></div></div>
+      </div>
+    </section>
+    <div class="gate"><strong>RELEASE GATE</strong><span>Tanpa evidence pada setiap dimensi, status tetap <b>not ready</b>—meskipun endpoint health merespons sukses.</span></div>
+  </div>
+</div>
+</body>
+</html>

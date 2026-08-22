@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<style>
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+.slide-container{width:1280px;min-height:720px;background:#E2E8F0;color:#0F172A;font-family:Arial,Helvetica,sans-serif}
+.frame{padding:48px 72px 0}
+.eyebrow{color:#DC2626;font-weight:700;letter-spacing:3px;font-size:15px}
+.title{font-size:48px;line-height:1.02;letter-spacing:-2px;font-weight:900;margin:16px 0 12px}
+.subtitle{font-size:19px;color:#334155;margin:0 0 12px;line-height:1.3}
+.grid{display:grid;grid-template-columns:1fr 1fr;column-gap:20px;row-gap:0}
+.item{display:grid;grid-template-columns:24px 1fr;gap:10px;border-top:1px solid #334155;padding:8px 0;min-height:64px}
+.marker{width:12px;height:12px;background:#DC2626;margin-top:2px}
+.item h3{font-size:20px;margin:0 0 5px;font-weight:900}
+.item p{font-size:15px;line-height:1.28;color:#334155;margin:0}
+.gate{margin-top:12px;border:1px solid #0F172A;background:#F8FAFC;padding:10px 12px;font-size:19px;font-weight:700;line-height:1.25}
+.gate span{color:#DC2626}
+</style>
+</head>
+<body>
+<div class="slide-container">
+  <div class="frame">
+    <div class="eyebrow">05 / OPEN RISKS</div>
+    <h1 class="title">Hardening awal bukan security completion.</h1>
+    <p class="subtitle">Gap berikutnya harus ditutup sebelum fitur mutation dan scale production diperbesar.</p>
+    <div class="grid">
+      <div class="item"><div class="marker"></div><div><h3>Authorization & ownership</h3><p>Bearer session, `req.user`, dan pemeriksaan kepemilikan untuk listing, favorite, comment, serta profile.</p></div></div>
+      <div class="item"><div class="marker"></div><div><h3>OTP abuse controls</h3><p>Rate limit khusus IP/nomor, invalidasi challenge lama, dan delivery observability.</p></div></div>
+      <div class="item"><div class="marker"></div><div><h3>Upload & durable storage</h3><p>Magic-byte validation, cleanup saat gagal, URL safety, dan object storage production.</p></div></div>
+      <div class="item"><div class="marker"></div><div><h3>Runtime parity</h3><p>Business service yang konsisten antara Express dan Cloudflare Worker untuk mencegah feature drift.</p></div></div>
+      <div class="item"><div class="marker"></div><div><h3>Conversation membership</h3><p>Hanya buyer/seller terkait yang dapat membaca atau mengirim pesan pada conversation.</p></div></div>
+      <div class="item"><div class="marker"></div><div><h3>Security regression tests</h3><p>Test wajib untuk impersonation, OTP lockout, upload, admin boundary, dan unauthorized mutation.</p></div></div>
+    </div>
+    <div class="gate"><span>NEXT GATE</span> — Jangan deploy release besar sebelum P0 auth/ownership dan test regresinya lulus.</div>
+  </div>
+</div>
+</body>
+</html>

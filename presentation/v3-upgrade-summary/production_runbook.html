@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<style>
+*{box-sizing:border-box}
+body{margin:0}
+.slide-container{width:1280px;min-height:720px;background:#E2E8F0;color:#0F172A;font-family:Arial,Helvetica,sans-serif}
+.frame{padding:48px 72px 0}
+.eyebrow{color:#DC2626;font-weight:700;letter-spacing:3px;font-size:15px}
+.title{font-size:48px;line-height:1;letter-spacing:-2px;font-weight:900;margin:16px 0 12px}
+.lead{font-size:19px;color:#334155;margin:0 0 26px;max-width:760px;line-height:1.3}
+.pipeline{display:grid;grid-template-columns:repeat(4,1fr);column-gap:22px;row-gap:22px}
+.step{border-top:1px solid #334155;padding-top:12px;min-height:105px;position:relative}
+.step:before{content:"";display:block;width:16px;height:16px;background:#DC2626;margin-bottom:9px}
+.step-no{font-size:13px;font-weight:900;color:#DC2626;letter-spacing:1px}
+.step h3{font-size:18px;margin:5px 0 6px;line-height:1.05}
+.step p{font-size:14px;line-height:1.28;color:#334155;margin:0}
+.gate{margin-top:24px;border:1px solid #0F172A;background:#F8FAFC;padding:14px 16px;display:grid;grid-template-columns:190px 1fr;gap:16px;align-items:center}
+.gate strong{font-size:18px;font-weight:900}.gate span{font-size:16px;line-height:1.3;color:#334155}
+</style>
+</head>
+<body>
+<div class="slide-container">
+  <div class="frame">
+    <div class="eyebrow">06 / RELEASE CONTROL</div>
+    <h1 class="title">Production runbook</h1>
+    <p class="lead">Deploy secara staged. Setiap langkah menghasilkan bukti yang dapat direview sebelum langkah berikutnya dibuka.</p>
+    <section class="pipeline">
+      <div class="step"><div class="step-no">01</div><h3>Freeze & baseline</h3><p>Branch, SHA, clean tree, `npm ci`, test baseline.</p></div>
+      <div class="step"><div class="step-no">02</div><h3>Environment</h3><p>Audit variable dan secret; pastikan dev mode nonaktif.</p></div>
+      <div class="step"><div class="step-no">03</div><h3>Backup & migration</h3><p>Snapshot, staging clone, idempotent migration, rollback note.</p></div>
+      <div class="step"><div class="step-no">04</div><h3>Pre-deploy checks</h3><p>Test, syntax, API errors, auth boundary, upload policy.</p></div>
+      <div class="step"><div class="step-no">05</div><h3>Staging canary</h3><p>Smoke test listing, search, auth, storage, chat, admin.</p></div>
+      <div class="step"><div class="step-no">06</div><h3>Production smoke</h3><p>Health, API contract, browser QA, critical journeys.</p></div>
+      <div class="step"><div class="step-no">07</div><h3>Observe window</h3><p>Exceptions, latency, 4xx/5xx, OTP, upload, database.</p></div>
+      <div class="step"><div class="step-no">08</div><h3>Rollback ready</h3><p>Stop rollout, preserve logs, restore last healthy release.</p></div>
+    </section>
+    <div class="gate"><strong>RELEASE GATE</strong><span>Health hijau saja tidak cukup. Release diterima hanya setelah security, migration, browser QA, critical journeys, observability, dan rollback diverifikasi.</span></div>
+  </div>
+</div>
+</body>
+</html>
