@@ -19,3 +19,6 @@ Vercel `https://sultrakita-platform.vercel.app/` masih mengembalikan `500 FUNCTI
 
 
 Endpoint Vercel `GET /api/health` pada verifikasi terbaru masih merespons `503 {"success":false,"error":"Database tidak tersedia"}` setelah commit `8070075`. Halaman root sempat mengembalikan `FUNCTION_INVOCATION_FAILED`; root cause database runtime belum dapat dikonfirmasi karena log Vercel memerlukan login pemilik akun.
+
+
+Setelah commit `8f9cf93`, Vercel pulih. `GET https://sultrakita-platform.vercel.app/api/health` merespons `{"success":true,"data":{"status":"healthy","service":"sultrakita-api"}}`. Homepage Vercel berhasil dirender dengan judul `SultraKita — Jual Beli Lokal Kendari dan Sulawesi Tenggara`, fitur video produk, kategori, filter listing, CTA donasi, dan panel operasional.
