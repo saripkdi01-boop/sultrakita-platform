@@ -5,16 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Dashboard akun SultraKita untuk profil, alamat, keranjang, dan pesanan.">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/styles.css">
+  <script>(function(){try{var t=localStorage.getItem("sultra-dark");if(t==="true"||(t===null<link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/styles.css">matchMedia("(prefers-color-scheme: dark)").matches))document.documentElement.classList.add("theme-dark-preload")}catch(e){}})();</script><link rel="stylesheet" href="/styles.css">
   <link rel="stylesheet" href="/account.css">
   <title>Akun Saya — SultraKita</title>
 </head>
 <body class="account-page">
-  <header class="account-topbar"><a class="brand" href="/"><span class="brand-mark">S</span><span>Sultra<strong>Kita</strong></span></a><a class="button button-quiet" href="/">← Kembali ke marketplace</a></header>
+  <header class="account-topbar"><a class="brand" href="/"><span class="brand-mark">S</span><span>Sultra<strong>Kita</strong></span></a><div class="account-top-actions"><button class="icon-button theme-toggle" id="theme-toggle" aria-label="Aktifkan mode gelap">◐</button><a class="button button-quiet" href="/">← Kembali ke marketplace</a></div></header>
   <main class="account-shell">
     <section id="login-panel" class="account-login card-surface">
-      <div class="eyebrow"><span class="eyebrow-line"></span>Akun SultraKita</div><h1>Belanja, jual, dan kelola semuanya dari satu tempat.</h1><p class="dialog-help">Masuk dengan OTP WhatsApp. Session disimpan hanya di browser ini.</p>
-      <form id="login-form"><label>Nomor WhatsApp<input id="login-phone" type="tel" inputmode="tel" placeholder="08xxxxxxxxxx" required></label><div class="account-inline"><label>Kode OTP<input id="login-code" inputmode="numeric" placeholder="6 digit"></label><button class="button button-soft" id="login-otp" type="button">Kirim OTP</button></div><button class="button button-primary full" type="submit">Masuk ke akun</button><p id="login-message" class="form-message" role="status"></p></form>
+      <div class="eyebrow"><span class="eyebrow-line"></span>Akun SultraKita</div><h1>Belanja, jual, dan kelola semuanya dari satu tempat.</h1><p class="dialog-help">Pilih OTP WhatsApp atau email. Session disimpan hanya di browser ini.</p>
+      <form id="login-form"><div class="otp-channel-choice" role="radiogroup" aria-label="Pilih channel login"><span>Verifikasi via</span><label><input type="radio" name="login_channel" value="whatsapp" checked> WhatsApp</label><label><input type="radio" name="login_channel" value="email"> Email</label></div><label id="login-phone-field">Nomor WhatsApp<input id="login-phone" type="tel" inputmode="tel" placeholder="08xxxxxxxxxx"></label><label id="login-email-field" hidden>Email<input id="login-email" type="email" placeholder="nama@email.com"></label><div class="account-inline"><label>Kode OTP<input id="login-code" inputmode="numeric" placeholder="6 digit" required></label><button class="button button-soft" id="login-otp" type="button">Kirim OTP WhatsApp</button></div><button class="button button-primary full" type="submit">Masuk ke akun</button><p id="login-message" class="form-message" role="status"></p></form>
     </section>
     <section id="dashboard" hidden>
       <div class="account-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span>Ruang pribadi</div><h1 id="welcome">Dashboard saya</h1><p id="account-status" class="dialog-help"></p></div><button id="logout" class="button button-outline">Keluar</button></div>

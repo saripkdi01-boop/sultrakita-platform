@@ -16,6 +16,8 @@ const required = [
   'public/marketplace-bridge.js',
   'shared/taxonomy.js',
   'database/migrations/002_normalize_postgres_types.sql',
+  'database/migrations/004_email_otp.sql',
+  'OTP-EMAIL-SETUP.md',
   'scripts/migrate-postgres.js',
   'scripts/seed-demo.js',
   'server.js',

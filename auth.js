@@ -12,8 +12,8 @@ async function authenticate(req, _res, next) {
     if (!match) return next();
 
     const [user] = await query(
-      `SELECT u.id, u.name, u.phone, u.role, u.district,
-              u.phone_verified, u.verification_status
+      `SELECT u.id, u.name, u.phone, u.email, u.role, u.district,
+              u.phone_verified, u.email_verified, u.verification_status
        FROM sessions s JOIN users u ON u.id = s.user_id
        WHERE s.token_hash = ? AND s.expires_at > ?`,
       [hashToken(match[1]), Date.now()]
