@@ -9,8 +9,6 @@
     "lint": "node scripts/lint-check.js",
     "test": "node --test",
     "build": "node scripts/build-check.js",
-    "sync:worker": "node scripts/build-worker-page.js",
-    "check:worker-sync": "node scripts/build-worker-page.js --check",
     "test:security": "node scripts/security-regression.js",
     "smoke:api": "node scripts/api-smoke.js",
     "smoke:donation": "node scripts/donation-smoke.js",
@@ -22,9 +20,10 @@
     "db:migrate:postgres": "node scripts/migrate-postgres.js",
     "db:backup:postgres": "bash scripts/backup-postgres.sh",
     "db:restore:postgres": "bash scripts/restore-postgres.sh",
-    "test:worker-security": "node scripts/worker-security-e2e.js",
     "check:modernization": "node scripts/modernization-check.js",
-    "verify:local": "npm run lint && npm test && npm run build && npm run test:security && npm run smoke:api && npm run smoke:donation"
+    "verify:local": "npm run lint && npm test && npm run build && npm run test:security && npm run smoke:api && npm run smoke:donation",
+    "db:migrate": "node scripts/migrate-postgres.js",
+    "check:single-runtime": "node scripts/modernization-check.js"
   },
   "keywords": [
     "marketplace",
@@ -39,7 +38,6 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "multer": "^2.0.2",
-    "pg": "^8.23.0",
-    "sql.js": "^1.14.1"
+    "pg": "^8.23.0"
   }
 }

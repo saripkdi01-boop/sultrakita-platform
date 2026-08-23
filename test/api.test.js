@@ -1,6 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const app = require('../server');
+const integrationOptions = { skip: !process.env.DATABASE_URL, skipReason: 'DATABASE_URL tidak tersedia; integration test membutuhkan PostgreSQL staging.' };
 
 let server;
 let baseUrl;
@@ -13,7 +14,7 @@ test.before(async () => {
 
 test.after(() => server.close());
 
-test('health endpoint reports healthy service', async () => {
+test('health endpoint reports healthy service', integrationOptions, async () => {
   const response = await fetch(`${baseUrl}/api/health`);
   assert.equal(response.status, 200);
   const body = await response.json();
@@ -21,7 +22,7 @@ test('health endpoint reports healthy service', async () => {
   assert.equal(body.data.status, 'healthy');
 });
 
-test('categories endpoint exposes local marketplace categories', async () => {
+test('categories endpoint exposes local marketplace categories', integrationOptions, async () => {
   const response = await fetch(`${baseUrl}/api/categories`);
   const body = await response.json();
   assert.equal(response.status, 200);
@@ -29,7 +30,7 @@ test('categories endpoint exposes local marketplace categories', async () => {
   assert.ok(body.data.some(category => category.slug === 'elektronik'));
 });
 
-test('listing validation rejects incomplete payload', async () => {
+test('listing validation rejects incomplete payload', integrationOptions, async () => {
   const response = await fetch(`${baseUrl}/api/listings`, {
     method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ title: 'x', price: -1 })
   });
@@ -39,7 +40,7 @@ test('listing validation rejects incomplete payload', async () => {
   assert.ok(body.details.length >= 3);
 });
 
-test('locations are scoped to Kendari and Southeast Sulawesi', async () => {
+test('locations are scoped to Kendari and Southeast Sulawesi', integrationOptions, async () => {
   const response = await fetch(`${baseUrl}/api/locations`);
   const body = await response.json();
   assert.equal(body.data.city, 'Kendari');
@@ -47,7 +48,7 @@ test('locations are scoped to Kendari and Southeast Sulawesi', async () => {
   assert.ok(body.data.districts.includes('Mandonga'));
 });
 
-test('upgrade endpoints enforce authentication', async () => {
+test('upgrade endpoints enforce authentication', integrationOptions, async () => {
   for (const path of ['/api/me', '/api/cart', '/api/notifications']) {
     const response = await fetch(`${baseUrl}${path}`);
     assert.equal(response.status, 401, path);
@@ -56,7 +57,7 @@ test('upgrade endpoints enforce authentication', async () => {
   }
 });
 
-test('shipping quote endpoint is not exposed without a provider claim', async () => {
+test('shipping quote endpoint is not exposed without a provider claim', integrationOptions, async () => {
   for (const path of ['/api/checkout', '/api/shipping/quotes']) {
     const response = await fetch(`${baseUrl}${path}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });
     const body = await response.json();

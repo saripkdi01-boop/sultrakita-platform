@@ -1,6 +1,5 @@
 User-agent: *
 Allow: /
-Disallow: /admin.html
-Disallow: /chat.html
 Disallow: /api/
-Sitemap: https://sultrakita.aplikasi-cerdasku.workers.dev/sitemap.xml
+Disallow: /admin
+Sitemap: https://sultrakita-platform.vercel.app/sitemap.xml

@@ -6,7 +6,6 @@ const fs = require('node:fs');
 
 const checks = [
   ['server.js', ['node', '--check', 'server.js']],
-  ['worker.js', ['bash', '-lc', 'node --input-type=module --check < worker.js']],
   ['scripts/api-smoke.js', ['node', '--check', 'scripts/api-smoke.js']],
   ['scripts/security-regression.js', ['node', '--check', 'scripts/security-regression.js']],
   ['scripts/worker-security-e2e.js', ['node', '--check', 'scripts/worker-security-e2e.js']],

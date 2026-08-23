@@ -12,7 +12,6 @@ const required = [
   'public/sitemap.xml',
   'public/site.webmanifest',
   'server.js',
-  'worker.js'
 ];
 
 for (const file of required) {

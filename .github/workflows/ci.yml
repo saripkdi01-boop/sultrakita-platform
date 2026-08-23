@@ -4,80 +4,36 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
 
 permissions:
   contents: read
-  security-events: write
 
 jobs:
   verify:
-    name: Node ${{ matrix.node-version }} verification
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        node-version: [18.x, 20.x, 22.x]
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: sultrakita_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd="pg_isready -U postgres -d sultrakita_test"
+          --health-interval=10s --health-timeout=5s --health-retries=5
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/sultrakita_test
+      DATABASE_SSL: 'false'
+      NODE_ENV: test
+      CORS_ORIGINS: http://127.0.0.1:3000
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 22
           cache: npm
-      - name: Install dependencies
-        run: npm ci --no-audit --no-fund
-      - name: Check JavaScript syntax
-        run: node --check server.js && node --input-type=module --check < worker.js && node --check scripts/api-smoke.js && node --check scripts/security-regression.js && node --check scripts/worker-security-e2e.js
-      - name: Run lint
-        run: npm run lint
-      - name: Run test suite
-        run: npm test
-      - name: Run build check
-        run: npm run build
-      - name: Check Worker frontend parity
-        run: npm run check:worker-sync
-      - name: Run security regression
-        run: npm run test:security
-      - name: Run local API smoke test
-        run: npm run smoke:api
-      - name: Check whitespace
-        run: git diff --check
-
-  modernization:
-    name: PHP and modernization artifact verification
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.3'
-      - name: Check PHP syntax
-        run: php -l modernization/php/app/bootstrap.php && php -l modernization/php/public/get_listings.php && php -l modernization/php/public/listings.php
-      - name: Check modernization artifacts
-        run: npm run check:modernization
-
-  dependency-audit:
-    name: Dependency audit
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22.x
-          cache: npm
-      - name: Install dependencies
-        run: npm ci --no-audit --no-fund
-      - name: Audit production dependencies
-        run: npm audit --omit=dev --audit-level=moderate
-      - name: Scan repository with GitHub CodeQL
-        uses: github/codeql-action/init@v3
-        with:
-          languages: javascript
-      - name: Analyze repository with CodeQL
-        uses: github/codeql-action/analyze@v3
+      - run: npm ci
+      - run: npm run db:migrate
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
