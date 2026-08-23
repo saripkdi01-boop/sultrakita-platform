@@ -40,6 +40,8 @@ assert.match(server, /\/api\/admin\/external-jobs\/import-url/);
 assert.match(server, /\/api\/admin\/external-jobs\/import-urls/);
 assert.match(server, /hostnameAllowedForJob/);
 assert.match(server, /fetchJobUrlMetadata/);
+assert.match(server, /summarizeJobCard/);
+assert.match(server, /metadata_fallback/);
 assert.match(server, /EXTERNAL_JOB_FEEDS_JSON/);
 assert.match(server, /provenance/);
 assert.match(account, /\/api\/auth\/google\/start/);
