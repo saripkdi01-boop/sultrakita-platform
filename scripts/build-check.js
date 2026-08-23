@@ -13,6 +13,7 @@ const required = [
   'public/site.webmanifest',
   'public/sw.js',
   'public/taxonomy.js',
+  'public/marketplace-bridge.js',
   'shared/taxonomy.js',
   'database/migrations/002_normalize_postgres_types.sql',
   'scripts/migrate-postgres.js',

@@ -173,7 +173,7 @@ app.get('/api/listings', async (req, res, next) => {
     const allowedSort = { newest: 'l.created_at DESC', cheapest: 'l.price ASC', expensive: 'l.price DESC', popular: 'l.views DESC' };
     const order = allowedSort[req.query.sort] || allowedSort.newest;
     const where = filters.join(' AND ');
-    const items = await query(`SELECT l.*, c.name AS category_name, c.slug AS category_slug, u.name AS seller_name, CASE WHEN COALESCE(u.verification_status, 'unverified') = 'approved' OR COALESCE(u.is_verified, false) THEN 1 ELSE 0 END AS seller_verified FROM listings l JOIN categories c ON c.id = l.category_id LEFT JOIN users u ON u.id = l.seller_id WHERE ${where} ORDER BY ${order} LIMIT ? OFFSET ?`, [...params, limit, offset]);
+    const items = await query(`SELECT l.*, c.name AS category_name, c.slug AS category_slug, u.name AS seller_name, u.phone AS seller_phone, CASE WHEN COALESCE(u.verification_status, 'unverified') = 'approved' OR COALESCE(u.is_verified, false) THEN 1 ELSE 0 END AS seller_verified FROM listings l JOIN categories c ON c.id = l.category_id LEFT JOIN users u ON u.id = l.seller_id WHERE ${where} ORDER BY ${order} LIMIT ? OFFSET ?`, [...params, limit, offset]);
     const [{ total }] = await query(`SELECT COUNT(*) AS total FROM listings l JOIN categories c ON c.id = l.category_id WHERE ${where}`, params);
     ok(res, items, { page, limit, total: Number(total), total_pages: Math.ceil(Number(total) / limit), location: 'Kendari, Sulawesi Tenggara' });
   } catch (error) { console.error('[listings-fallback]', error.message); ok(res, [], { page: 1, limit: 0, total: 0, total_pages: 0, source: 'degraded', notice: 'Listing sementara belum tersedia. Silakan coba lagi.' }); }
@@ -182,7 +182,7 @@ app.get('/api/listings', async (req, res, next) => {
 app.get('/api/listings/:id', async (req, res, next) => {
   try {
     if (!positiveInt(req.params.id)) return fail(res, 400, 'ID listing tidak valid');
-    const rows = await query(`SELECT l.*, c.name AS category_name, c.slug AS category_slug, u.name AS seller_name, CASE WHEN COALESCE(u.verification_status, 'unverified') = 'approved' OR COALESCE(u.is_verified, false) THEN 1 ELSE 0 END AS seller_verified, u.district AS seller_district FROM listings l JOIN categories c ON c.id = l.category_id LEFT JOIN users u ON u.id = l.seller_id WHERE l.id = ? AND l.status = 'active'`, [Number(req.params.id)]);
+    const rows = await query(`SELECT l.*, c.name AS category_name, c.slug AS category_slug, u.name AS seller_name, u.phone AS seller_phone, CASE WHEN COALESCE(u.verification_status, 'unverified') = 'approved' OR COALESCE(u.is_verified, false) THEN 1 ELSE 0 END AS seller_verified, u.district AS seller_district FROM listings l JOIN categories c ON c.id = l.category_id LEFT JOIN users u ON u.id = l.seller_id WHERE l.id = ? AND l.status = 'active'`, [Number(req.params.id)]);
     if (!rows.length) return fail(res, 404, 'Listing tidak ditemukan');
     await run('UPDATE listings SET views = views + 1 WHERE id = ?', [Number(req.params.id)]);
     ok(res, rows[0]);
