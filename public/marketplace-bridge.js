@@ -28,6 +28,8 @@
     const anchor = document.createElement('a'); anchor.download = `sultrakita-${Number(item.id)}.png`; anchor.href = canvas.toDataURL('image/png'); anchor.click();
   }
 
+  const safeZoneLinks = () => `<details class="safe-zone-picker"><summary>Rekomendasi titik COD aman</summary><div>${SAFE_ZONES.map(zone => `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(zone.query)}" target="_blank" rel="noopener">${zone.name} ↗</a>`).join('')}</div><small>Pilih tempat ramai dan tetap verifikasi transaksi secara langsung.</small></details>`;
+
   function initCommandPalette() {
     const dialog = document.createElement('dialog'); dialog.id = 'command-palette'; dialog.innerHTML = '<form method="dialog" class="command-modal"><label for="command-input">Cari di SultraKita</label><input id="command-input" type="search" placeholder="Cari listing, kategori, atau wilayah…" autocomplete="off"><div id="command-results" class="command-results"></div><button class="dialog-close" value="cancel" aria-label="Tutup">×</button></form>'; document.body.appendChild(dialog);
     const input = dialog.querySelector('#command-input'); const results = dialog.querySelector('#command-results');
@@ -35,5 +37,5 @@
     input.addEventListener('input', render); results.addEventListener('click', event => { if (event.target.closest('[data-command-action="sell"]')) { dialog.close(); document.querySelector('#sell-dialog')?.showModal(); } }); document.addEventListener('keydown', event => { if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); dialog.showModal(); input.value = ''; render(); input.focus(); } }); dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
   }
 
-  window.SultraBridge = { SAFE_ZONES, whatsappUrl, fbText, downloadFlyer, initCommandPalette };
+  window.SultraBridge = { SAFE_ZONES, whatsappUrl, fbText, downloadFlyer, safeZoneLinks, initCommandPalette };
 })();

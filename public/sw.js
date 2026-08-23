@@ -1,7 +1,7 @@
 'use strict';
 
 const CACHE_NAME = 'sultrakita-shell-v6-1';
-const SHELL = ['/', '/index.html', '/styles.css', '/app.js', '/taxonomy.js', '/favicon.svg', '/site.webmanifest'];
+const SHELL = ['/', '/index.html', '/styles.css', '/app.js', '/taxonomy.js', '/marketplace-bridge.js', '/favicon.svg', '/site.webmanifest'];
 const PRIVATE_PATHS = ['/account', '/chat', '/orders', '/payment', '/upload', '/admin'];
 
 self.addEventListener('install', event => {
