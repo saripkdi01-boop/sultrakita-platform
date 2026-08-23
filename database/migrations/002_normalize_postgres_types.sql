@@ -20,10 +20,12 @@ END $$;
 DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'users' AND column_name = 'is_verified' AND data_type <> 'boolean') THEN
-    ALTER TABLE users ALTER COLUMN is_verified TYPE boolean USING (is_verified <> 0);
+    ALTER TABLE users ALTER COLUMN is_verified DROP DEFAULT;
+    ALTER TABLE users ALTER COLUMN is_verified TYPE boolean USING (LOWER(TRIM(is_verified::text)) IN ('1', 'true', 't', 'yes', 'y'));
   END IF;
   IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'users' AND column_name = 'phone_verified' AND data_type <> 'boolean') THEN
-    ALTER TABLE users ALTER COLUMN phone_verified TYPE boolean USING (phone_verified <> 0);
+    ALTER TABLE users ALTER COLUMN phone_verified DROP DEFAULT;
+    ALTER TABLE users ALTER COLUMN phone_verified TYPE boolean USING (LOWER(TRIM(phone_verified::text)) IN ('1', 'true', 't', 'yes', 'y'));
   END IF;
 END $$;
 
