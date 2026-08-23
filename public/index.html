@@ -15,7 +15,7 @@
   <script>(function(){try{var t=localStorage.getItem('sultra-dark');if(t==='true'||(t===null&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('theme-dark-preload')}catch(e){}})();</script><link rel='stylesheet' href='/styles.css'>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Montserrat:wght@600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
   <title>SultraKita — Marketplace Lokal Kendari</title>
 </head>
 <body>
@@ -93,8 +93,62 @@
     <nav class="bottom-nav" aria-label="Navigasi mobile"><a class="active" href="#beranda"><span>⌂</span>Beranda</a><a href="#kategori"><span>▦</span>Kategori</a><button id="mobile-sell" aria-label="Pasang iklan">＋</button><a href="/chat.html"><span>◌</span>Pesan</a><a href="/account.html"><span>◎</span>Akun</a></nav>
   </div>
 
-  <dialog id="sell-dialog" class="sell-dialog" data-dialog="sell"><form method="dialog" id="listing-form"><div class="modal-head"><div><div class="eyebrow">Mulai berjualan</div><h2>Pasang iklan baru</h2><p class="dialog-help">Buat listing yang membuat orang ingin bertanya.</p></div><button class="dialog-close" value="cancel" aria-label="Tutup">×</button></div><div class="form-progress"><span class="progress-active">01</span><i></i><span>02</span><i></i><span>03</span><small>Detail listing · Foto · Publikasikan</small></div><label>Judul iklan<input name="title" required minlength="5" maxlength="120" placeholder="Contoh: iPhone 13 kondisi mulus"></label><div class="otp-channel-choice" role="radiogroup" aria-label="Pilih channel verifikasi"><span>Verifikasi via</span><label><input type="radio" name="otp_channel" value="whatsapp" checked> WhatsApp</label><label><input type="radio" name="otp_channel" value="email"> Email</label></div><div class="form-row"><label id="otp-phone-field">Nomor WhatsApp<input name="phone" type="tel" pattern="08[0-9]{8,13}" placeholder="08xxxxxxxxxx"></label><label id="otp-email-field" hidden>Email<input name="email" type="email" placeholder="nama@email.com"></label><label>Kabupaten/kota<select id="form-region" aria-label="Pilih kabupaten atau kota" required></select></label></div><label> Kecamatan<select name="district" id="form-district" required><option value="Kendari">Kendari</option></select></label><div class="form-row otp-row"><label>Kode OTP<input name="otp" inputmode="numeric" pattern="[0-9]{6}" placeholder="6 digit" required></label><button class="button button-soft otp-button" type="button" id="request-otp">Kirim OTP WhatsApp</button></div><label>Deskripsi<textarea name="description" required minlength="10" maxlength="2000" placeholder="Jelaskan kondisi, lokasi, dan detail penting..."></textarea></label><div class="form-row"><label>Harga (Rp)<input name="price" type="number" min="0" required></label><label>Kondisi<select name="condition"><option value="new">Baru</option><option value="second">Bekas</option></select></label></div><label>Kategori<select name="category_id" id="form-category" required></select></label><label class="file-drop"><span class="file-drop-icon">＋</span><span><strong>Tambah foto listing</strong><small>JPG, PNG, atau WEBP · maksimal 5 foto</small></span><input name="images" type="file" accept="image/jpeg,image/png,image/webp" multiple></label><button class="button button-primary full" type="submit">Publikasikan iklan <span>↗</span></button><p class="form-message" id="form-message" role="status" aria-live="polite"></p></form></dialog>
+  <dialog id="sell-dialog" class="sell-dialog seller-onboarding-dialog" data-dialog="sell">
+    <form method="dialog" id="listing-form" class="seller-onboarding-form" novalidate>
+      <div class="modal-head onboarding-modal-head">
+        <div><div class="eyebrow">Mulai berjualan</div><h2>Listing pertama, lebih ringan.</h2><p class="dialog-help">Selesaikan langkah kecil ini. Progress tersimpan saat Anda login.</p></div>
+        <button class="dialog-close" value="cancel" aria-label="Tutup onboarding">×</button>
+      </div>
+      <div class="onboarding-progress" role="progressbar" aria-valuemin="1" aria-valuemax="4" aria-valuenow="1" aria-label="Progress onboarding seller">
+        <div class="onboarding-progress-line"><i id="onboarding-progress-fill"></i></div>
+        <button type="button" class="onboarding-step-dot active" data-step-dot="1"><strong>01</strong><span>Akun</span></button>
+        <button type="button" class="onboarding-step-dot" data-step-dot="2"><strong>02</strong><span>Toko</span></button>
+        <button type="button" class="onboarding-step-dot" data-step-dot="3"><strong>03</strong><span>Produk</span></button>
+        <button type="button" class="onboarding-step-dot" data-step-dot="4"><strong>04</strong><span>Selesai</span></button>
+      </div>
+
+      <section class="onboarding-step active" data-onboarding-step="1" aria-labelledby="onboarding-step-1-title">
+        <div class="onboarding-step-heading"><span class="step-label">Langkah 1 dari 4</span><h3 id="onboarding-step-1-title">Akun & verifikasi</h3><p>Gunakan email atau WhatsApp untuk mengamankan akun seller Anda.</p></div>
+        <div class="otp-channel-choice onboarding-channel" role="radiogroup" aria-label="Pilih channel verifikasi"><span>Verifikasi via</span><label><input type="radio" name="otp_channel" value="whatsapp" checked> WhatsApp</label><label><input type="radio" name="otp_channel" value="email"> Email</label></div>
+        <label id="otp-phone-field">Nomor WhatsApp<input name="phone" type="tel" inputmode="tel" pattern="08[0-9]{8,13}" placeholder="08xxxxxxxxxx" autocomplete="tel"></label>
+        <label id="otp-email-field" hidden>Email<input name="email" type="email" placeholder="nama@email.com" autocomplete="email"></label>
+        <div class="onboarding-inline-field"><label>Nama Anda<input name="seller_name" minlength="2" maxlength="80" placeholder="Contoh: Rina Aulia" autocomplete="name" required></label><div class="field-hint">Minimal 2 karakter</div></div>
+        <div class="form-row otp-row onboarding-otp-row"><label>Kode OTP<input name="otp" inputmode="numeric" pattern="[0-9]{6}" placeholder="6 digit" autocomplete="one-time-code" required></label><button class="button button-soft otp-button" type="button" id="request-otp">Kirim OTP WhatsApp</button></div>
+        <p class="onboarding-privacy">Kami tidak meminta password Gmail. Data verifikasi dipakai hanya untuk keamanan akun.</p>
+        <div class="onboarding-actions"><button class="button button-primary full" type="button" data-onboarding-next="1">Lanjut ke profil toko <span>→</span></button></div>
+      </section>
+
+      <section class="onboarding-step" data-onboarding-step="2" aria-labelledby="onboarding-step-2-title" hidden>
+        <div class="onboarding-step-heading"><span class="step-label">Langkah 2 dari 4</span><h3 id="onboarding-step-2-title">Toko saya</h3><p>Buat identitas sederhana agar pembeli lebih percaya.</p></div>
+        <label>Nama toko<input name="store_name" minlength="2" maxlength="80" placeholder="Contoh: Rina Gadget Kendari" required></label>
+        <div class="form-row"><label>Kategori toko<select name="store_category" required><option value="">Pilih kategori</option><option value="fashion">Fashion</option><option value="elektronik">Elektronik</option><option value="rumah">Rumah & properti</option><option value="kendaraan">Kendaraan</option><option value="makanan">Makanan</option><option value="jasa">Jasa</option><option value="lainnya">Lainnya</option></select></label><label>Wilayah<select name="district" id="form-district" required><option value="Kendari">Kendari</option></select></label></div>
+        <label>Deskripsi toko <span class="label-soft">opsional</span><textarea name="store_description" maxlength="160" placeholder="Ceritakan apa yang Anda jual..." data-counter-target="store-description-counter"></textarea><small id="store-description-counter" class="character-counter">0/160</small></label>
+        <div class="onboarding-actions"><button class="button button-quiet" type="button" data-onboarding-back="2">← Kembali</button><button class="button button-primary" type="button" data-onboarding-next="2">Lanjut ke produk <span>→</span></button></div>
+      </section>
+
+      <section class="onboarding-step" data-onboarding-step="3" aria-labelledby="onboarding-step-3-title" hidden>
+        <div class="onboarding-step-heading"><span class="step-label">Langkah 3 dari 4</span><h3 id="onboarding-step-3-title">Produk pertama</h3><p>Upload foto dulu. Asisten akan membantu mengisi draft, lalu Anda tetap memeriksanya.</p></div>
+        <label class="file-drop onboarding-photo-drop" id="onboarding-photo-drop"><span class="file-drop-icon">＋</span><span><strong>Pilih 1–5 foto produk</strong><small>JPG, PNG, WEBP · maksimal 5 MB/foto · drag & drop tersedia</small></span><input name="images" type="file" accept="image/jpeg,image/png,image/webp" multiple></label>
+        <div id="onboarding-photo-preview" class="onboarding-photo-preview" aria-live="polite"></div>
+        <button type="button" class="button button-soft ai-suggest-button" id="onboarding-ai-suggest">✦ Bantu isi dengan AI</button><span id="onboarding-ai-status" class="ai-status" role="status"></span>
+        <label>Judul produk<input name="title" minlength="5" maxlength="120" placeholder="Contoh: iPhone 13 128GB kondisi mulus" required></label>
+        <label>Deskripsi produk<textarea name="description" minlength="10" maxlength="2000" placeholder="Kondisi, kelengkapan, lokasi, dan detail penting..." required></textarea></label>
+        <div class="form-row"><label>Harga (Rp)<input name="price" type="number" min="0" inputmode="numeric" placeholder="250000" required></label><label>Kondisi<select name="condition" required><option value="new">Baru</option><option value="second">Bekas</option></select></label></div>
+        <div class="form-row"><label>Kategori<select name="category_id" id="form-category" required><option value="">Pilih kategori</option></select></label><label>Pengiriman<select name="shipping_methods" multiple size="3"><option value="pickup">Ambil di tempat</option><option value="jne">JNE</option><option value="jnt">J&amp;T</option><option value="sicepat">SiCepat</option></select></label></div>
+        <div class="onboarding-actions"><button class="button button-quiet" type="button" data-onboarding-back="3">← Kembali</button><button class="button button-primary" type="button" data-onboarding-next="3">Tinjau listing <span>→</span></button></div>
+      </section>
+
+      <section class="onboarding-step" data-onboarding-step="4" aria-labelledby="onboarding-step-4-title" hidden>
+        <div class="onboarding-step-heading"><span class="step-label">Langkah 4 dari 4</span><h3 id="onboarding-step-4-title">Siap tayang</h3><p>Periksa ringkasan ini. Anda masih bisa kembali dan mengubahnya.</p></div>
+        <div id="onboarding-summary" class="onboarding-summary"></div>
+        <div class="onboarding-trust-note"><span>✓</span><div><strong>Mulai dari yang sederhana</strong><p>Foto dan informasi yang jujur membantu pembeli mengambil keputusan dengan aman.</p></div></div>
+        <div class="onboarding-actions"><button class="button button-quiet" type="button" data-onboarding-back="4">← Ubah data</button><button class="button button-primary" type="button" id="onboarding-finish">Publikasikan listing <span>↗</span></button></div>
+        <button class="text-button onboarding-add-more" type="button" id="onboarding-add-more">+ Tambah produk lagi setelah ini</button>
+      </section>
+      <p class="form-message" id="form-message" role="status" aria-live="polite"></p>
+    </form>
+  </dialog>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="/taxonomy.js"></script><script src="/marketplace-bridge.js"></script><script src="/app.js?v=otp-email-2"></script>
+  <script src="/taxonomy.js"></script><script src="/marketplace-bridge.js"></script><script src="/app.js?v=seller-onboarding-1"></script>
 </body>
 </html>
