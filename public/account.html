@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Dashboard akun SultraKita untuk profil, alamat, keranjang, dan pesanan.">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/account.css">
+  <title>Akun Saya — SultraKita</title>
+</head>
+<body class="account-page">
+  <header class="account-topbar"><a class="brand" href="/"><span class="brand-mark">S</span><span>Sultra<strong>Kita</strong></span></a><a class="button button-quiet" href="/">← Kembali ke marketplace</a></header>
+  <main class="account-shell">
+    <section id="login-panel" class="account-login card-surface">
+      <div class="eyebrow"><span class="eyebrow-line"></span>Akun SultraKita</div><h1>Belanja, jual, dan kelola semuanya dari satu tempat.</h1><p class="dialog-help">Masuk dengan OTP WhatsApp. Session disimpan hanya di browser ini.</p>
+      <form id="login-form"><label>Nomor WhatsApp<input id="login-phone" type="tel" inputmode="tel" placeholder="08xxxxxxxxxx" required></label><div class="account-inline"><label>Kode OTP<input id="login-code" inputmode="numeric" placeholder="6 digit"></label><button class="button button-soft" id="login-otp" type="button">Kirim OTP</button></div><button class="button button-primary full" type="submit">Masuk ke akun</button><p id="login-message" class="form-message" role="status"></p></form>
+    </section>
+    <section id="dashboard" hidden>
+      <div class="account-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span>Ruang pribadi</div><h1 id="welcome">Dashboard saya</h1><p id="account-status" class="dialog-help"></p></div><button id="logout" class="button button-outline">Keluar</button></div>
+      <div class="account-grid">
+        <article class="card-surface"><h2>Profil</h2><form id="profile-form"><label>Nama<input id="profile-name" required minlength="2"></label><label>Email (opsional)<input id="profile-email" type="email"></label><label>Kecamatan<select id="profile-district"><option>Kendari</option><option>Mandonga</option><option>Baruga</option><option>Poasia</option><option>Kadia</option><option>Kambu</option><option>Wua-Wua</option></select></label><label>Bio<textarea id="profile-bio" maxlength="500" placeholder="Ceritakan sedikit tentang Anda"></textarea></label><button class="button button-primary" type="submit">Simpan profil</button><p id="profile-message" class="form-message"></p></form></article>
+        <article class="card-surface"><h2>Alamat utama</h2><form id="address-form"><label>Penerima<input id="address-name" required></label><label>Nomor telepon<input id="address-phone" type="tel" placeholder="08xxxxxxxxxx" required></label><label>Alamat lengkap<textarea id="address-line" required minlength="8"></textarea></label><label>Kecamatan<select id="address-district"><option>Kendari</option><option>Mandonga</option><option>Baruga</option><option>Poasia</option><option>Kadia</option><option>Kambu</option></select></label><button class="button button-primary" type="submit">Tambah alamat</button><p id="address-message" class="form-message"></p></form><div id="address-list" class="compact-list"></div></article>
+        <article class="card-surface account-wide"><div class="section-heading"><div><h2>Keranjang</h2><p class="dialog-help">Item tersimpan untuk checkout.</p></div><strong id="cart-total">Rp 0</strong></div><div id="cart-items" class="compact-list"><p class="muted">Keranjang masih kosong.</p></div><div class="checkout-row"><select id="checkout-address"></select><select id="checkout-payment"><option value="manual_transfer">Transfer manual</option><option value="qris">QRIS (provider diperlukan)</option><option value="virtual_account">Virtual Account (provider diperlukan)</option></select><button id="checkout" class="button button-primary">Checkout</button></div><p id="cart-message" class="form-message"></p></article>
+        <article class="card-surface account-wide"><div class="section-heading"><div><h2>Pesanan saya</h2><p class="dialog-help">Status pesanan dan pengiriman.</p></div><button id="refresh-orders" class="button button-outline">Refresh</button></div><div id="orders" class="orders-list"><p class="muted">Belum ada pesanan.</p></div></article>
+      </div>
+    </section>
+  </main>
+  <script src="/account.js"></script>
+</body>
+</html>

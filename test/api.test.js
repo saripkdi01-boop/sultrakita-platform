@@ -46,3 +46,21 @@ test('locations are scoped to Kendari and Southeast Sulawesi', async () => {
   assert.equal(body.data.province, 'Sulawesi Tenggara');
   assert.ok(body.data.districts.includes('Mandonga'));
 });
+
+test('upgrade endpoints enforce authentication', async () => {
+  for (const path of ['/api/me', '/api/cart', '/api/notifications']) {
+    const response = await fetch(`${baseUrl}${path}`);
+    assert.equal(response.status, 401, path);
+    const body = await response.json();
+    assert.equal(body.success, false);
+  }
+});
+
+test('shipping quote endpoint is not exposed without a provider claim', async () => {
+  for (const path of ['/api/checkout', '/api/shipping/quotes']) {
+    const response = await fetch(`${baseUrl}${path}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });
+    const body = await response.json();
+    assert.equal(response.status, 401, path);
+    assert.equal(body.error, 'Autentikasi diperlukan');
+  }
+});
