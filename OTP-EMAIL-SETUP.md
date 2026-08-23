@@ -37,7 +37,9 @@ OTP_DEV_MODE=false
 
 ## Migration PostgreSQL
 
-Jalankan migration runner pada deployment atau lingkungan database production. Migration `004_email_otp.sql` membuat kompatibilitas pada tabel lama, sedangkan `005_auth_channels_google.sql` membuat `auth_otp_challenges`, tabel one-time `auth_login_exchanges`, kolom identitas Google, dan index terkait. Jangan mengubah file migration yang telah tercatat di ledger karena runner memeriksa checksum.
+Jalankan migration runner terhadap database production sebelum traffic autentikasi diarahkan ke deployment baru. Migration `004_email_otp.sql` membuat kompatibilitas pada tabel lama, sedangkan `005_auth_channels_google.sql` membuat `auth_otp_challenges`, tabel one-time `auth_login_exchanges`, kolom identitas Google, dan index terkait. Jangan mengubah file migration yang telah tercatat di ledger karena runner memeriksa checksum.
+
+Sebagai perlindungan terhadap database production yang tertinggal, endpoint request/verify OTP juga menjalankan **compatibility bootstrap idempoten**. Bootstrap memastikan `users.email`, `users.email_verified`, `otp_challenges.email`, `otp_challenges.channel`, dan tabel `auth_otp_challenges` tersedia sebelum query OTP dijalankan. Mekanisme ini membantu pemulihan deployment lama, tetapi tidak menggantikan migration runner karena migration tetap diperlukan untuk ledger, Google OAuth, dan kontrol perubahan schema yang terukur. Database user harus memiliki izin DDL yang diperlukan; jalankan migration runner secara eksplisit sebagai langkah release utama.
 
 ## Pengujian
 

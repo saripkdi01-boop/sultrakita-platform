@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_NAME = 'sultrakita-shell-v6-1';
+const CACHE_NAME = 'sultrakita-shell-v6-2';
 const SHELL = ['/', '/index.html', '/styles.css', '/app.js', '/taxonomy.js', '/marketplace-bridge.js', '/favicon.svg', '/site.webmanifest'];
 const PRIVATE_PATHS = ['/account', '/chat', '/orders', '/payment', '/upload', '/admin'];
 
