@@ -1,6 +1,29 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const initSqlJs = require('sql.js/dist/sql-asm.js').default;
+const { Pool } = require('pg');
+
+const postgresUrl = process.env.DATABASE_URL || process.env.SUPABASE_DB_URL;
+const usePostgres = Boolean(postgresUrl);
+let postgresPool;
+
+function pgSql(sql) {
+  let index = 0;
+  return sql.replace(/\?/g, () => `$${++index}`);
+}
+
+function getPostgresPool() {
+  if (!postgresPool) {
+    postgresPool = new Pool({
+      connectionString: postgresUrl,
+      ssl: process.env.DATABASE_SSL === 'false' ? false : { rejectUnauthorized: false },
+      max: Number(process.env.DATABASE_POOL_MAX || 5),
+      idleTimeoutMillis: 30_000,
+      connectionTimeoutMillis: 10_000,
+    });
+  }
+  return postgresPool;
+}
 
 const dataDir = process.env.VERCEL ? path.join('/tmp', 'sultrakita-data') : path.join(__dirname, 'data');
 const dbFile = path.join(dataDir, 'sultrakita.sqlite');
@@ -227,6 +250,7 @@ const categories = [
 ];
 
 async function getDb() {
+  if (usePostgres) return getPostgresPool();
   if (!databasePromise) {
     databasePromise = initSqlJs().then(SQL => {
       fs.mkdirSync(dataDir, { recursive: true });
@@ -273,6 +297,10 @@ function persist(database) {
 }
 
 async function query(sql, params = []) {
+  if (usePostgres) {
+    const result = await getPostgresPool().query(pgSql(sql), params);
+    return result.rows;
+  }
   const database = await getDb();
   const statement = database.prepare(sql);
   statement.bind(params);
@@ -283,6 +311,16 @@ async function query(sql, params = []) {
 }
 
 async function run(sql, params = []) {
+  if (usePostgres) {
+    const normalized = sql.trim().replace(/;\s*$/, '');
+    const isInsert = /^INSERT\s+INTO\s+/i.test(normalized);
+    const isSessionInsert = /INSERT\s+INTO\s+sessions\b/i.test(normalized);
+    const statement = isInsert && !/\bRETURNING\b/i.test(normalized) && !isSessionInsert
+      ? `${normalized} RETURNING id`
+      : normalized;
+    const result = await getPostgresPool().query(pgSql(statement), params);
+    return { id: result.rows[0]?.id || null, rowCount: result.rowCount };
+  }
   const database = await getDb();
   database.run(sql, params);
   const result = database.exec('SELECT last_insert_rowid() AS id');
