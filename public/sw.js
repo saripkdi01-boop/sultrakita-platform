@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_NAME = 'sultrakita-shell-v6-3-jobs-url';
+const CACHE_NAME = 'sultrakita-shell-v6-4-universal-links';
 const SHELL = ['/', '/index.html', '/styles.css', '/app.js', '/taxonomy.js', '/marketplace-bridge.js', '/favicon.svg', '/site.webmanifest'];
 const PRIVATE_PATHS = ['/account', '/chat', '/orders', '/payment', '/upload', '/admin'];
 
