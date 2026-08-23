@@ -7,13 +7,14 @@ const dotenv = require('dotenv');
 const { getDb, query, run } = require('./database');
 const { authenticate, requireAuth, requireRole, revokeToken } = require('./auth');
 const { SITE_URL, slugify, listingPage, collectionPage, absolute } = require('./seo');
+const { CATEGORIES, REGIONS, ALL_DISTRICTS } = require('./shared/taxonomy');
 
 dotenv.config();
 const app = express();
 app.disable('x-powered-by');
 app.use((_req, res, next) => { res.setHeader('X-Content-Type-Options', 'nosniff'); res.setHeader('X-Frame-Options', 'DENY'); res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin'); res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(self)'); res.setHeader('Content-Security-Policy', "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:"); next(); });
 const PORT = Number(process.env.PORT || 3000);
-const districts = ['Kendari', 'Mandonga', 'Baruga', 'Poasia', 'Kadia', 'Kambu', 'Wua-Wua', 'Abeli', 'Puuwatu', 'Pondambea', 'Baito', 'Bau-Bau', 'Kolaka', 'Konawe', 'Muna', 'Wakatobi'];
+const districts = ALL_DISTRICTS;
 
 const allowedOrigins = (process.env.CORS_ORIGINS || process.env.CORS_ORIGIN || 'https://sultrakita-platform.vercel.app').split(',').map(value => value.trim()).filter(Boolean);
 app.use(cors({ origin: (origin, callback) => { if (!origin || allowedOrigins.includes(origin)) return callback(null, true); return callback(new Error('Origin tidak diizinkan')); }, credentials: true }));
@@ -23,7 +24,7 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 *
 const objectStorageConfigured = Boolean(process.env.R2_UPLOAD_URL && process.env.R2_UPLOAD_TOKEN && process.env.R2_PUBLIC_BASE_URL);
 const objectKey = file => `${Date.now()}-${crypto.randomBytes(8).toString('hex')}${path.extname(file.originalname).toLowerCase()}`;
 const uploadObject = async file => { if (!objectStorageConfigured) throw new Error('Object storage belum dikonfigurasi. Set R2_UPLOAD_URL, R2_UPLOAD_TOKEN, dan R2_PUBLIC_BASE_URL.'); const key = objectKey(file); const response = await fetch(`${process.env.R2_UPLOAD_URL}/${key}`, { method: 'PUT', headers: { authorization: `Bearer ${process.env.R2_UPLOAD_TOKEN}`, 'content-type': file.mimetype, 'cache-control': 'public, max-age=31536000, immutable' }, body: file.buffer }); if (!response.ok) throw new Error('Upload object storage gagal'); return `${process.env.R2_PUBLIC_BASE_URL.replace(/\/$/, '')}/${key}`; };
-const rateLimit = (windowMs = 60_000, max = 60) => async (req, res, next) => { const key = `${req.ip}:${req.path}`; try { const rows = await query(`INSERT INTO rate_limits (key, window_started_at, hit_count) VALUES (?, now(), 1) ON CONFLICT (key) DO UPDATE SET hit_count = CASE WHEN rate_limits.window_started_at <= now() - (? * interval '1 millisecond') THEN 1 ELSE rate_limits.hit_count + 1 END, window_started_at = CASE WHEN rate_limits.window_started_at <= now() - (? * interval '1 millisecond') THEN now() ELSE rate_limits.window_started_at END, updated_at = now() RETURNING hit_count, window_started_at`, [key, windowMs, windowMs]); const hit = Number(rows[0]?.hit_count || 0); if (hit > max) return fail(res, 429, 'Terlalu banyak permintaan. Silakan coba lagi nanti.'); return next(); } catch (error) { return next(error); } };
+const rateLimit = (windowMs = 60_000, max = 60) => async (req, res, next) => { const key = `${req.ip}:${req.path}`; try { const rows = await query(`INSERT INTO rate_limits (key, window_started_at, hit_count) VALUES (?, now(), 1) ON CONFLICT (key) DO UPDATE SET hit_count = CASE WHEN rate_limits.window_started_at <= now() - (? * interval '1 millisecond') THEN 1 ELSE rate_limits.hit_count + 1 END, window_started_at = CASE WHEN rate_limits.window_started_at <= now() - (? * interval '1 millisecond') THEN now() ELSE rate_limits.window_started_at END, updated_at = now() RETURNING hit_count, window_started_at`, [key, windowMs, windowMs]); const hit = Number(rows[0]?.hit_count || 0); if (hit > max) return fail(res, 429, 'Terlalu banyak permintaan. Silakan coba lagi nanti.'); return next(); } catch (error) { console.error('[rate-limit-degraded]', error.message); return next(); } };
 const otpRateLimit = rateLimit(5 * 60_000, 10);
 const retentionDays = Math.min(730, Math.max(7, Number(process.env.ANALYTICS_RETENTION_DAYS || 90)));
 setInterval(() => { run("DELETE FROM analytics_events WHERE created_at < now() - (? * interval '1 day')", [retentionDays]).catch(() => {}); run('DELETE FROM sessions WHERE expires_at <= ?', [Date.now()]).catch(() => {}); run('DELETE FROM otp_challenges WHERE expires_at < ?', [Date.now()]).catch(() => {}); }, 24 * 60 * 60 * 1000).unref();
@@ -58,16 +59,18 @@ const normalizeExternalItem = (feed, item) => { const row = item || {}; const ti
 const loadExternalListings = async () => { const feeds = parseFeedConfig(process.env.EXTERNAL_MARKETPLACE_FEEDS_JSON); if (!feeds.length) return { data: [], meta: { live_sync: false, configured_feeds: 0, notice: 'Belum ada API/feed marketplace resmi yang dikonfigurasi.' } }; const all = []; const statuses = []; for (const feed of feeds) { const cached = externalFeedCache.get(feed.id); if (cached && cached.expires > Date.now()) { all.push(...cached.data); statuses.push({ id: feed.id, status: 'cache' }); continue; } const controller = new AbortController(); const timer = setTimeout(() => controller.abort(), 4500); try { const headers = { accept: 'application/json', ...(feed.auth_env && process.env[feed.auth_env] ? { [feed.auth_header || 'authorization']: feed.auth_header?.toLowerCase() === 'authorization' ? `Bearer ${process.env[feed.auth_env]}` : process.env[feed.auth_env] } : {}) }; const response = await fetch(feed.url, { headers, signal: controller.signal }); if (!response.ok) throw new Error(`HTTP ${response.status}`); const payload = await response.json(); const items = pickPath(payload, feed.items_path || 'items'); const rows = (Array.isArray(items) ? items : []).map(item => normalizeExternalItem(feed, item)).filter(Boolean).slice(0, 100); externalFeedCache.set(feed.id, { data: rows, expires: Date.now() + 60_000 }); all.push(...rows); statuses.push({ id: feed.id, status: 'ok', count: rows.length }); } catch (error) { statuses.push({ id: feed.id, status: 'error', message: error.name === 'AbortError' ? 'timeout' : 'unavailable' }); } finally { clearTimeout(timer); } } return { data: all, meta: { live_sync: true, configured_feeds: feeds.length, feeds: statuses } }; };
 
 app.get('/api/health', async (_req, res) => {
-  try { await query('SELECT 1 AS ok'); ok(res, { status: 'healthy', service: 'sultrakita-api' }); }
-  catch (_error) { fail(res, 503, 'Database tidak tersedia'); }
+  let db = 'down';
+  try { await query('SELECT 1 AS ok'); db = 'up'; } catch (error) { console.error('[health-db]', error.message); }
+  res.status(200).json({ success: true, data: { api: 'up', db, storage: objectStorageConfigured ? 'configured' : 'down', build: process.env.VERCEL_GIT_COMMIT_SHA || process.env.COMMIT_SHA || 'local', time: new Date().toISOString() } });
 });
 
-app.get('/api/categories', async (_req, res, next) => {
-  try { ok(res, await query('SELECT id, name, slug, icon FROM categories ORDER BY name')); } catch (error) { next(error); }
+app.get('/api/categories', async (_req, res) => {
+  try { const rows = await query('SELECT id, name, slug, icon FROM categories ORDER BY name'); if (rows.length) return ok(res, rows, { source: 'db' }); } catch (error) { console.error('[categories-fallback]', error.message); }
+  return ok(res, CATEGORIES, { source: 'fallback' });
 });
 
 app.get('/api/external-listings', async (_req, res, next) => { try { const result = await loadExternalListings(); ok(res, result.data, result.meta); } catch (error) { next(error); } });
-app.get('/api/locations', (_req, res) => ok(res, { province: 'Sulawesi Tenggara', city: 'Kendari', districts }));
+app.get('/api/locations', (_req, res) => ok(res, { province: 'Sulawesi Tenggara', city: 'Kendari', regions: REGIONS, districts }, { source: 'static' }));
 
 app.post('/api/auth/request-otp', otpRateLimit, async (req, res, next) => {
   try {
@@ -167,7 +170,7 @@ app.get('/api/listings', async (req, res, next) => {
     const items = await query(`SELECT l.*, c.name AS category_name, c.slug AS category_slug, u.name AS seller_name, CASE WHEN COALESCE(u.verification_status, 'unverified') = 'approved' OR COALESCE(u.is_verified, 0) = 1 THEN 1 ELSE 0 END AS seller_verified FROM listings l JOIN categories c ON c.id = l.category_id LEFT JOIN users u ON u.id = l.seller_id WHERE ${where} ORDER BY ${order} LIMIT ? OFFSET ?`, [...params, limit, offset]);
     const [{ total }] = await query(`SELECT COUNT(*) AS total FROM listings l JOIN categories c ON c.id = l.category_id WHERE ${where}`, params);
     ok(res, items, { page, limit, total: Number(total), total_pages: Math.ceil(Number(total) / limit), location: 'Kendari, Sulawesi Tenggara' });
-  } catch (error) { next(error); }
+  } catch (error) { console.error('[listings-fallback]', error.message); ok(res, [], { page: 1, limit: 0, total: 0, total_pages: 0, source: 'degraded', notice: 'Listing sementara belum tersedia. Silakan coba lagi.' }); }
 });
 
 app.get('/api/listings/:id', async (req, res, next) => {

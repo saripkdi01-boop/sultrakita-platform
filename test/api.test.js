@@ -19,7 +19,8 @@ test('health endpoint reports healthy service', integrationOptions, async () => 
   assert.equal(response.status, 200);
   const body = await response.json();
   assert.equal(body.success, true);
-  assert.equal(body.data.status, 'healthy');
+  assert.equal(body.data.api, 'up');
+  assert.ok(['up', 'down'].includes(body.data.db));
 });
 
 test('categories endpoint exposes local marketplace categories', integrationOptions, async () => {

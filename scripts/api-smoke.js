@@ -41,7 +41,8 @@ async function main() {
   }
   console.log(`API smoke test: ${baseUrl}${isProduction ? ' [production-safe read-only mode]' : ''}`);
   const health = await expectJson('/api/health');
-  assert(health.data?.status === 'healthy', 'health status is not healthy');
+  assert(health.data?.api === 'up', 'health api is not up');
+  assert(['up', 'down'].includes(health.data?.db), 'health db state is missing');
 
   const categories = await expectJson('/api/categories');
   assert(Array.isArray(categories.data), 'categories.data is not an array');

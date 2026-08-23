@@ -21,8 +21,10 @@ async function authenticate(req, _res, next) {
     if (user) req.user = user;
     return next();
   } catch (error) {
-    return next(error);
+    req.authDegraded = true;
+    console.error('[auth-degraded]', error.message);
   }
+  return next();
 }
 
 function requireAuth(req, res, next) {
