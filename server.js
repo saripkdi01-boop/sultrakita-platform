@@ -128,7 +128,7 @@ app.get('/api/analytics/summary', requireRole('admin'), adminOnly, async (req, r
 
 app.get('/api/stats', async (_req, res, next) => {
   try {
-    const [summary] = await query(`SELECT COUNT(*) AS total_listings, COALESCE(SUM(status = 'active'), 0) AS active_listings, COUNT(DISTINCT district) AS covered_districts FROM listings`);
+    const [summary] = await query(`SELECT COUNT(*) AS total_listings, COALESCE(SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END), 0) AS active_listings, COUNT(DISTINCT district) AS covered_districts FROM listings`);
     const popular = await query(`SELECT c.name AS category, COUNT(l.id) AS total FROM categories c LEFT JOIN listings l ON l.category_id = c.id AND l.status = 'active' GROUP BY c.id ORDER BY total DESC, c.name LIMIT 5`);
     ok(res, { summary, popular_categories: popular });
   } catch (error) { next(error); }
