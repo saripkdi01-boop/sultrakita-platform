@@ -64,3 +64,13 @@ Tahap pertama sebaiknya memakai satu feed produk resmi dan satu feed lowongan re
 [2]: https://developers.facebook.com/documentation/instagram-platform/overview "Instagram Platform Overview"
 [3]: https://developers.facebook.com/documentation/instagram-platform/instagram-api-with-facebook-login/business-discovery "Instagram Business Discovery"
 [4]: https://developers.facebook.com/documentation/instagram-platform/reference/instagram-media "Instagram Media API"
+
+## Mode URL-only untuk kategori Lowongan Kerja
+
+Admin sekarang dapat menambahkan kartu lowongan hanya dengan URL melalui dashboard `/admin.html`. Tempel satu atau beberapa URL HTTPS pada panel **Tambahkan kategori lowongan via URL**. Endpoint `POST /api/admin/external-jobs/import-url` menerima satu URL, sedangkan `POST /api/admin/external-jobs/import-urls` menerima daftar URL dengan batas maksimal 20 item per request.
+
+Server mengambil metadata publik terbatas dari halaman sumber: `og:title` atau `<title>`, `og:description` atau meta description, dan `og:image`. Jika sumber tidak menyediakan gambar, server memakai favicon domain sebagai thumbnail fallback. Thumbnail ini adalah identitas sumber, bukan klaim bahwa portal menyediakan foto untuk setiap lowongan. Deskripsi kartu dibatasi dan selalu disertai link **Lihat sumber** agar pengguna membaca syarat dan cara melamar pada situs asli.
+
+Hostname default yang diizinkan adalah `jobstreet.com`, `jora.com`, `indeed.com`, dan `loker.my.id`, termasuk subdomain resminya. URL harus HTTPS; localhost, alamat private network, dan domain yang tidak diizinkan ditolak. Domain partner tambahan dapat diberikan melalui `JOB_URL_ALLOWED_HOSTS` di environment server. Setiap hasil URL disimpan dengan external ID hash URL, di-upsert berdasarkan `(source, external_id)`, diberi provenance `admin_submitted_public_metadata`, dan ditampilkan dalam kategori Lowongan Kerja.
+
+Migration `009_seed_kendari_job_url_cards.sql` menambahkan sepuluh halaman pencarian yang diberikan pengguna sebagai kartu awal: dua halaman JobStreet Kendari/Sultra, tiga halaman Jora, dua halaman Indeed, satu halaman Loker.my.id, dan dua pencarian JobStreet tambahan. Kartu awal tersebut hanya merangkum halaman pencarian; jumlah lowongan, posisi, gaji, dan status dapat berubah sehingga platform tidak menyimpan klaim jumlah lowongan sebagai fakta permanen.
