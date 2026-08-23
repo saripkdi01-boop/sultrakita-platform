@@ -67,7 +67,7 @@ async function main() {
   });
   assert(lockedOtp.response.status === 401, 'OTP challenge must remain unavailable after five failed attempts');
 
-  const fixtureSeller = await run('INSERT INTO users (name, phone, role, district, phone_verified) VALUES (?, ?, ?, ?, 1)', ['Fixture Seller', `08${crypto.randomInt(100000000, 999999999)}${crypto.randomInt(10, 99)}`, 'seller', 'Kendari']);
+  const fixtureSeller = await run('INSERT INTO users (name, phone, role, district, phone_verified) VALUES (?, ?, ?, ?, true)', ['Fixture Seller', `08${crypto.randomInt(100000000, 999999999)}${crypto.randomInt(10, 99)}`, 'seller', 'Kendari']);
   const fixtureListing = await run('INSERT INTO listings (seller_id, category_id, title, description, price, condition, district, city) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [fixtureSeller.id, 1, 'Fixture ownership listing', 'Listing fixture untuk pengujian batas kepemilikan.', 100000, 'new', 'Kendari', 'Kendari']);
 
   process.env.OTP_DEV_MODE = 'true';
@@ -105,7 +105,7 @@ async function main() {
   const conversation = await request('/api/conversations', { method: 'POST', headers: authHeaders, body: JSON.stringify({ listing_id: fixtureListing.id, buyer_id: authLogin.body.data.user.id, seller_id: fixtureSeller.id }) });
   assert(conversation.response.status === 201 || conversation.response.status === 200, 'authenticated buyer should create or reuse a conversation');
   const conversationId = conversation.body?.data?.id;
-  const outsider = await run('INSERT INTO users (name, phone, role, district, phone_verified) VALUES (?, ?, ?, ?, 1)', ['Outsider', `08${crypto.randomInt(100000000, 999999999)}${crypto.randomInt(10, 99)}`, 'buyer', 'Kendari']);
+  const outsider = await run('INSERT INTO users (name, phone, role, district, phone_verified) VALUES (?, ?, ?, ?, true)', ['Outsider', `08${crypto.randomInt(100000000, 999999999)}${crypto.randomInt(10, 99)}`, 'buyer', 'Kendari']);
   const outsiderToken = crypto.randomBytes(32).toString('hex');
   await run('INSERT INTO sessions (token_hash, user_id, expires_at) VALUES (?, ?, ?)', [hashToken(outsiderToken), outsider.id, Date.now() + 60 * 60 * 1000]);
   const outsiderHeaders = { 'content-type': 'application/json', authorization: `Bearer ${outsiderToken}` };

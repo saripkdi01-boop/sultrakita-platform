@@ -11,6 +11,12 @@ const required = [
   'public/robots.txt',
   'public/sitemap.xml',
   'public/site.webmanifest',
+  'public/sw.js',
+  'public/taxonomy.js',
+  'shared/taxonomy.js',
+  'database/migrations/002_normalize_postgres_types.sql',
+  'scripts/migrate-postgres.js',
+  'scripts/seed-demo.js',
   'server.js',
 ];
 

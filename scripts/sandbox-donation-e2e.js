@@ -26,7 +26,7 @@ global.fetch = async (url, options = {}) => {
 const app = require('../server');
 const { getDb, run } = require('../database');
 async function json(response) { return { status:response.status, body:await response.json() }; }
-async function createAdminSession() { await getDb(); const phone = `08${Date.now().toString().slice(-10)}`; const user = await run("INSERT INTO users(name,phone,role,phone_verified) VALUES('Sandbox Admin',?,'admin',1)", [phone]); const token = `sandbox-session-${crypto.randomBytes(32).toString('hex')}`; const hash = crypto.createHash('sha256').update(token).digest('hex'); await run('INSERT INTO sessions(token_hash,user_id,expires_at) VALUES(?,?,?)', [hash,user.id,Date.now()+3600000]); return token; }
+async function createAdminSession() { await getDb(); const phone = `08${Date.now().toString().slice(-10)}`; const user = await run("INSERT INTO users(name,phone,role,phone_verified) VALUES('Sandbox Admin',?,'admin',true)", [phone]); const token = `sandbox-session-${crypto.randomBytes(32).toString('hex')}`; const hash = crypto.createHash('sha256').update(token).digest('hex'); await run('INSERT INTO sessions(token_hash,user_id,expires_at) VALUES(?,?,?)', [hash,user.id,Date.now()+3600000]); return token; }
 async function donation(baseUrl, method) { return json(await fetch(`${baseUrl}/api/donations`, { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({ campaign_id:1, amount:25000, name:`Sandbox ${method}`, payment_method:method }) })); }
 async function runProvider(baseUrl, provider, adminSession) {
   process.env.PAYMENT_PROVIDER = provider; providerCalls.length = 0;

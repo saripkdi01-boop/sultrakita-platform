@@ -23,6 +23,14 @@ test('health endpoint reports healthy service', integrationOptions, async () => 
   assert.ok(['up', 'down'].includes(body.data.db));
 });
 
+test('stats endpoint returns numeric Postgres aggregates', integrationOptions, async () => {
+  const response = await fetch(`${baseUrl}/api/stats`);
+  assert.equal(response.status, 200);
+  const body = await response.json();
+  assert.equal(body.success, true);
+  for (const key of ['total_listings', 'active_listings', 'covered_districts', 'weekly_new_listings']) assert.equal(typeof body.data.summary[key], 'number');
+});
+
 test('categories endpoint exposes local marketplace categories', integrationOptions, async () => {
   const response = await fetch(`${baseUrl}/api/categories`);
   const body = await response.json();

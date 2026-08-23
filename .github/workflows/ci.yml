@@ -34,6 +34,11 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run db:migrate
+      - name: Verify migration idempotency
+        run: npm run db:migrate
       - run: npm run lint
       - run: npm test
+      - run: npm run test:security
       - run: npm run build
+      - name: API smoke test
+        run: npm run smoke:api

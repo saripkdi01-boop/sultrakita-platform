@@ -227,7 +227,6 @@ CREATE INDEX IF NOT EXISTS idx_listings_category_district ON listings(category_i
 CREATE INDEX IF NOT EXISTS idx_listings_seller ON listings(seller_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_listings_boost ON listings(boost_until DESC) WHERE boost_until IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_reports_status_created ON reports(status, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_notifications_user_unread ON notifications(user_id, read_at, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_sessions_expiry ON sessions(expires_at);
 CREATE INDEX IF NOT EXISTS idx_otp_phone_expiry ON otp_challenges(phone, expires_at DESC);
 

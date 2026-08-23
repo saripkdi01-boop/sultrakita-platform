@@ -23,6 +23,7 @@
     "check:modernization": "node scripts/modernization-check.js",
     "verify:local": "npm run lint && npm test && npm run build && npm run test:security && npm run smoke:api && npm run smoke:donation",
     "db:migrate": "node scripts/migrate-postgres.js",
+    "db:seed:demo": "SEED_DEMO=true NODE_ENV=staging node scripts/seed-demo.js",
     "check:single-runtime": "node scripts/modernization-check.js"
   },
   "keywords": [
