@@ -43,4 +43,19 @@ async function revokeToken(token) {
   await run('DELETE FROM sessions WHERE token_hash = ?', [hashToken(token)]);
 }
 
-module.exports = { authenticate, requireAuth, requireRole, hashToken, revokeToken };
+// requireOwnership helper: accepts an async function that returns the owner user id for the resource
+function requireOwnership(resourceUserIdGetter) {
+  return async (req, res, next) => {
+    try {
+      if (!req.user) return res.status(401).json({ success: false, error: 'Autentikasi diperlukan' });
+      const userId = Number(req.user.id || 0);
+      const ownerId = Number(await resourceUserIdGetter(req) || 0);
+      if (userId === ownerId || req.user.role === 'admin') return next();
+      return res.status(403).json({ success: false, error: 'Akses tidak diizinkan (bukan pemilik)' });
+    } catch (err) {
+      return next(err);
+    }
+  };
+}
+
+module.exports = { authenticate, requireAuth, requireRole, hashToken, revokeToken, requireOwnership };
