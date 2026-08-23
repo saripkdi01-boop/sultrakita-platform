@@ -8,6 +8,7 @@ const { hashToken } = require('../auth');
 
 let server;
 let baseUrl;
+let originalOtpDevMode;
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -43,14 +44,26 @@ async function main() {
   assert(invalidMessage.response.status === 422, 'message endpoint must reject empty message bodies');
   assert(invalidMessage.body?.success === false, 'invalid message must use failure envelope');
 
+  originalOtpDevMode = process.env.OTP_DEV_MODE;
+  process.env.OTP_DEV_MODE = 'false';
+  const unconfiguredOtpPhone = `08${crypto.randomInt(100000000, 999999999)}${crypto.randomInt(10, 99)}`;
+  const unconfiguredOtp = await request('/api/auth/request-otp', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ phone: unconfiguredOtpPhone })
+  });
+  assert(unconfiguredOtp.response.status === 503, 'OTP request must fail closed when provider is not configured');
+  assert(unconfiguredOtp.body?.code === 'OTP_NOT_CONFIGURED', 'unconfigured OTP must use a stable error code');
+
+  process.env.OTP_DEV_MODE = 'true';
   const otpPhone = `08${crypto.randomInt(100000000, 999999999)}${crypto.randomInt(10, 99)}`;
   const otpRequest = await request('/api/auth/request-otp', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ phone: otpPhone })
   });
-  assert(otpRequest.response.status === 200, 'OTP request should create a challenge for a valid phone');
-  assert(otpRequest.body?.data?.dev_code === undefined, 'dev_code must not be returned unless explicitly enabled for local demo');
+  assert(otpRequest.response.status === 200, 'OTP request should create a challenge in explicit demo mode');
+  assert(typeof otpRequest.body?.data?.dev_code === 'string', 'dev_code should be returned only in explicit demo mode');
 
   for (let attempt = 1; attempt <= 5; attempt += 1) {
     const wrongOtp = await request('/api/auth/verify-otp', {
@@ -70,7 +83,6 @@ async function main() {
   const fixtureSeller = await run('INSERT INTO users (name, phone, role, district, phone_verified) VALUES (?, ?, ?, ?, true)', ['Fixture Seller', `08${crypto.randomInt(100000000, 999999999)}${crypto.randomInt(10, 99)}`, 'seller', 'Kendari']);
   const fixtureListing = await run('INSERT INTO listings (seller_id, category_id, title, description, price, condition, district, city) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [fixtureSeller.id, 1, 'Fixture ownership listing', 'Listing fixture untuk pengujian batas kepemilikan.', 100000, 'new', 'Kendari', 'Kendari']);
 
-  process.env.OTP_DEV_MODE = 'true';
   const authPhone = `08${crypto.randomInt(100000000, 999999999)}${crypto.randomInt(10, 99)}`;
   const authOtpRequest = await request('/api/auth/request-otp', {
     method: 'POST', headers: { 'content-type': 'application/json' },
@@ -144,5 +156,7 @@ main().catch(error => {
   console.error(`FAIL: ${error.message}`);
   process.exitCode = 1;
 }).finally(() => {
+  if (originalOtpDevMode === undefined) delete process.env.OTP_DEV_MODE;
+  else process.env.OTP_DEV_MODE = originalOtpDevMode;
   if (server) server.close();
 });
