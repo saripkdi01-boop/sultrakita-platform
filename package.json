@@ -10,6 +10,7 @@
     "test": "node --test",
     "build": "node scripts/build-check.js",
     "test:security": "node scripts/security-regression.js",
+    "test:auth-upgrade": "node scripts/auth-upgrade-regression.js",
     "smoke:api": "node scripts/api-smoke.js",
     "smoke:donation": "node scripts/donation-smoke.js",
     "e2e:marketplace": "node scripts/local-marketplace-e2e.js",
