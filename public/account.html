@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://api.fontshare.com">
   <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&f[]=satoshi@400,500,700,900&display=swap">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap">
-  <link rel="stylesheet" href="/account.css">
+  <link rel="stylesheet" href="/account.css?v=notifications-1">
   <title>Akun Saya — SultraKita</title>
 </head>
 <body class="account-page">
@@ -25,6 +25,7 @@
     <section id="dashboard" hidden>
       <div class="account-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span>Ruang pribadi</div><h1 id="welcome">Dashboard saya</h1><p id="account-status" class="dialog-help"></p></div><button id="logout" class="button button-outline">Keluar</button></div>
       <div class="account-grid">
+        <article class="card-surface account-wide notification-card" aria-labelledby="notifications-title"><div class="section-heading"><div><h2 id="notifications-title">Notifikasi</h2><p class="dialog-help">Pesanan, tawaran, dan aktivitas penting akunmu.</p></div><div class="notification-heading-actions"><span id="notification-count" class="notification-count" aria-live="polite">0 baru</span><button id="refresh-notifications" class="button button-outline" type="button">Refresh</button></div></div><p id="notification-status" class="form-message" role="status" aria-live="polite"></p><div id="notifications" class="notification-list" aria-live="polite" aria-busy="true"><p class="muted">Memuat notifikasi...</p></div></article>
         <article class="card-surface"><h2>Profil</h2><form id="profile-form"><label>Nama<input id="profile-name" required minlength="2"></label><label>Email (opsional)<input id="profile-email" type="email"></label><label>Kecamatan<select id="profile-district"><option>Kendari</option><option>Mandonga</option><option>Baruga</option><option>Poasia</option><option>Kadia</option><option>Kambu</option><option>Wua-Wua</option></select></label><label>Bio<textarea id="profile-bio" maxlength="500" placeholder="Ceritakan sedikit tentang Anda"></textarea></label><button class="button button-primary" type="submit">Simpan profil</button><p id="profile-message" class="form-message"></p></form></article>
         <article class="card-surface"><h2>Alamat utama</h2><form id="address-form"><label>Penerima<input id="address-name" required></label><label>Nomor telepon<input id="address-phone" type="tel" placeholder="08xxxxxxxxxx" required></label><label>Alamat lengkap<textarea id="address-line" required minlength="8"></textarea></label><label>Kecamatan<select id="address-district"><option>Kendari</option><option>Mandonga</option><option>Baruga</option><option>Poasia</option><option>Kadia</option><option>Kambu</option></select></label><button class="button button-primary" type="submit">Tambah alamat</button><p id="address-message" class="form-message"></p></form><div id="address-list" class="compact-list"></div></article>
         <article class="card-surface account-wide"><div class="section-heading"><div><h2>Keranjang</h2><p class="dialog-help">Item tersimpan untuk checkout.</p></div><strong id="cart-total">Rp 0</strong></div><div id="cart-items" class="compact-list"><p class="muted">Keranjang masih kosong.</p></div><div class="checkout-row"><select id="checkout-address"></select><select id="checkout-payment"><option value="manual_transfer">Transfer manual</option><option value="qris">QRIS (provider diperlukan)</option><option value="virtual_account">Virtual Account (provider diperlukan)</option></select><button id="checkout" class="button button-primary">Checkout</button></div><p id="cart-message" class="form-message"></p></article>
@@ -32,6 +33,6 @@
       </div>
     </section>
   </main>
-  <footer class="account-policy-footer"><a href="/terms.html">Syarat & Ketentuan</a><a href="/privacy.html">Kebijakan Privasi</a><a href="mailto:halo@sultrakita.id">Kontak privasi</a></footer><script src="/policy-consent.js?v=policy-v1"></script><script src="/account.js?v=otp-email-2"></script>
+  <footer class="account-policy-footer"><a href="/terms.html">Syarat & Ketentuan</a><a href="/privacy.html">Kebijakan Privasi</a><a href="mailto:halo@sultrakita.id">Kontak privasi</a></footer><script src="/policy-consent.js?v=policy-v1"></script><script src="/account.js?v=notifications-1"></script>
 </body>
 </html>
