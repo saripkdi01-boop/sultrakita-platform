@@ -23,6 +23,12 @@ Homepage sudah memiliki sebagian focus-visible dan beberapa reduced-motion rules
 
 Browser homepage lokal menemukan skip link, `main#beranda[tabindex="-1"]`, listing `aria-live="polite"` dengan `aria-busy="false"` setelah load, reduced motion/forced colors media query tersedia, dan 17 rule accessibility terdeteksi di CSSOM. Uji keyboard aktual dengan `Tab` pertama memfokuskan anchor `.skip-link`; CSSOM menunjukkan `top: 8px`. Menekan `Enter` mengubah URL ke `#beranda` dan memindahkan fokus aktif ke `MAIN#beranda` dengan `tabindex="-1"`. Pemeriksaan terakhir menemukan 11 ikon navigasi sidebar tersembunyi dari screen reader, `aria-live="polite"`, dan `aria-busy="false"`.
 
-Halaman `terms.html` lokal juga tervalidasi: skip link tersedia, target `#legal-main` memakai `tabindex="-1"`, stylesheet `/legal.css?v=phase8-a11y-1` termuat, dan 7 rule focus/skip/reduced-motion/forced-colors terbaca dari CSSOM. Halaman `account.html` tervalidasi dengan skip link, target `#account-main[tabindex="-1"]`, shared stylesheet `/styles.css?v=phase8-a11y-1`, dan helper `.sr-only` tersedia. Halaman `chat.html` tervalidasi dengan skip link, target `#chat-main[tabindex="-1"]`, helper `.sr-only` yang benar-benar tersamarkan, serta 9 marker rule accessibility pada style inline. Admin telah diverifikasi secara statis melalui source setelah patch inline.
+Halaman `terms.html` lokal tervalidasi dengan skip link, target `#legal-main[tabindex="-1"]`, stylesheet `/legal.css?v=phase8-a11y-1`, dan 7 rule accessibility CSSOM. `account.html` tervalidasi dengan skip link, target `#account-main[tabindex="-1"]`, shared stylesheet `/styles.css?v=phase8-a11y-1`, dan helper `.sr-only`. `chat.html` tervalidasi dengan skip link, target `#chat-main[tabindex="-1"]`, helper `.sr-only` yang tersamarkan, serta 9 marker rule accessibility inline. Admin diverifikasi secara statis melalui source setelah patch inline.
 
-Fixture media tidak relevan untuk fase ini. Release/CI/live verification masih harus dilanjutkan.
+## Verifikasi production
+
+Homepage production `https://sultrakita-platform.vercel.app/?phase=8` menyajikan skip link, `main#beranda[tabindex="-1"]`, `#listings[aria-live="polite"][aria-busy="false"]`, 11 ikon navigasi sidebar dengan `aria-hidden="true"`, stylesheet `/styles.css?v=phase8-a11y-1`, dan app `/app.js?v=phase8-a11y-1`. CSSOM production membaca 17 rule focus/skip/reduced-motion/forced-colors. Console tidak menunjukkan error runtime baru setelah load. Final health/API/CI verification masih harus ditulis setelah deployment selesai.
+
+## Release
+
+Belum commit, push, atau menjalankan CI untuk Phase 8. Setelah audit production ini, lakukan commit, push, tunggu GitHub Actions, lalu verifikasi build SHA dan endpoint core.
