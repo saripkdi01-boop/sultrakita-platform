@@ -16,17 +16,25 @@ Sitemap saat ini hanya berisi homepage; karena route public marketplace bersifat
 - Cache-buster stylesheet preload, stylesheet utama, dan `app.js` dinaikkan menjadi `phase7-seo-1`; URL preload sama persis dengan stylesheet utama.
 - `public/app.js` memakai `<picture>` untuk listing image dengan fallback `<img>` yang memiliki `alt`, `loading="lazy"`, `decoding="async"`, `width="400"`, `height="300"`; AVIF/WebP hanya dirender bila field URL tervalidasi tersedia. Thumbnail external jobs juga diberi lazy loading, decoding async, dan dimensi intrinsik.
 - `public/styles.css` menambahkan `.listing-picture` absolute-fill dan `.listing-picture img` object-fit cover.
-- `public/sitemap.xml` mempertahankan homepage dan menambahkan halaman terms/privacy yang public.
+- `public/sitemap.xml` mempertahankan fallback homepage dan menambahkan halaman terms/privacy yang public. Pada production, route `/sitemap.xml` yang memang sudah ada tetap menghasilkan sitemap dinamis berisi homepage dan kategori aktif.
 - Tidak dibuat URL JPG/AVIF sosial baru: target `og-image.svg` dipertahankan karena aset tersebut benar-benar tersedia dan URL JPG belum ada.
 
 ## Verifikasi lokal
 
 Hasil validasi lokal: `git diff --check` lulus; `npm run lint` lulus; `npm run build` lulus (31 artefak/marker); `node --check public/app.js` lulus. Browser homepage lokal memuat title `SultraKita — Marketplace Lokal #1 Kendari & Sulawesi Tenggara`, description yang diminta, canonical production, 11 OG markers, 6 Twitter markers, critical CSS aktif, stylesheet/app cache-buster `phase7-seo-1`, dan 2 JSON-LD.
 
-Fixture aman sementara di browser memanggil `listingCard()` tanpa menyentuh database: output memiliki `<picture>`, fallback `<img alt="Fixture media Phase 7">`, `loading="lazy"`, `decoding="async"`, dimensi markup 400×300, serta source `image/avif` dan `image/webp`; node fixture langsung dihapus sesudah inspeksi. Console hanya mencatat error `[stats]` karena database lokal tidak dikonfigurasi, sesuai batasan lingkungan; tidak ada error runtime dari renderer media.
+Fixture aman sementara di browser memanggil `listingCard()` tanpa menyentuh database: output memiliki `<picture>`, fallback `<img alt="Fixture media Phase 7">`, `loading="lazy"`, `decoding="async"`, dimensi markup 400×300, serta source `image/avif` dan `image/webp`; node fixture langsung dihapus sesudah inspeksi. Console lokal hanya mencatat error `[stats]` karena database lokal tidak dikonfigurasi, sesuai batasan lingkungan; tidak ada error runtime dari renderer media.
 
 Database lokal tetap tidak tersedia sehingga listing kosong. Integration test DB dan API smoke test utama tetap mengandalkan CI PostgreSQL sesuai pola fase sebelumnya.
 
+## Release dan verifikasi production
+
+Commit `14c6a77` (`perf: optimize media and SEO metadata`) sudah dipush ke `main`. GitHub Actions run `33096424107` selesai **success** dalam 2m6s; job `verify` lulus migration, migration idempotency, lint, test, security regression, build, API smoke test, dan cleanup. Satu anotasi non-blocking menyebut action GitHub lama menarget Node.js 20 yang dipaksa runner ke Node.js 24; tidak terkait perubahan Phase 7.
+
+Deployment production `https://sultrakita-platform.vercel.app/` menyajikan title Phase 7, critical CSS aktif, stylesheet `/styles.css?v=phase7-seo-1`, app `/app.js?v=phase7-seo-1`, canonical production, OG lengkap dengan asset SVG existing, Twitter Card, dan 2 JSON-LD. Browser console production tidak menunjukkan error runtime setelah load.
+
+Endpoint live tambahan terverifikasi: `/api/health` HTTP 200 dengan `success: true`, `api: up`, `db: up`, build `14c6a772ab3f5b32b4196e6a74cc27032e6c0487`, dan `storage: down`; `/api/stats` success dengan 0 listing aktif; `/api/categories` success dengan source `db`; `/api/public-config` success dengan `supabase_url: null` dan `supabase_anon_key: null` sesuai fallback realtime yang disengaja; `robots.txt` mengizinkan halaman publik dan melarang `/api/` serta `/admin`; `/sitemap.xml` merespons sitemap dinamis production dengan homepage dan kategori aktif. Storage/R2 dan public Supabase browser config tidak diklaim aktif.
+
 ## Status release
 
-Belum commit, push, atau deploy. Tahap berikutnya adalah pemeriksaan diff final, commit Phase 7, push ke `main`, menunggu seluruh GitHub Actions lulus, kemudian verifikasi build SHA, metadata, robots, sitemap, dan endpoint API pada deployment Vercel.
+Implementasi, commit, push, CI, dan verifikasi browser serta endpoint production selesai. Perubahan audit live ini perlu dikomit sebagai dokumentasi follow-up tanpa perubahan pada route, schema, atau core marketplace logic.
