@@ -590,3 +590,24 @@ body.dark {
 .listing-picture { position:absolute; inset:0; display:block; width:100%; height:100%; }
 .listing-picture img { display:block; width:100%; height:100%; object-fit:cover; transition:transform var(--duration-slow,500ms) var(--ease-out,cubic-bezier(.2,.8,.2,1)); }
 .listing-image.has-image > .listing-picture + .listing-badge { z-index:2; }
+
+
+/* Phase 8 — accessibility & inclusivity */
+:focus-visible { outline:3px solid var(--brand-500, var(--cyan, #10b981)); outline-offset:3px; border-radius:var(--radius-xs, 6px); }
+.skip-link { position:fixed; top:-4rem; left:8px; z-index:9999; display:inline-flex; align-items:center; min-height:42px; padding:var(--space-2, 8px) var(--space-4, 16px); border:2px solid var(--brand-800, #065f46); border-radius:var(--radius-xs, 6px); background:var(--brand-600, #059669); color:#fff; font-weight:800; box-shadow:0 8px 24px rgba(8,35,27,.22); transition:top .2s var(--ease, cubic-bezier(.23,1,.32,1)); }
+.skip-link:focus, .skip-link:focus-visible { top:8px; outline:3px solid var(--gold, #f8d875); outline-offset:3px; }
+#beranda:focus, #main-content:focus { outline:none; }
+.top-search input:focus-visible { outline:3px solid var(--brand-500, var(--cyan, #10b981)); outline-offset:3px; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; animation-delay:0ms !important; transition-duration:.01ms !important; transition-delay:0ms !important; scroll-behavior:auto !important; }
+  .button:hover, .button:active, .nav-item:hover, .listing-card-v2:hover, .listing-card-v2:focus-within, .text-button:hover, .top-search input:focus { transform:none !important; }
+  .listing-picture img { transition:none !important; }
+}
+@media (forced-colors: active) {
+  .button, .filter-chip, .view-toggle-btn, .mini-action, .text-button, .icon-button, .bottom-nav-sell, .skip-link { forced-color-adjust:auto; border:2px solid ButtonText; }
+  .button-primary, .button-soft, .button-light, .button-quiet, .button-ghost, .skip-link { background:ButtonFace; color:ButtonText; }
+  .button-primary, .button-ghost, .skip-link { border-color:ButtonText; }
+  .nav-item.active, .filter-chip.active, .bottom-nav-item.active { outline:2px solid Highlight; outline-offset:-2px; }
+  .hero-visual, .sidebar-card, .community-banner { background:Canvas !important; color:CanvasText; border:1px solid ButtonText; }
+  .skip-link:focus, .skip-link:focus-visible { outline-color:Highlight; }
+}

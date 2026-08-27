@@ -73,6 +73,7 @@ function updateActiveFilter() { const row = $('#active-filter-row'); const clear
 function syncDiscoveryUrl({ replace = false } = {}) { const url = new URL(location.href); const query = $('#search').value.trim(); state.category ? url.searchParams.set('category', state.category) : url.searchParams.delete('category'); query ? url.searchParams.set('q', query) : url.searchParams.delete('q'); $('#district').value ? url.searchParams.set('district', $('#district').value) : url.searchParams.delete('district'); $('#sort').value !== 'newest' ? url.searchParams.set('sort', $('#sort').value) : url.searchParams.delete('sort'); state.radius !== '10' ? url.searchParams.set('radius', state.radius) : url.searchParams.delete('radius'); state.minPrice ? url.searchParams.set('min_price', state.minPrice) : url.searchParams.delete('min_price'); state.maxPrice ? url.searchParams.set('max_price', state.maxPrice) : url.searchParams.delete('max_price'); const next = `${url.pathname}${url.search}${url.hash}`; (replace ? history.replaceState : history.pushState).call(history, null, '', next); }
 
 async function loadListings({ reset = true } = {}) {
+  const listings = $('#listings'); listings?.setAttribute('aria-busy', 'true');
   if (reset) { state.page = 1; setLoading(); }
   const query = $('#search').value.trim(); saveSearchHistory(query); const params = new URLSearchParams({ q: query, district: $('#district').value, sort: $('#sort').value, page: state.page, limit: 8, radius_km: state.radius, min_price: state.minPrice, max_price: state.maxPrice });
   if (state.category) params.set('category', state.category);
@@ -88,7 +89,7 @@ async function loadListings({ reset = true } = {}) {
     else if (items.length) $('#listings').insertAdjacentHTML('beforeend', items.map(listingCard).join(''));
     $('#load-more').hidden = state.page >= state.totalPages || !items.length;
     updateActiveFilter();
-  } catch (error) { $('#listings').innerHTML = `<div class="empty"><div><strong>Listing belum bisa dimuat</strong><span>${esc(error.message)}</span></div></div>`; $('#load-more').hidden = true; }
+  } catch (error) { $('#listings').innerHTML = `<div class="empty"><div><strong>Listing belum bisa dimuat</strong><span>${esc(error.message)}</span></div></div>`; $('#load-more').hidden = true; } finally { listings?.setAttribute('aria-busy', 'false'); }
 }
 
 async function renderSuggestions() {

@@ -2,3 +2,17 @@
 
 /* Shared Tropical Commerce typography refinement */
 :root{--font-display:'Clash Display','Plus Jakarta Sans',sans-serif;--font-body:'Plus Jakarta Sans','Inter',sans-serif;--brand-800:#065f46;--brand-500:#10b981}body{font-family:var(--font-body);background:radial-gradient(circle at 90% 0,rgba(16,185,129,.09),transparent 22rem),#f4efe4}.legal-topbar{box-shadow:0 8px 28px rgba(18,50,39,.04)}.legal-hero h1,.legal-content h2,.legal-content h3{font-family:var(--font-display)}.legal-hero{background:linear-gradient(135deg,#064e3b 0%,#0369a1 100%)}.legal-content a{color:var(--brand-800)}@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important}}
+
+/* Phase 8 — accessibility & inclusivity */
+:focus-visible { outline:3px solid #10b981; outline-offset:3px; border-radius:6px; }
+.skip-link { position:fixed; top:-4rem; left:8px; z-index:9999; display:inline-flex; align-items:center; min-height:42px; padding:8px 16px; border:2px solid #065f46; border-radius:6px; background:#059669; color:#fff; font-weight:800; box-shadow:0 8px 24px rgba(8,35,27,.22); transition:top .2s ease; }
+.skip-link:focus, .skip-link:focus-visible { top:8px; outline:3px solid #f8d875; outline-offset:3px; }
+#legal-main:focus { outline:none; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; animation-delay:0ms !important; transition-duration:.01ms !important; transition-delay:0ms !important; scroll-behavior:auto !important; }
+}
+@media (forced-colors: active) {
+  .legal-nav a, .legal-back, .skip-link { forced-color-adjust:auto; border:2px solid ButtonText; }
+  .skip-link { background:ButtonFace; color:ButtonText; }
+  .legal-nav a[aria-current=page] { outline:2px solid Highlight; outline-offset:-2px; }
+}
