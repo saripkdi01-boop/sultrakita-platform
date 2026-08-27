@@ -115,7 +115,7 @@
         <section class="section partner-section" id="partner-picks" hidden><div class="section-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span>Partner picks</div><h2>Temukan lebih banyak</h2><p id="partner-summary" class="result-summary">Listing partner resmi dengan sumber yang jelas.</p></div><span class="partner-lock">↗ Sumber eksternal resmi</span></div><div class="partner-grid" id="partner-listings"></div></section>
 
         <section class="community-banner" id="komunitas"><div class="community-art"><span>♧</span><span>✦</span><span>◌</span></div><div><div class="eyebrow eyebrow-light"><span class="eyebrow-line"></span>Bangun bersama</div><h2>Yang dekat, tumbuh bersama.</h2><p>Berikan masukan, dukung pengembangan, atau ajak penjual lokal bergabung.</p><div class="social-links"><a href="https://facebook.com/sultrakita" target="_blank" rel="noopener">Facebook ↗</a><a href="https://tiktok.com/@sultrakita" target="_blank" rel="noopener">TikTok ↗</a><a href="https://youtube.com/@sultrakita" target="_blank" rel="noopener">YouTube ↗</a></div></div><div class="banner-actions"><button class="button button-light" id="suggestion-cta">Kirim saran</button><button class="button button-ghost" id="donation-cta">Dukung proyek</button></div></section>
-        <section class="help-strip" id="bantuan"><div class="help-icon">?</div><div><strong>Butuh bantuan?</strong><span>Mulai dengan cari atau pilih kategori. Kami bantu dari sana.</span></div><a href="mailto:halo@sultrakita.id">Hubungi kami <span>→</span></a></section>
+        <section class="help-strip" id="bantuan"><div class="help-icon">?</div><div><strong>Butuh bantuan?</strong><span>Mulai dengan cari atau pilih kategori. Kami bantu dari sana.</span></div><a href="mailto:halo@sultrakita.id">Hubungi kami <span>→</span></a></section><nav class="policy-links" aria-label="Kebijakan platform"><span>Ruang aman bersama</span><a href="/terms.html">Syarat & Ketentuan</a><a href="/privacy.html">Kebijakan Privasi</a><a href="mailto:halo@sultrakita.id">Kontak privasi</a></nav>
 
       </main>
     </div>
@@ -143,7 +143,7 @@
         <label id="otp-email-field" hidden>Email<input name="email" type="email" placeholder="nama@email.com" autocomplete="email"></label>
         <div class="onboarding-inline-field"><label>Nama Anda<input name="seller_name" minlength="2" maxlength="80" placeholder="Contoh: Rina Aulia" autocomplete="name" required></label><div class="field-hint">Minimal 2 karakter</div></div>
         <div class="form-row otp-row onboarding-otp-row"><label>Kode OTP<input name="otp" inputmode="numeric" pattern="[0-9]{6}" placeholder="6 digit" autocomplete="one-time-code" required></label><button class="button button-soft otp-button" type="button" id="request-otp">Kirim OTP WhatsApp</button></div>
-        <p class="onboarding-privacy">Kami tidak meminta password Gmail. Data verifikasi dipakai hanya untuk keamanan akun.</p>
+        <div class="onboarding-privacy"><p>Kami tidak meminta password Gmail. Data verifikasi dipakai hanya untuk keamanan akun.</p><label class="policy-inline-consent"><input name="policy_consent" type="checkbox" required><span>Saya menyetujui <a href="/terms.html" target="_blank" rel="noopener">Syarat & Ketentuan</a> dan memahami <a href="/privacy.html" target="_blank" rel="noopener">Kebijakan Privasi</a>.</span></label></div>
         <div class="onboarding-actions"><button class="button button-primary full" type="button" data-onboarding-next="1">Lanjut ke profil toko <span>→</span></button></div>
       </section>
 
@@ -178,6 +178,6 @@
     </form>
   </dialog>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="/taxonomy.js"></script><script src="/marketplace-bridge.js"></script><script src="/app.js?v=dense-interactions-2"></script>
+  <script src="/taxonomy.js"></script><script src="/marketplace-bridge.js"></script><script src="/policy-consent.js?v=policy-v1"></script><script src="/app.js?v=dense-interactions-3"></script>
 </body>
 </html>
