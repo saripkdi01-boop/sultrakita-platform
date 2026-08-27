@@ -44,3 +44,8 @@ Browser account lokal memverifikasi notification card, stylesheet `/account.css?
 ## Prioritas berikutnya
 
 Setelah batch notifikasi, prioritas aman berikutnya adalah regression mobile 375px dan audit dialog/dynamic content. Promoted listings dan trending algorithm ditunda sampai kontrak authorization dan sumber data existing dipastikan. Setiap batch berikutnya harus tetap melewati lint, build, test, security regression, API smoke test, mobile browser check, keyboard/screen-reader semantics, serta verifikasi route/schema existing.
+
+## Release batch notification center
+
+Batch frontend notification center telah dipush melalui commit `5168cbc` (`feat: add account notification center`). CI run `33118355211` berstatus success dan meluluskan migration, idempotency, lint, test, security regression, build, API smoke test, dan cleanup. Halaman account production memuat `.notification-card`, `#notifications`, `/account.css?v=notifications-1`, `/account.js?v=notifications-1`, skip link, dan `#account-main[tabindex="-1"]`. Tidak ada autentikasi atau data pengguna yang dipakai saat verifikasi live; isi notification hanya muncul setelah login melalui endpoint existing.
+
