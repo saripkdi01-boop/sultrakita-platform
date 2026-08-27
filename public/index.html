@@ -40,7 +40,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"SultraKita","url":"https://sultrakita-platform.vercel.app/","description":"Marketplace lokal Kendari dan Sulawesi Tenggara untuk barang, jasa, properti, kendaraan, kuliner, dan peluang.","inLanguage":"id-ID","potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://sultrakita-platform.vercel.app/?q={search_term_string}"},"query-input":"required name=search_term_string"}}</script>
 
-  <script>(function(){try{var t=localStorage.getItem('sultra-dark');if(t==='true'||(t===null&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('theme-dark-preload')}catch(e){}})();</script><link rel='stylesheet' href='/styles.css?v=tropical-commerce-2'>
+  <script>(function(){try{var t=localStorage.getItem('sultra-dark');if(t==='true'||(t===null&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('theme-dark-preload')}catch(e){}})();</script><link rel='stylesheet' href='/styles.css?v=phase2-dense-1'>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet">
@@ -49,52 +49,60 @@
 </head>
 <body>
   <div class="app-shell">
-    <header class="topbar">
-      <a class="brand" href="#beranda" aria-label="SultraKita beranda"><span class="brand-mark">S</span><span>Sultra<strong>Kita</strong></span></a>
-      <button class="location-pill" id="location-pill" type="button" aria-haspopup="dialog" aria-controls="location-dialog" aria-label="Pilih wilayah pencarian"><span class="status-dot"></span><span id="location-label">Kendari, Sultra</span><span class="location-chevron" aria-hidden="true">⌄</span></button>
-      <div class="top-search" role="search">
+    <header class="topbar topbar-v2">
+      <div class="topbar-left"><a class="brand brand-v2" href="#beranda" aria-label="SultraKita beranda"><span class="brand-mark brand-mark-v2">S</span><span class="brand-text">Sultra<span class="brand-accent">Kita</span></span></a>
+      <button class="location-pill location-trigger" id="location-pill" type="button" aria-haspopup="dialog" aria-controls="location-dialog" aria-label="Pilih wilayah pencarian"><span class="status-dot"></span><span id="location-label">Kendari, Sultra</span><span class="location-chevron" aria-hidden="true">⌄</span></button></div><div class="topbar-center"><div class="top-search search-container" role="search">
         <label class="sr-only" for="search">Cari barang atau jasa</label>
         <span class="search-icon">⌕</span>
         <input id="search" placeholder="Cari rumah, HP, motor, jasa..." autocomplete="off">
-        <kbd>⌘ K</kbd>
-        <button id="search-button" class="search-submit" aria-label="Cari">Cari</button>
+        <kbd class="search-shortcut">⌘ K</kbd>
+        <button id="search-button" class="search-submit search-btn" aria-label="Cari">Cari</button>
         <div id="suggestions" class="suggestions" hidden></div>
-      </div>
-      <div class="top-actions">
-        <button class="icon-button theme-toggle" id="theme-toggle" aria-label="Aktifkan mode gelap">◐</button>
+      </div></div>
+      <div class="topbar-right top-actions">
+        <button class="icon-button icon-btn theme-toggle" id="theme-toggle" aria-label="Aktifkan mode gelap">◐</button>
         <a class="nav-avatar" href="/account.html" aria-label="Buka akun">◎</a><a class="nav-avatar" href="/chat.html" aria-label="Buka pesan">◌</a>
-        <button class="button button-primary sell-button" id="open-sell"><span>＋</span> Pasang iklan</button>
+        <button class="button button-primary sell-button sell-btn-v2" id="open-sell"><span>＋</span> Pasang iklan</button>
       </div>
     </header>
 
     <div class="app-body">
-      <aside class="sidebar" aria-label="Navigasi utama">
-        <nav class="sidebar-nav">
-          <a class="nav-item active" href="#beranda"><span class="nav-symbol">⌂</span><span>Beranda</span></a>
-          <a class="nav-item" href="#kategori"><span class="nav-symbol">▦</span><span>Kategori</span></a>
-          <a class="nav-item" href="#jelajah"><span class="nav-symbol">♡</span><span>Favorit</span><span id="favorite-count" class="nav-count">0</span></a>
-          <a class="nav-item" href="/account.html"><span class="nav-symbol">◎</span><span>Akun & Pesanan</span></a><a class="nav-item" href="/chat.html"><span class="nav-symbol">◌</span><span>Pesan</span><span class="nav-live">baru</span></a>
-          <a class="nav-item" href="#komunitas"><span class="nav-symbol">♧</span><span>Komunitas</span></a>
+      <aside class="sidebar sidebar-v2" aria-label="Navigasi utama">
+        <nav class="sidebar-nav sidebar-nav-v2" aria-label="Jelajah marketplace">
+          <a class="nav-item nav-item-v2 active" href="#beranda"><span class="nav-symbol nav-icon">⌂</span><span class="nav-label">Beranda</span></a>
+          <a class="nav-item nav-item-v2" href="#jelajah"><span class="nav-symbol nav-icon">⌕</span><span class="nav-label">Jelajah</span></a>
+          <a class="nav-item nav-item-v2" href="#kategori"><span class="nav-symbol nav-icon">▦</span><span class="nav-label">Kategori</span><span class="nav-badge">12</span></a>
+          <a class="nav-item nav-item-v2" href="#job-board"><span class="nav-symbol nav-icon">▣</span><span class="nav-label">Lowongan</span><span class="nav-badge hot">HOT</span></a>
+          <a class="nav-item nav-item-v2" href="#jelajah" data-category-nav="properti" data-category="properti"><span class="nav-symbol nav-icon">⌂</span><span class="nav-label">Properti</span></a>
+          <a class="nav-item nav-item-v2" href="#jelajah" data-category-nav="kendaraan" data-category="kendaraan"><span class="nav-symbol nav-icon">▰</span><span class="nav-label">Kendaraan</span></a>
+          <a class="nav-item nav-item-v2" href="#jelajah" data-category-nav="jasa" data-category="jasa"><span class="nav-symbol nav-icon">⚒</span><span class="nav-label">Jasa</span></a>
+          <a class="nav-item nav-item-v2" href="#komunitas" data-donation-nav="true"><span class="nav-symbol nav-icon">♡</span><span class="nav-label">Donasi</span></a>
         </nav>
-        <div class="sidebar-card">
+        <div class="sidebar-divider"></div>
+        <nav class="sidebar-nav sidebar-nav-v2" aria-label="Akun dan aktivitas">
+          <a class="nav-item nav-item-v2" href="#jelajah"><span class="nav-symbol nav-icon">♥</span><span class="nav-label">Favorit</span><span id="favorite-count" class="nav-count">0</span></a>
+          <a class="nav-item nav-item-v2" href="/account.html"><span class="nav-symbol nav-icon">▤</span><span class="nav-label">Iklan Saya</span></a>
+          <a class="nav-item nav-item-v2" href="/chat.html"><span class="nav-symbol nav-icon">◌</span><span class="nav-label">Pesan</span><span class="nav-count">baru</span></a>
+        </nav>
+        <div class="sidebar-card sidebar-promo">
           <span class="sidebar-card-icon">✦</span>
           <strong>Jual lebih cepat</strong>
           <p>Foto bagus, deskripsi jujur, dan lokasi jelas bikin iklan lebih dipercaya.</p>
-          <button class="text-button" id="show-guide">Lihat panduan <span>→</span></button>
+          <button class="text-button promo-btn" id="show-guide">Lihat panduan <span>→</span></button>
         </div>
         <div class="sidebar-footer"><span>© 2026 SultraKita</span><a href="#bantuan">Bantuan</a></div>
       </aside>
 
       <main id="beranda" class="main-content">
-        <section class="hero">
-          <div class="hero-copy-block">
+        <section class="hero hero-compact">
+          <div class="hero-copy-block hero-content">
             <div class="eyebrow"><span class="eyebrow-line"></span>Marketplace warga Sultra</div>
             <h1>Temukan yang <span>dekat.</span><br>Jual lebih <em>mudah.</em></h1>
             <p class="hero-copy">Tempat paling nyaman untuk menemukan barang, jasa, dan peluang dari orang-orang di sekitar Kendari.</p>
             <div class="hero-actions"><button class="button button-primary" id="hero-explore">Jelajahi listing <span>↓</span></button><button class="button button-quiet" id="hero-sell">Saya ingin menjual <span>↗</span></button></div>
             <div class="trust-row"><span><b>✓</b> Fokus lokal</span><span><b>✓</b> Seller terverifikasi</span><span><b>✓</b> Tanpa ribet</span></div>
           </div>
-          <div class="hero-visual" aria-label="Temukan listing lokal di Kendari">
+          <div class="hero-visual hero-art" aria-label="Temukan listing lokal di Kendari">
             <div class="hero-visual-top"><span class="live-indicator"><i></i> LIVE DI KENDARI</span><span class="hero-visual-number">01</span></div>
             <div class="hero-orbit orbit-one"></div><div class="hero-orbit orbit-two"></div><div class="hero-orbit orbit-three"></div>
             <div class="hero-seal"><strong>S</strong><small>lokal dulu</small></div>
@@ -104,13 +112,13 @@
           </div>
         </section>
 
-        <section class="metric-row" aria-label="Ringkasan marketplace"><div><span class="metric-icon">◈</span><div><strong id="total-listings">—</strong><small>listing aktif</small></div></div><div><span class="metric-icon">⌖</span><div><strong id="covered-districts">—</strong><small>wilayah terjangkau</small></div></div><div><span class="metric-icon">◌</span><div><strong>24/7</strong><small>selalu terbuka</small></div></div><div class="metric-highlight"><span class="metric-icon">↗</span><div><strong>Gratis</strong><small>pasang iklan</small></div></div></section>
+        <section class="metric-row hero-stats" aria-label="Ringkasan marketplace"><div><span class="metric-icon">◈</span><div><strong id="total-listings">—</strong><small>listing aktif</small></div></div><div><span class="metric-icon">⌖</span><div><strong id="covered-districts">—</strong><small>wilayah terjangkau</small></div></div><div><span class="metric-icon">◌</span><div><strong>24/7</strong><small>selalu terbuka</small></div></div><div class="metric-highlight"><span class="metric-icon">↗</span><div><strong>Gratis</strong><small>pasang iklan</small></div></div></section>
 
         <p id="stats-status" class="inline-status" role="status" aria-live="polite"></p>
 
-        <section class="section" id="kategori"><div class="section-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span>Mulai dari sini</div><h2>Jelajahi kategori</h2></div><a class="text-link" href="#jelajah">Lihat semua <span>→</span></a></div><div class="category-grid" id="categories"><div class="skeleton skeleton-category"></div><div class="skeleton skeleton-category"></div><div class="skeleton skeleton-category"></div><div class="skeleton skeleton-category"></div><div class="skeleton skeleton-category"></div></div></section>
+        <section class="section category-strip" id="kategori"><div class="section-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span>Mulai dari sini</div><h2>Jelajahi kategori</h2></div><a class="text-link" href="#jelajah">Lihat semua <span>→</span></a></div><div class="category-grid category-scroll" id="categories"><div class="skeleton skeleton-category"></div><div class="skeleton skeleton-category"></div><div class="skeleton skeleton-category"></div><div class="skeleton skeleton-category"></div><div class="skeleton skeleton-category"></div></div></section>
 
-        <section class="section discover-section" id="jelajah"><div class="section-heading listing-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span>Pilihan warga Sultra</div><h2>Listing terbaru</h2><p id="result-summary" class="result-summary">Memuat listing...</p></div><div class="filter-row"><button class="filter-chip active" data-filter="all">Semua</button><label class="select-wrap"><span class="sr-only">Pilih wilayah</span><select id="district" aria-label="Filter wilayah"><option value="">Semua wilayah</option></select></label><label class="select-wrap"><span class="sr-only">Urutkan listing</span><select id="sort" aria-label="Urutkan listing"><option value="newest">Terbaru</option><option value="cheapest">Harga terendah</option><option value="expensive">Harga tertinggi</option><option value="popular">Terpopuler</option></select></label></div></div><div class="active-filter-row" id="active-filter-row" hidden><span>Filter aktif:</span><button id="clear-filter" class="clear-filter">Semua listing ×</button></div><div class="listing-grid" id="listings"><div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div></div><button id="load-more" class="button button-outline" hidden>Muat listing berikutnya <span>↓</span></button></section>
+        <section class="section discover-section" id="jelajah"><div class="section-heading listing-heading filter-bar"><div><div class="eyebrow"><span class="eyebrow-line"></span>Pilihan warga Sultra</div><h2>Listing terbaru</h2><p id="result-summary" class="result-summary">Memuat listing...</p></div><div class="filter-row filter-right"><button class="filter-chip active" data-filter="all">Semua</button><label class="select-wrap"><span class="sr-only">Pilih wilayah</span><select id="district" aria-label="Filter wilayah"><option value="">Semua wilayah</option></select></label><label class="select-wrap"><span class="sr-only">Urutkan listing</span><select id="sort" aria-label="Urutkan listing"><option value="newest">Terbaru</option><option value="cheapest">Harga terendah</option><option value="expensive">Harga tertinggi</option><option value="popular">Terpopuler</option></select></label></div></div><div class="active-filter-row" id="active-filter-row" hidden><span>Filter aktif:</span><button id="clear-filter" class="clear-filter">Semua listing ×</button></div><div class="listing-grid listing-grid-v2" id="listings"><div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div></div><button id="load-more" class="button button-outline" hidden>Muat listing berikutnya <span>↓</span></button></section>
 
         <section class="section jobs-section" id="job-board" hidden><div class="section-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span>Peluang sekitar</div><h2>Lowongan kerja Kendari & Sultra</h2><p id="job-summary" class="result-summary">Lowongan dari sumber resmi dan feed yang diizinkan.</p></div><span class="partner-lock">✓ Sumber terverifikasi</span></div><div class="partner-grid" id="job-listings"></div></section>
         <section class="section partner-section" id="partner-picks" hidden><div class="section-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span>Partner picks</div><h2>Temukan lebih banyak</h2><p id="partner-summary" class="result-summary">Listing partner resmi dengan sumber yang jelas.</p></div><span class="partner-lock">↗ Sumber eksternal resmi</span></div><div class="partner-grid" id="partner-listings"></div></section>
@@ -179,6 +187,6 @@
     </form>
   </dialog>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="/taxonomy.js"></script><script src="/marketplace-bridge.js"></script><script src="/policy-consent.js?v=policy-v1"></script><script src="/app.js?v=dense-interactions-3"></script>
+  <script src="/taxonomy.js"></script><script src="/marketplace-bridge.js"></script><script src="/policy-consent.js?v=policy-v1"></script><script src="/app.js?v=phase2-dense-1"></script>
 </body>
 </html>
