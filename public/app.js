@@ -10,11 +10,27 @@ const esc = value => String(value ?? '').replace(/[&<>"']/g, character => ({ '&'
 const safeImage = value => { const url = String(value || ''); return /^\/(?!\/)|^https:\/\//.test(url) ? url.replace(/['"\\\n\r]/g, '') : ''; };
 const safeVideo = value => { const url = String(value || ''); return /^\/(?!\/)|^https:\/\//.test(url) ? url.replace(/['"\\\n\r]/g, '') : ''; };
 
+// Robust API client: GET requests have a bounded timeout and one safe retry; mutations are never retried automatically.
 async function api(url, options = {}) {
-  const response = await fetch(url, options);
-  const body = await response.json().catch(() => ({}));
-  if (!response.ok || body.success === false) { const error = new Error(body.error || 'Permintaan gagal. Coba lagi.'); error.code = body.code; throw error; }
-  return body;
+  const method = String(options.method || 'GET').toUpperCase();
+  const maxAttempts = method === 'GET' ? 2 : 1;
+  let lastError;
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 10000);
+    try {
+      const response = await fetch(url, { ...options, signal: controller.signal });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok || body.success === false) { const error = new Error(body.error || 'Permintaan gagal. Coba lagi.'); error.code = body.code; error.status = response.status; throw error; }
+      return body;
+    } catch (error) {
+      lastError = error.name === 'AbortError' ? new Error('Request timeout. Periksa koneksi Anda.') : error;
+      const retryable = method === 'GET' && (!error.status || error.status >= 500 || error.name === 'AbortError');
+      if (!retryable || attempt === maxAttempts - 1) throw lastError;
+      await new Promise(resolve => window.setTimeout(resolve, 350));
+    } finally { window.clearTimeout(timeout); }
+  }
+  throw lastError;
 }
 
 function toast(message, tone = 'normal') {
@@ -98,7 +114,15 @@ async function renderSuggestions() {
   try { const result = await api(`/api/listings?q=${encodeURIComponent(query)}&limit=5`); const rows = result.data || []; box.innerHTML = rows.length ? rows.map(row => `<button class="suggestion" data-suggestion="${esc(row.title)}"><span class="suggestion-icon">${icons[row.category_slug] || '＋'}</span><span><strong>${esc(row.title)}</strong><small>${esc(row.category_name || 'Listing')} · ${esc(row.district || 'Kendari')}</small></span></button>`).join('') : `<div class="suggestion"><span><strong>Tekan Enter untuk mencari</strong><small>${esc(query)}</small></span></div>`; box.hidden = false; } catch (error) { console.error('[suggestions]', error); box.hidden = true; }
 }
 
-function toggleFavorite(id, button) { const favorites = getFavorites(); const next = favorites.includes(id) ? favorites.filter(value => value !== id) : [...favorites, id]; setFavorites(next); button.classList.toggle('saved', next.includes(id)); button.textContent = next.includes(id) ? '♥ Tersimpan' : '♡ Simpan'; button.classList.add('heart-pop'); setTimeout(() => button.classList.remove('heart-pop'), 420); toast(next.includes(id) ? 'Listing disimpan ke favorit.' : 'Listing dihapus dari favorit.'); }
+let authUserIdPromise;
+async function resolveAuthUserId() { const token = authToken(); if (!token) return null; if (!authUserIdPromise) authUserIdPromise = api('/api/me', { headers: { authorization: `Bearer ${token}` } }).then(result => Number(result.data?.id) || null).catch(() => null); return authUserIdPromise; }
+async function toggleFavorite(id, button) {
+  const favorites = getFavorites(); const wasFavorited = favorites.includes(id); const next = wasFavorited ? favorites.filter(value => value !== id) : [...favorites, id];
+  setFavorites(next); button.classList.toggle('saved', next.includes(id)); button.textContent = next.includes(id) ? '♥ Tersimpan' : '♡ Simpan'; button.classList.add('heart-pop'); setTimeout(() => button.classList.remove('heart-pop'), 420); toast(next.includes(id) ? 'Listing disimpan ke favorit.' : 'Listing dihapus dari favorit.');
+  // Keep offline-first behavior, then sync authenticated users with the existing API contract.
+  const userId = await resolveAuthUserId(); if (!userId) return;
+  try { await api('/api/favorites', { method: wasFavorited ? 'DELETE' : 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${authToken()}` }, body: JSON.stringify({ user_id: userId, listing_id: Number(id) }) }); } catch (error) { console.warn('[favorites-sync]', error.message); toast('Favorit tersimpan lokal; sinkronisasi server tertunda.', 'warn'); }
+}
 function authToken() { if (localStorage.getItem('sultra-account-token')) return localStorage.getItem('sultra-account-token'); if (localStorage.getItem('sultra-auth-token')) return localStorage.getItem('sultra-auth-token'); if (localStorage.getItem('sultra-token')) return localStorage.getItem('sultra-token'); try { return JSON.parse(sessionStorage.getItem('sultra-seller-session') || 'null')?.token || sessionStorage.getItem('sultra-auth-token') || ''; } catch { return sessionStorage.getItem('sultra-auth-token') || ''; } }
 function toggleCompare(listing) { const items = getCompareItems(); const exists = items.some(item => Number(item.id) === Number(listing.id)); if (exists) setCompareItems(items.filter(item => Number(item.id) !== Number(listing.id))); else if (items.length >= 3) toast('Maksimal 3 listing untuk dibandingkan.', 'warn'); else setCompareItems([...items, { id: Number(listing.id), title: listing.title, price: Number(listing.price || 0), category_name: listing.category_name || 'Marketplace', category_slug: listing.category_slug || '', district: listing.district || listing.city || 'Kendari', condition: listing.condition || 'second', seller_name: listing.seller_name || 'Seller lokal', seller_rating: Number(listing.seller_rating || 0), seller_review_count: Number(listing.seller_review_count || 0), seller_verified: listing.seller_verified || 0 }]); }
 function updateCompareTray() { const tray = $('#compare-tray'); if (!tray) return; const items = getCompareItems(); state.compare = items; tray.hidden = !items.length; $('#compare-count').textContent = `${items.length}/3 dipilih`; }
