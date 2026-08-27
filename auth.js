@@ -2,8 +2,18 @@
 
 const crypto = require('node:crypto');
 const { query, run } = require('./database');
+const { normalizeRole } = require('./rbac');
 
 const hashToken = token => crypto.createHash('sha256').update(token).digest('hex');
+const userSelect = `SELECT u.id, u.name, u.phone, u.email, COALESCE(ara.role, u.role) AS role, u.role AS legacy_role,
+                          u.district, u.phone_verified, u.email_verified, u.verification_status
+                   FROM sessions s JOIN users u ON u.id = s.user_id
+                   LEFT JOIN admin_role_assignments ara ON ara.user_id = u.id
+                   WHERE s.token_hash = ? AND s.expires_at > ?`;
+const legacyUserSelect = `SELECT u.id, u.name, u.phone, u.email, u.role, u.role AS legacy_role,
+                                 u.district, u.phone_verified, u.email_verified, u.verification_status
+                          FROM sessions s JOIN users u ON u.id = s.user_id
+                          WHERE s.token_hash = ? AND s.expires_at > ?`;
 
 async function authenticate(req, _res, next) {
   try {
@@ -11,14 +21,20 @@ async function authenticate(req, _res, next) {
     const match = header.match(/^Bearer\s+([A-Za-z0-9_-]{40,})$/);
     if (!match) return next();
 
-    const [user] = await query(
-      `SELECT u.id, u.name, u.phone, u.email, u.role, u.district,
-              u.phone_verified, u.email_verified, u.verification_status
-       FROM sessions s JOIN users u ON u.id = s.user_id
-       WHERE s.token_hash = ? AND s.expires_at > ?`,
-      [hashToken(match[1]), Date.now()]
-    );
-    if (user) req.user = user;
+    const params = [hashToken(match[1]), Date.now()];
+    let users;
+    try {
+      users = await query(userSelect, params);
+    } catch (error) {
+      // During a rolling deploy, retain valid legacy sessions until migration 015 is applied.
+      if (error.code !== '42P01') throw error;
+      users = await query(legacyUserSelect, params);
+    }
+    const [user] = users;
+    if (user) {
+      user.role = normalizeRole(user.role);
+      req.user = user;
+    }
     return next();
   } catch (error) {
     req.authDegraded = true;
@@ -35,7 +51,8 @@ function requireAuth(req, res, next) {
 function requireRole(...roles) {
   return (req, res, next) => {
     if (!req.user) return res.status(401).json({ success: false, error: 'Autentikasi diperlukan' });
-    if (!roles.includes(req.user.role)) return res.status(403).json({ success: false, error: 'Akses tidak diizinkan' });
+    const effectiveRole = normalizeRole(req.user.role);
+    if (!roles.some(role => normalizeRole(role) === effectiveRole)) return res.status(403).json({ success: false, error: 'Akses tidak diizinkan' });
     return next();
   };
 }
