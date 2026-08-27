@@ -13,3 +13,6 @@ Verifikasi lintas halaman: `account.html` berhasil dimuat dengan form OTP, Googl
 
 
 Diagnosis live: `/api/stats` sempat mengembalikan HTTP 500 karena deployment produksi memiliki `public.listings.created_at` bertipe `text`, sedangkan query membandingkannya langsung dengan `timestamptz`. Perbaikan kompatibilitas diterapkan pada `server.js` dengan guarded cast hanya untuk nilai timestamp yang diawali format tahun, sehingga kontrak respons tetap sama dan schema tidak diubah. Query patched diuji read-only terhadap project Supabase produksi dan menghasilkan summary numerik `0` tanpa error.
+
+
+Release verification: commit `a77cba3` lulus GitHub Actions `SultraKita CI` termasuk migrasi, idempotency, lint, test, security regression, build, dan API smoke test. Deployment live mengiklankan build SHA yang sama. Endpoint live `/api/health` mengembalikan HTTP 200 dengan `api: up` dan `db: up`; `/api/stats` mengembalikan HTTP 200 dengan summary numerik dan lima kategori populer; `/api/categories` mengembalikan HTTP 200 dari database. `storage: down` tetap tercatat karena object storage belum dikonfigurasi, bukan akibat upgrade visual.
