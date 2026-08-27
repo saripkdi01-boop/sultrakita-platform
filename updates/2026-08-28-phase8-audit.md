@@ -25,10 +25,14 @@ Browser homepage lokal menemukan skip link, `main#beranda[tabindex="-1"]`, listi
 
 Halaman `terms.html` lokal tervalidasi dengan skip link, target `#legal-main[tabindex="-1"]`, stylesheet `/legal.css?v=phase8-a11y-1`, dan 7 rule accessibility CSSOM. `account.html` tervalidasi dengan skip link, target `#account-main[tabindex="-1"]`, shared stylesheet `/styles.css?v=phase8-a11y-1`, dan helper `.sr-only`. `chat.html` tervalidasi dengan skip link, target `#chat-main[tabindex="-1"]`, helper `.sr-only` yang tersamarkan, serta 9 marker rule accessibility inline. Admin diverifikasi secara statis melalui source setelah patch inline.
 
-## Verifikasi production
+## Release dan verifikasi production
 
-Homepage production `https://sultrakita-platform.vercel.app/?phase=8` menyajikan skip link, `main#beranda[tabindex="-1"]`, `#listings[aria-live="polite"][aria-busy="false"]`, 11 ikon navigasi sidebar dengan `aria-hidden="true"`, stylesheet `/styles.css?v=phase8-a11y-1`, dan app `/app.js?v=phase8-a11y-1`. CSSOM production membaca 17 rule focus/skip/reduced-motion/forced-colors. Console tidak menunjukkan error runtime baru setelah load. Final health/API/CI verification masih harus ditulis setelah deployment selesai.
+Commit implementasi `09bb7a8` (`feat: improve accessibility and inclusivity`) dan commit audit `3d7abb5` (`docs: record phase 8 accessibility QA`) sudah dipush ke `main`. GitHub Actions run `33098850898` untuk implementasi dan run final `33099181707` untuk audit selesai **success**; job `verify` meluluskan migration, idempotency, lint, test, security regression, build, API smoke test, dan cleanup. Anotasi non-blocking tentang action yang menarget Node.js 20 dipaksa runner ke Node.js 24 tidak terkait Phase 8.
 
-## Release
+Homepage production `https://sultrakita-platform.vercel.app/?phase=8` menyajikan skip link, `main#beranda[tabindex="-1"]`, `#listings[aria-live="polite"][aria-busy="false"]`, 11 ikon navigasi sidebar dengan `aria-hidden="true"`, stylesheet `/styles.css?v=phase8-a11y-1`, dan app `/app.js?v=phase8-a11y-1`. CSSOM production membaca 17 rule focus/skip/reduced-motion/forced-colors. Console tidak menunjukkan error runtime baru setelah load.
 
-Belum commit, push, atau menjalankan CI untuk Phase 8. Setelah audit production ini, lakukan commit, push, tunggu GitHub Actions, lalu verifikasi build SHA dan endpoint core.
+Health production merespons `success: true`, `api: up`, `db: up`, build final `3d7abb55664f9ff7ceba62f593ac40eb2f1c2226`, dan `storage: down`. Endpoint core sebelumnya tetap terverifikasi sehat: `/api/stats`, `/api/categories`, `/api/public-config`, `robots.txt`, dan sitemap. Storage/R2 serta public Supabase browser config tetap tidak diklaim aktif.
+
+## Status release
+
+PHASE 8 selesai: implementasi, QA lokal/browser, commit, push, CI final, dan verifikasi production berhasil. Tidak ada API route, schema database, atau core marketplace logic yang diubah secara destruktif.
