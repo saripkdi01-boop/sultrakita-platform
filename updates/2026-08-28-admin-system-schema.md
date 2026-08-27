@@ -23,3 +23,9 @@ Server menambahkan endpoint `GET /api/admin/system/roles`, `GET /api/admin/syste
 ## Validasi
 
 Syntax, lint, build, unit test, dan diff check harus dijalankan sebelum release. Migration production sudah berhasil; tahap berikutnya adalah CI dan live API verification setelah commit.
+
+## Release verification
+
+CI GitHub Actions pada commit `acf3d8d` berhasil menjalankan migration PostgreSQL, idempotency check, lint, seluruh unit test, security regression, build, dan API smoke test. Verifikasi live kemudian mengembalikan health `api: up`, `db: up`, dan build `acf3d8db1c64aacd6dfb378033a2d5d091407223`. Endpoint `GET /api/admin/system/settings` tanpa credential mengembalikan HTTP 401, sedangkan `/admin` tetap mengembalikan HTTP 200 dengan `Cache-Control: no-store, no-cache, must-revalidate` dan security headers aktif.
+
+Catatan workflow: GitHub memberi warning non-blocking bahwa `actions/checkout@v4` dan `actions/setup-node@v4` menargetkan Node.js 20 dan runner memaksa Node.js 24. Warning tersebut tidak menggagalkan pipeline.
