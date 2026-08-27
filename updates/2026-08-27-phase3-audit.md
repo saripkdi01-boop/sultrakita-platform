@@ -56,3 +56,8 @@ Lint, build marker, dan `git diff --check` terakhir lulus.
 ## Verifikasi runtime
 
 `npm test` menyelesaikan 7 test tanpa failure; seluruh test ter-skip secara guard karena sandbox tidak memiliki `DATABASE_URL`. Lint dan build marker tetap lulus, sedangkan verifikasi endpoint yang membutuhkan database perlu dilakukan melalui CI/deployment live.
+
+
+## Release live
+
+CI run `33090835634` sukses seluruh tahap. Deployment live kemudian mengiklankan build `b80f75845c2bc4b09ebe19f34e07024c120ffd4f`; `/api/health` melaporkan API dan database up, `/api/stats` serta `/api/categories` merespons sukses, dan homepage memuat `styles.css?v=phase3-features-2` serta `app.js?v=phase3-features-2`. Storage tetap down sesuai catatan konfigurasi R2 sebelumnya.
