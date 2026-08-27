@@ -1,9 +1,10 @@
 -- Section 3: additive admin-system schema for SultraKita.
 -- Existing users, listings, reports, and auth/session tables are not replaced or altered destructively.
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 -- Marketplace foreign keys intentionally use BIGINT because the existing production schema uses bigint IDs.
 
 CREATE TABLE IF NOT EXISTS admin_roles (
-  id UUID PRIMARY KEY DEFAULT extensions.gen_random_uuid(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   role_key VARCHAR(50) UNIQUE NOT NULL,
   role_name VARCHAR(100) NOT NULL,
   level INTEGER NOT NULL DEFAULT 1 CHECK (level BETWEEN 1 AND 5),
@@ -16,7 +17,7 @@ CREATE TABLE IF NOT EXISTS admin_roles (
 );
 
 CREATE TABLE IF NOT EXISTS admin_users (
-  id UUID PRIMARY KEY DEFAULT extensions.gen_random_uuid(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   auth_user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   email VARCHAR(255) UNIQUE NOT NULL,
   full_name VARCHAR(255) NOT NULL,
@@ -37,7 +38,7 @@ CREATE TABLE IF NOT EXISTS admin_users (
 );
 
 CREATE TABLE IF NOT EXISTS admin_sessions (
-  id UUID PRIMARY KEY DEFAULT extensions.gen_random_uuid(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   admin_user_id UUID NOT NULL REFERENCES admin_users(id) ON DELETE CASCADE,
   token_hash TEXT UNIQUE NOT NULL,
   ip_address INET,
@@ -48,7 +49,7 @@ CREATE TABLE IF NOT EXISTS admin_sessions (
 );
 
 CREATE TABLE IF NOT EXISTS admin_audit_logs (
-  id UUID PRIMARY KEY DEFAULT extensions.gen_random_uuid(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   admin_user_id UUID REFERENCES admin_users(id) ON DELETE SET NULL,
   action VARCHAR(100) NOT NULL,
   resource_type VARCHAR(50) NOT NULL,
@@ -60,7 +61,7 @@ CREATE TABLE IF NOT EXISTS admin_audit_logs (
 );
 
 CREATE TABLE IF NOT EXISTS listing_moderation (
-  id UUID PRIMARY KEY DEFAULT extensions.gen_random_uuid(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   listing_id BIGINT NOT NULL REFERENCES listings(id) ON DELETE CASCADE,
   status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'escalated')),
   reviewer_id UUID REFERENCES admin_users(id) ON DELETE SET NULL,
@@ -72,7 +73,7 @@ CREATE TABLE IF NOT EXISTS listing_moderation (
 );
 
 CREATE TABLE IF NOT EXISTS platform_settings (
-  id UUID PRIMARY KEY DEFAULT extensions.gen_random_uuid(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   setting_key VARCHAR(100) UNIQUE NOT NULL,
   setting_value JSONB NOT NULL,
   setting_group VARCHAR(50) NOT NULL DEFAULT 'general',
@@ -83,7 +84,7 @@ CREATE TABLE IF NOT EXISTS platform_settings (
 );
 
 CREATE TABLE IF NOT EXISTS admin_content (
-  id UUID PRIMARY KEY DEFAULT extensions.gen_random_uuid(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   content_type VARCHAR(50) NOT NULL CHECK (content_type IN ('banner', 'announcement', 'popup', 'promo', 'featured_section')),
   title VARCHAR(255) NOT NULL,
   body TEXT,
@@ -103,7 +104,7 @@ CREATE TABLE IF NOT EXISTS admin_content (
 );
 
 CREATE TABLE IF NOT EXISTS admin_notifications (
-  id UUID PRIMARY KEY DEFAULT extensions.gen_random_uuid(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   recipient_id UUID REFERENCES admin_users(id) ON DELETE CASCADE,
   sender_id UUID REFERENCES admin_users(id) ON DELETE SET NULL,
   type VARCHAR(50) NOT NULL,
@@ -115,7 +116,7 @@ CREATE TABLE IF NOT EXISTS admin_notifications (
 );
 
 CREATE TABLE IF NOT EXISTS report_management (
-  id UUID PRIMARY KEY DEFAULT extensions.gen_random_uuid(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   report_id BIGINT NOT NULL REFERENCES reports(id) ON DELETE CASCADE,
   reporter_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
   reported_content_type VARCHAR(50) NOT NULL CHECK (reported_content_type IN ('listing', 'user', 'comment', 'review')),
@@ -132,7 +133,7 @@ CREATE TABLE IF NOT EXISTS report_management (
 );
 
 CREATE TABLE IF NOT EXISTS platform_status (
-  id UUID PRIMARY KEY DEFAULT extensions.gen_random_uuid(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   status_type VARCHAR(50) NOT NULL CHECK (status_type IN ('maintenance', 'degraded', 'operational', 'announcement')),
   message TEXT,
   is_active BOOLEAN NOT NULL DEFAULT FALSE,
