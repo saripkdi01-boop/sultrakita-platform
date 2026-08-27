@@ -584,3 +584,9 @@ body.dark {
   .phase3-filter-panel .price-range-group { grid-column:auto; }
   .bottom-nav-v2 .bottom-nav-sell { flex-basis:52px; width:52px; height:52px; }
 }
+
+
+/* Phase 7 — responsive media */
+.listing-picture { position:absolute; inset:0; display:block; width:100%; height:100%; }
+.listing-picture img { display:block; width:100%; height:100%; object-fit:cover; transition:transform var(--duration-slow,500ms) var(--ease-out,cubic-bezier(.2,.8,.2,1)); }
+.listing-image.has-image > .listing-picture + .listing-badge { z-index:2; }
