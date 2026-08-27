@@ -241,20 +241,22 @@ app.get('/api/listings', async (req, res, next) => {
     const allowedSort = { newest: 'l.created_at DESC', cheapest: 'l.price ASC', expensive: 'l.price DESC', popular: 'l.views DESC' };
     const order = allowedSort[req.query.sort] || allowedSort.newest;
     const where = filters.join(' AND ');
-    const items = await query(`SELECT l.*, c.name AS category_name, c.slug AS category_slug, u.name AS seller_name, u.phone AS seller_phone, CASE WHEN COALESCE(u.verification_status, 'unverified') = 'approved' OR COALESCE(u.is_verified, false) THEN 1 ELSE 0 END AS seller_verified FROM listings l JOIN categories c ON c.id = l.category_id LEFT JOIN users u ON u.id = l.seller_id WHERE ${where} ORDER BY ${order} LIMIT ? OFFSET ?`, [...params, limit, offset]);
+    const items = await query(`SELECT l.*, c.name AS category_name, c.slug AS category_slug, u.name AS seller_name, u.phone AS seller_phone, CASE WHEN COALESCE(u.verification_status, 'unverified') = 'approved' OR COALESCE(u.is_verified, false) THEN 1 ELSE 0 END AS seller_verified, COALESCE(u.rating_average, 0) AS seller_rating, COALESCE(u.rating_count, 0) AS seller_review_count, (SELECT COUNT(*) FROM comments cm WHERE cm.listing_id = l.id AND cm.status = 'visible') AS comment_count FROM listings l JOIN categories c ON c.id = l.category_id LEFT JOIN users u ON u.id = l.seller_id WHERE ${where} ORDER BY ${order} LIMIT ? OFFSET ?`, [...params, limit, offset]);
     const [{ total }] = await query(`SELECT COUNT(*) AS total FROM listings l JOIN categories c ON c.id = l.category_id WHERE ${where}`, params);
     const publicItems = items.map(item => { const safe = { ...item }; delete safe.seller_phone; return safe; });
     ok(res, publicItems, { page, limit, total: Number(total), total_pages: Math.ceil(Number(total) / limit), location: 'Kendari, Sulawesi Tenggara' });
   } catch (error) { console.error('[listings-fallback]', error.message); ok(res, [], { page: 1, limit: 0, total: 0, total_pages: 0, source: 'degraded', notice: 'Listing sementara belum tersedia. Silakan coba lagi.' }); }
 });
 
+app.get('/api/sellers/:id', async (req, res, next) => { try { if (!positiveInt(req.params.id)) return fail(res, 400, 'ID seller tidak valid'); const [seller] = await query("SELECT id, name, avatar_url, bio, role, district, rating_average, rating_count, is_verified, verification_status, created_at FROM users WHERE id = ?", [Number(req.params.id)]); if (!seller) return fail(res, 404, 'Seller tidak ditemukan'); const listings = await query("SELECT l.id, l.title, l.description, l.price, l.condition, l.status, l.district, l.city, l.image_url, l.views, l.created_at, c.name AS category_name, c.slug AS category_slug FROM listings l JOIN categories c ON c.id = l.category_id WHERE l.seller_id = ? AND l.status = 'active' ORDER BY l.created_at DESC LIMIT 50", [Number(req.params.id)]); ok(res, { seller: { ...seller, rating_average: Number(seller.rating_average || 0), rating_count: Number(seller.rating_count || 0), verified: Boolean(Number(seller.is_verified) || seller.verification_status === 'approved') }, listings }); } catch (error) { next(error); } });
+
 app.get('/api/listings/:id', async (req, res, next) => {
   try {
     if (!positiveInt(req.params.id)) return fail(res, 400, 'ID listing tidak valid');
-    const rows = await query(`SELECT l.*, c.name AS category_name, c.slug AS category_slug, u.name AS seller_name, u.phone AS seller_phone, CASE WHEN COALESCE(u.verification_status, 'unverified') = 'approved' OR COALESCE(u.is_verified, false) THEN 1 ELSE 0 END AS seller_verified, u.district AS seller_district FROM listings l JOIN categories c ON c.id = l.category_id LEFT JOIN users u ON u.id = l.seller_id WHERE l.id = ? AND l.status = 'active'`, [Number(req.params.id)]);
+    const rows = await query(`SELECT l.*, c.name AS category_name, c.slug AS category_slug, u.name AS seller_name, u.phone AS seller_phone, CASE WHEN COALESCE(u.verification_status, 'unverified') = 'approved' OR COALESCE(u.is_verified, false) THEN 1 ELSE 0 END AS seller_verified, COALESCE(u.rating_average, 0) AS seller_rating, COALESCE(u.rating_count, 0) AS seller_review_count, (SELECT COUNT(*) FROM comments cm WHERE cm.listing_id = l.id AND cm.status = 'visible') AS comment_count, u.district AS seller_district FROM listings l JOIN categories c ON c.id = l.category_id LEFT JOIN users u ON u.id = l.seller_id WHERE l.id = ? AND l.status = 'active'`, [Number(req.params.id)]);
     if (!rows.length) return fail(res, 404, 'Listing tidak ditemukan');
     await run('UPDATE listings SET views = views + 1 WHERE id = ?', [Number(req.params.id)]);
-    const publicListing = { ...rows[0] }; delete publicListing.seller_phone;
+    const publicListing = { ...rows[0], seller_rating: Number(rows[0].seller_rating || 0), seller_review_count: Number(rows[0].seller_review_count || 0), comment_count: Number(rows[0].comment_count || 0) }; delete publicListing.seller_phone;
     ok(res, publicListing);
   } catch (error) { next(error); }
 });
