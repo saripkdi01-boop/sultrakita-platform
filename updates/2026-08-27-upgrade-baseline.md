@@ -10,3 +10,6 @@ Verifikasi browser lokal: computed body font adalah `Plus Jakarta Sans`, headlin
 
 
 Verifikasi lintas halaman: `account.html` berhasil dimuat dengan form OTP, Google login, dashboard shell, kartu surface, dan tombol kembali. `chat.html` berhasil dimuat dengan panel pesan, session form, composer, serta font Clash Display/Plus Jakarta Sans yang sudah aktif. Tidak ada perubahan pada handler autentikasi, conversation stream, atau endpoint backend.
+
+
+Diagnosis live: `/api/stats` sempat mengembalikan HTTP 500 karena deployment produksi memiliki `public.listings.created_at` bertipe `text`, sedangkan query membandingkannya langsung dengan `timestamptz`. Perbaikan kompatibilitas diterapkan pada `server.js` dengan guarded cast hanya untuk nilai timestamp yang diawali format tahun, sehingga kontrak respons tetap sama dan schema tidak diubah. Query patched diuji read-only terhadap project Supabase produksi dan menghasilkan summary numerik `0` tanpa error.
