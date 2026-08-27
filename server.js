@@ -41,6 +41,10 @@ app.get('/cari', async (req, res, next) => { try { const q = String(req.query.q 
 app.get('/sitemap.xml', async (_req, res, next) => { try { const listings = await query("SELECT id, title, updated_at FROM listings WHERE status = 'active' ORDER BY updated_at DESC LIMIT 5000"); const categories = await query('SELECT slug FROM categories ORDER BY id'); const urls = [SITE_URL + '/', ...categories.map(row => SITE_URL + '/kategori/' + row.slug), ...listings.map(row => SITE_URL + '/listing/' + slugify(row.title) + '-' + row.id)]; const xml = '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + urls.map(url => '<url><loc>' + escapeXml(url) + '</loc></url>').join('') + '</urlset>'; return res.type('application/xml').send(xml); } catch (error) { return next(error); } });
 app.get('/robots.txt', (_req, res) => res.type('text/plain').send('User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /admin\nSitemap: ' + SITE_URL + '/sitemap.xml\n'));
 
+// Canonical admin shell alias. Existing /admin.html remains available for backward compatibility.
+const sendAdminShell = (_req, res) => { res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate'); res.setHeader('Pragma', 'no-cache'); return res.sendFile(path.join(__dirname, 'public', 'admin.html')); };
+app.get(['/admin', '/admin/', '/admin/login', '/admin/dashboard'], sendAdminShell);
+
 app.use(express.static(path.join(__dirname, 'public'), { setHeaders: (res, filePath) => { if (filePath.endsWith('sw.js') || filePath.endsWith('index.html')) return; if (/\.(?:js|css|woff2?|png|jpe?g|webp|avif|svg|ico|webmanifest)$/.test(filePath)) res.setHeader('Cache-Control', 'public, max-age=31536000, immutable'); } }));
 app.use('/api', rateLimit());
 
