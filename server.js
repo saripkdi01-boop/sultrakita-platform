@@ -219,7 +219,7 @@ app.get('/api/analytics/summary', requireRole('admin'), adminOnly, async (req, r
 
 app.get('/api/stats', async (_req, res, next) => {
   try {
-    const [summary] = await query(`SELECT COUNT(*)::int AS total_listings, COUNT(*) FILTER (WHERE status = 'active')::int AS active_listings, COUNT(DISTINCT district) FILTER (WHERE status = 'active')::int AS covered_districts, COUNT(*) FILTER (WHERE status = 'active' AND CASE WHEN created_at ~ '^\\d{4}-' THEN created_at::timestamptz ELSE NULL END >= now() - interval '7 days')::int AS weekly_new_listings FROM listings`);
+    const [summary] = await query(`SELECT COUNT(*)::int AS total_listings, COUNT(*) FILTER (WHERE status = 'active')::int AS active_listings, COUNT(DISTINCT district) FILTER (WHERE status = 'active')::int AS covered_districts, COUNT(*) FILTER (WHERE status = 'active' AND CASE WHEN created_at::text ~ '^\\d{4}-' THEN created_at::timestamptz ELSE NULL END >= now() - interval '7 days')::int AS weekly_new_listings FROM listings`);
     const popular = await query(`SELECT c.name AS category, COUNT(l.id) AS total FROM categories c LEFT JOIN listings l ON l.category_id = c.id AND l.status = 'active' GROUP BY c.id ORDER BY total DESC, c.name LIMIT 5`);
     ok(res, { summary, popular_categories: popular });
   } catch (error) { next(error); }
