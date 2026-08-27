@@ -450,3 +450,59 @@ body.dark {
 
 .listing-video-preview { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; background:var(--brand-100); }
 .listing-image { position:relative; overflow:hidden; }
+
+
+/* SultraKita Phase 5 — interaction design & micro-animations */
+.button, .mini-action, .filter-chip, .view-toggle-btn, .text-button, .search-submit, .location-pill, .theme-toggle, .nav-item, .bottom-nav a, .bottom-nav button {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  transition: transform var(--duration-fast, 160ms) var(--ease-out, cubic-bezier(.2,.8,.2,1)), box-shadow var(--duration-fast, 160ms) var(--ease-out, cubic-bezier(.2,.8,.2,1)), background-color var(--duration-fast, 160ms) var(--ease-smooth, ease), color var(--duration-fast, 160ms) var(--ease-smooth, ease), border-color var(--duration-fast, 160ms) var(--ease-smooth, ease);
+}
+.button::after, .mini-action::after, .filter-chip::after, .view-toggle-btn::after, .search-submit::after, .location-pill::after, .theme-toggle::after, .bottom-nav button::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 999px;
+  background: rgba(255,255,255,.32);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+.button:active, .mini-action:active, .filter-chip:active, .view-toggle-btn:active, .search-submit:active, .location-pill:active, .theme-toggle:active, .bottom-nav a:active, .bottom-nav button:active { transform: scale(.97); }
+.button:active::after, .mini-action:active::after, .filter-chip:active::after, .view-toggle-btn:active::after, .search-submit:active::after, .location-pill:active::after, .theme-toggle:active::after, .bottom-nav button:active::after { width: 300px; height: 300px; opacity: 1; transition: width .6s, height .6s, opacity .6s; }
+.button:disabled, .mini-action:disabled, .filter-chip:disabled, .view-toggle-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+.button:focus-visible, .mini-action:focus-visible, .filter-chip:focus-visible, .view-toggle-btn:focus-visible, .text-button:focus-visible, .location-pill:focus-visible, .theme-toggle:focus-visible, .nav-item:focus-visible { outline: 3px solid color-mix(in srgb, var(--accent-400) 62%, transparent); outline-offset: 3px; }
+.button-primary:hover, .search-submit:hover { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(4,120,87,.26); }
+.button-soft:hover, .button-quiet:hover, .text-button:hover { transform: translateY(-1px); }
+.listing-card-v2 { will-change: transform, box-shadow; transition: transform var(--duration-normal, 300ms) var(--ease-out, cubic-bezier(.2,.8,.2,1)), box-shadow var(--duration-normal, 300ms) var(--ease-out, cubic-bezier(.2,.8,.2,1)), border-color var(--duration-normal, 300ms) var(--ease-smooth, ease); }
+.listing-card-v2:hover, .listing-card-v2:focus-within { transform: translateY(-6px) scale(1.01); box-shadow: var(--shadow-card-hover); }
+.listing-card-v2:hover .card-media img, .listing-card-v2:hover .card-media video, .listing-card-v2:focus-within .card-media img, .listing-card-v2:focus-within .card-media video { transform: scale(1.08); }
+.listing-card-v2 .card-media img, .listing-card-v2 .card-media video { transition: transform var(--duration-slow, 500ms) var(--ease-out, cubic-bezier(.2,.8,.2,1)); }
+.listing-card-v2 .card-actions { opacity: .82; transform: translateY(3px); transition: opacity var(--duration-fast, 160ms) var(--ease-smooth, ease), transform var(--duration-fast, 160ms) var(--ease-out, cubic-bezier(.2,.8,.2,1)); }
+.listing-card-v2:hover .card-actions, .listing-card-v2:focus-within .card-actions { opacity: 1; transform: translateY(0); }
+.listing-grid-v2 .listing-card-v2 { opacity: 0; animation: phase5-fade-in-up .5s var(--ease-out, cubic-bezier(.2,.8,.2,1)) both; }
+.listing-grid-v2 .listing-card-v2:nth-child(1) { animation-delay: .05s; }
+.listing-grid-v2 .listing-card-v2:nth-child(2) { animation-delay: .1s; }
+.listing-grid-v2 .listing-card-v2:nth-child(3) { animation-delay: .15s; }
+.listing-grid-v2 .listing-card-v2:nth-child(4) { animation-delay: .2s; }
+.listing-grid-v2 .listing-card-v2:nth-child(5) { animation-delay: .25s; }
+.listing-grid-v2 .listing-card-v2:nth-child(6) { animation-delay: .3s; }
+.listing-grid-v2 .listing-card-v2:nth-child(7) { animation-delay: .35s; }
+.listing-grid-v2 .listing-card-v2:nth-child(8) { animation-delay: .4s; }
+@keyframes phase5-fade-in-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.skeleton { background: linear-gradient(90deg, color-mix(in srgb, var(--line) 45%, var(--paper)) 25%, color-mix(in srgb, var(--brand-100) 70%, var(--paper)) 50%, color-mix(in srgb, var(--line) 45%, var(--paper)) 75%); background-size: 200% 100%; animation: phase5-shimmer 1.5s linear infinite; }
+@keyframes phase5-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+.skeleton-text { height: 14px; margin-bottom: 8px; border-radius: 6px; }
+.skeleton-text.short { width: 60%; }
+.skeleton-text.medium { width: 80%; }
+.skeleton-text.long { width: 100%; }
+@media (max-width:700px) { .listing-card-v2 .card-actions { opacity: 1; transform: none; } .listing-card-v2:hover, .listing-card-v2:focus-within { transform: translateY(-3px); } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
+  .listing-card-v2:hover, .listing-card-v2:focus-within, .button-primary:hover, .search-submit:hover, .button-soft:hover, .button-quiet:hover, .text-button:hover { transform: none; }
+}
