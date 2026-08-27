@@ -6,7 +6,7 @@ SultraKita adalah fondasi marketplace lokal untuk warga Kota Kendari dan wilayah
 
 Gunakan Node.js 18 atau yang lebih baru. Salin `.env.example` menjadi `.env`, kemudian jalankan `npm install` dan `npm start`. API tersedia pada `http://localhost:3000`.
 
-Database SQLite dibuat otomatis di folder `data/` menggunakan `sql.js`. Folder database tersebut bersifat lokal dan tidak boleh dimasukkan ke Git. Untuk produksi, lapisan persistence sebaiknya dipindahkan ke D1, PostgreSQL, atau MySQL terkelola melalui secret manager.
+Database SQLite dibuat otomatis di folder `data/` menggunakan `sql.js`. Folder database tersebut bersifat lokal dan tidak boleh dimasukkan ke Git. Untuk produksi, lapisan persistence sebaiknya dipindahkan ke D1, PostgreSQL, atau MySQL terkelola melalui secret manager. Migration Supabase Beta tersedia di [`supabase/migrations/20260827140000_beta_discovery_indexes.sql`](./supabase/migrations/20260827140000_beta_discovery_indexes.sql); migration ini menambahkan index idempoten untuk feed aktif per distrik/kategori, listing seller, analytics, dan antrean verifikasi.
 
 ## Endpoint inti
 
