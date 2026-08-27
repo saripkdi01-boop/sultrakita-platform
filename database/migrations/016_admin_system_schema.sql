@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS admin_roles (
 
 CREATE TABLE IF NOT EXISTS admin_users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  auth_user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  auth_user_id UUID,
   email VARCHAR(255) UNIQUE NOT NULL,
   full_name VARCHAR(255) NOT NULL,
   phone VARCHAR(20),
@@ -36,6 +36,14 @@ CREATE TABLE IF NOT EXISTS admin_users (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+DO $$
+BEGIN
+  -- Supabase provides auth.users; the CI PostgreSQL container does not.
+  IF to_regclass('auth.users') IS NOT NULL AND NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'admin_users_auth_user_id_fkey') THEN
+    ALTER TABLE admin_users ADD CONSTRAINT admin_users_auth_user_id_fkey FOREIGN KEY (auth_user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+  END IF;
+END $$;
 
 CREATE TABLE IF NOT EXISTS admin_sessions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
