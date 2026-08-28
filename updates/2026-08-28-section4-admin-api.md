@@ -17,3 +17,7 @@ PII pengguna hanya dikembalikan ketika role efektif memiliki `view_user_pii`. Pe
 Contract test memastikan router benar-benar mounted, route inti tersedia, dan tidak mengimpor `@supabase/supabase-js`, JWT, atau `SUPABASE_SERVICE_ROLE_KEY`. Syntax check, lint, build, unit tests, dan `git diff --check` dijalankan. Smoke test lokal mengonfirmasi `/api/admin/v2` tanpa session menghasilkan `401` dengan security headers existing.
 
 Endpoint yang memerlukan database fixture belum diuji dengan akun tiap role di sandbox karena credential test resmi belum diberikan. Server tetap menjadi otoritas; UI hiding tidak digunakan sebagai kontrol keamanan.
+
+## Release verification
+
+GitHub Actions pada commit `20a5174` sukses menjalankan migration PostgreSQL, idempotency check, lint, unit test, security regression, build, dan API smoke test. Live health kemudian mengonfirmasi `api: up`, `db: up`, dan build `20a517468a2ee8de7a4fba5b57d95481a709abbb`. Request tanpa session ke `GET /api/admin/v2/` mengembalikan HTTP 401; route `/admin` tetap mengembalikan HTTP 200 dengan `Cache-Control: no-store, no-cache, must-revalidate` serta CSP, nosniff, Referrer-Policy, dan Permissions-Policy.
