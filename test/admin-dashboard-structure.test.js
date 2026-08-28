@@ -25,8 +25,8 @@ test('Admin page content wrapper memakai full-width grid dan asset version terba
     assert.match(html, /data-page-content class="admin-span-12"/, `${page}.html must span the admin grid`);
   }
   const dashboard = fs.readFileSync(path.join(adminRoot, 'dashboard.html'), 'utf8');
-  assert.match(dashboard, /admin\.css\?v=4/);
-  assert.match(dashboard, /page\.js\?v=4/);
+  assert.match(dashboard, /admin\.css\?v=6/);
+  assert.match(dashboard, /page\.js\?v=5/);
 });
 
 test('Admin pages tidak mengganti route canonical existing', () => {

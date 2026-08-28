@@ -409,3 +409,36 @@ button:active { transform: scale(.98); }
   .admin-content { padding-right: 320px; }
   .admin-right-panel { display: flex; }
 }
+
+
+/* Restore mobile admin navigation behavior on top of the original responsive foundation. */
+@media (max-width: 640px) {
+  .admin-sidebar.is-open {
+    display: flex;
+    transform: translateX(0);
+  }
+  .admin-sidebar.is-open + .admin-content {
+    overflow: hidden;
+  }
+  .admin-bottom-nav {
+    min-height: 4.3rem;
+    padding-top: .45rem;
+  }
+  .admin-bottom-nav a,
+  .admin-bottom-nav button {
+    min-height: 3.25rem;
+  }
+  .admin-bottom-nav a[aria-current="page"] {
+    position: relative;
+  }
+  .admin-bottom-nav a[aria-current="page"]::before {
+    position: absolute;
+    top: -.45rem;
+    right: 22%;
+    left: 22%;
+    height: 3px;
+    border-radius: 999px;
+    background: var(--admin-accent);
+    content: "";
+  }
+}
