@@ -18,6 +18,25 @@ const adminGoogleConfigured = () => Boolean(process.env.GOOGLE_CLIENT_ID && proc
 const ADMIN_STATE_COOKIE = 'sultra_admin_oauth_state';
 const ADMIN_NEXT_COOKIE = 'sultra_admin_oauth_next';
 const createState = () => crypto.randomBytes(32).toString('hex');
+const adminStateSecret = () => String(process.env.GOOGLE_CLIENT_SECRET || process.env.JWT_SECRET || 'sultrakita-admin-state-secret');
+const base64url = value => Buffer.from(value).toString('base64url');
+const createAdminState = next => {
+  const payload = base64url(JSON.stringify({ t: Date.now(), n: crypto.randomBytes(16).toString('hex'), next: safeAdminNext(next) }));
+  const signature = crypto.createHmac('sha256', adminStateSecret()).update(`admin1.${payload}`).digest('base64url');
+  return `admin1.${payload}.${signature}`;
+};
+const verifyAdminState = value => {
+  const parts = String(value || '').split('.');
+  if (parts.length !== 3 || parts[0] !== 'admin1' || !parts[1] || !parts[2]) return null;
+  const expected = crypto.createHmac('sha256', adminStateSecret()).update(`${parts[0]}.${parts[1]}`).digest();
+  const actual = Buffer.from(parts[2], 'base64url');
+  if (actual.length !== expected.length || !crypto.timingSafeEqual(actual, expected)) return null;
+  try {
+    const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'));
+    if (!Number.isFinite(payload.t) || Date.now() - payload.t > 10 * 60 * 1000 || Date.now() - payload.t < -60 * 1000) return null;
+    return { next: safeAdminNext(payload.next) };
+  } catch { return null; }
+};
 const createExchangeCode = () => crypto.randomBytes(32).toString('hex');
 const hashExchangeCode = code => crypto.createHash('sha256').update(code).digest('hex');
 
@@ -99,6 +118,8 @@ module.exports = {
   adminGoogleRedirectUri,
   adminGoogleConfigured,
   createState,
+  createAdminState,
+  verifyAdminState,
   createExchangeCode,
   hashExchangeCode,
   safeAdminNext,
