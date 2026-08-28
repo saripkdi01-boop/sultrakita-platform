@@ -288,4 +288,94 @@ router.patch('/settings/:key', ...guarded('manage_settings'), async (req, res, n
   } catch (error) { next(error); }
 });
 
+router.get('/categories', ...guarded('manage_categories'), async (_req, res, next) => {
+  try {
+    const rows = await query(`SELECT c.id, c.name, c.slug, c.icon, c.created_at,
+      (SELECT COUNT(*)::int FROM listings l WHERE l.category_id = c.id) AS listing_count
+      FROM categories c ORDER BY c.name ASC LIMIT 200`);
+    ok(res, rows);
+  } catch (error) { next(error); }
+});
+
+router.post('/categories', ...guarded('manage_categories'), async (req, res, next) => {
+  try {
+    const name = text(req.body?.name, 80);
+    const slug = text(req.body?.slug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-'), 80).replace(/^-|-$/g, '');
+    const icon = text(req.body?.icon || 'tag', 40) || 'tag';
+    if (name.length < 2 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) return fail(res, 422, 'Nama atau slug kategori belum valid');
+    const created = await run('INSERT INTO categories (name, slug, icon) VALUES (?, ?, ?) RETURNING id', [name, slug, icon]);
+    await audit(req, 'category_created', 'category', created.id, { name, slug });
+    ok(res, { id: created.id, name, slug, icon });
+  } catch (error) { if (error.code === '23505') return fail(res, 409, 'Slug kategori sudah digunakan'); next(error); }
+});
+
+router.patch('/categories/:id', ...guarded('manage_categories'), async (req, res, next) => {
+  try {
+    if (!positiveId(req.params.id)) return fail(res, 422, 'ID kategori tidak valid');
+    const name = text(req.body?.name, 80);
+    const slug = text(req.body?.slug, 80);
+    const icon = text(req.body?.icon, 40);
+    if (name && name.length < 2 || slug && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) return fail(res, 422, 'Nama atau slug kategori belum valid');
+    const rows = await query('UPDATE categories SET name = COALESCE(?, name), slug = COALESCE(?, slug), icon = COALESCE(?, icon) WHERE id = ? RETURNING id, name, slug, icon, created_at', [name || null, slug || null, icon || null, Number(req.params.id)]);
+    if (!rows.length) return fail(res, 404, 'Kategori tidak ditemukan');
+    await audit(req, 'category_updated', 'category', req.params.id, { changed_fields: Object.keys(req.body || {}) });
+    ok(res, rows[0]);
+  } catch (error) { if (error.code === '23505') return fail(res, 409, 'Slug kategori sudah digunakan'); next(error); }
+});
+
+router.delete('/categories/:id', ...guarded('manage_categories'), async (req, res, next) => {
+  try {
+    if (!positiveId(req.params.id)) return fail(res, 422, 'ID kategori tidak valid');
+    const [usage] = await query('SELECT COUNT(*)::int AS total FROM listings WHERE category_id = ?', [Number(req.params.id)]);
+    if (Number(usage?.total || 0) > 0) return fail(res, 409, 'Kategori masih dipakai listing dan tidak dapat dihapus');
+    const result = await run('DELETE FROM categories WHERE id = ?', [Number(req.params.id)]);
+    if (!result.rowCount) return fail(res, 404, 'Kategori tidak ditemukan');
+    await audit(req, 'category_deleted', 'category', req.params.id);
+    ok(res, { deleted: true, id: Number(req.params.id) });
+  } catch (error) { next(error); }
+});
+
+router.get('/content', ...guarded('manage_content'), async (req, res, next) => {
+  try {
+    const limit = boundedInt(req.query.limit, 100, 1, 200);
+    ok(res, await query('SELECT id, content_type, title, body, image_url, link_url, position, priority, is_active, starts_at, ends_at, target_audience, target_region, metadata, created_at, updated_at FROM admin_content ORDER BY priority DESC, created_at DESC LIMIT ?', [limit]));
+  } catch (error) { next(error); }
+});
+
+router.post('/content', ...guarded('manage_content'), async (req, res, next) => {
+  try {
+    const contentType = text(req.body?.content_type || 'announcement', 50).toLowerCase();
+    const title = text(req.body?.title, 255);
+    const body = text(req.body?.body, 5000) || null;
+    const position = text(req.body?.position || 'banner', 50) || 'banner';
+    const audience = text(req.body?.target_audience || 'all', 50) || 'all';
+    const active = req.body?.is_active !== false;
+    if (!['banner', 'announcement', 'popup', 'promo', 'featured_section'].includes(contentType) || title.length < 2) return fail(res, 422, 'Tipe atau judul content belum valid');
+    const created = await run(`INSERT INTO admin_content (content_type, title, body, image_url, link_url, position, priority, is_active, starts_at, ends_at, target_audience, target_region, metadata)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb) RETURNING id`, [contentType, title, body, text(req.body?.image_url, 1000) || null, text(req.body?.link_url, 1000) || null, position, Number.isInteger(Number(req.body?.priority)) ? Number(req.body.priority) : 0, active, req.body?.starts_at || null, req.body?.ends_at || null, audience, text(req.body?.target_region, 100) || null, JSON.stringify(req.body?.metadata && typeof req.body.metadata === 'object' ? req.body.metadata : {})]);
+    await audit(req, 'admin_content_created', 'admin_content', created.id, { content_type: contentType, target_audience: audience });
+    ok(res, { id: created.id, content_type: contentType, title, is_active: active });
+  } catch (error) { next(error); }
+});
+
+router.patch('/content/:id', ...guarded('manage_content'), async (req, res, next) => {
+  try {
+    if (!/^[0-9a-f-]{36}$/i.test(String(req.params.id))) return fail(res, 422, 'ID content tidak valid');
+    const active = req.body?.is_active === undefined ? null : Boolean(req.body.is_active);
+    const title = req.body?.title === undefined ? null : text(req.body.title, 255);
+    if (title !== null && title.length < 2) return fail(res, 422, 'Judul content belum valid');
+    const rows = await query('UPDATE admin_content SET title = COALESCE(?, title), body = COALESCE(?, body), is_active = COALESCE(?, is_active), updated_at = now() WHERE id = ? RETURNING id, content_type, title, body, is_active, updated_at', [title, req.body?.body === undefined ? null : text(req.body.body, 5000), active, req.params.id]);
+    if (!rows.length) return fail(res, 404, 'Content tidak ditemukan');
+    await audit(req, 'admin_content_updated', 'admin_content', req.params.id, { changed_fields: Object.keys(req.body || {}) });
+    ok(res, rows[0]);
+  } catch (error) { next(error); }
+});
+
+router.get('/donations', ...guarded('manage_donations'), async (req, res, next) => {
+  try {
+    const limit = boundedInt(req.query.limit, 100, 1, 200);
+    ok(res, await query('SELECT id, campaign_id, name, email, amount, transaction_id, payment_method, payment_provider, payment_status, status, created_at FROM donations ORDER BY id DESC LIMIT ?', [limit]));
+  } catch (error) { next(error); }
+});
+
 module.exports = router;
