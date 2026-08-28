@@ -96,6 +96,17 @@ app.get('/api/health', async (_req, res) => {
   res.status(200).json({ success: true, data: { api: 'up', db, storage: (objectStorageConfigured || presignStorageConfigured) ? 'configured' : 'down', build: process.env.VERCEL_GIT_COMMIT_SHA || process.env.COMMIT_SHA || 'local', time: new Date().toISOString() } });
 });
 
+
+app.get('/api/broadcasts', async (req, res, next) => {
+  try {
+    const limit = Math.min(10, Math.max(1, Number(req.query.limit) || 5));
+    const rows = await query("SELECT id, type, title, content, image_url, cta_url, cta_text, starts_at, ends_at, is_urgent FROM broadcasts WHERE is_active = TRUE AND (starts_at IS NULL OR starts_at <= CURRENT_TIMESTAMP) AND (ends_at IS NULL OR ends_at >= CURRENT_TIMESTAMP) ORDER BY is_urgent DESC, starts_at DESC NULLS LAST, id DESC LIMIT ?", [limit]);
+    ok(res, rows);
+  } catch (error) {
+    console.warn('[broadcasts] feed unavailable:', error.message);
+    return ok(res, [], { source: 'empty' });
+  }
+});
 app.get('/api/categories', async (_req, res) => {
   try { const rows = await query('SELECT id, name, slug, icon FROM categories ORDER BY name'); if (rows.length) return ok(res, rows, { source: 'db' }); } catch (error) { console.error('[categories-fallback]', error.message); }
   return ok(res, CATEGORIES, { source: 'fallback' });

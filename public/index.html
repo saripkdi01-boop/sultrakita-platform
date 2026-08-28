@@ -102,25 +102,27 @@
       </aside>
 
       <main id="beranda" class="main-content" tabindex="-1">
-        <section class="hero hero-compact">
+        <section class="hero hero-compact" aria-labelledby="hero-title">
           <div class="hero-copy-block hero-content">
             <div class="eyebrow"><span class="eyebrow-line"></span>Marketplace warga Sultra</div>
-            <h1>Temukan yang <span>dekat.</span><br>Jual lebih <em>mudah.</em></h1>
+            <h1 id="hero-title">Temukan yang <span>dekat.</span><br>Jual lebih <em>mudah.</em></h1>
             <p class="hero-copy">Tempat paling nyaman untuk menemukan barang, jasa, dan peluang dari orang-orang di sekitar Kendari.</p>
             <div class="hero-actions"><button class="button button-primary" id="hero-explore">Jelajahi listing <span>↓</span></button><button class="button button-quiet" id="hero-sell">Saya ingin menjual <span>↗</span></button></div>
             <div class="trust-row"><span><b>✓</b> Fokus lokal</span><span><b>✓</b> Seller terverifikasi</span><span><b>✓</b> Tanpa ribet</span></div>
           </div>
-          <div class="hero-visual hero-art" aria-label="Temukan listing lokal di Kendari">
-            <div class="hero-visual-top"><span class="live-indicator"><i></i> LIVE DI KENDARI</span><span class="hero-visual-number">01</span></div>
-            <div class="hero-orbit orbit-one"></div><div class="hero-orbit orbit-two"></div><div class="hero-orbit orbit-three"></div>
-            <div class="hero-seal"><strong>S</strong><small>lokal dulu</small></div>
-            <div class="hero-place"><span class="pin">⌖</span><div><strong>KENDARI</strong><small>dan sekitarnya</small></div></div>
-            <div class="float-card float-card-one"><span class="float-thumb thumb-green">⌂</span><div><strong>Rumah dekat UHO</strong><small>Mandonga · Rp650 jt</small></div><span class="float-heart">♡</span></div>
-            <div class="float-card float-card-two"><span class="float-thumb thumb-coral">✦</span><div><strong id="weekly-new-listings">0</strong><small>listing baru minggu ini</small></div></div>
-          </div>
+          <section class="hero-carousel" id="hero-carousel" aria-label="Highlight SultraKita" role="region">
+            <div class="carousel-viewport" id="carousel-viewport"><div class="carousel-track" id="carousel-track" aria-live="polite"></div></div>
+            <div class="carousel-controls">
+              <button class="carousel-nav carousel-nav-prev" id="carousel-prev" type="button" aria-label="Slide sebelumnya">‹</button>
+              <div class="carousel-control-center"><div class="carousel-progress" aria-hidden="true"><div class="carousel-progress-bar" id="carousel-progress-bar"></div></div><div class="carousel-dots" id="carousel-dots" role="tablist" aria-label="Navigasi slide"></div></div>
+              <button class="carousel-nav carousel-nav-next" id="carousel-next" type="button" aria-label="Slide berikutnya">›</button>
+              <button class="carousel-autoplay" id="carousel-autoplay" type="button" aria-label="Jeda autoplay" aria-pressed="false">Ⅱ</button><span class="carousel-counter" id="carousel-counter" aria-live="polite">1 / 1</span>
+            </div>
+            <div class="swipe-hint">Geser untuk melihat highlight</div>
+          </section>
         </section>
 
-        <section class="metric-row hero-stats" aria-label="Ringkasan marketplace"><div><span class="metric-icon">◈</span><div><strong id="total-listings">—</strong><small>listing aktif</small></div></div><div><span class="metric-icon">⌖</span><div><strong id="covered-districts">—</strong><small>wilayah terjangkau</small></div></div><div><span class="metric-icon">◌</span><div><strong>24/7</strong><small>selalu terbuka</small></div></div><div class="metric-highlight"><span class="metric-icon">↗</span><div><strong>Gratis</strong><small>pasang iklan</small></div></div></section>
+        <section class="metric-row hero-stats" aria-label="Ringkasan marketplace"><div><span class="metric-icon">◈</span><div><strong id="total-listings">—</strong><small>listing aktif</small></div></div><div><span class="metric-icon">⌖</span><div><strong id="covered-districts">—</strong><small>wilayah terjangkau</small></div></div><div><span class="metric-icon">✦</span><div><strong id="weekly-new-listings">—</strong><small>listing baru minggu ini</small></div></div><div><span class="metric-icon">◌</span><div><strong>24/7</strong><small>selalu terbuka</small></div></div><div class="metric-highlight"><span class="metric-icon">↗</span><div><strong>Gratis</strong><small>pasang iklan</small></div></div></section>
 
         <p id="stats-status" class="inline-status" role="status" aria-live="polite"></p>
 
@@ -132,7 +134,7 @@
         <section class="section partner-section" id="partner-picks" hidden><div class="section-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span>Partner picks</div><h2>Temukan lebih banyak</h2><p id="partner-summary" class="result-summary">Listing partner resmi dengan sumber yang jelas.</p></div><span class="partner-lock">↗ Sumber eksternal resmi</span></div><div class="partner-grid" id="partner-listings"></div></section>
 
         <section class="community-banner" id="komunitas"><div class="community-art"><span>♧</span><span>✦</span><span>◌</span></div><div><div class="eyebrow eyebrow-light"><span class="eyebrow-line"></span>Bangun bersama</div><h2>Yang dekat, tumbuh bersama.</h2><p>Berikan masukan, dukung pengembangan, atau ajak penjual lokal bergabung.</p><div class="social-links"><a href="https://facebook.com/sultrakita" target="_blank" rel="noopener">Facebook ↗</a><a href="https://tiktok.com/@sultrakita" target="_blank" rel="noopener">TikTok ↗</a><a href="https://youtube.com/@sultrakita" target="_blank" rel="noopener">YouTube ↗</a></div></div><div class="banner-actions"><button class="button button-light" id="suggestion-cta">Kirim saran</button><button class="button button-ghost" id="donation-cta">Dukung proyek</button></div></section>
-        <section class="help-strip" id="bantuan"><div class="help-icon">?</div><div><strong>Butuh bantuan?</strong><span>Mulai dengan cari atau pilih kategori. Kami bantu dari sana.</span></div><a href="mailto:halo@sultrakita.id">Hubungi kami <span>→</span></a></section><nav class="policy-links" aria-label="Kebijakan platform"><span>Ruang aman bersama</span><a href="/terms.html">Syarat & Ketentuan</a><a href="/privacy.html">Kebijakan Privasi</a><a href="mailto:halo@sultrakita.id">Kontak privasi</a></nav>
+        <section class="help-strip" id="bantuan"><div class="help-icon">?</div><div><strong>Butuh bantuan?</strong><span>Mulai dengan cari atau pilih kategori. Kami bantu dari sana.</span></div><a href="mailto:SultrakitaPlatform@gmail.com">Hubungi kami <span>→</span></a></section><nav class="policy-links" aria-label="Kebijakan platform"><span>Ruang aman bersama</span><a href="/terms.html">Syarat & Ketentuan</a><a href="/privacy.html">Kebijakan Privasi</a><a href="mailto:SultrakitaPlatform@gmail.com">Kontak privasi</a></nav>
 
       </main>
     </div>

@@ -621,3 +621,39 @@ body.dark {
 #toast{position:fixed;top:80px;right:20px;z-index:1300;max-width:min(360px,calc(100vw - 32px));padding:14px 18px;border:1px solid var(--line);border-left:4px solid var(--forest);border-radius:12px;background:var(--paper);box-shadow:0 8px 32px rgba(0,0,0,.12);color:var(--ink);font-size:14px;font-weight:600;opacity:0;pointer-events:none;transform:translateX(120%);transition:transform .3s var(--ease),opacity .3s ease}#toast.show{opacity:1;pointer-events:auto;transform:translateX(0)}#toast[data-tone=success]{border-left-color:var(--success)}#toast[data-tone=warn]{border-left-color:var(--gold)}#toast[data-tone=error]{border-left-color:var(--danger)}
 .skeleton-card{min-height:260px;border-radius:16px;border:1px solid var(--line);background:var(--paper)}.empty,.error-state{grid-column:1/-1;min-height:180px;display:grid;place-items:center;padding:42px 20px;border:1px dashed var(--line);border-radius:16px;background:color-mix(in srgb,var(--paper) 82%,transparent);text-align:center}.empty strong,.error-state h3{display:block;margin-bottom:8px;font-family:var(--font-display,'Plus Jakarta Sans',sans-serif);font-size:18px}.empty span,.error-state p{color:var(--muted);font-size:12px}
 @media(max-width:480px){#suggestions{max-height:55vh}.live-feed-banner{right:12px;bottom:calc(76px + env(safe-area-inset-bottom));left:12px;max-width:none;border-radius:18px;padding:12px 14px;font-size:12px}.live-view-btn{margin-left:auto}.live-dismiss{min-width:28px;min-height:28px}#toast{top:76px;right:12px;max-width:calc(100vw - 24px)}}@media(prefers-reduced-motion:reduce){#suggestions,.live-feed-banner,#toast,.live-view-btn{animation:none!important;transition-duration:.01ms!important}.live-pulse{animation:none!important}}@media(forced-colors:active){#suggestions,#toast,.live-feed-banner{border:1px solid ButtonText;background:Canvas;color:CanvasText}.live-view-btn,.live-dismiss{border:1px solid ButtonText;background:ButtonFace;color:ButtonText}.live-pulse{background:Highlight;box-shadow:none}}
+
+
+/* SultraKita broadcast carousel upgrade */
+.hero-compact { grid-template-columns: minmax(280px, .88fr) minmax(420px, 1.12fr); align-items: stretch; }
+.hero-carousel { min-width: 0; min-height: 370px; border-radius: 28px; overflow: hidden; background: #073526; color: #fff; box-shadow: 0 24px 60px rgba(4, 78, 57, .20); position: relative; outline: none; }
+.carousel-viewport { overflow: hidden; height: 320px; }
+.carousel-track { height: 100%; display: flex; transition: transform .55s cubic-bezier(.77,0,.175,1); }
+.carousel-slide { min-width: 100%; height: 100%; display: flex; position: relative; overflow: hidden; padding: 34px; background: radial-gradient(circle at 88% 20%, rgba(255,202,112,.92), transparent 25%), linear-gradient(135deg,#075943,#0b7658 55%,#0d4050); background-size: cover; background-position: center; }
+.carousel-slide:after { content:''; position:absolute; inset:0; background: linear-gradient(120deg, rgba(3,44,33,.20), transparent 60%); pointer-events:none; }
+.broadcast-copy { max-width: 67%; position: relative; z-index: 1; align-self: center; }
+.broadcast-tag { display:inline-flex; align-items:center; gap:8px; color:#ffe4ad; font-size:11px; letter-spacing:.12em; text-transform:uppercase; font-weight:800; }
+.broadcast-tag i { width:24px; height:24px; display:grid; place-items:center; border-radius:8px; background:#f59e0b; color:#193a2a; font-style:normal; }
+.broadcast-copy h2 { margin:18px 0 10px; max-width:13ch; color:#fff; font: 600 clamp(2rem, 3.2vw, 3rem)/.98 var(--font-display, 'Plus Jakarta Sans', sans-serif); letter-spacing:-.055em; }
+.broadcast-copy p { margin:0; max-width:41ch; color:rgba(255,255,255,.80); font-size:14px; line-height:1.55; }
+.broadcast-meta { margin:18px 0; color:#c7f5d9; font-size:12px; font-weight:700; }
+.broadcast-cta { min-height:42px; padding:10px 14px; font-size:12px; }
+.broadcast-art { position:absolute; right:0; bottom:0; width:40%; height:100%; display:grid; place-content:center; z-index:1; transform:rotate(-7deg); }
+.broadcast-art:before,.broadcast-art:after { content:''; position:absolute; width:210px; height:210px; border:1px solid rgba(255,255,255,.28); border-radius:50%; box-shadow:0 0 0 24px rgba(255,255,255,.08),0 0 0 48px rgba(255,255,255,.05); }
+.broadcast-art span { position:relative; z-index:2; font-size:80px; color:#ffe5a6; text-shadow:0 10px 30px rgba(0,0,0,.18); }
+.broadcast-art b { position:absolute; bottom:54px; right:18px; z-index:2; font-size:10px; letter-spacing:.22em; text-align:right; color:rgba(255,255,255,.80); }
+.broadcast-art small { font-size:9px; letter-spacing:.08em; color:#ffe5a6; }
+.carousel-controls { min-height:50px; display:flex; align-items:center; gap:10px; padding:9px 16px 10px; background:rgba(0,0,0,.16); position:relative; z-index:2; }
+.carousel-nav,.carousel-autoplay { width:30px; height:30px; border:1px solid rgba(255,255,255,.35); border-radius:50%; background:rgba(255,255,255,.10); color:#fff; cursor:pointer; font-size:22px; line-height:1; }
+.carousel-autoplay { font-size:11px; }
+.carousel-control-center { flex:1; min-width:0; }
+.carousel-progress { height:3px; border-radius:99px; background:rgba(255,255,255,.20); overflow:hidden; }
+.carousel-progress-bar { display:block; height:100%; width:0; background:#ffd166; }
+.carousel-progress-bar.is-running { width:100%; transition:width 5s linear; }
+.carousel-dots { display:flex; gap:6px; justify-content:center; margin-top:7px; }
+.carousel-dots button { width:6px; height:6px; padding:0; border:0; border-radius:99px; background:rgba(255,255,255,.35); cursor:pointer; transition:width .2s ease, background .2s ease; }
+.carousel-dots button.active { width:20px; background:#ffd166; }
+.carousel-counter { min-width:38px; color:rgba(255,255,255,.74); font:700 11px var(--font-mono, monospace); text-align:right; }
+.swipe-hint { display:none; }
+@media (max-width:980px) { .hero-compact { grid-template-columns:1fr; } .hero-carousel { min-height:350px; } }
+@media (max-width:560px) { .hero-carousel { min-height:350px; border-radius:22px; } .carousel-viewport { height:300px; } .carousel-slide { padding:24px 20px; } .broadcast-copy { max-width:86%; } .broadcast-copy h2 { font-size:2.15rem; } .broadcast-copy p { font-size:13px; } .broadcast-art { opacity:.50; width:42%; } .carousel-controls { padding-inline:12px; } .swipe-hint { display:block; position:absolute; right:16px; top:12px; color:rgba(255,255,255,.62); font-size:10px; } }
+@media (prefers-reduced-motion: reduce) { .carousel-track,.carousel-dots button { transition:none; } .carousel-progress-bar.is-running { transition:none; width:100%; } }
