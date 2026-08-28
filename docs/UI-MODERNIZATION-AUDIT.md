@@ -72,3 +72,16 @@ Event delegation listing harus tetap menangani favorite, compare, reaction, shar
 Risiko tertinggi adalah mengganti ID/data attribute, menambahkan static/fake marketplace data, mengubah payload mutation, menutup `#mobile-sell` tanpa pengganti yang terikat, serta menampilkan widget right rail dengan angka hardcoded. Modernisasi berikutnya harus menggunakan data real dari endpoint yang tersedia; jika endpoint gagal atau kosong, widget harus menampilkan empty state atau disembunyikan, bukan fake data.
 
 > Kesimpulan: strategi aman adalah visual refactor progressive. Pertahankan `index.html` sebagai compatibility shell, patch hanya area layout baru dan binding tambahan, serta gunakan `public/fb-theme.css` sebagai layer terakhir.
+
+
+## Verifikasi tambahan v4
+
+Browser lokal memverifikasi bahwa bottom navigation sekarang memiliki lima item `Beranda`, `Marketplace`, `Buat`, `Notifikasi`, dan `Menu`; `#mobile-sell` tetap menjadi tombol create yang terikat ke onboarding seller, sedangkan `#mobile-menu` tetap membuka bottom sheet. Hook right rail `#rail-donation-widget`, `#rail-trending-widget`, dan `#rail-community-widget` tersedia. Design tokens `--sk-primary`, `--sk-surface`, dan `--sk-shadow-md` aktif pada runtime. Right rail hanya diisi bila endpoint API mengembalikan data; tidak ada listing, angka donatur, atau progress palsu yang dirender sebagai sumber kebenaran.
+
+
+## Visual QA v4
+
+After bumping the asset query strings to `fb-theme.css?v=4` and `app.js?v=homepage-social-marketplace-v4`, the browser loaded the new assets. At the desktop verification viewport, the main feed computed to a centered 680px column with the heading fully visible; the previous sidebar clipping came from legacy `.app-shell .main-content` specificity plus a stale cached stylesheet. The local browser now reports the branded `--sk-primary: #0d7c66` token and the new cache-busted theme URL.
+
+
+Final screenshots at 390px and 1440px show the new local teal/blue brand system, centered desktop feed without sidebar clipping, responsive category strip, and mobile bottom bar with the highlighted `Buat` action. In degraded local mode the listing feed correctly presents an empty state and the real-data right rail remains hidden instead of showing fabricated trends or donation metrics. The offline category toast is expected because no production database connection is available in the local sandbox.
