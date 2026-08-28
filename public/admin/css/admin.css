@@ -401,3 +401,11 @@ button:active { transform: scale(.98); }
 
 /* Fixed navigation owns the horizontal layout; keep the feed from being offset twice by the legacy grid. */
 .admin-shell { display: block; }
+
+/* Keep the primary feed readable at standard desktop widths; expose the third column only when space allows. */
+.admin-content { padding-right: 1.2rem; }
+.admin-right-panel { display: none; }
+@media (min-width: 1440px) {
+  .admin-content { padding-right: 320px; }
+  .admin-right-panel { display: flex; }
+}
