@@ -28,3 +28,14 @@ Akun target belum diprovisioning otomatis. Ini disengaja: email saja tidak cukup
 | `ADMIN_TOKEN` | Secondary gate admin existing; tetap wajib pada login form |
 
 Jangan mengubah `vercel.json` atau mengganti entry point Express. Setelah environment dikonfigurasi dan user benar-benar diprovisioning, deploy ulang diperlukan agar Vercel memakai environment baru.
+
+## Perbaikan token exchange — 28 Agustus 2026
+
+Error `GOOGLE_TOKEN_EXCHANGE_FAILED` sebelumnya hanya mengembalikan pesan generik, sehingga sulit membedakan `invalid_client`, `redirect_uri_mismatch`, authorization code yang sudah dipakai, atau masalah konfigurasi lain. Handler kini mencatat dan mengembalikan kode serta deskripsi error provider Google yang telah dibatasi panjangnya. Authorization code, access token, dan client secret tidak pernah masuk ke log atau response.
+
+Diagnosis production menunjukkan endpoint Google OAuth normal aktif (`302` menuju Google), tetapi cluster runtime Vercel tidak memiliki exception tercatat. Karena itu, kegagalan kemungkinan berasal dari respons penolakan token Google yang sebelumnya disamarkan. Setelah deploy commit perbaikan, pengguna dapat mengulangi login satu kali; pesan provider yang aman akan mengarahkan koreksi tepat pada Google Cloud OAuth Client atau environment Vercel.
+
+Dokumentasi resmi Google menyatakan bahwa aplikasi web server harus menggunakan client secret hanya di server, dan `redirect_uri` yang dikirim saat token exchange harus sesuai dengan URI yang didaftarkan pada OAuth client. [1] [2]
+
+[1]: https://developers.google.com/identity/protocols/oauth2/web-server "Using OAuth 2.0 for Web Server Applications — Google for Developers"
+[2]: https://support.google.com/cloud/answer/15549257?hl=en "Manage OAuth Clients — Google Cloud Platform Help"

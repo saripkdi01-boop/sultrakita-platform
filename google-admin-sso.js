@@ -70,6 +70,9 @@ async function fetchVerifiedGoogleProfile(code, redirectUri) {
     const error = new Error('Login Google tidak dapat diselesaikan.');
     error.code = 'GOOGLE_TOKEN_EXCHANGE_FAILED';
     error.status = 502;
+    error.providerError = String(tokenPayload.error || 'unknown').slice(0, 80);
+    error.providerDescription = String(tokenPayload.error_description || '').slice(0, 240);
+    console.error('[google-admin-token-exchange]', { status: tokenResponse.status, error: error.providerError, description: error.providerDescription, redirect_uri: redirectUri });
     throw error;
   }
 
