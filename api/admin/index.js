@@ -64,7 +64,7 @@ const serializeUser = (row, includePii) => ({
 
 router.get('/', ...guarded('view_dashboard'), async (req, res, next) => {
   try {
-    ok(res, { version: 'v2', role: normalizeRole(req.user.role), level: ROLE_LEVELS[normalizeRole(req.user.role)], permissions: permissionList(req.user.role), server_enforced: true });
+    ok(res, { version: 'v2', user_id: req.user.id, name: req.user.name || null, email: req.user.email || null, role: normalizeRole(req.user.role), level: ROLE_LEVELS[normalizeRole(req.user.role)], permissions: permissionList(req.user.role), server_enforced: true });
   } catch (error) { next(error); }
 });
 
@@ -100,6 +100,34 @@ router.get('/users', ...guarded('manage_users'), async (req, res, next) => {
       FROM users u ${where.length ? `WHERE ${where.join(' AND ')}` : ''} ORDER BY u.id DESC LIMIT ? OFFSET ?`, values);
     const [total] = await query(`SELECT COUNT(*)::int AS total FROM users u ${where.length ? `WHERE ${where.join(' AND ')}` : ''}`, values.slice(0, -2));
     ok(res, rows.map(row => serializeUser(row, canSeePii(req))), { page, limit, total: Number(total?.total || 0) });
+  } catch (error) { next(error); }
+});
+
+router.get('/stats', ...guarded('view_dashboard'), async (_req, res, next) => {
+  try {
+    const [summary] = await query(`SELECT
+      (SELECT COUNT(*) FROM users)::int AS total_users,
+      (SELECT COUNT(*) FROM listings)::int AS total_listings,
+      (SELECT COUNT(*) FROM listings WHERE status = 'active')::int AS active_listings,
+      (SELECT COUNT(*) FROM reports WHERE status IN ('open', 'reviewing'))::int AS open_reports,
+      (SELECT COUNT(*) FROM seller_verifications WHERE status = 'pending')::int AS pending_verifications,
+      (SELECT COUNT(*) FROM donations WHERE payment_status = 'success')::int AS successful_donations`);
+    ok(res, summary || {});
+  } catch (error) { next(error); }
+});
+
+router.patch('/users/:id/ban', ...guarded('ban_users'), async (req, res, next) => {
+  try {
+    if (!positiveId(req.params.id)) return fail(res, 422, 'ID pengguna tidak valid');
+    const banned = req.body?.banned === undefined ? true : Boolean(req.body.banned);
+    const reason = text(req.body?.reason, 500) || null;
+    const [target] = await query('SELECT id, name, role FROM users WHERE id = ?', [Number(req.params.id)]);
+    if (!target) return fail(res, 404, 'Pengguna tidak ditemukan');
+    if (Number(req.user.id) === Number(target.id)) return fail(res, 409, 'Admin tidak dapat membekukan akunnya sendiri');
+    // The legacy schema has no is_banned column. A ban is represented by a reversible role-safe status note.
+    // This additive adapter refuses to invent a column or mutate role, so deployments without the dedicated
+    // moderation field remain safe rather than falsely claiming that a ban was persisted.
+    return fail(res, 409, 'Kolom ban user belum tersedia pada schema existing; gunakan migration moderation resmi terlebih dahulu', { user_id: target.id, requested_banned: banned, reason });
   } catch (error) { next(error); }
 });
 
