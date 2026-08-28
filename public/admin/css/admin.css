@@ -398,3 +398,6 @@ button:active { transform: scale(.98); }
 .admin-right-live span { color: var(--admin-text-muted); font-size: .66rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
 .admin-right-live strong { color: var(--admin-accent); font-size: 1.8rem; line-height: 1; letter-spacing: -.06em; font-family: var(--admin-font-mono); }
 .admin-right-live small { color: var(--admin-text-secondary); font-size: .68rem; }
+
+/* Fixed navigation owns the horizontal layout; keep the feed from being offset twice by the legacy grid. */
+.admin-shell { display: block; }
