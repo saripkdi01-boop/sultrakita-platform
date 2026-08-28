@@ -5,12 +5,12 @@ const { query, run } = require('./database');
 const { normalizeRole } = require('./rbac');
 
 const hashToken = token => crypto.createHash('sha256').update(token).digest('hex');
-const userSelect = `SELECT u.id, u.name, u.phone, u.email, COALESCE(ara.role, u.role) AS role, u.role AS legacy_role,
+const userSelect = `SELECT u.id, u.name, u.phone, u.email, s.created_at AS session_created_at, s.expires_at AS session_expires_at, COALESCE(ara.role, u.role) AS role, u.role AS legacy_role,
                           u.district, u.phone_verified, u.email_verified, u.verification_status
                    FROM sessions s JOIN users u ON u.id = s.user_id
                    LEFT JOIN admin_role_assignments ara ON ara.user_id = u.id
                    WHERE s.token_hash = ? AND s.expires_at > ?`;
-const legacyUserSelect = `SELECT u.id, u.name, u.phone, u.email, u.role, u.role AS legacy_role,
+const legacyUserSelect = `SELECT u.id, u.name, u.phone, u.email, s.created_at AS session_created_at, s.expires_at AS session_expires_at, u.role, u.role AS legacy_role,
                                  u.district, u.phone_verified, u.email_verified, u.verification_status
                           FROM sessions s JOIN users u ON u.id = s.user_id
                           WHERE s.token_hash = ? AND s.expires_at > ?`;

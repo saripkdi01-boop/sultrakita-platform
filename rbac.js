@@ -17,11 +17,18 @@ function normalizeRole(role) { return ROLE_ALIASES[String(role || '').trim().toL
 function hasPermission(role, permission) { return Boolean(ROLE_PERMISSIONS[normalizeRole(role)]?.includes(permission)); }
 function permissionList(role) { return [...(ROLE_PERMISSIONS[normalizeRole(role)] || [])]; }
 function roleSummary() { return Object.keys(ROLE_LEVELS).map(role => ({ role, level: ROLE_LEVELS[role], permissions: permissionList(role) })); }
+const ADMIN_SESSION_MAX_MS = Math.max(1, Number(process.env.ADMIN_SESSION_HOURS || 8)) * 60 * 60 * 1000;
+function sessionExpiredForAdmin(user) {
+  if (!user?.session_created_at) return false;
+  const createdAt = Date.parse(user.session_created_at);
+  return Number.isFinite(createdAt) && Date.now() - createdAt > ADMIN_SESSION_MAX_MS;
+}
 function requirePermission(permission) {
   return (req, res, next) => {
     if (!req.user) return res.status(401).json({ success: false, error: 'Autentikasi diperlukan' });
     const role = normalizeRole(req.user.role);
     if (!hasPermission(role, permission)) return res.status(403).json({ success: false, error: 'Permission tidak mencukupi', code: 'RBAC_FORBIDDEN', permission });
+    if (ROLE_LEVELS[role] >= 3 && sessionExpiredForAdmin(req.user)) return res.status(401).json({ success: false, error: 'Sesi admin berakhir; silakan login kembali', code: 'ADMIN_SESSION_EXPIRED' });
     req.rbac = { role, permission };
     return next();
   };
