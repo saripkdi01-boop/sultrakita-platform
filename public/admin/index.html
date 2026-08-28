@@ -13,7 +13,9 @@
     <section class="admin-card" style="max-width:540px;margin:5vh auto">
       <div class="admin-brand"><span class="admin-mark" aria-hidden="true">S</span><span>SultraKita Admin</span></div>
       <h1>Akses Operations Center</h1>
-      <p>Gunakan session bearer dan admin token yang diterbitkan administrator platform. Credential tidak disimpan di server atau URL.</p>
+      <p>Gunakan Google SSO untuk memverifikasi identitas, lalu masukkan admin token yang diterbitkan administrator platform. Credential tidak disimpan di server atau URL.</p>
+      <a class="admin-button admin-button-secondary full" id="google-admin-sso" href="/api/auth/google/admin/start" rel="nofollow">Masuk dengan Google SSO admin</a>
+      <p class="admin-hint">SSO hanya berlaku untuk email yang di-allowlist dan user yang sudah memiliki role backoffice. Jika konfigurasi belum aktif, gunakan jalur provisioning resmi operator.</p>
       <form id="login-form" class="admin-form-grid" novalidate>
         <div class="admin-field full"><label for="session">Session bearer</label><input id="session" class="admin-input" type="password" autocomplete="off" required></div>
         <div class="admin-field full"><label for="admin-token">Admin token</label><input id="admin-token" class="admin-input" type="password" autocomplete="off" required></div>
@@ -29,8 +31,26 @@
   <script>
     (() => {
       const form = document.querySelector('#login-form');
+      const googleCode = new URLSearchParams(window.location.search).get('google_admin_code');
+      const requestedNext = new URLSearchParams(window.location.search).get('next') || '/admin/dashboard.html';
+      const setGoogleCode = async () => {
+        if (!googleCode) return;
+        window.history.replaceState({}, document.title, '/admin/index.html');
+        window.AdminUi.setStatus('Identitas Google sedang diverifikasi…');
+        try {
+          const response = await fetch('/api/auth/google/admin/exchange', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ code: googleCode, next: requestedNext }), cache: 'no-store' });
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok || !payload.success || !payload.data?.token) throw new Error(payload.error || 'SSO Google admin gagal.');
+          document.querySelector('#session').value = payload.data.token;
+          window.AdminUi.setStatus('Identitas Google terverifikasi. Masukkan admin token untuk menyelesaikan akses.');
+          document.querySelector('#admin-token').focus();
+        } catch (error) {
+          window.AdminUi.setStatus(error.message || 'SSO Google admin gagal.', true);
+        }
+      };
       const target = new URLSearchParams(window.location.search).get('next');
       const safeNext = target && target.startsWith('/admin/') && !target.startsWith('//') && target !== '/admin/index.html' ? target : '/admin/dashboard.html';
+      setGoogleCode();
       form.addEventListener('submit', async event => {
         event.preventDefault();
         const button = form.querySelector('button');
