@@ -7,6 +7,7 @@ const dotenv = require('dotenv');
 const { getDb, query, run, withTransaction } = require('./database');
 const { authenticate, requireAuth, revokeToken } = require('./auth');
 const { normalizeRole, ROLE_LEVELS, permissionList, roleSummary, requirePermission } = require('./rbac');
+const adminApiV2 = require('./api/admin');
 const { SITE_URL, slugify, listingPage, collectionPage, absolute } = require('./seo');
 const { CATEGORIES, REGIONS, ALL_DISTRICTS } = require('./shared/taxonomy');
 
@@ -48,6 +49,8 @@ app.get(['/admin', '/admin/', '/admin/login', '/admin/dashboard'], sendAdminShel
 
 app.use(express.static(path.join(__dirname, 'public'), { setHeaders: (res, filePath) => { if (filePath.endsWith('sw.js') || filePath.endsWith('index.html')) return; if (/\.(?:js|css|woff2?|png|jpe?g|webp|avif|svg|ico|webmanifest)$/.test(filePath)) res.setHeader('Cache-Control', 'public, max-age=31536000, immutable'); } }));
 app.use('/api', rateLimit());
+// Section 4 adapter is additive; existing /api/admin endpoints remain untouched for backward compatibility.
+app.use('/api/admin/v2', adminApiV2);
 
 const ok = (res, data, meta) => res.json({ success: true, data, ...(meta ? { meta } : {}) });
 const fail = (res, status, message, details) => res.status(status).json({ success: false, error: message, ...(details ? { details } : {}) });
