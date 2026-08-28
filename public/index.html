@@ -77,20 +77,20 @@
     <div class="app-body">
       <aside class="sidebar sidebar-v2" aria-label="Navigasi utama">
         <nav class="sidebar-nav sidebar-nav-v2" aria-label="Jelajah marketplace">
-          <a class="nav-item nav-item-v2 active" href="#beranda"><span class="nav-symbol nav-icon" aria-hidden="true">⌂</span><span class="nav-label">Beranda</span></a>
-          <a class="nav-item nav-item-v2" href="#jelajah"><span class="nav-symbol nav-icon" aria-hidden="true">⌕</span><span class="nav-label">Jelajah</span></a>
-          <a class="nav-item nav-item-v2" href="#kategori"><span class="nav-symbol nav-icon" aria-hidden="true">▦</span><span class="nav-label">Kategori</span><span class="nav-badge">12</span></a>
-          <a class="nav-item nav-item-v2" href="#job-board"><span class="nav-symbol nav-icon" aria-hidden="true">▣</span><span class="nav-label">Lowongan</span><span class="nav-badge hot">HOT</span></a>
-          <a class="nav-item nav-item-v2" href="#jelajah" data-category-nav="properti" data-category="properti"><span class="nav-symbol nav-icon" aria-hidden="true">⌂</span><span class="nav-label">Properti</span></a>
-          <a class="nav-item nav-item-v2" href="#jelajah" data-category-nav="kendaraan" data-category="kendaraan"><span class="nav-symbol nav-icon" aria-hidden="true">▰</span><span class="nav-label">Kendaraan</span></a>
-          <a class="nav-item nav-item-v2" href="#jelajah" data-category-nav="jasa" data-category="jasa"><span class="nav-symbol nav-icon" aria-hidden="true">⚒</span><span class="nav-label">Jasa</span></a>
-          <a class="nav-item nav-item-v2" href="#komunitas" data-donation-nav="true"><span class="nav-symbol nav-icon" aria-hidden="true">♡</span><span class="nav-label">Donasi</span></a>
+          <a class="nav-item nav-item-v2 active" href="#beranda"><span class="nav-symbol nav-icon" data-icon="home" aria-hidden="true"></span><span class="nav-label">Beranda</span></a>
+          <a class="nav-item nav-item-v2" href="#jelajah"><span class="nav-symbol nav-icon" data-icon="search" aria-hidden="true"></span><span class="nav-label">Jelajah</span></a>
+          <a class="nav-item nav-item-v2" href="#kategori"><span class="nav-symbol nav-icon" data-icon="grid" aria-hidden="true"></span><span class="nav-label">Kategori</span><span class="nav-badge">12</span></a>
+          <a class="nav-item nav-item-v2" href="#job-board"><span class="nav-symbol nav-icon" data-icon="briefcase" aria-hidden="true"></span><span class="nav-label">Lowongan</span><span class="nav-badge hot">HOT</span></a>
+          <a class="nav-item nav-item-v2" href="#jelajah" data-category-nav="properti" data-category="properti"><span class="nav-symbol nav-icon" data-icon="home" aria-hidden="true"></span><span class="nav-label">Properti</span></a>
+          <a class="nav-item nav-item-v2" href="#jelajah" data-category-nav="kendaraan" data-category="kendaraan"><span class="nav-symbol nav-icon" data-icon="car" aria-hidden="true"></span><span class="nav-label">Kendaraan</span></a>
+          <a class="nav-item nav-item-v2" href="#jelajah" data-category-nav="jasa" data-category="jasa"><span class="nav-symbol nav-icon" data-icon="tool" aria-hidden="true"></span><span class="nav-label">Jasa</span></a>
+          <a class="nav-item nav-item-v2" href="#komunitas" data-donation-nav="true"><span class="nav-symbol nav-icon" data-icon="heart" aria-hidden="true"></span><span class="nav-label">Donasi</span></a>
         </nav>
         <div class="sidebar-divider"></div>
         <nav class="sidebar-nav sidebar-nav-v2" aria-label="Akun dan aktivitas">
-          <a class="nav-item nav-item-v2" href="#jelajah"><span class="nav-symbol nav-icon" aria-hidden="true">♥</span><span class="nav-label">Favorit</span><span id="favorite-count" class="nav-count">0</span></a>
-          <a class="nav-item nav-item-v2" href="/account.html"><span class="nav-symbol nav-icon" aria-hidden="true">▤</span><span class="nav-label">Iklan Saya</span></a>
-          <a class="nav-item nav-item-v2" href="/chat.html"><span class="nav-symbol nav-icon" aria-hidden="true">◌</span><span class="nav-label">Pesan</span><span class="nav-count">baru</span></a>
+          <a class="nav-item nav-item-v2" href="#jelajah"><span class="nav-symbol nav-icon" data-icon="heart" aria-hidden="true"></span><span class="nav-label">Favorit</span><span id="favorite-count" class="nav-count">0</span></a>
+          <a class="nav-item nav-item-v2" href="/account.html"><span class="nav-symbol nav-icon" data-icon="list" aria-hidden="true"></span><span class="nav-label">Iklan Saya</span></a>
+          <a class="nav-item nav-item-v2" href="/chat.html"><span class="nav-symbol nav-icon" data-icon="message" aria-hidden="true"></span><span class="nav-label">Pesan</span><span class="nav-count">baru</span></a>
         </nav>
         <div class="sidebar-card sidebar-promo">
           <span class="sidebar-card-icon" aria-hidden="true">✦</span>
@@ -122,7 +122,7 @@
           </section>
         </section>
 
-        <section class="metric-row hero-stats" aria-label="Ringkasan marketplace"><div><span class="metric-icon">◈</span><div><strong id="total-listings">—</strong><small>listing aktif</small></div></div><div><span class="metric-icon">⌖</span><div><strong id="covered-districts">—</strong><small>wilayah terjangkau</small></div></div><div><span class="metric-icon">✦</span><div><strong id="weekly-new-listings">—</strong><small>listing baru minggu ini</small></div></div><div><span class="metric-icon">◌</span><div><strong>24/7</strong><small>selalu terbuka</small></div></div><div class="metric-highlight"><span class="metric-icon">↗</span><div><strong>Gratis</strong><small>pasang iklan</small></div></div></section>
+        <section class="metric-row hero-stats" aria-label="Ringkasan marketplace"><div><span class="metric-icon">◈</span><div><strong id="total-listings" class="metric-value is-loading">—</strong><small>listing aktif</small></div></div><div><span class="metric-icon">⌖</span><div><strong id="covered-districts" class="metric-value is-loading">—</strong><small>wilayah terjangkau</small></div></div><div><span class="metric-icon">✦</span><div><strong id="weekly-new-listings" class="metric-value is-loading">—</strong><small>listing baru minggu ini</small></div></div><div><span class="metric-icon">◌</span><div><strong>24/7</strong><small>selalu terbuka</small></div></div><div class="metric-highlight"><span class="metric-icon">↗</span><div><strong>Gratis</strong><small>pasang iklan</small></div></div></section>
 
         <p id="stats-status" class="inline-status" role="status" aria-live="polite"></p>
 

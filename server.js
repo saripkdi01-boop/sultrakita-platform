@@ -252,6 +252,17 @@ app.get('/api/analytics/summary', requirePermission('view_analytics'), adminOnly
 
 app.get('/api/public-config', (_req, res) => ok(res, { supabase_url: process.env.SUPABASE_URL || null, supabase_anon_key: process.env.SUPABASE_ANON_KEY || null }));
 
+app.get('/api/sellers/:id', async (req, res, next) => {
+  try {
+    const sellerId = Number(req.params.id);
+    if (!positiveInt(sellerId)) return fail(res, 400, 'ID seller tidak valid');
+    const [seller] = await query('SELECT id, name, district, bio, rating_average, rating_count, is_verified, phone_verified, verification_status, created_at FROM users WHERE id = ?', [sellerId]);
+    if (!seller) return fail(res, 404, 'Seller tidak ditemukan');
+    const listings = await query("SELECT l.id, l.title, l.price, l.district, l.city, l.image_url, l.created_at, c.name AS category_name, c.slug AS category_slug FROM listings l LEFT JOIN categories c ON c.id = l.category_id WHERE l.seller_id = ? AND l.status = 'active' ORDER BY l.created_at DESC LIMIT 6", [sellerId]);
+    const [sold] = await query("SELECT COUNT(*)::int AS sold_count FROM listings WHERE seller_id = ? AND status = 'sold'", [sellerId]);
+    ok(res, { seller: { id: seller.id, name: seller.name, district: seller.district, bio: seller.bio, rating_average: Number(seller.rating_average || 0), rating_count: Number(seller.rating_count || 0), verified: Boolean(seller.is_verified || seller.phone_verified || seller.verification_status === 'approved'), joined_at: seller.created_at, sold_count: Number(sold?.sold_count || 0) }, listings });
+  } catch (error) { next(error); }
+});
 app.get('/api/stats', async (_req, res, next) => {
   try {
     const [summary] = await query(`SELECT COUNT(*)::int AS total_listings, COUNT(*) FILTER (WHERE status = 'active')::int AS active_listings, COUNT(DISTINCT district) FILTER (WHERE status = 'active')::int AS covered_districts, COUNT(*) FILTER (WHERE status = 'active' AND CASE WHEN created_at::text ~ '^\\d{4}-' THEN created_at::timestamptz ELSE NULL END >= now() - interval '7 days')::int AS weekly_new_listings FROM listings`);

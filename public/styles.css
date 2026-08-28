@@ -657,3 +657,18 @@ body.dark {
 @media (max-width:980px) { .hero-compact { grid-template-columns:1fr; } .hero-carousel { min-height:350px; } }
 @media (max-width:560px) { .hero-carousel { min-height:350px; border-radius:22px; } .carousel-viewport { height:300px; } .carousel-slide { padding:24px 20px; } .broadcast-copy { max-width:86%; } .broadcast-copy h2 { font-size:2.15rem; } .broadcast-copy p { font-size:13px; } .broadcast-art { opacity:.50; width:42%; } .carousel-controls { padding-inline:12px; } .swipe-hint { display:block; position:absolute; right:16px; top:12px; color:rgba(255,255,255,.62); font-size:10px; } }
 @media (prefers-reduced-motion: reduce) { .carousel-track,.carousel-dots button { transition:none; } .carousel-progress-bar.is-running { transition:none; width:100%; } }
+
+
+/* Product-quality trust and loading polish */
+.icon-svg { width: 1.08em; height: 1.08em; display: block; }
+.nav-icon { display: inline-grid; place-items: center; }
+.nav-icon .icon-svg { width: 18px; height: 18px; }
+.seller-profile-trigger { border: 0; padding: 0; background: transparent; color: inherit; font: inherit; font-weight: 700; cursor: pointer; text-align: left; }
+.seller-profile-trigger:hover { color: var(--forest, #0d5c4b); text-decoration: underline; text-underline-offset: 3px; }
+.metric-value.is-loading { color: transparent; min-width: 2.2rem; min-height: 1.3em; border-radius: 6px; background: linear-gradient(100deg, rgba(13,92,75,.12) 30%, rgba(13,92,75,.28) 50%, rgba(13,92,75,.12) 70%); background-size: 220% 100%; animation: shimmer 1.4s linear infinite; }
+@keyframes shimmer { to { background-position: -220% 0; } }
+@media (prefers-reduced-motion: reduce) { .metric-value.is-loading { animation: none; } }
+html.page-ready body { animation: page-in .22s ease both; }
+html.page-leaving body { opacity: .72; transform: translateY(3px); transition: opacity .12s ease, transform .12s ease; }
+@keyframes page-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { html.page-ready body, html.page-leaving body { animation: none; transition: none; transform: none; opacity: 1; } }

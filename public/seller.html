@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Profil seller lokal SultraKita">
+  <meta name="theme-color" content="#0d5c4b">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <script>(function(){try{var t=localStorage.getItem('sultra-dark');if(t==='true'||(t===null&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('theme-dark-preload')}catch(e){}})();</script>
+  <link rel="stylesheet" href="/styles.css?v=phase10-seller">
+  <link rel="preconnect" href="https://api.fontshare.com">
+  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&f[]=satoshi@400,500,700,900&display=swap">
+  <title>Profil Seller — SultraKita</title>
+  <style>
+    .seller-page{min-height:100vh;background:var(--surface,#f7f5ef)}
+    .seller-topbar{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1.15rem clamp(1rem,4vw,4rem);background:var(--paper,#fffefa);border-bottom:1px solid var(--line)}
+    .seller-top-actions{display:flex;align-items:center;gap:.7rem}.seller-shell{max-width:1120px;margin:0 auto;padding:clamp(1.5rem,4vw,4rem) 1rem 5rem}.seller-breadcrumb{display:inline-flex;color:var(--muted);font-size:.8rem;font-weight:700;margin-bottom:1.2rem}.seller-hero{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr);gap:1.2rem;align-items:stretch}.seller-card,.seller-proof,.seller-inventory{background:var(--paper);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow-card,0 12px 40px rgba(20,55,43,.08))}.seller-card{padding:clamp(1.2rem,3vw,2rem)}.seller-card-head{display:flex;gap:1rem;align-items:center}.seller-avatar-xl{display:grid;place-items:center;flex:0 0 76px;width:76px;height:76px;border-radius:24px;background:linear-gradient(135deg,var(--brand-500,#0d5c4b),#16a078);color:#f8d875;font-family:'Clash Display',sans-serif;font-size:2rem;font-weight:800}.seller-card h1{margin:.35rem 0;font-family:'Clash Display','Plus Jakarta Sans',sans-serif;font-size:clamp(2rem,5vw,3.7rem);line-height:1;letter-spacing:-.06em}.seller-card p{color:var(--muted);max-width:650px}.seller-badge{display:inline-flex;align-items:center;gap:.35rem;padding:.35rem .65rem;border-radius:999px;background:var(--sage,#e0eee2);color:var(--brand-700,#0d5c4b);font-size:.7rem;font-weight:800}.seller-actions{display:flex;flex-wrap:wrap;gap:.7rem;margin-top:1.2rem}.seller-proof{display:grid;gap:1px;overflow:hidden;background:var(--line)}.proof-stat{padding:1rem 1.1rem;background:var(--paper)}.proof-stat strong{display:block;color:var(--brand-700,#0d5c4b);font-size:1.35rem}.proof-stat span{display:block;color:var(--muted);font-size:.75rem}.seller-inventory{margin-top:1.2rem;padding:clamp(1.2rem,3vw,2rem)}.seller-section-heading{display:flex;align-items:end;justify-content:space-between;gap:1rem;margin-bottom:1rem}.seller-section-heading h2{margin:0;font-family:'Clash Display','Plus Jakarta Sans',sans-serif;font-size:1.6rem}.seller-section-heading p{margin:.25rem 0 0;color:var(--muted);font-size:.8rem}.seller-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}.seller-listing{overflow:hidden;border:1px solid var(--line);border-radius:16px;background:var(--paper);transition:transform .2s ease,box-shadow .2s ease}.seller-listing:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(20,55,43,.1)}.seller-listing-media{display:grid;place-items:center;aspect-ratio:4/3;background:linear-gradient(135deg,#dcefe1,#f6ead2);color:var(--brand-700,#0d5c4b);font-size:2rem}.seller-listing-media img{display:block;width:100%;height:100%;object-fit:cover}.seller-listing-body{padding:.85rem}.seller-listing-body h3{margin:0 0 .35rem;font-size:.95rem}.seller-listing-body strong{color:var(--brand-700,#0d5c4b)}.seller-listing-body small{display:block;margin-top:.3rem;color:var(--muted)}.seller-loading{padding:2rem;color:var(--muted);text-align:center}.seller-error{padding:2rem;text-align:center}.seller-error strong{display:block;margin-bottom:.8rem}@media(max-width:760px){.seller-hero{grid-template-columns:1fr}.seller-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.seller-card h1{font-size:2.45rem}}@media(max-width:460px){.seller-topbar{align-items:flex-start}.seller-top-actions .button{font-size:.75rem;padding:.55rem}.seller-card-head{align-items:flex-start;flex-direction:column}.seller-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body class="seller-page">
+  <a class="skip-link" href="#seller-main">Lewati ke konten utama</a>
+  <header class="seller-topbar"><a class="brand" href="/" aria-label="SultraKita beranda"><span class="brand-mark">S</span><span>Sultra<strong>Kita</strong></span></a><div class="seller-top-actions"><button class="icon-button theme-toggle" id="theme-toggle" aria-label="Aktifkan mode gelap">◐</button><a class="button button-quiet" href="/">← Marketplace</a></div></header>
+  <main id="seller-main" class="seller-shell" tabindex="-1">
+    <a class="seller-breadcrumb" href="/">Marketplace / Profil seller</a>
+    <section id="seller-hero" class="seller-hero" aria-busy="true"><article class="seller-card"><div class="seller-loading seller-loading">Memuat profil seller…</div></article></section>
+    <section class="seller-inventory" aria-labelledby="inventory-title"><div class="seller-section-heading"><div><h2 id="inventory-title">Listing aktif</h2><p>Barang dan jasa yang sedang ditawarkan seller ini.</p></div></div><div id="seller-listings" class="seller-grid"><div class="seller-loading">Memuat katalog seller…</div></div></section>
+  </main>
+  <script src="/page-transition.js?v=phase10"></script><script src="/seller.js?v=phase10"></script>
+</body>
+</html>
