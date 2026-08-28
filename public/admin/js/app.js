@@ -4,7 +4,7 @@
   const state = window.AdminState;
   const nav = [
     { section: 'Workspace', items: [
-      ['dashboard', 'Dashboard', '/admin/dashboard.html', 'view_dashboard', 'grid'],
+      ['dashboard', 'Dashboard', '/admin/dashboard', 'view_dashboard', 'grid'],
       ['analytics', 'Analytics', '/admin/analytics.html', 'view_analytics', 'chart'],
       ['listings', 'Kelola listing', '/admin/listings.html', 'manage_listings', 'tag'],
       ['categories', 'Kategori', '/admin/categories.html', 'manage_categories', 'folder'],
@@ -59,7 +59,7 @@
     document.body.insertAdjacentHTML('afterbegin', '<a class="skip-link" href="#admin-main">Lewati ke konten utama</a>');
     const items = document.getElementById('admin-nav-items');
     if (items) items.innerHTML = renderNav(page) || '<span style="padding:.75rem;color:var(--admin-text-muted);font-size:.8rem">Tidak ada akses backoffice.</span>';
-    document.querySelector('[data-menu-toggle]')?.addEventListener('click', () => document.getElementById('admin-sidebar').classList.toggle('is-open'));
+    document.querySelectorAll('[data-menu-toggle]').forEach(button => button.addEventListener('click', () => document.getElementById('admin-sidebar').classList.toggle('is-open')));
     document.querySelector('[data-theme-toggle]')?.addEventListener('click', () => { const dark = !document.documentElement.classList.contains('admin-dark'); localStorage.setItem('sultra-admin-dark', String(dark)); theme(); });
     document.querySelector('[data-logout]')?.addEventListener('click', () => window.AdminAuth.adminLogout());
     document.querySelector('[data-global-search]')?.addEventListener('keydown', event => { if (event.key === 'Enter' && event.currentTarget.value.trim()) window.location.href = `/admin/users.html?search=${encodeURIComponent(event.currentTarget.value.trim())}`; });
@@ -69,9 +69,26 @@
     const main = document.querySelector('#admin-main');
     if (!main) return;
     const content = main.innerHTML;
+    const page = document.body.dataset.adminPage || 'dashboard';
+    const current = key => page === key ? 'aria-current="page"' : '';
     const role = String(auth?.role || 'guest').toUpperCase();
     const name = auth?.user?.name || auth?.user?.email || 'Admin';
-    main.outerHTML = `<div class="admin-shell"><aside class="admin-sidebar" id="admin-sidebar"><a class="admin-brand" href="/admin/dashboard.html"><span class="admin-mark">S</span><span>SultraKita Admin<small>Operations center</small></span></a><nav class="admin-nav" aria-label="Navigasi admin"><div id="admin-nav-items"></div></nav><div class="admin-sidebar-footer"><div class="admin-profile-chip"><span class="admin-avatar">${window.AdminUi.esc(role.slice(0, 1))}</span><span><strong id="admin-name">${window.AdminUi.esc(name)}</strong><br><small id="admin-role">${window.AdminUi.esc(role)}</small></span></div><a href="/">← Kembali ke marketplace</a></div></aside><main id="admin-main" class="admin-content" tabindex="-1"><header class="admin-topbar"><div class="admin-topbar-inner"><button class="admin-button secondary admin-mobile-toggle" type="button" data-menu-toggle aria-label="Buka navigasi">Menu</button><div><h1>${window.AdminUi.esc(document.body.dataset.adminTitle || 'Admin Dashboard')}</h1><p>${window.AdminUi.esc(document.body.dataset.adminSubtitle || 'Operations center SultraKita.')}</p></div></div><div class="admin-actions"><label class="admin-topbar-search"><span aria-hidden="true">⌕</span><input type="search" data-global-search placeholder="Cari pengguna atau listing…" aria-label="Cari pengguna atau listing"></label><span class="admin-profile-chip"><span class="admin-avatar">${window.AdminUi.esc(role.slice(0, 1))}</span><span>${window.AdminUi.esc(role)}</span></span><button class="admin-button ghost" type="button" data-theme-toggle>Mode</button><button class="admin-button secondary" type="button" data-logout>Keluar</button></div></header>${content}</main></div>`;
+    main.outerHTML = `<div class="admin-shell">
+      <aside class="admin-sidebar" id="admin-sidebar">
+        <a class="admin-brand" href="/admin/dashboard"><span class="admin-mark">S</span><span>SultraKita Admin<small>Operations center</small></span></a>
+        <nav class="admin-nav" aria-label="Navigasi admin"><div id="admin-nav-items"></div></nav>
+        <div class="admin-sidebar-footer"><div class="admin-profile-chip"><span class="admin-avatar">${window.AdminUi.esc(role.slice(0, 1))}</span><span><strong id="admin-name">${window.AdminUi.esc(name)}</strong><br><small id="admin-role">${window.AdminUi.esc(role)}</small></span></div><a href="/">← Kembali ke marketplace</a></div>
+      </aside>
+      <main id="admin-main" class="admin-content" tabindex="-1">
+        <header class="admin-topbar">
+          <div class="admin-topbar-left"><button class="admin-button secondary admin-mobile-toggle" type="button" data-menu-toggle aria-label="Buka navigasi"><span aria-hidden="true">☰</span><span class="admin-mobile-toggle-label">Menu</span></button><a class="admin-topbar-brand" href="/admin/dashboard"><span class="admin-mark">S</span><span>SultraKita<small>Admin</small></span></a><label class="admin-topbar-search"><span aria-hidden="true">⌕</span><input type="search" data-global-search placeholder="Cari pengguna atau listing…" aria-label="Cari pengguna atau listing"></label></div>
+          <nav class="admin-center-nav" aria-label="Navigasi cepat"><a href="/admin/dashboard" ${current('dashboard')} data-center-nav="dashboard"><span>⌂</span><small>Beranda</small></a><a href="/admin/analytics.html" data-permission="analytics:view" data-center-nav="analytics"><span>⌁</span><small>Analytics</small></a><a href="/admin/listings.html" data-permission="listings:view" data-center-nav="listings"><span>◇</span><small>Listing</small></a><a href="/admin/donations.html" data-permission="donations:manage" data-center-nav="donations"><span>♡</span><small>Donasi</small></a><a href="/admin/users.html" data-permission="users:view" data-center-nav="users"><span>♙</span><small>Pengguna</small></a></nav>
+          <div class="admin-actions"><a class="admin-round-action" href="/admin/verifications.html" data-permission="verifications:manage" aria-label="Buka antrean verifikasi">♢<b data-admin-pending>!</b></a><span class="admin-profile-chip admin-topbar-profile"><span class="admin-avatar">${window.AdminUi.esc(role.slice(0, 1))}</span><span>${window.AdminUi.esc(role)}</span></span><button class="admin-button ghost" type="button" data-theme-toggle>Mode</button><button class="admin-button secondary" type="button" data-logout>Keluar</button></div>
+        </header>${content}
+      </main>
+      <aside class="admin-right-panel" aria-label="Panel operasional"><div class="admin-right-panel-content"><p class="admin-eyebrow">Quick access</p><h2>Operations desk</h2><p class="admin-right-copy">Akses cepat ke antrean, kesehatan platform, dan aktivitas admin.</p><a class="admin-right-link" href="/admin/verifications.html" data-permission="verifications:manage"><span>Verifikasi seller</span><strong>→</strong></a><a class="admin-right-link" href="/admin/reports.html" data-permission="reports:moderate"><span>Laporan komunitas</span><strong>→</strong></a><a class="admin-right-link" href="/admin/audit-logs.html" data-permission="audit:view"><span>Audit logs</span><strong>→</strong></a><div class="admin-right-status"><span><i></i> Sesi ${window.AdminUi.esc(role.toLowerCase())}</span><small>Data dilindungi oleh permission server.</small></div></div></aside>
+    </div>
+    <nav class="admin-bottom-nav" aria-label="Navigasi mobile"><a href="/admin/dashboard" ${current('dashboard')}><span>⌂</span><small>Beranda</small></a><a href="/admin/analytics.html" data-permission="analytics:view"><span>⌁</span><small>Analytics</small></a><a href="/admin/listings.html" data-permission="listings:view"><span>◇</span><small>Listing</small></a><a href="/admin/donations.html" data-permission="donations:manage"><span>♡</span><small>Donasi</small></a><button type="button" data-menu-toggle aria-label="Buka menu admin"><span>☰</span><small>Menu</small></button></nav>`;
   }
   async function init() { theme(); const auth = await window.AdminAuth.checkAdminAuth(); if (!auth) return; layout(auth); shell(); document.dispatchEvent(new CustomEvent('admin:layout-ready', { detail: auth })); }
   document.addEventListener('DOMContentLoaded', init);

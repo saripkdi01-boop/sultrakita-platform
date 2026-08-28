@@ -140,6 +140,12 @@
       <div class="admin-span-12"><p class="admin-status" data-status>${failed ? `${failed} sumber data tidak tersedia saat ini.` : `Terakhir dimuat: ${new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date())}`}</p></div>
     </div>`;
 
+    const rightPanel = document.querySelector('.admin-right-panel-content');
+    if (rightPanel) rightPanel.innerHTML = `<p class="admin-eyebrow">Live desk</p><h2>Perhatian tim</h2><p class="admin-right-copy">Ringkasan ini berasal dari endpoint admin server tanpa angka sintetis.</p><div class="admin-right-live"><span>Antrean terbuka</span><strong>${number(queueTotal)}</strong><small>${queueTotal ? 'Perlu ditinjau' : 'Tidak ada antrean aktif'}</small></div><a class="admin-right-link" href="/admin/verifications.html" data-permission="verifications:manage"><span>Verifikasi seller</span><strong>→</strong></a><a class="admin-right-link" href="/admin/reports.html" data-permission="reports:moderate"><span>Laporan komunitas</span><strong>→</strong></a><div class="admin-right-status"><span><i></i> ${failed ? 'Sebagian data perlu diperiksa' : 'Semua sumber merespons'}</span><small>${esc(trendCopy)} · ${number(summary.events)} event</small></div>`;
+    const pendingBadge = document.querySelector('[data-admin-pending]');
+    if (pendingBadge) pendingBadge.textContent = queueTotal > 99 ? '99+' : String(queueTotal);
+    window.AdminRbac?.apply();
+
     document.querySelector('[data-dashboard-refresh]')?.addEventListener('click', async event => {
       const button = event.currentTarget;
       button.disabled = true;
