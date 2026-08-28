@@ -10,7 +10,9 @@
  * implementation would create a second incompatible authentication system.
  */
 const express = require('express');
-const { query, run } = require('../../database');
+const crypto = require('node:crypto');
+const { query, run, withTransaction } = require('../../database');
+const { CATEGORIES, ALL_DISTRICTS } = require('../../shared/taxonomy');
 const { requireAuth } = require('../../auth');
 const { hasPermission, normalizeRole, permissionList, ROLE_LEVELS, requirePermission } = require('../../rbac');
 const OWNER_ADMIN_EMAIL = 'sultrakitaplatform@gmail.com';
@@ -33,6 +35,18 @@ const boundedInt = (value, fallback, min, max) => {
 const positiveId = value => Number.isSafeInteger(Number(value)) && Number(value) > 0;
 const text = (value, max) => String(value ?? '').trim().slice(0, max);
 const ipAddress = req => text(req.ip || req.get('x-forwarded-for') || '', 100) || null;
+const PRODUCT_HOSTS = new Set(['facebook.com', 'www.facebook.com', 'm.facebook.com', 'tokopedia.com', 'www.tokopedia.com', 'shopee.co.id', 'www.shopee.co.id', 'olx.co.id', 'www.olx.co.id']);
+const decodeHtml = value => String(value || '').replace(/&amp;/gi, '&').replace(/&quot;/gi, '"').replace(/&#039;/gi, "'").replace(/&#x27;/gi, "'").replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&#(\d+);/g, (_, code) => String.fromCharCode(Number(code))).replace(/\\s+/g, ' ').trim();
+const metaValue = (source, key) => { const pattern = new RegExp(`<meta[^>]+(?:property|name)=["']${key.replace(':', '\\\\:')}["'][^>]*>`, 'i'); const tag = source.match(pattern)?.[0] || ''; return decodeHtml(tag.match(/content=["']([^"']*)["']/i)?.[1] || ''); };
+const productHost = hostname => { const host = String(hostname || '').toLowerCase(); return [...PRODUCT_HOSTS].some(domain => host === domain || host.endsWith(`.${domain}`)); };
+const sourcePlatform = hostname => { const host = String(hostname || '').toLowerCase(); if (host.includes('facebook')) return 'Facebook Marketplace'; if (host.includes('tokopedia')) return 'Tokopedia'; if (host.includes('shopee')) return 'Shopee'; if (host.includes('olx')) return 'OLX'; return host.replace(/^www\\./, ''); };
+const sourceUrl = raw => { let parsed; try { parsed = new URL(String(raw || '').trim()); } catch { throw Object.assign(new Error('Tautan produk tidak valid.'), { statusCode: 422, code: 'PRODUCT_URL_INVALID' }); } if (parsed.protocol !== 'https:' || !productHost(parsed.hostname)) throw Object.assign(new Error('Gunakan tautan HTTPS Facebook, Tokopedia, OLX, atau Shopee.'), { statusCode: 422, code: 'PRODUCT_URL_NOT_ALLOWED' }); return parsed; };
+const jsonLdImages = source => { const images = []; for (const block of source.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)) { try { const data = JSON.parse(block[1]); const visit = value => { if (!value || images.length >= 8) return; if (typeof value === 'string' && /^https:\/\//i.test(value)) images.push(value); else if (Array.isArray(value)) value.forEach(visit); else if (typeof value === 'object') Object.values(value).forEach(visit); }; visit(data?.image); } catch { /* malformed structured data is ignored */ } } return images; };
+const productPathTitle = parsed => decodeURIComponent(parsed.pathname.split('/').filter(Boolean).pop() || parsed.hostname).replace(/[-_]+/g, ' ').replace(/\\b\\w/g, letter => letter.toUpperCase()).slice(0, 160);
+const fetchProductMetadata = async raw => { const parsed = sourceUrl(raw); const platform = sourcePlatform(parsed.hostname); const fallback = { source_url: parsed.href, source_platform: platform, source_title: productPathTitle(parsed), source_description: '', image_urls: [], price: 0, metadata_note: 'Sumber tidak menyediakan metadata publik yang dapat dibaca; lengkapi draft secara manual.' }; const controller = new AbortController(); const timer = setTimeout(() => controller.abort(), 8000); try { const response = await fetch(parsed.href, { headers: { accept: 'text/html,application/xhtml+xml', 'user-agent': 'SultraKitaAdminMetadata/1.0 (+https://sultrakita-platform.vercel.app)' }, redirect: 'manual', signal: controller.signal }); if (!response.ok || (response.status >= 300 && response.status < 400)) return { ...fallback, metadata_note: `Metadata sumber tidak dapat dibaca (HTTP ${response.status}); gunakan tautan sebagai referensi dan lengkapi data sebelum publikasi.` }; const source = (await response.text()).slice(0, 1_500_000); const imageUrls = [...new Set([metaValue(source, 'og:image'), metaValue(source, 'og:image:url'), metaValue(source, 'twitter:image'), ...jsonLdImages(source)].filter(image => /^https:\/\//i.test(image)))].slice(0, 5); const amount = Number(metaValue(source, 'product:price:amount').replace(/[^0-9.]/g, '')); return { source_url: parsed.href, source_platform: platform, source_title: text(metaValue(source, 'og:title') || metaValue(source, 'twitter:title') || source.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] || fallback.source_title, 180), source_description: text(metaValue(source, 'og:description') || metaValue(source, 'description') || '', 1500), image_urls: imageUrls, price: Number.isSafeInteger(amount) && amount >= 0 ? amount : 0, metadata_note: imageUrls.length ? 'Metadata publik berhasil dibaca. Pastikan foto memiliki izin penggunaan sebelum publikasi.' : 'Metadata terbaca, tetapi sumber tidak menyediakan foto publik; unggah foto berizin atau lengkapi manual.' }; } finally { clearTimeout(timer); } };
+const inferCategoryId = value => { const haystack = String(value || '').toLowerCase(); const rules = [['elektronik', /handphone|smartphone|iphone|samsung|laptop|tablet|kamera|elektronik/], ['kendaraan', /mobil|motor|sepeda|avanza|yamaha|honda|kendaraan/], ['properti', /rumah|tanah|apartemen|kos|ruko|properti/], ['fashion', /baju|sepatu|tas|fashion|jaket|dress/], ['rumah-tangga', /sofa|meja|kursi|lemari|furniture|perabot/], ['hobi', /ikan|kucing|game|olahraga|hobi/], ['kuliner', /makanan|minuman|kue|kuliner/], ['jasa', /jasa|service|les|tukang|freelance/], ['hasil-laut', /ikan laut|udang|kepiting|hasil laut/], ['pertanian', /bibit|pupuk|sayur|pertanian|perkebunan/]]; const slug = rules.find(([, pattern]) => pattern.test(haystack))?.[0] || 'lainnya'; return CATEGORIES.find(category => category.slug === slug)?.id || CATEGORIES.find(category => category.slug === 'lainnya')?.id || 12; };
+const localProductDraft = (metadata, input = {}) => { const title = text(input.title || metadata.source_title || 'Produk pilihan SultraKita', 120); const sourceDescription = text(input.description || metadata.source_description, 1500); const description = text(sourceDescription ? `${sourceDescription}\\n\\nProduk ini dikurasi admin SultraKita dari ${metadata.source_platform}. Periksa kondisi, varian, stok, lokasi, dan metode pengiriman sebelum dipublikasikan.` : `Produk ini dikurasi admin SultraKita dari ${metadata.source_platform}. Lengkapi kondisi, varian, stok, lokasi, dan metode pengiriman sebelum dipublikasikan.`, 2000); const categoryId = positiveId(input.category_id) ? Number(input.category_id) : inferCategoryId(`${title} ${sourceDescription}`); const district = ALL_DISTRICTS.includes(text(input.district, 80)) ? text(input.district, 80) : 'Kendari'; const condition = ['new', 'second'].includes(input.condition) ? input.condition : 'new'; const price = Number.isSafeInteger(Number(input.price)) && Number(input.price) >= 0 ? Number(input.price) : Number(metadata.price || 0); return { ...metadata, draft_title: title, draft_description: description, price, category_id: categoryId, condition, district, ai_source: 'local_rules', status: 'draft' }; };
+const serializeImportDraft = row => ({ ...row, image_urls: Array.isArray(row.image_urls) ? row.image_urls : [], price: Number(row.price || 0), category_id: Number(row.category_id || 0) });
 
 async function audit(req, action, entityType, entityId, metadata = {}) {
   try {
@@ -213,6 +227,70 @@ router.post('/listings/:id/feature', ...guarded('feature_listings'), async (req,
     const rows = await query('UPDATE listings SET is_featured = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? RETURNING id, title, is_featured', [featured, Number(req.params.id)]);
     if (!rows.length) return fail(res, 404, 'Listing tidak ditemukan');
     await audit(req, featured ? 'listing_featured' : 'listing_unfeatured', 'listing', req.params.id);
+    ok(res, rows[0]);
+  } catch (error) { next(error); }
+});
+
+router.get('/listing-imports', ...guarded('manage_listings'), async (req, res, next) => {
+  try {
+    const status = ['draft', 'published', 'discarded'].includes(text(req.query.status, 20)) ? text(req.query.status, 20) : 'draft';
+    const limit = boundedInt(req.query.limit, 30, 1, 100);
+    const rows = await query('SELECT id, source_url, source_platform, source_title, image_urls, draft_title, draft_description, price, category_id, condition, district, status, published_listing_id, created_at, updated_at FROM admin_listing_import_drafts WHERE admin_id = ? AND status = ? ORDER BY updated_at DESC LIMIT ?', [req.user.id, status, limit]);
+    ok(res, rows.map(serializeImportDraft));
+  } catch (error) { next(error); }
+});
+
+router.post('/listing-imports/preview', ...guarded('manage_listings'), async (req, res, next) => {
+  try {
+    const metadata = await fetchProductMetadata(req.body?.source_url || req.body?.url);
+    const draft = localProductDraft(metadata, req.body || {});
+    let existing = (await query('SELECT id FROM admin_listing_import_drafts WHERE admin_id = ? AND source_url = ? AND status = \'draft\' ORDER BY id DESC LIMIT 1', [req.user.id, draft.source_url]))[0];
+    if (existing) {
+      await query(`UPDATE admin_listing_import_drafts SET source_platform = ?, source_title = ?, source_description = ?, image_urls = ?::jsonb, draft_title = ?, draft_description = ?, price = ?, category_id = ?, condition = ?, district = ?, updated_at = now() WHERE id = ? RETURNING id`, [draft.source_platform, draft.source_title, draft.source_description, JSON.stringify(draft.image_urls), draft.draft_title, draft.draft_description, draft.price, draft.category_id, draft.condition, draft.district, existing.id]);
+    } else {
+      const created = await run('INSERT INTO admin_listing_import_drafts (admin_id, source_url, source_platform, source_title, source_description, image_urls, draft_title, draft_description, price, category_id, condition, district) VALUES (?, ?, ?, ?, ?, ?::jsonb, ?, ?, ?, ?, ?, ?)', [req.user.id, draft.source_url, draft.source_platform, draft.source_title, draft.source_description, JSON.stringify(draft.image_urls), draft.draft_title, draft.draft_description, draft.price, draft.category_id, draft.condition, draft.district]);
+      existing = { id: created.id };
+    }
+    const [row] = await query('SELECT id, source_url, source_platform, source_title, source_description, image_urls, draft_title, draft_description, price, category_id, condition, district, status, published_listing_id, created_at, updated_at FROM admin_listing_import_drafts WHERE id = ?', [existing.id]);
+    await audit(req, 'listing_import_draft_created', 'admin_listing_import_draft', existing.id, { source_platform: draft.source_platform, image_count: draft.image_urls.length, ai_source: draft.ai_source });
+    ok(res, { ...serializeImportDraft(row), metadata_note: draft.metadata_note, ai_source: draft.ai_source });
+  } catch (error) { if (error.code?.startsWith('PRODUCT_URL_')) return fail(res, error.statusCode || 422, error.message); next(error); }
+});
+
+router.post('/listing-imports/:id/publish', ...guarded('approve_listings'), async (req, res, next) => {
+  try {
+    if (!positiveId(req.params.id)) return fail(res, 422, 'ID draft tidak valid');
+    const [draft] = await query('SELECT id, admin_id, source_url, source_platform, image_urls, draft_title, draft_description, price, category_id, condition, district, status FROM admin_listing_import_drafts WHERE id = ? AND admin_id = ?', [Number(req.params.id), req.user.id]);
+    if (!draft) return fail(res, 404, 'Draft impor tidak ditemukan');
+    if (draft.status !== 'draft') return fail(res, 409, 'Draft ini sudah diproses dan tidak dapat dipublikasikan ulang');
+    const title = text(req.body?.title || draft.draft_title, 120);
+    const description = text(req.body?.description || draft.draft_description, 2000);
+    const price = Number(req.body?.price ?? draft.price);
+    const categoryId = positiveId(req.body?.category_id) ? Number(req.body.category_id) : Number(draft.category_id);
+    const condition = ['new', 'second'].includes(req.body?.condition) ? req.body.condition : draft.condition;
+    const district = ALL_DISTRICTS.includes(text(req.body?.district || draft.district, 80)) ? text(req.body?.district || draft.district, 80) : 'Kendari';
+    if (title.length < 5 || description.length < 10 || !Number.isSafeInteger(price) || price < 0 || !CATEGORIES.some(category => Number(category.id) === categoryId)) return fail(res, 422, 'Judul, deskripsi, harga, dan kategori belum valid');
+    const availableImages = Array.isArray(draft.image_urls) ? draft.image_urls.filter(image => /^https:\/\//i.test(String(image))) : [];
+    const requestedImages = Array.isArray(req.body?.image_urls) ? req.body.image_urls.map(image => String(image)) : availableImages;
+    const images = [...new Set(requestedImages.filter(image => availableImages.includes(image)))].slice(0, 5);
+    const result = await withTransaction(async ({ query: txQuery, run: txRun }) => {
+      const listingResult = await txRun(`INSERT INTO listings (seller_id, category_id, title, description, price, condition, status, moderation_status, district, city, image_url, source_url, source_platform, provenance, imported_by, imported_at) VALUES (?, ?, ?, ?, ?, ?, 'active', 'approved', ?, 'Kendari', ?, ?, ?, 'admin_imported_reviewed', ?, now())`, [req.user.id, categoryId, title, description, price, condition, district, images[0] || null, draft.source_url, draft.source_platform, req.user.id]);
+      for (const [index, image] of images.entries()) await txRun('INSERT INTO listing_images (listing_id, file_url, sort_order) VALUES (?, ?, ?)', [listingResult.id, image, index]);
+      await txRun("UPDATE admin_listing_import_drafts SET status = 'published', published_listing_id = ?, draft_title = ?, draft_description = ?, price = ?, category_id = ?, condition = ?, district = ?, updated_at = now() WHERE id = ?", [listingResult.id, title, description, price, categoryId, condition, district, draft.id]);
+      return { listing_id: listingResult.id, images };
+    });
+    await audit(req, 'listing_import_published', 'listing', result.listing_id, { draft_id: draft.id, source_platform: draft.source_platform, source_url: draft.source_url, image_count: result.images.length });
+    const [listing] = await query('SELECT id, title, description, price, category_id, condition, status, moderation_status, district, city, image_url, source_url, source_platform, provenance, imported_at FROM listings WHERE id = ?', [result.listing_id]);
+    res.status(201); ok(res, { listing, images: result.images });
+  } catch (error) { next(error); }
+});
+
+router.post('/listing-imports/:id/discard', ...guarded('manage_listings'), async (req, res, next) => {
+  try {
+    if (!positiveId(req.params.id)) return fail(res, 422, 'ID draft tidak valid');
+    const rows = await query("UPDATE admin_listing_import_drafts SET status = 'discarded', updated_at = now() WHERE id = ? AND admin_id = ? AND status = 'draft' RETURNING id, status, updated_at", [Number(req.params.id), req.user.id]);
+    if (!rows.length) return fail(res, 404, 'Draft impor tidak ditemukan atau sudah diproses');
+    await audit(req, 'listing_import_discarded', 'admin_listing_import_draft', req.params.id);
     ok(res, rows[0]);
   } catch (error) { next(error); }
 });
