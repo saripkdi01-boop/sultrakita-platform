@@ -5,7 +5,8 @@
   function redirectToLogin() { const target = nextPath(); window.location.replace(`/admin/index.html?next=${encodeURIComponent(target)}`); }
   async function checkAdminAuth(options = {}) {
     const shouldRedirect = options.redirect !== false;
-    if (!state?.session || !state.adminToken) { if (shouldRedirect) redirectToLogin(); return null; }
+    // Google SSO issues the bearer session used by every admin API. The legacy admin token is optional and is never required by the owner login flow.
+    if (!state?.session) { if (shouldRedirect) redirectToLogin(); return null; }
     try {
       const me = await window.AdminApi.request('/api/admin/v2/');
       if (!me?.role || !Array.isArray(me.permissions) || !Number.isInteger(Number(me.level))) throw new Error('Dokumen akses admin tidak lengkap.');
