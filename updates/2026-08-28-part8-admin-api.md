@@ -41,3 +41,7 @@ Ban/unban tidak berpura-pura berhasil. Schema legacy `users` tidak mempunyai `is
 ## Verification
 
 Local syntax, lint, build, unit tests, contract test, dan diff check lulus. CI dan production verification dilakukan setelah commit release.
+
+## Production QA
+
+CI run `33131784972` pada commit `fa025a4` selesai sukses. Production health mengembalikan `api: up`, `db: up`, `storage: down`, build `fa025a48e876c942c1c1d9854d40c661d89285a6`. Endpoint `/api/admin/v2/`, `/api/admin/v2/stats`, `/api/admin/v2/categories`, dan `/api/admin/v2/content` semuanya HTTP 401 tanpa credential. Canonical `/admin` tetap HTTP 200 dengan `Cache-Control: no-store` dan security headers.
