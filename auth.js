@@ -5,6 +5,7 @@ const { query, run } = require('./database');
 const { normalizeRole } = require('./rbac');
 
 const hashToken = token => crypto.createHash('sha256').update(token).digest('hex');
+const cookieToken = header => String(header || '').split(';').map(part => part.trim()).find(part => part.startsWith('sultra_admin_session='))?.slice('sultra_admin_session='.length) || '';
 const userSelect = `SELECT u.id, u.name, u.phone, u.email, s.created_at AS session_created_at, s.expires_at AS session_expires_at, COALESCE(ara.role, u.role) AS role, u.role AS legacy_role,
                           u.district, u.phone_verified, u.email_verified, u.verification_status
                    FROM sessions s JOIN users u ON u.id = s.user_id
@@ -19,9 +20,10 @@ async function authenticate(req, _res, next) {
   try {
     const header = req.get('authorization') || '';
     const match = header.match(/^Bearer\s+([A-Za-z0-9_-]{40,})$/);
-    if (!match) return next();
+    const token = match?.[1] || cookieToken(req.get('cookie'));
+    if (!token || !/^[A-Za-z0-9_-]{40,}$/.test(token)) return next();
 
-    const params = [hashToken(match[1]), Date.now()];
+    const params = [hashToken(token), Date.now()];
     let users;
     try {
       users = await query(userSelect, params);
