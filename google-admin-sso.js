@@ -15,6 +15,8 @@ const adminEmailAllowlist = () => new Set([ADMIN_GOOGLE_EMAIL]);
 // A dedicated admin callback remains supported when explicitly configured.
 const adminGoogleRedirectUri = siteUrl => process.env.GOOGLE_ADMIN_REDIRECT_URI || process.env.GOOGLE_REDIRECT_URI || `${siteUrl}/api/auth/google/callback`;
 const adminGoogleConfigured = () => Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET && adminEmailAllowlist().has(ADMIN_GOOGLE_EMAIL));
+const ADMIN_STATE_COOKIE = 'sultra_admin_oauth_state';
+const ADMIN_NEXT_COOKIE = 'sultra_admin_oauth_next';
 const createState = () => crypto.randomBytes(32).toString('hex');
 const createExchangeCode = () => crypto.randomBytes(32).toString('hex');
 const hashExchangeCode = code => crypto.createHash('sha256').update(code).digest('hex');
@@ -32,13 +34,13 @@ const parseCookie = (header, name) => {
 };
 
 const setAdminOAuthCookies = (res, state, next) => {
-  const common = 'Max-Age=600; Path=/api/auth/google; HttpOnly; Secure; SameSite=Lax';
-  res.setHeader('Set-Cookie', [`google_admin_oauth_state=${encodeURIComponent(state)}; ${common}`, `google_admin_oauth_next=${encodeURIComponent(safeAdminNext(next))}; ${common}`]);
+  const common = 'Max-Age=600; Path=/; HttpOnly; Secure; SameSite=Lax';
+  res.setHeader('Set-Cookie', [`${ADMIN_STATE_COOKIE}=${encodeURIComponent(state)}; ${common}`, `${ADMIN_NEXT_COOKIE}=${encodeURIComponent(safeAdminNext(next))}; ${common}`]);
 };
 
 const clearAdminOAuthCookies = res => {
-  const common = 'Max-Age=0; Path=/api/auth/google; HttpOnly; Secure; SameSite=Lax';
-  res.setHeader('Set-Cookie', [`google_admin_oauth_state=; ${common}`, `google_admin_oauth_next=; ${common}`]);
+  const common = 'Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax';
+  res.setHeader('Set-Cookie', [`${ADMIN_STATE_COOKIE}=; ${common}`, `${ADMIN_NEXT_COOKIE}=; ${common}`, `google_admin_oauth_state=; ${common}`, `google_admin_oauth_next=; ${common}`]);
 };
 
 const googleAuthorizationUrl = (redirectUri, state) => {
