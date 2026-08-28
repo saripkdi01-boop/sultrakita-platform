@@ -1,1 +1,53 @@
-<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin Login — SultraKita</title><link rel="stylesheet" href="/admin/css/admin.css?v=1"><link rel="stylesheet" href="/admin/css/admin-dark.css?v=1"></head><body><main id="admin-main" class="admin-content" tabindex="-1"><section class="admin-card" style="max-width:540px;margin:5vh auto"><div class="admin-brand" style="color:var(--admin-forest)"><span class="admin-mark">S</span><span>SultraKita Admin</span></div><h1>Akses Operations Center</h1><p>Gunakan session bearer dan admin token yang sudah diterbitkan oleh administrator platform. Credential tidak disimpan di server atau URL.</p><form id="login-form" class="admin-form-grid"><div class="admin-field full"><label for="session">Session bearer</label><input id="session" class="admin-input" type="password" autocomplete="off" required></div><div class="admin-field full"><label for="admin-token">Admin token</label><input id="admin-token" class="admin-input" type="password" autocomplete="off" required></div><div class="admin-field full"><button class="admin-button" type="submit">Verifikasi akses</button></div></form><p class="admin-status" data-status></p><p><a href="/">Kembali ke marketplace</a></p></section></main><script src="/admin/js/api.js?v=1"></script><script src="/admin/js/auth.js?v=1"></script><script src="/admin/js/components.js?v=1"></script><script>(()=>{const form=document.querySelector('#login-form');form.addEventListener('submit',async event=>{event.preventDefault();const button=form.querySelector('button');button.disabled=true;try{AdminApi.setCredentials(document.querySelector('#session').value,document.querySelector('#admin-token').value);await AdminAuth.loadMe();location.href='/admin/dashboard.html'}catch(error){AdminUi.setStatus(error.message,true);button.disabled=false}})})();</script></body></html>
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Admin Login — SultraKita</title>
+  <link rel="stylesheet" href="/admin/css/admin.css?v=2">
+  <link rel="stylesheet" href="/admin/css/admin-dark.css?v=2">
+</head>
+<body>
+  <main id="admin-main" class="admin-content" tabindex="-1">
+    <section class="admin-card" style="max-width:540px;margin:5vh auto">
+      <div class="admin-brand"><span class="admin-mark" aria-hidden="true">S</span><span>SultraKita Admin</span></div>
+      <h1>Akses Operations Center</h1>
+      <p>Gunakan session bearer dan admin token yang diterbitkan administrator platform. Credential tidak disimpan di server atau URL.</p>
+      <form id="login-form" class="admin-form-grid" novalidate>
+        <div class="admin-field full"><label for="session">Session bearer</label><input id="session" class="admin-input" type="password" autocomplete="off" required></div>
+        <div class="admin-field full"><label for="admin-token">Admin token</label><input id="admin-token" class="admin-input" type="password" autocomplete="off" required></div>
+        <div class="admin-field full"><button class="admin-button" type="submit">Verifikasi akses</button></div>
+      </form>
+      <p class="admin-status" data-status role="status" aria-live="polite"></p>
+      <p><a href="/">Kembali ke marketplace</a></p>
+    </section>
+  </main>
+  <script src="/admin/js/api.js?v=2"></script>
+  <script src="/admin/js/auth.js?v=2"></script>
+  <script src="/admin/js/components.js?v=2"></script>
+  <script>
+    (() => {
+      const form = document.querySelector('#login-form');
+      const target = new URLSearchParams(window.location.search).get('next');
+      const safeNext = target && target.startsWith('/admin/') && !target.startsWith('//') && target !== '/admin/index.html' ? target : '/admin/dashboard.html';
+      form.addEventListener('submit', async event => {
+        event.preventDefault();
+        const button = form.querySelector('button');
+        button.disabled = true;
+        window.AdminUi.setStatus('Memverifikasi akses…');
+        try {
+          window.AdminApi.setCredentials(document.querySelector('#session').value, document.querySelector('#admin-token').value);
+          const auth = await window.AdminAuth.checkAdminAuth({ redirect: false });
+          if (!auth) throw new Error('Session atau admin token tidak valid.');
+          window.location.replace(safeNext);
+        } catch (error) {
+          window.AdminApi.clearCredentials();
+          window.AdminUi.setStatus(error.message || 'Akses admin gagal.', true);
+          button.disabled = false;
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
