@@ -10,7 +10,7 @@ Setelah pengguna menyetujui akun Google, server menukar authorization code denga
 
 Buka Google Cloud Console, pilih atau buat project, lalu siapkan OAuth consent screen. Untuk penggunaan internal atau pengujian, tambahkan akun penguji sesuai kebutuhan. Buat OAuth Client ID dengan application type **Web application**.
 
-Pada bagian Authorized redirect URIs tambahkan URL callback persis sesuai domain aktif:
+Pada bagian Authorized redirect URIs tambahkan URL callback persis sesuai domain aktif. Login akun dan login admin menggunakan callback standar yang sama; server membedakan alurnya melalui state cookie yang aman:
 
 ```text
 https://<domain-live>/api/auth/google/callback
@@ -22,7 +22,7 @@ Untuk deployment yang memakai URL Vercel contoh repository ini, URL-nya adalah:
 https://sultrakita-platform.vercel.app/api/auth/google/callback
 ```
 
-Redirect URI harus sama persis antara Google Cloud Console dan environment server, termasuk HTTPS, hostname, path, dan tanpa slash tambahan. Salin Client ID dan Client Secret dari Google Cloud Console ke secret environment Vercel. Jangan commit keduanya.
+Redirect URI harus sama persis antara Google Cloud Console dan environment server, termasuk HTTPS, hostname, path, dan tanpa slash tambahan. Admin dapat memakai `GOOGLE_ADMIN_REDIRECT_URI` khusus bila callback tersebut juga didaftarkan di Google Cloud Console, tetapi default produksi sengaja memakai callback standar untuk mencegah mismatch. Salin Client ID dan Client Secret dari Google Cloud Console ke secret environment Vercel. Jangan commit keduanya.
 
 ## Environment Vercel
 

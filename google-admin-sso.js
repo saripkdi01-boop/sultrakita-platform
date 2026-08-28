@@ -11,7 +11,9 @@ const normalizeAdminEmail = value => {
 const ADMIN_GOOGLE_EMAIL = 'sultrakitaplatform@gmail.com';
 const adminEmailAllowlist = () => new Set([ADMIN_GOOGLE_EMAIL]);
 
-const adminGoogleRedirectUri = siteUrl => process.env.GOOGLE_ADMIN_REDIRECT_URI || `${siteUrl}/api/auth/google/admin/callback`;
+// Reuse the standard callback by default so Google Cloud needs only one production redirect URI.
+// A dedicated admin callback remains supported when explicitly configured.
+const adminGoogleRedirectUri = siteUrl => process.env.GOOGLE_ADMIN_REDIRECT_URI || process.env.GOOGLE_REDIRECT_URI || `${siteUrl}/api/auth/google/callback`;
 const adminGoogleConfigured = () => Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET && adminEmailAllowlist().has(ADMIN_GOOGLE_EMAIL));
 const createState = () => crypto.randomBytes(32).toString('hex');
 const createExchangeCode = () => crypto.randomBytes(32).toString('hex');
@@ -30,12 +32,12 @@ const parseCookie = (header, name) => {
 };
 
 const setAdminOAuthCookies = (res, state, next) => {
-  const common = 'Max-Age=600; Path=/api/auth/google/admin; HttpOnly; Secure; SameSite=Lax';
+  const common = 'Max-Age=600; Path=/api/auth/google; HttpOnly; Secure; SameSite=Lax';
   res.setHeader('Set-Cookie', [`google_admin_oauth_state=${encodeURIComponent(state)}; ${common}`, `google_admin_oauth_next=${encodeURIComponent(safeAdminNext(next))}; ${common}`]);
 };
 
 const clearAdminOAuthCookies = res => {
-  const common = 'Max-Age=0; Path=/api/auth/google/admin; HttpOnly; Secure; SameSite=Lax';
+  const common = 'Max-Age=0; Path=/api/auth/google; HttpOnly; Secure; SameSite=Lax';
   res.setHeader('Set-Cookie', [`google_admin_oauth_state=; ${common}`, `google_admin_oauth_next=; ${common}`]);
 };
 
