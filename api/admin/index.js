@@ -20,11 +20,9 @@ const router = express.Router();
 const ok = (res, data, meta) => res.json({ success: true, data, ...(meta ? { meta } : {}) });
 const fail = (res, status, error, details) => res.status(status).json({ success: false, error, ...(details ? { details } : {}) });
 const adminToken = (req, res, next) => {
-  // Google SSO for the single owner account is the primary gate; retain the legacy token only for controlled compatibility.
+  // The v2 dashboard is owner-only; a token header can never substitute for Google SSO.
   const sessionEmail = String(req.user?.email || '').trim().toLowerCase();
-  const ownerSso = sessionEmail === OWNER_ADMIN_EMAIL;
-  const legacyToken = Boolean(process.env.ADMIN_TOKEN && req.get('x-admin-token') === process.env.ADMIN_TOKEN);
-  if (!ownerSso && !legacyToken) return fail(res, 401, 'Akses admin tidak sah');
+  if (sessionEmail !== OWNER_ADMIN_EMAIL) return fail(res, 401, 'Akses admin hanya tersedia untuk akun Google owner yang diizinkan');
   return next();
 };
 const guarded = permission => [requireAuth, requirePermission(permission), adminToken];
