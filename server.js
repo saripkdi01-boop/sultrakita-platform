@@ -48,7 +48,7 @@ app.get('/robots.txt', (_req, res) => res.type('text/plain').send('User-agent: *
 const sendAdminShell = (_req, res) => { res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate'); res.setHeader('Pragma', 'no-cache'); return res.sendFile(path.join(__dirname, 'public', 'admin', 'index.html')); };
 app.get(['/admin', '/admin/', '/admin/login', '/admin/dashboard'], sendAdminShell);
 
-app.use(express.static(path.join(__dirname, 'public'), { setHeaders: (res, filePath) => { if (filePath.endsWith('sw.js') || filePath.endsWith('index.html')) return; if (/\.(?:js|css|woff2?|png|jpe?g|webp|avif|svg|ico|webmanifest)$/.test(filePath)) res.setHeader('Cache-Control', 'public, max-age=31536000, immutable'); } }));
+app.use(express.static(path.join(__dirname, 'public'), { setHeaders: (res, filePath) => { if (filePath.includes(`${path.sep}public${path.sep}admin${path.sep}`) && filePath.endsWith('.html')) { res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate'); res.setHeader('Pragma', 'no-cache'); return; } if (filePath.endsWith('sw.js') || filePath.endsWith('index.html')) return; if (/\.(?:js|css|woff2?|png|jpe?g|webp|avif|svg|ico|webmanifest)$/.test(filePath)) res.setHeader('Cache-Control', 'public, max-age=31536000, immutable'); } }));
 app.use('/api', rateLimit());
 // Section 4 adapter is additive; existing /api/admin endpoints remain untouched for backward compatibility.
 app.use('/api/admin/v2', adminApiV2);
