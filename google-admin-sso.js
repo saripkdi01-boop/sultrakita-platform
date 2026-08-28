@@ -5,15 +5,14 @@ const normalizeAdminEmail = value => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) && email.length <= 254 ? email : null;
 };
 
-const adminEmailAllowlist = () => new Set(
-  String(process.env.GOOGLE_ADMIN_EMAIL_ALLOWLIST || '')
-    .split(',')
-    .map(normalizeAdminEmail)
-    .filter(Boolean),
-);
+// The operations center is intentionally restricted to one human owner account.
+// GOOGLE_ADMIN_EMAIL_ALLOWLIST remains documented for migration compatibility but is intentionally ignored;
+// accepting an environment-provided list would violate the single-account requirement.
+const ADMIN_GOOGLE_EMAIL = 'sultrakitaplatform@gmail.com';
+const adminEmailAllowlist = () => new Set([ADMIN_GOOGLE_EMAIL]);
 
 const adminGoogleRedirectUri = siteUrl => process.env.GOOGLE_ADMIN_REDIRECT_URI || `${siteUrl}/api/auth/google/admin/callback`;
-const adminGoogleConfigured = () => Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET && adminEmailAllowlist().size);
+const adminGoogleConfigured = () => Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET && adminEmailAllowlist().has(ADMIN_GOOGLE_EMAIL));
 const createState = () => crypto.randomBytes(32).toString('hex');
 const createExchangeCode = () => crypto.randomBytes(32).toString('hex');
 const hashExchangeCode = code => crypto.createHash('sha256').update(code).digest('hex');

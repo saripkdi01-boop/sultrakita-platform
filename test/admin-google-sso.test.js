@@ -29,3 +29,11 @@ test('Google Admin SSO memakai state, one-time code, dan safe next', () => {
   assert.match(adminLogin, /google_admin_code/);
   assert.match(adminLogin, /admin token/);
 });
+
+test('Google Admin SSO hanya mengizinkan akun owner SultraKita', () => {
+  assert.match(helper, /sultrakitaplatform@gmail\.com/);
+  assert.match(helper, /new Set\(\[ADMIN_GOOGLE_EMAIL\]\)/);
+  assert.match(adminLogin, /Hanya `sultrakitaplatform@gmail\.com`/);
+  assert.doesNotMatch(adminLogin, /id="session"/);
+  assert.doesNotMatch(adminLogin, /id="admin-token"/);
+});

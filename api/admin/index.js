@@ -13,14 +13,18 @@ const express = require('express');
 const { query, run } = require('../../database');
 const { requireAuth } = require('../../auth');
 const { hasPermission, normalizeRole, permissionList, ROLE_LEVELS, requirePermission } = require('../../rbac');
+const OWNER_ADMIN_EMAIL = 'sultrakitaplatform@gmail.com';
 
 const router = express.Router();
 
 const ok = (res, data, meta) => res.json({ success: true, data, ...(meta ? { meta } : {}) });
 const fail = (res, status, error, details) => res.status(status).json({ success: false, error, ...(details ? { details } : {}) });
 const adminToken = (req, res, next) => {
-  // Keep the existing second gate so adding v2 routes does not weaken admin deployment security.
-  if (!process.env.ADMIN_TOKEN || req.get('x-admin-token') !== process.env.ADMIN_TOKEN) return fail(res, 401, 'Akses admin tidak sah');
+  // Google SSO for the single owner account is the primary gate; retain the legacy token only for controlled compatibility.
+  const sessionEmail = String(req.user?.email || '').trim().toLowerCase();
+  const ownerSso = sessionEmail === OWNER_ADMIN_EMAIL;
+  const legacyToken = Boolean(process.env.ADMIN_TOKEN && req.get('x-admin-token') === process.env.ADMIN_TOKEN);
+  if (!ownerSso && !legacyToken) return fail(res, 401, 'Akses admin tidak sah');
   return next();
 };
 const guarded = permission => [requireAuth, requirePermission(permission), adminToken];

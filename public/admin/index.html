@@ -4,69 +4,64 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#f7f6f0">
   <title>Admin Login — SultraKita</title>
-  <link rel="stylesheet" href="/admin/css/admin.css?v=2">
-  <link rel="stylesheet" href="/admin/css/admin-dark.css?v=2">
+  <link rel="stylesheet" href="/admin/css/admin.css?v=owner-login-1">
+  <link rel="stylesheet" href="/admin/css/admin-dark.css?v=owner-login-1">
+  <style>
+    :root { --owner-forest:#0d5c4b; --owner-coral:#ee8765; --owner-ink:#17312a; --owner-muted:#718078; --owner-line:#dfe8df; --owner-paper:#fffefa; --owner-sand:#f7f6f0; --owner-shadow:0 30px 80px rgba(15,66,50,.13); }
+    * { box-sizing:border-box; }
+    html { min-height:100%; background:var(--owner-sand); }
+    body { min-height:100vh; margin:0; display:grid; place-items:center; padding:22px; color:var(--owner-ink); background:radial-gradient(circle at 15% 12%,#e3f2e6 0,transparent 30%),radial-gradient(circle at 90% 86%,#ffe8dc 0,transparent 28%),var(--owner-sand); font:15px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    body.dark { --owner-ink:#eef7ef; --owner-muted:#a5bbb0; --owner-line:#315247; --owner-paper:#172b24; --owner-sand:#0d1d19; background:radial-gradient(circle at 10% 10%,#173f34 0,transparent 33%),radial-gradient(circle at 90% 85%,#432b25 0,transparent 25%),var(--owner-sand); }
+    a { color:inherit; text-decoration:none; }
+    .owner-shell { width:min(100%,1040px); display:grid; grid-template-columns:minmax(0,1.05fr) minmax(340px,.8fr); overflow:hidden; border:1px solid color-mix(in srgb,var(--owner-line) 85%,transparent); border-radius:32px; background:color-mix(in srgb,var(--owner-paper) 92%,transparent); box-shadow:var(--owner-shadow); backdrop-filter:blur(18px); }
+    .owner-story { position:relative; min-height:600px; padding:clamp(30px,6vw,72px); display:flex; flex-direction:column; justify-content:space-between; overflow:hidden; background:linear-gradient(145deg,var(--owner-forest),#093e35); color:white; }
+    .owner-story:before,.owner-story:after { content:""; position:absolute; border:1px solid rgba(255,255,255,.13); border-radius:50%; pointer-events:none; }.owner-story:before { width:440px;height:440px;right:-230px;top:-120px; }.owner-story:after { width:300px;height:300px;right:-120px;bottom:-120px; }
+    .owner-brand,.owner-link { position:relative; z-index:1; display:inline-flex; align-items:center; gap:11px; font-weight:800; }.owner-mark { display:grid; place-items:center; width:42px;height:42px;border-radius:14px;background:#f8d875;color:var(--owner-forest);font-size:20px;font-weight:900;box-shadow:0 10px 25px #0002; }.owner-brand span:last-child { font-size:18px; letter-spacing:-.6px; }.owner-brand strong { color:#f8d875; }
+    .owner-kicker { position:relative; z-index:1; margin:0 0 15px; color:#f8d875; font-size:11px; font-weight:800; letter-spacing:2px; text-transform:uppercase; }.owner-story h1 { position:relative; z-index:1; max-width:560px; margin:0; font-size:clamp(40px,5vw,68px); line-height:.98; letter-spacing:-4px; }.owner-story h1 span { color:#f3a07e; }.owner-story p { position:relative; z-index:1; max-width:470px; margin:22px 0 0; color:#d4e9dc; font-size:16px; }.owner-points { position:relative; z-index:1; display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:34px; }.owner-point { padding:12px; border:1px solid #ffffff20; border-radius:14px; background:#ffffff0c; color:#e2f1e6; font-size:11px; }.owner-point b { display:block; margin-bottom:4px; color:#f8d875; font-size:17px; }
+    .owner-panel { padding:clamp(28px,5vw,54px); display:flex; flex-direction:column; justify-content:center; background:var(--owner-paper); }.owner-panel h2 { margin:0 0 8px; color:var(--owner-ink); font-size:26px; letter-spacing:-1.2px; }.owner-panel-copy { margin:0 0 25px; color:var(--owner-muted); font-size:13px; }.owner-google { display:flex; align-items:center; justify-content:center; gap:12px; width:100%; min-height:52px; padding:13px 18px; border:1px solid #cbd5ce; border-radius:13px; background:#fff; color:#1f2d27; box-shadow:0 5px 14px rgba(25,52,42,.08); font-size:14px; font-weight:750; transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease; }.owner-google:hover { transform:translateY(-2px); border-color:#9eb9a9; box-shadow:0 12px 24px rgba(25,52,42,.13); }.owner-google:active { transform:scale(.98); }.owner-google svg { flex:0 0 20px; width:20px;height:20px; }.owner-status { min-height:24px; margin:14px 0 0; color:var(--owner-muted); font-size:12px; }.owner-status[data-tone="error"] { color:#c9534e; }.owner-security { display:flex; gap:10px; align-items:flex-start; margin-top:24px; padding:13px; border:1px solid var(--owner-line); border-radius:13px; color:var(--owner-muted); font-size:11px; }.owner-security strong { display:block; margin-bottom:2px; color:var(--owner-ink); }.owner-security-icon { color:var(--owner-forest); font-size:18px; line-height:1; }.owner-back { display:inline-flex; margin-top:24px; color:var(--owner-forest); font-size:12px; font-weight:800; }.owner-legal { margin-top:22px; color:var(--owner-muted); font-size:10px; }
+    @media (prefers-reduced-motion:reduce) { .owner-google { transition:none; } }
+    @media (max-width:760px) { body { padding:0; place-items:stretch; }.owner-shell { width:100%; min-height:100vh; grid-template-columns:1fr; border:0; border-radius:0; }.owner-story { min-height:360px; padding:28px 24px 34px; }.owner-story h1 { font-size:43px; }.owner-points { margin-top:25px; }.owner-panel { padding:34px 24px 44px; justify-content:flex-start; }.owner-panel h2 { font-size:24px; } }
+    @media (max-width:430px) { .owner-points { grid-template-columns:1fr; }.owner-point { padding:9px 11px; }.owner-point b { display:inline; margin-right:5px; } }
+  </style>
 </head>
 <body>
-  <main id="admin-main" class="admin-content" tabindex="-1">
-    <section class="admin-card" style="max-width:540px;margin:5vh auto">
-      <div class="admin-brand"><span class="admin-mark" aria-hidden="true">S</span><span>SultraKita Admin</span></div>
-      <h1>Akses Operations Center</h1>
-      <p>Gunakan Google SSO untuk memverifikasi identitas, lalu masukkan admin token yang diterbitkan administrator platform. Credential tidak disimpan di server atau URL.</p>
-      <a class="admin-button admin-button-secondary full" id="google-admin-sso" href="/api/auth/google/admin/start" rel="nofollow">Masuk dengan Google SSO admin</a>
-      <p class="admin-hint">SSO hanya berlaku untuk email yang di-allowlist dan user yang sudah memiliki role backoffice. Jika konfigurasi belum aktif, gunakan jalur provisioning resmi operator.</p>
-      <form id="login-form" class="admin-form-grid" novalidate>
-        <div class="admin-field full"><label for="session">Session bearer</label><input id="session" class="admin-input" type="password" autocomplete="off" required></div>
-        <div class="admin-field full"><label for="admin-token">Admin token</label><input id="admin-token" class="admin-input" type="password" autocomplete="off" required></div>
-        <div class="admin-field full"><button class="admin-button" type="submit">Verifikasi akses</button></div>
-      </form>
-      <p class="admin-status" data-status role="status" aria-live="polite"></p>
-      <p><a href="/">Kembali ke marketplace</a></p>
+  <a class="skip-link" href="#owner-login">Lewati ke login admin</a>
+  <main class="owner-shell" id="owner-login" tabindex="-1">
+    <section class="owner-story" aria-labelledby="owner-title">
+      <a class="owner-brand" href="/" aria-label="Kembali ke SultraKita"><span class="owner-mark">S</span><span>Sultra<strong>Kita</strong></span></a>
+      <div><p class="owner-kicker">Operations center</p><h1 id="owner-title">Jaga marketplace<br><span>tetap dipercaya.</span></h1><p>Ruang kerja privat untuk memoderasi listing, memverifikasi seller, dan menjaga kesehatan SultraKita.</p><div class="owner-points"><div class="owner-point"><b>01</b>Trust seller</div><div class="owner-point"><b>02</b>Moderasi aman</div><div class="owner-point"><b>03</b>Insight lokal</div></div></div>
+      <span class="owner-link">Sulawesi Tenggara · Privat untuk owner</span>
+    </section>
+    <section class="owner-panel" aria-labelledby="login-title">
+      <p class="owner-kicker" style="color:var(--owner-forest);margin-bottom:10px">Pemilik platform</p>
+      <h2 id="login-title">Masuk sebagai admin</h2>
+      <p class="owner-panel-copy">Gunakan satu akun Google resmi untuk membuka Operations Center. Tidak ada token manual dan tidak ada akun admin kedua; admin token legacy tidak digunakan pada alur login ini.</p>
+      <a class="owner-google" id="google-admin-sso" href="/api/auth/google/admin/start" rel="nofollow" aria-label="Masuk dengan Google"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M21.35 12.27c0-.72-.06-1.42-.18-2.09H12v3.96h5.24a4.48 4.48 0 0 1-1.95 2.94v2.45h3.16c1.85-1.7 2.9-4.21 2.9-7.26Z"/><path fill="#34A853" d="M12 21.72c2.65 0 4.88-.88 6.51-2.39l-3.16-2.45c-.88.59-2 .94-3.35.94-2.57 0-4.75-1.74-5.53-4.08H3.2v2.53A9.84 9.84 0 0 0 12 21.72Z"/><path fill="#FBBC05" d="M6.47 13.74A5.91 5.91 0 0 1 6.16 12c0-.61.11-1.2.31-1.74V7.73H3.2A9.84 9.84 0 0 0 2.16 12c0 1.59.38 3.1 1.04 4.27l3.27-2.53Z"/><path fill="#EA4335" d="M12 6.18c1.45 0 2.75.5 3.77 1.48l2.82-2.82C16.87 3.25 14.65 2.28 12 2.28a9.84 9.84 0 0 0-8.8 5.45l3.27 2.53C7.25 7.92 9.43 6.18 12 6.18Z"/></svg><span>Masuk dengan Google</span></a>
+      <p class="owner-status" id="owner-status" role="status" aria-live="polite"></p>
+      <div class="owner-security"><span class="owner-security-icon">⌾</span><div><strong>Akses tunggal dan terverifikasi</strong>Hanya `sultrakitaplatform@gmail.com` yang dapat melewati pemeriksaan identitas, role, dan session server.</div></div>
+      <a class="owner-back" href="/">← Kembali ke marketplace</a>
+      <p class="owner-legal">Aktivitas admin dicatat untuk audit keamanan. Jangan membagikan kode login atau session.</p>
     </section>
   </main>
-  <script src="/admin/js/api.js?v=2"></script>
-  <script src="/admin/js/auth.js?v=2"></script>
-  <script src="/admin/js/components.js?v=2"></script>
+  <script src="/theme.js?v=owner-login-1"></script>
   <script>
     (() => {
-      const form = document.querySelector('#login-form');
-      const googleCode = new URLSearchParams(window.location.search).get('google_admin_code');
-      const requestedNext = new URLSearchParams(window.location.search).get('next') || '/admin/dashboard.html';
-      const setGoogleCode = async () => {
-        if (!googleCode) return;
-        window.history.replaceState({}, document.title, '/admin/index.html');
-        window.AdminUi.setStatus('Identitas Google sedang diverifikasi…');
-        try {
-          const response = await fetch('/api/auth/google/admin/exchange', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ code: googleCode, next: requestedNext }), cache: 'no-store' });
-          const payload = await response.json().catch(() => ({}));
-          if (!response.ok || !payload.success || !payload.data?.token) throw new Error(payload.error || 'SSO Google admin gagal.');
-          document.querySelector('#session').value = payload.data.token;
-          window.AdminUi.setStatus('Identitas Google terverifikasi. Masukkan admin token untuk menyelesaikan akses.');
-          document.querySelector('#admin-token').focus();
-        } catch (error) {
-          window.AdminUi.setStatus(error.message || 'SSO Google admin gagal.', true);
-        }
-      };
-      const target = new URLSearchParams(window.location.search).get('next');
-      const safeNext = target && target.startsWith('/admin/') && !target.startsWith('//') && target !== '/admin/index.html' ? target : '/admin/dashboard.html';
-      setGoogleCode();
-      form.addEventListener('submit', async event => {
-        event.preventDefault();
-        const button = form.querySelector('button');
-        button.disabled = true;
-        window.AdminUi.setStatus('Memverifikasi akses…');
-        try {
-          window.AdminApi.setCredentials(document.querySelector('#session').value, document.querySelector('#admin-token').value);
-          const auth = await window.AdminAuth.checkAdminAuth({ redirect: false });
-          if (!auth) throw new Error('Session atau admin token tidak valid.');
-          window.location.replace(safeNext);
-        } catch (error) {
-          window.AdminApi.clearCredentials();
-          window.AdminUi.setStatus(error.message || 'Akses admin gagal.', true);
-          button.disabled = false;
-        }
-      });
+      const params = new URLSearchParams(location.search);
+      const code = params.get('google_admin_code');
+      const requestedNext = params.get('next') || '/admin/dashboard.html';
+      const status = document.querySelector('#owner-status');
+      const button = document.querySelector('#google-admin-sso');
+      const safeNext = requestedNext.startsWith('/admin/') && !requestedNext.startsWith('//') && requestedNext !== '/admin/index.html' ? requestedNext : '/admin/dashboard.html';
+      const setStatus = (text, error = false) => { status.textContent = text; if (error) status.dataset.tone = 'error'; else delete status.dataset.tone; };
+      if (code) {
+        history.replaceState({}, document.title, '/admin/index.html');
+        button.setAttribute('aria-disabled', 'true');
+        button.style.pointerEvents = 'none';
+        setStatus('Memverifikasi akun Google secara aman…');
+        fetch('/api/auth/google/admin/exchange', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({ code, next:safeNext }), cache:'no-store' }).then(async response => { const body = await response.json().catch(() => ({})); if (!response.ok || !body.success || !body.data?.token) throw new Error(body.error || 'SSO Google admin gagal.'); sessionStorage.setItem('sultra-admin-session', body.data.token); sessionStorage.removeItem('sultra-admin-token'); sessionStorage.setItem('admin_name', body.data.user?.name || body.data.user?.email || 'Owner'); setStatus('Akses terverifikasi. Membuka Operations Center…'); window.location.replace(safeNext); }).catch(error => { setStatus(error.message || 'Akses Google admin gagal.', true); button.removeAttribute('aria-disabled'); button.style.pointerEvents = ''; });
+      }
     })();
   </script>
 </body>

@@ -45,7 +45,7 @@ app.get('/sitemap.xml', async (_req, res, next) => { try { const listings = awai
 app.get('/robots.txt', (_req, res) => res.type('text/plain').send('User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /admin\nSitemap: ' + SITE_URL + '/sitemap.xml\n'));
 
 // Canonical admin shell alias. Existing /admin.html remains available for backward compatibility.
-const sendAdminShell = (_req, res) => { res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate'); res.setHeader('Pragma', 'no-cache'); return res.sendFile(path.join(__dirname, 'public', 'admin.html')); };
+const sendAdminShell = (_req, res) => { res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate'); res.setHeader('Pragma', 'no-cache'); return res.sendFile(path.join(__dirname, 'public', 'admin', 'index.html')); };
 app.get(['/admin', '/admin/', '/admin/login', '/admin/dashboard'], sendAdminShell);
 
 app.use(express.static(path.join(__dirname, 'public'), { setHeaders: (res, filePath) => { if (filePath.endsWith('sw.js') || filePath.endsWith('index.html')) return; if (/\.(?:js|css|woff2?|png|jpe?g|webp|avif|svg|ico|webmanifest)$/.test(filePath)) res.setHeader('Cache-Control', 'public, max-age=31536000, immutable'); } }));
@@ -57,7 +57,7 @@ const ok = (res, data, meta) => res.json({ success: true, data, ...(meta ? { met
 const fail = (res, status, message, details) => res.status(status).json({ success: false, error: message, ...(details ? { details } : {}) });
 const failCode = (res, status, code, message, details) => res.status(status).json({ success: false, code, error: message, ...(details ? { details } : {}) });
 const positiveInt = value => Number.isInteger(Number(value)) && Number(value) > 0;
-const adminOnly = (req, res, next) => { if (!process.env.ADMIN_TOKEN || req.get('x-admin-token') !== process.env.ADMIN_TOKEN) return fail(res, 401, 'Akses admin tidak sah'); next(); };
+const adminOnly = (req, res, next) => { const sessionEmail = String(req.user?.email || '').trim().toLowerCase(); const allowlistedGoogle = adminEmailAllowlist().has(sessionEmail); const legacyToken = Boolean(process.env.ADMIN_TOKEN && req.get('x-admin-token') === process.env.ADMIN_TOKEN); if (!allowlistedGoogle && !legacyToken) return fail(res, 401, 'Akses admin tidak sah'); next(); };
 const auditAdminAction = async (db, req, action, entityType, entityId, metadata = {}) => db.run('INSERT INTO audit_logs (actor_id, action, entity_type, entity_id, metadata, ip_address, user_agent) VALUES (?, ?, ?, ?, ?::jsonb, ?, ?)', [req.user?.id || null, action, entityType, entityId == null ? null : String(entityId), JSON.stringify(metadata), req.ip || null, String(req.get('user-agent') || '').slice(0, 300) || null]);
 const analyticsRateLimit = rateLimit(60_000, Number(process.env.ANALYTICS_TRACK_PER_MINUTE || 120));
 const normalizeEmail = value => { const email = String(value || '').trim().toLowerCase(); return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) && email.length <= 254 ? email : null; };
