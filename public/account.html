@@ -3,25 +3,58 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Dashboard akun SultraKita untuk profil, alamat, keranjang, dan pesanan.">
+  <meta name="description" content="Masuk atau daftar di SultraKita, marketplace lokal untuk Kendari dan Sulawesi Tenggara.">
   <meta name="theme-color" content="#0d5c4b">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <script>(function(){try{var t=localStorage.getItem('sultra-dark');if(t==='true'||(t===null&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('theme-dark-preload')}catch(e){}})();</script>
-  <link rel='stylesheet' href='/styles.css?v=phase8-a11y-1'>
+  <link rel="stylesheet" href="/styles.css?v=phase8-a11y-1">
   <link rel="preconnect" href="https://api.fontshare.com">
   <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&f[]=satoshi@400,500,700,900&display=swap">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap">
-  <link rel="stylesheet" href="/account.css?v=notifications-1">
-  <title>Akun Saya — SultraKita</title>
+  <link rel="stylesheet" href="/account.css?v=auth-modern-1">
+  <title>Masuk atau Daftar — SultraKita</title>
 </head>
 <body class="account-page">
   <a class="skip-link" href="#account-main">Lewati ke konten utama</a>
-  <header class="account-topbar"><a class="brand" href="/"><span class="brand-mark">S</span><span>Sultra<strong>Kita</strong></span></a><div class="account-top-actions"><button class="icon-button theme-toggle" id="theme-toggle" aria-label="Aktifkan mode gelap">◐</button><a class="button button-quiet" href="/">← Kembali ke marketplace</a></div></header>
+  <header class="account-topbar">
+    <a class="brand" href="/" aria-label="SultraKita beranda"><span class="brand-mark">S</span><span>Sultra<strong>Kita</strong></span></a>
+    <div class="account-top-actions"><a class="account-help" href="mailto:SultrakitaPlatform@gmail.com">Butuh bantuan?</a><button class="icon-button theme-toggle" id="theme-toggle" aria-label="Aktifkan mode gelap" aria-pressed="false">◐</button><a class="button button-quiet account-back" href="/">← Beranda</a></div>
+  </header>
+
   <main id="account-main" class="account-shell" tabindex="-1">
-    <section id="login-panel" class="account-login card-surface">
-      <div class="eyebrow"><span class="eyebrow-line"></span>Akun SultraKita</div><h1>Belanja, jual, dan kelola semuanya dari satu tempat.</h1><p class="dialog-help">Pilih OTP WhatsApp atau email. Session disimpan hanya di browser ini.</p>
-      <a class="button button-outline full google-login" href="/api/auth/google/start">Masuk / daftar cepat dengan Google</a><div class="oauth-divider"><span>atau gunakan OTP</span></div><form id="login-form"><div class="otp-channel-choice" role="radiogroup" aria-label="Pilih channel login"><span>Verifikasi via</span><label><input type="radio" name="login_channel" value="whatsapp" checked> WhatsApp</label><label><input type="radio" name="login_channel" value="email"> Email</label></div><label id="login-phone-field">Nomor WhatsApp<input id="login-phone" type="tel" inputmode="tel" placeholder="08xxxxxxxxxx"></label><label id="login-email-field" hidden>Email<input id="login-email" type="email" placeholder="nama@email.com"></label><div class="account-inline"><label>Kode OTP<input id="login-code" inputmode="numeric" placeholder="6 digit" required></label><button class="button button-soft" id="login-otp" type="button">Kirim OTP WhatsApp</button></div><button class="button button-primary full" type="submit">Masuk ke akun</button><p id="login-message" class="form-message" role="status"></p><p class="account-policy-note">Dengan masuk, Anda menyetujui <a href="/terms.html" target="_blank" rel="noopener">Syarat & Ketentuan</a> dan memahami <a href="/privacy.html" target="_blank" rel="noopener">Kebijakan Privasi</a>.</p></form>
+    <section id="login-panel" class="auth-layout" aria-label="Akses akun SultraKita">
+      <div class="auth-story">
+        <div class="story-kicker"><span class="story-kicker-mark">✦</span> Marketplace lokal Sulawesi Tenggara</div>
+        <h1>Temukan yang <em>dekat.</em><br>Jual lebih <em>mudah.</em></h1>
+        <p class="story-lede">Satu akun untuk menemukan barang, menjual produk, dan membuka peluang bersama warga di 17 kabupaten/kota se-Sultra.</p>
+        <div class="trust-stack" aria-label="Keuntungan SultraKita">
+          <div class="trust-item"><span class="trust-icon">✓</span><div><strong>Seller terverifikasi</strong><span>Identitas diperiksa, transaksi lebih tenang</span></div></div>
+          <div class="trust-item"><span class="trust-icon">↗</span><div><strong>Transaksi lebih aman</strong><span>Temukan orang yang benar-benar dekat</span></div></div>
+          <div class="trust-item"><span class="trust-icon">✦</span><div><strong>100% gratis</strong><span>Pasang iklan tanpa komisi tersembunyi</span></div></div>
+        </div>
+        <blockquote class="story-quote"><span class="quote-mark">“</span><p>Akhirnya ada platform lokal yang aman. Motor bekas saya laku dalam 2 hari.</p><footer><span class="quote-avatar">R</span><span><strong>Ibu Rahma</strong><small>Penjual terverifikasi · Kendari</small></span></footer></blockquote>
+        <div class="story-stats" aria-label="Statistik komunitas"><span><strong>2.500+</strong><small>Iklan aktif</small></span><span><strong>17</strong><small>Kab/kota</small></span><span><strong>890+</strong><small>Seller lokal</small></span></div>
+      </div>
+
+      <div class="auth-card card-surface" data-auth-mode="login">
+        <div class="auth-card-heading"><div class="eyebrow"><span class="eyebrow-line"></span>Akun SultraKita</div><h2 id="auth-title">Selamat datang kembali.</h2><p id="auth-subtitle" class="dialog-help">Masuk untuk melanjutkan ke ruang lokalmu.</p></div>
+        <div class="auth-switch" role="tablist" aria-label="Pilih aksi akun"><button class="auth-switch-button is-active" type="button" role="tab" aria-selected="true" data-auth-tab="login">Masuk</button><button class="auth-switch-button" type="button" role="tab" aria-selected="false" data-auth-tab="register">Daftar</button></div>
+        <a class="button button-outline full google-login" href="/api/auth/google/start">Masuk / daftar dengan Google</a>
+        <div class="oauth-divider"><span>atau gunakan OTP</span></div>
+        <form id="login-form" novalidate>
+          <fieldset class="role-fieldset"><legend>Saya ingin</legend><div class="role-choice-grid"><label class="role-choice is-selected"><input type="radio" name="account_role" value="buyer" checked><span class="role-choice-icon">🛒</span><span><strong>Membeli</strong><small>Cari barang &amp; jasa</small></span></label><label class="role-choice"><input type="radio" name="account_role" value="seller"><span class="role-choice-icon">✦</span><span><strong>Menjual</strong><small>Pasang iklan gratis</small></span></label></div></fieldset>
+          <div class="otp-channel-choice" role="radiogroup" aria-label="Pilih channel login"><span>Verifikasi via</span><label><input type="radio" name="login_channel" value="whatsapp" checked> WhatsApp</label><label><input type="radio" name="login_channel" value="email"> Email</label></div>
+          <label id="login-phone-field" class="floating-field"><span>Nomor WhatsApp</span><input id="login-phone" type="tel" inputmode="tel" placeholder="08xxxxxxxxxx" autocomplete="tel"></label>
+          <label id="login-email-field" class="floating-field" hidden><span>Email</span><input id="login-email" type="email" placeholder="nama@email.com" autocomplete="email"></label>
+          <div class="account-inline"><label class="floating-field"><span>Kode OTP</span><input id="login-code" inputmode="numeric" placeholder="6 digit" autocomplete="one-time-code" required></label><button class="button button-soft otp-button" id="login-otp" type="button">Kirim OTP WhatsApp</button></div>
+          <button class="button button-primary full auth-submit" type="submit"><span id="auth-submit-label">Masuk ke akun</span><span aria-hidden="true">→</span></button>
+          <p id="login-message" class="form-message" role="status" aria-live="polite"></p>
+          <p class="account-policy-note">Dengan melanjutkan, Anda menyetujui <a href="/terms.html" target="_blank" rel="noopener">Syarat &amp; Ketentuan</a> dan memahami <a href="/privacy.html" target="_blank" rel="noopener">Kebijakan Privasi</a>.</p>
+        </form>
+        <div class="auth-benefits"><span>✦ Gratis pasang iklan</span><span>✓ Komunitas lokal</span><span>⌖ Jangkauan se-Sultra</span></div>
+      </div>
     </section>
+
     <section id="dashboard" hidden>
       <div class="account-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span>Ruang pribadi</div><h1 id="welcome">Dashboard saya</h1><p id="account-status" class="dialog-help"></p></div><button id="logout" class="button button-outline">Keluar</button></div>
       <div class="account-grid">
@@ -33,6 +66,7 @@
       </div>
     </section>
   </main>
-  <footer class="account-policy-footer"><a href="/terms.html">Syarat & Ketentuan</a><a href="/privacy.html">Kebijakan Privasi</a><a href="mailto:SultrakitaPlatform@gmail.com">Kontak privasi</a></footer><script src="/policy-consent.js?v=policy-v1"></script><script src="/account.js?v=notifications-1"></script>
+  <footer class="account-policy-footer"><span>Ruang aman bersama</span><a href="/terms.html">Syarat &amp; Ketentuan</a><a href="/privacy.html">Kebijakan Privasi</a><a href="mailto:SultrakitaPlatform@gmail.com">Kontak privasi</a></footer>
+  <script src="/policy-consent.js?v=policy-v1"></script><script src="/account.js?v=auth-modern-1"></script>
 </body>
 </html>
