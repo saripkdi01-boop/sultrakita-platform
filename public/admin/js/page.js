@@ -160,10 +160,11 @@
   }
 
   async function users() {
-    base('Pengguna', 'Cari dan filter pengguna. PII hanya dikirim bila permission server mengizinkan.', '<form id="filter-form" class="admin-toolbar"><div class="admin-toolbar-group"><input class="admin-input" name="search" placeholder="Cari nama atau email" aria-label="Cari pengguna"><select class="admin-select" name="role" aria-label="Filter role"><option value="">Semua role</option><option value="buyer">Buyer</option><option value="seller">Seller</option><option value="admin">Admin</option></select><button class="admin-button" type="submit">Cari</button></div></form><div id="data-table" class="admin-empty">Memuat…</div>');
+    const initialSearch = new URLSearchParams(window.location.search).get('search') || '';
+    base('Pengguna', 'Cari dan filter pengguna. PII hanya dikirim bila permission server mengizinkan.', `<form id="filter-form" class="admin-toolbar"><div class="admin-toolbar-group"><input class="admin-input" name="search" value="${esc(initialSearch)}" placeholder="Cari nama atau email" aria-label="Cari pengguna"><select class="admin-select" name="role" aria-label="Filter role"><option value="">Semua role</option><option value="buyer">Buyer</option><option value="seller">Seller</option><option value="admin">Admin</option></select><button class="admin-button" type="submit">Cari</button></div></form><div id="data-table" class="admin-empty">Memuat…</div>`);
     const load = async (search = '', role = '') => { const data = await api.request(`/api/admin/v2/users?${utils.query({ search, role, limit: 100 })}`); ui.table('#data-table', [{ key: 'id', label: 'ID' }, { key: 'name', label: 'Nama' }, { key: 'email', label: 'Email / Telepon', render: row => esc(row.email || row.phone || '—') }, { key: 'role', label: 'Role', render: row => ui.badge(row.role) }, { key: 'verification_status', label: 'Verifikasi' }, { key: 'created_at', label: 'Bergabung', render: row => utils.date(row.created_at) }], data, 'Pengguna tidak ditemukan.'); };
     document.querySelector('#filter-form').addEventListener('submit', event => { event.preventDefault(); const form = new FormData(event.currentTarget); load(form.get('search'), form.get('role')).catch(error => ui.setStatus(error.message, true)); });
-    await load();
+    await load(initialSearch);
   }
 
   async function listings() {
