@@ -1,8 +1,4 @@
-# Audit sidebar publik
 
-URL: https://sultrakita-platform.vercel.app/
-Tanggal audit: 2026-08-29
+## Verifikasi setelah deployment 533bf6c
 
-Deployment publik memang memuat versi lama: drawer hanya berisi `Pintasan` berupa karakter `▣`, `♧`, `▥`, `♥`, serta `Menu` berupa tombol teks tanpa ikon. Rail desktop juga menampilkan karakter teks untuk navigasi. Markup publik belum memuat class baru seperti `shortcut-grid`, `accordion-trigger`, `upgrade-card`, atau `nav-icon` yang sudah ada di branch source.
-
-Temuan deployment: topbar, composer, listing feed, right rail, dan drawer lama terlihat aktif. Ini berarti branch `feat/mobile-fb-ui` belum menjadi deployment production atau Vercel project masih terhubung ke branch/commit lain. Perbaikan berikutnya harus memastikan ikon SVG ditulis langsung ke markup atau di-inject dari `app.js`, lalu branch/production deployment diverifikasi.
+Markup publik sudah berganti ke drawer baru (`shortcut-grid`, `accordion-trigger`, `upgrade-card`) dan deployment production commit `533bf6c` berstatus READY. Namun computed style `.nav-icon svg` pada URL publik menunjukkan `width: 300px`, `height: 150px`, `fill: black`, `stroke: none`, artinya aturan CSS ikon SVG belum terambil atau masih terkena cache asset lama. Solusi: bump query cache-buster stylesheet/app.js dan tambahkan aturan SVG yang eksplisit.
