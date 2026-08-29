@@ -260,3 +260,63 @@ body, .app-shell { font-family: var(--fb-font); background:var(--fb-bg); color:v
 }
 
 /* End v5 polish layer. */
+
+
+/* Compact help card and footer refinement v6. */
+.help-strip {
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  align-items:center;
+  gap:12px 16px;
+  margin-top:16px;
+  padding:14px 16px;
+  border-radius:14px;
+  box-shadow:0 8px 22px rgba(24,39,35,.06);
+}
+.help-strip .help-icon {
+  display:grid;
+  place-items:center;
+  width:32px;
+  height:32px;
+  border-radius:10px;
+  font-size:14px;
+  font-weight:800;
+}
+.help-strip strong { display:block; margin-bottom:2px; font-size:12px; line-height:1.25; }
+.help-strip > div > span { display:block; color:var(--fb-text-2); font-size:10px; line-height:1.4; }
+.help-strip > a { white-space:nowrap; font-size:10px; font-weight:800; }
+.site-footer { margin-top:14px; border-radius:14px; }
+.site-footer-main {
+  grid-template-columns:minmax(1.35fr,1.55fr) repeat(3,minmax(92px,1fr));
+  gap:20px;
+  padding:21px 18px 19px;
+}
+.site-footer-brand { gap:8px; }
+.site-footer-mark { width:30px; height:30px; font-size:13px; }
+.site-footer-brand strong { font-size:14px; }
+.site-footer-brand small { margin-top:3px; font-size:9px; }
+.site-footer-brand-block > p { max-width:230px; margin:11px 0 13px; font-size:10px; line-height:1.45; }
+.site-footer-socials { gap:6px; }
+.site-footer-socials a { padding:5px 7px; border-radius:6px; font-size:9px; }
+.site-footer-column { gap:7px; }
+.site-footer-column h3 { margin:1px 0 3px; font-size:11px; }
+.site-footer-column a, .site-footer-note { font-size:10px; line-height:1.3; }
+.site-footer-bottom { justify-content:flex-start; gap:6px 14px; padding:10px 18px 11px; font-size:9px; }
+.site-footer-bottom span:last-child { margin-left:auto; }
+@media (max-width:767px) {
+  .help-strip { grid-template-columns:auto minmax(0,1fr); gap:9px 10px; padding:12px 13px; }
+  .help-strip > a { grid-column:2; justify-self:start; }
+  .help-strip .help-icon { width:29px; height:29px; border-radius:9px; }
+  .site-footer-main { grid-template-columns:minmax(0,1.35fr) repeat(2,minmax(0,1fr)); gap:17px 13px; padding:18px 14px 16px; }
+  .site-footer-brand-block { grid-column:1 / -1; }
+  .site-footer-brand-block > p { max-width:300px; margin-block:9px 11px; }
+  .site-footer-column { gap:6px; }
+  .site-footer-bottom { padding-inline:14px; }
+  .site-footer-bottom span:last-child { flex-basis:100%; margin-left:0; }
+}
+@media (max-width:420px) {
+  .help-strip > div > span { max-width:235px; }
+  .site-footer-main { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .site-footer-brand-block { grid-column:1 / -1; }
+  .site-footer-bottom { display:grid; grid-template-columns:1fr; gap:4px; }
+}
