@@ -191,3 +191,48 @@ button, a { -webkit-tap-highlight-color: transparent; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
+
+/* V2 shell recovery: one visible primary navigation per breakpoint. */
+.icon-tabbar .tab-label { display: none; }
+.icon-tabbar .tab { min-width: 0; }
+
+@media (min-width: 768px) and (max-width: 1199px) {
+  .icon-tabbar { display: flex !important; max-width: 760px; margin: 0 auto; padding: 8px 16px !important; gap: 6px !important; overflow-x: auto; scrollbar-width: none; }
+  .icon-tabbar::-webkit-scrollbar { display: none; }
+  .icon-tabbar .tab { flex: 0 0 auto; display: inline-flex !important; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 999px; color: var(--color-text-secondary); }
+  .icon-tabbar .tab-label { display: inline; font-size: 12px; font-weight: 700; }
+  .icon-tabbar .tab.active { background: var(--color-primary-soft); color: var(--color-primary); }
+  .layout { display: grid !important; grid-template-columns: 72px minmax(0, 760px) !important; gap: 20px !important; align-items: start; }
+  .left-rail { display: block !important; min-width: 72px; }
+  .left-rail .rail-profile > div, .left-rail .rail-more, .left-rail .rail-label, .left-rail .rail-link > span:not(.nav-icon), .left-rail .rail-link > em, .left-rail .rail-link > b, .left-rail .rail-note, .left-rail .rail-footer { display: none !important; }
+  .left-rail .rail-profile { justify-content: center; padding: 8px 0 18px; }
+  .left-rail .rail-nav { gap: 8px !important; }
+  .left-rail .rail-link { justify-content: center; width: 56px; height: 56px; margin-inline: auto; padding: 0 !important; }
+  .left-rail .nav-icon { width: 24px; height: 24px; }
+  .right-rail { display: none !important; }
+  .bottom-nav-mobile { display: none !important; }
+}
+
+@media (max-width: 767px) {
+  .icon-tabbar { display: flex !important; position: relative; z-index: 2; width: 100%; padding: 8px 12px !important; gap: 4px !important; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; border-bottom: 1px solid var(--color-border); background: var(--color-surface); }
+  .icon-tabbar::-webkit-scrollbar { display: none; }
+  .icon-tabbar .tab { flex: 1 0 auto; min-width: 82px; display: inline-flex !important; align-items: center; justify-content: center; gap: 6px; padding: 9px 10px; border-radius: 999px; color: var(--color-text-secondary); }
+  .icon-tabbar .tab-label { display: inline; font-size: 11px; font-weight: 750; white-space: nowrap; }
+  .icon-tabbar .tab.active { background: var(--color-primary-soft); color: var(--color-primary); }
+  .icon-tabbar .tab-icon { width: 20px; height: 20px; }
+  .bottom-nav-mobile { display: none !important; }
+  .layout { padding-top: 16px !important; }
+}
+
+@media (min-width: 1200px) {
+  .icon-tabbar { display: none !important; }
+  .layout { grid-template-columns: 248px minmax(0, 700px) 280px !important; }
+}
+
+/* Never let pagination/filter controls create a second horizontal page. */
+.filter-row, .pagination, .pager, .chip-row { max-width: 100%; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
+.filter-row::-webkit-scrollbar, .pagination::-webkit-scrollbar, .pager::-webkit-scrollbar, .chip-row::-webkit-scrollbar { display: none; }
+@media (max-width: 767px) {
+  .filter-row, .pagination, .pager, .chip-row { padding-bottom: 2px; }
+  .pagination a, .pagination button, .pager a, .pager button { flex: 0 0 auto; }
+}
