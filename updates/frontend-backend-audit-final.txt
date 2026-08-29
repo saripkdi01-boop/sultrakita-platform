@@ -1,0 +1,138 @@
+FRONTEND API
+'/api/auth/request-otp
+'/api/auth/verify-otp
+'/api/categories
+'/api/community/summary
+'/api/conversations
+'/api/conversations/
+'/api/donation/campaigns
+'/api/donations
+'/api/favorites
+'/api/listings
+'/api/listings/
+'/api/listings?
+'/api/notifications
+'/api/notifications/
+'/api/reports
+'/api/stats
+'/api/suggestions
+
+BACKEND API
+app.delete('/api/admin/rbac/assignments/:userId
+app.delete('/api/cart/items/:id
+app.delete('/api/favorites
+app.delete('/api/listings/:id
+app.delete('/api/search-history
+app.get('/api/admin/audit-logs
+app.get('/api/admin/donations/analytics
+app.get('/api/admin/feature-flags
+app.get('/api/admin/overview
+app.get('/api/admin/rbac/assignments
+app.get('/api/admin/rbac/me
+app.get('/api/admin/rbac/roles
+app.get('/api/admin/reports
+app.get('/api/admin/system/roles
+app.get('/api/admin/system/settings
+app.get('/api/admin/verifications
+app.get('/api/admin/webhook-logs
+app.get('/api/admin/webhook-logs/stream
+app.get('/api/analytics/summary
+app.get('/api/auth/google/admin/callback
+app.get('/api/auth/google/admin/start
+app.get('/api/auth/google/callback
+app.get('/api/auth/google/start
+app.get('/api/broadcasts
+app.get('/api/cart
+app.get('/api/categories
+app.get('/api/community/summary
+app.get('/api/conversations/:id/messages
+app.get('/api/conversations/:id/stream
+app.get('/api/donation/campaigns
+app.get('/api/donation/stats
+app.get('/api/donations/:transaction_id
+app.get('/api/external-cards
+app.get('/api/external-jobs
+app.get('/api/external-listings
+app.get('/api/health
+app.get('/api/listings
+app.get('/api/listings/:id
+app.get('/api/listings/:id/comments
+app.get('/api/listings/:id/images
+app.get('/api/locations
+app.get('/api/me
+app.get('/api/me/addresses
+app.get('/api/notifications
+app.get('/api/orders
+app.get('/api/orders/:id
+app.get('/api/public-config
+app.get('/api/search-history
+app.get('/api/seller/onboarding
+app.get('/api/sellers/:id
+app.get('/api/stats
+app.get('/api/users/:id
+app.patch('/api/admin/feature-flags/:key
+app.patch('/api/admin/reports/:id
+app.patch('/api/admin/system/settings/:key
+app.patch('/api/admin/verifications/:id
+app.patch('/api/cart/items/:id
+app.patch('/api/listings/:id/status
+app.patch('/api/me
+app.patch('/api/offers/:id
+app.patch('/api/seller/onboarding
+app.post('/api/admin/catalog/import-url
+app.post('/api/admin/catalog/import-urls
+app.post('/api/admin/donations/:transaction_id/:operation
+app.post('/api/admin/external-jobs/import-url
+app.post('/api/admin/external-jobs/import-urls
+app.post('/api/admin/telegram/set-webhook
+app.post('/api/analytics/track
+app.post('/api/auth/google/admin/exchange
+app.post('/api/auth/google/exchange
+app.post('/api/auth/logout
+app.post('/api/auth/request-otp
+app.post('/api/auth/verify-otp
+app.post('/api/cart/items
+app.post('/api/checkout
+app.post('/api/comments
+app.post('/api/conversations
+app.post('/api/conversations/:id/messages
+app.post('/api/dev/whatsapp-webhook
+app.post('/api/donation/webhook
+app.post('/api/donation/webhook/aulaa
+app.post('/api/donations
+app.post('/api/favorites
+app.post('/api/listings
+app.post('/api/listings/:id/images
+app.post('/api/listings/:id/promote
+app.post('/api/me/addresses
+app.post('/api/notifications/:id/read
+app.post('/api/offers
+app.post('/api/orders/:id/reviews
+app.post('/api/reports
+app.post('/api/search-history
+app.post('/api/seller-verifications
+app.post('/api/seller/onboarding/finalize
+app.post('/api/seller/onboarding/suggest
+app.post('/api/shipping/quotes
+app.post('/api/suggestions
+app.post('/api/telegram/webhook
+app.post('/api/uploads/commit
+app.post('/api/uploads/presign
+app.post('/api/users
+app.put('/api/admin/rbac/assignments/:userId
+app.put('/api/listings/:id
+
+PLACEHOLDER CHECK
+public/index.html:17:    <header class="topbar classic-topbar"><div class="topbar-inner"><button class="icon-btn menu-trigger" id="drawer-toggle" aria-label="Buka menu"><svg><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><a class="brand" href="#beranda" aria-label="SultraKita beranda"><span class="brand-mark">S</span><span class="brand-word">Sultra<span class="brand-accent">Kita</span></span></a><div class="top-actions"><button class="icon-btn" id="create-toggle" aria-label="Buat listing" data-sheet="create"><svg><path d="M12 5v14M5 12h14"/></svg></button><button class="icon-btn" id="search-toggle" aria-label="Cari"><svg><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg></button><a class="icon-btn wa-btn" href="https://wa.me/?text=Halo%20SultraKita" target="_blank" rel="noopener" aria-label="Chat WhatsApp"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="currentColor" stroke="none"/><path d="M8.1 7.6c.3-.4.8-.5 1.2-.2l1.4 1.1c.4.3.5.8.3 1.2l-.6 1c.6 1.2 1.5 2.1 2.7 2.7l1-.6c.4-.2.9-.1 1.2.3l1.1 1.4c.3.4.2.9-.2 1.2-.7.6-1.7.8-2.6.4-3.2-1.3-5.4-3.5-6.7-6.7-.4-.9-.2-1.9.4-2.6Z" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a><button class="theme-indicator" data-action="theme-toggle" data-theme-toggle type="button" aria-label="Ganti tema"><span></span></button></div></div><div class="searchbar" id="searchbar"><svg><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg><input id="search-input" placeholder="Cari listing, seller, atau distrik" autocomplete="off"><button id="search-submit">Cari</button></div></header>
+public/index.html:18:    <nav class="tabbar icon-tabbar" aria-label="Navigasi utama"><a class="tab active" href="#beranda" data-view="home" aria-label="Beranda"><span class="tab-icon"><svg><use href="#i-home"/></svg></span></a><a class="tab" href="#video" data-view="video" aria-label="Video"><span class="tab-icon"><svg><path d="m9 7 9 5-9 5V7Z"/></svg></span></a><a class="tab" href="#komunitas" data-view="community" aria-label="Komunitas"><span class="tab-icon"><svg><use href="#i-community"/></svg></span></a><a class="tab" href="#dasbor" data-view="dashboard" aria-label="Dasbor"><span class="tab-icon"><svg><use href="#i-chart"/></svg></span></a><a class="tab" href="#notifikasi" data-view="notifications" aria-label="Notifikasi"><span class="tab-icon badge-wrap"><svg><use href="#i-bell"/></svg><b id="notification-badge">3</b></span></a><a class="tab" href="#profil" data-view="profile" aria-label="Profil"><span class="avatar avatar-xs">A</span></a></nav>
+public/index.html:22:      <aside class="right-rail"><section class="side-card"><div class="side-title"><strong>Partner picks</strong><a href="#jelajah">Lihat semua</a></div><div class="partner"><span class="partner-logo">K</span><div><strong>Kendari Kreatif</strong><small>UMKM · 4,9 ★</small></div><button class="follow-btn" data-follow="partner-1">Ikuti</button></div><div class="partner"><span class="partner-logo orange">S</span><div><strong>Sultra Sehat</strong><small>Layanan · 4,8 ★</small></div><button class="follow-btn" data-follow="partner-2">Ikuti</button></div></section><section class="side-card donation-side"><span class="eyebrow">Gerakan hari ini</span><h3>Bantu sekolah pesisir</h3><p>Rp 18,4 jt terkumpul dari 421 warga.</p><div class="progress"><i style="width:74%"></i></div><button class="primary full" data-sheet="donation">Ikut berdonasi</button></section></aside>
+public/app.js:25:function community(){return `<section class="section-card"><span class="eyebrow">Ruang warga</span><h2>Komunitas Sultra</h2><p id="community-copy">Berbagi kabar, rekomendasi seller, dan bantuan untuk sesama warga.</p><div class="metric-grid" id="community-metrics"><div class="metric"><strong>—</strong><span>Komentar aktif</span></div><div class="metric"><strong>—</strong><span>Saran warga</span></div><div class="metric"><strong>—</strong><span>Pendukung</span></div><div class="metric"><strong>24</strong><span>Komunitas lokal</span></div></div></section><section class="section-card"><h2>Saran untuk SultraKita</h2><p class="meta">Apa yang perlu kami hadirkan berikutnya?</p><form class="form" id="suggestion-form"><input name="name" placeholder="Nama kamu" required><textarea name="suggestion" rows="3" placeholder="Tulis saran..." required></textarea><button class="primary" type="submit">Kirim saran</button></form></section>`}
+public/app.js:29:function profile(){return `<section class="section-card" style="padding:0;overflow:hidden"><div class="profile-cover"></div><div class="profile-hero"><div class="avatar">${esc((state.user.name||'Warga Sultra')[0])}</div><h1>${esc(state.user.name||'Warga Sultra')}</h1><p class="meta">Seller lokal · Kendari, Sulawesi Tenggara</p><div class="profile-actions"><button class="primary" data-view-target="dashboard">Dasbor</button><button class="primary secondary" data-sheet="create">Buat</button></div><div class="tabs"><a class="active">Postingan</a><a>Listing</a><a>Info</a></div></div></section><section class="section-card"><h2>Masuk dengan OTP</h2><p class="meta">Gunakan nomor WhatsApp untuk mengelola profil dan listing.</p><form class="form" id="otp-form"><input name="phone" inputmode="tel" placeholder="08xxxxxxxxxx" required><input name="code" inputmode="numeric" placeholder="Kode OTP (isi untuk verifikasi)"><button class="primary" type="submit">Kirim / verifikasi OTP</button></form></section><section class="section-card"><h2>Kepercayaan seller</h2><p class="meta">Ajukan verifikasi untuk mendapatkan lencana seller terverifikasi.</p><button class="primary secondary" type="button" disabled>Verifikasi seller segera hadir</button></section>`}
+public/app.js:35:function openSheet(type){const c=$('#sheet-content');c.innerHTML=type==='create'?`<h2>Buat postingan</h2><form class="form" id="listing-form"><input name="title" placeholder="Judul listing" required><input name="price" type="number" placeholder="Harga (Rp)"><select name="category_id"><option value="">Pilih kategori</option></select><input name="district" placeholder="Distrik" value="Kendari"><textarea name="description" rows="3" placeholder="Deskripsi"></textarea><label class="meta" for="listing-images">Foto listing (maks. 5, JPG/PNG/WEBP)</label><input id="listing-images" name="images" type="file" accept="image/jpeg,image/png,image/webp" multiple><div id="image-preview" class="image-preview"></div><button class="primary" type="submit">Kirim untuk ditinjau</button></form>`:type==='search'?`<h2>Filter pencarian</h2><form class="form" id="filter-form"><input name="q" placeholder="Cari listing" value="${esc(state.query)}"><input name="district" placeholder="Distrik" value="${esc(state.district)}"><select name="sort"><option value="newest">Terbaru</option><option value="cheapest">Harga terendah</option><option value="expensive">Harga tertinggi</option></select><button class="primary" type="submit">Terapkan filter</button></form>`:`<h2>Ikut gerakan sekolah pesisir</h2><p class="meta">Frontend tidak mengubah status donasi; status final hanya berasal dari webhook backend.</p><form class="form" id="donation-form"><input name="campaign_id" type="number" value="1" placeholder="ID kampanye" required><input name="amount" type="number" min="10000" placeholder="Nominal donasi" required><input name="donor_name" placeholder="Nama donatur" required><button class="primary" type="submit">Lanjut ke pembayaran</button></form>`;$('#sheet').classList.add('open');$('#sheet-backdrop').classList.add('open');const cat=c.querySelector('[name=category_id]');if(cat)cat.innerHTML='<option value="">Pilih kategori</option>'+state.categories.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('');wireImagePreview(c)}
+public/app.js:36:function openChat(id){const l=state.listings.find(x=>Number(x.id)===Number(id))||fallbackListings.find(x=>Number(x.id)===Number(id))||{};$('#sheet-content').innerHTML=`<h2>Chat seller</h2><p class="meta">${esc(l.title||'Listing SultraKita')}</p><form class="form" id="chat-form"><input type="hidden" name="listing_id" value="${Number(id)}"><input type="hidden" name="seller_id" value="${Number(l.seller_id||0)}"><textarea name="body" rows="4" required placeholder="Tulis pertanyaan tentang listing ini..."></textarea><button class="primary" type="submit">Kirim pesan</button></form>`;$('#sheet').classList.add('open');$('#sheet-backdrop').classList.add('open')}
+
+STATUS
+## [32mmain[m...[31morigin/main[m
+ [31mM[m public/app.js
+[31m??[m updates/frontend-backend-audit-final.txt
+[31m??[m updates/frontend-backend-audit-inventory.txt
