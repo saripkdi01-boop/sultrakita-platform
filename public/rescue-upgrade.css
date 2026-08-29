@@ -253,3 +253,21 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .classic-topbar .top-actions .wa-btn { display: none !important; }
   .classic-topbar .top-actions { flex: 0 0 auto !important; }
 }
+
+/* Evidence-based polish pass from 390px/834px renders. */
+@media (max-width: 767px) {
+  .icon-tabbar { display: grid !important; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 2px !important; overflow-x: visible !important; padding-inline: 8px !important; }
+  .icon-tabbar .tab { min-width: 0 !important; width: 100%; flex: none !important; flex-direction: column; gap: 3px !important; padding: 8px 2px !important; }
+  .icon-tabbar .tab-label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; font-size: clamp(8px, 2.6vw, 10px) !important; line-height: 1.15; white-space: nowrap; }
+  .icon-tabbar .tab-icon { flex: 0 0 20px; }
+  .icon-tabbar .tab-icon svg { width: 19px !important; height: 19px !important; }
+  .marketplace-section .section-head { display: block !important; }
+  .marketplace-section .section-head > div:last-child { display: flex !important; justify-content: flex-start; gap: 8px; margin-top: 12px; }
+  .marketplace-section .section-head h1 { max-width: 12ch; margin-bottom: 4px !important; }
+  .discovery-grid a { min-height: 82px !important; }
+  .discovery-grid a .shortcut-icon, .discovery-grid a svg { transform: scale(.88); }
+}
+@media (min-width: 768px) and (max-width: 1199px) {
+  .icon-tabbar .tab { min-width: 104px; justify-content: center; }
+  .marketplace-section .section-head { align-items: flex-start; }
+}
