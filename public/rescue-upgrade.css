@@ -308,3 +308,28 @@ button, a { -webkit-tap-highlight-color: transparent; }
 @media (max-width: 767px) {
   html { scroll-padding-top: 118px; }
 }
+
+/* Production screenshot fix: harden full-viewport behavior after all legacy rules. */
+@media (max-width: 1199px) {
+  html, body, #app { width: 100% !important; min-width: 0 !important; max-width: none !important; }
+  body { overflow-x: hidden !important; }
+  .classic-topbar, .classic-topbar .topbar-inner, .classic-topbar > .icon-tabbar { width: 100% !important; max-width: none !important; }
+  .classic-topbar .topbar-inner { flex-wrap: nowrap !important; }
+  .classic-topbar .searchbar:not(.open) { display: none !important; }
+  .classic-topbar .searchbar.open { display: flex !important; position: static !important; width: auto !important; max-width: none !important; margin: 0 12px 8px !important; }
+  .layout { display: block !important; width: 100% !important; max-width: none !important; box-sizing: border-box !important; padding-inline: max(12px, env(safe-area-inset-left)) max(12px, env(safe-area-inset-right)) !important; }
+  .feed-column { display: block !important; width: 100% !important; max-width: none !important; min-width: 0 !important; margin: 0 !important; }
+  .left-rail, .right-rail { display: none !important; }
+  .composer, .discovery-card, .marketplace-section, .listing-card { width: 100% !important; max-width: none !important; box-sizing: border-box !important; }
+}
+@media (min-width: 768px) and (max-width: 1199px) {
+  .layout { padding-inline: 16px !important; }
+  .classic-topbar > .icon-tabbar { padding-inline: 16px !important; }
+  .icon-tabbar .tab { min-width: 0 !important; flex: 1 1 0 !important; }
+}
+@media (max-width: 767px) {
+  .layout { padding-inline: 12px !important; }
+  .icon-tabbar { display: grid !important; grid-template-columns: repeat(6, minmax(0, 1fr)) !important; overflow: hidden !important; }
+  .icon-tabbar .tab { min-width: 0 !important; flex: none !important; }
+  .icon-tabbar .tab-label { font-size: clamp(9px, 2.7vw, 11px) !important; }
+}
