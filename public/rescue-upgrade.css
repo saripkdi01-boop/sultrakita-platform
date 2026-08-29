@@ -236,3 +236,20 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .filter-row, .pagination, .pager, .chip-row { padding-bottom: 2px; }
   .pagination a, .pagination button, .pager a, .pager button { flex: 0 0 auto; }
 }
+
+/* V3 architectural rescue: the existing drawer becomes a left off-canvas navigation surface. */
+.drawer { left: 0 !important; right: auto !important; width: min(88vw, 360px) !important; height: 100dvh !important; max-height: 100dvh !important; padding-top: env(safe-area-inset-top) !important; padding-bottom: env(safe-area-inset-bottom) !important; border-left: 0 !important; border-right: 1px solid var(--color-border) !important; transform: translate3d(-105%, 0, 0) !important; }
+.drawer.open { transform: translate3d(0, 0, 0) !important; }
+.drawer-backdrop { z-index: 89 !important; }
+.drawer { z-index: 90 !important; }
+.drawer-head { min-height: 64px; }
+.drawer-close { min-width: 44px !important; min-height: 44px !important; }
+.drawer-open { overflow: hidden !important; overscroll-behavior: none; }
+@media (max-width: 767px) {
+  .drawer { width: min(88vw, 360px) !important; }
+  .topbar.classic-topbar .topbar-inner { min-height: 64px !important; }
+  .classic-topbar .menu-trigger { display: grid !important; flex: 0 0 44px !important; width: 44px !important; min-height: 44px !important; }
+  .classic-topbar .brand { min-width: 0 !important; flex: 1 1 auto !important; }
+  .classic-topbar .top-actions .wa-btn { display: none !important; }
+  .classic-topbar .top-actions { flex: 0 0 auto !important; }
+}

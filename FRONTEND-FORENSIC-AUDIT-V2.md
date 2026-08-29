@@ -34,3 +34,9 @@ Runtime lokal berhasil memuat data demo dan existing create flow tetap terbuka m
 - `FRONTEND-FORENSIC-AUDIT-V2.md`: audit dan kontrak breakpoint.
 
 Tidak ada perubahan pada database, skema Supabase, endpoint API, autentikasi, atau route existing.
+
+## V3 follow-up implementation
+
+Instruksi lanjutan meminta architectural rescue, sehingga perubahan V3 tidak hanya menambah warna. Drawer existing kini benar-benar berperilaku sebagai **left off-canvas drawer** dengan lebar maksimum 360px, tinggi `100dvh`, safe-area, overlay, body scroll lock, animasi, focus restoration, focus trap, dan penutupan melalui Escape/backdrop. Primary navigation tetap berasal dari markup existing yang sama dan tidak dibuat ulang sebagai sistem kedua.
+
+Browser QA berhasil membuka drawer dari hamburger. Drawer menampilkan `Menu SultraKita`, profile Alex Sultra, CTA seller, shortcut Marketplace/Komunitas/Insight/Donasi/Notifikasi/Tersimpan, bantuan, pengaturan, dan CTA upgrade. Data flow dan endpoint tidak diubah.
