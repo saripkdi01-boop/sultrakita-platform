@@ -12,6 +12,7 @@ const adminApiV2 = require('./api/admin');
 const { adminEmailAllowlist, adminGoogleRedirectUri, adminGoogleConfigured, createState, createAdminState, verifyAdminState, createExchangeCode, hashExchangeCode, safeAdminNext, parseCookie, setAdminOAuthCookies, clearAdminOAuthCookies, googleAuthorizationUrl, fetchVerifiedGoogleProfile } = require('./google-admin-sso');
 const { SITE_URL, slugify, listingPage, collectionPage, absolute } = require('./seo');
 const { createWhatsAppWebhookRouter } = require('./api/whatsapp-webhook');
+const { createAccountSettingsRouter } = require('./api/account-settings');
 const { CATEGORIES, REGIONS, ALL_DISTRICTS } = require('./shared/taxonomy');
 
 dotenv.config();
@@ -55,6 +56,7 @@ app.use('/api', rateLimit());
 // Section 4 adapter is additive; existing /api/admin endpoints remain untouched for backward compatibility.
 app.use('/api/admin/v2', adminApiV2);
 app.use('/api/webhooks', createWhatsAppWebhookRouter({ query, run }));
+app.use('/api/account', createAccountSettingsRouter());
 
 const ok = (res, data, meta) => res.json({ success: true, data, ...(meta ? { meta } : {}) });
 const fail = (res, status, message, details) => res.status(status).json({ success: false, error: message, ...(details ? { details } : {}) });
