@@ -14,9 +14,9 @@
     const item=document.createElement('a');
     item.className=compact?'drawer-registry-item':'settings-registry-item';
     item.dataset.featureId=feature.id;
-    item.dataset.status=feature.status;
+    item.dataset.status=feature.status;item.title=feature.status==='coming_soon'?'Fitur segera hadir':feature.title;
     item.setAttribute('aria-label',feature.title);
-    if(feature.route&&feature.status==='active'){item.href=feature.route;const anchor=feature.route.split('#')[1];if(anchor&&(location.hash==='#'+anchor||(!location.hash&&feature.id==='account')))item.classList.add('active');}
+    if(feature.route&&feature.status==='active'){item.href=feature.route;const anchor=feature.route.split('#')[1];if(anchor&&(location.hash==='#'+anchor||(!location.hash&&feature.id==='account'))){item.classList.add('active');item.setAttribute('aria-current','page');}}
     else {item.href='#';item.setAttribute('aria-disabled','true');item.addEventListener('click',event=>event.preventDefault());}
     const icon=document.createElement('span');icon.className=compact?'drawer-setting-icon':'settings-icon';icon.setAttribute('aria-hidden','true');const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 24 24');const use=document.createElementNS('http://www.w3.org/2000/svg','use');use.setAttribute('href','#i-'+feature.iconKey);svg.appendChild(use);icon.appendChild(svg);
     const copy=document.createElement('span');copy.className=compact?'drawer-registry-copy':'settings-registry-copy';
