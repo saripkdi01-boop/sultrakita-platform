@@ -437,3 +437,132 @@ html[data-theme="light"] .bottom-nav-mobile a.active { color: #1877f2 !important
 html[data-theme="light"] .bottom-nav-mobile a[data-sheet="create"] { color: #65676b !important; background: transparent !important; }
 html[data-theme="light"] .theme-indicator { background: #fff !important; border-color: #ccd0d5 !important; }
 @media (max-width: 420px) { .composer-actions { gap: 2px !important; } .composer-actions button { padding-inline: 2px !important; font-size: 11px !important; } .composer-actions .action-icon { width: 24px !important; height: 24px !important; flex-basis: 24px !important; } .bottom-nav-mobile { padding-inline: 4px !important; } }
+
+
+/* SultraKita bottom navigation v6 — compact signal dock for mobile and tablet. */
+@media (max-width: 1199px) {
+  :root { --bottom-nav-height: 64px; }
+  html { scroll-padding-bottom: calc(82px + env(safe-area-inset-bottom)); }
+  body { padding-bottom: calc(82px + env(safe-area-inset-bottom)) !important; }
+  .bottom-nav-mobile {
+    position: fixed !important;
+    inset: auto auto calc(8px + env(safe-area-inset-bottom)) 50% !important;
+    z-index: 500 !important;
+    display: grid !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    align-items: stretch !important;
+    width: min(calc(100% - 16px), 840px) !important;
+    min-height: 60px !important;
+    height: 60px !important;
+    transform: translateX(-50%) !important;
+    padding: 5px 6px !important;
+    border: 1px solid color-mix(in srgb, var(--color-primary) 34%, var(--divider)) !important;
+    border-radius: 18px !important;
+    background: color-mix(in srgb, var(--color-surface) 92%, var(--color-background)) !important;
+    box-shadow: 0 12px 34px rgb(0 0 0 / 22%), 0 2px 8px color-mix(in srgb, var(--color-primary) 16%, transparent) !important;
+    backdrop-filter: blur(20px) saturate(130%) !important;
+  }
+  .bottom-nav-mobile a,
+  .bottom-nav-mobile a[data-sheet="create"] {
+    position: relative !important;
+    display: flex !important;
+    min-width: 0 !important;
+    min-height: 50px !important;
+    height: 50px !important;
+    flex: none !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 2px !important;
+    padding: 3px 2px !important;
+    border: 0 !important;
+    border-radius: 13px !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: var(--color-text-secondary) !important;
+    font-size: 9px !important;
+    font-weight: 800 !important;
+    line-height: 1.1 !important;
+    letter-spacing: -.01em !important;
+    text-decoration: none !important;
+    transition: background 160ms ease, color 160ms ease, transform 160ms ease !important;
+  }
+  .bottom-nav-mobile a:hover,
+  .bottom-nav-mobile a:focus-visible { color: var(--color-primary) !important; background: color-mix(in srgb, var(--color-primary) 9%, transparent) !important; }
+  .bottom-nav-mobile a:active { transform: scale(.97) !important; }
+  .bottom-nav-mobile a.active {
+    color: var(--color-primary) !important;
+    background: color-mix(in srgb, var(--color-primary) 13%, transparent) !important;
+  }
+  .bottom-nav-mobile a.active::before {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 50%;
+    width: 6px;
+    height: 6px;
+    transform: translateX(-50%) rotate(45deg);
+    background: var(--color-accent, #f59e0b);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent, #f59e0b) 14%, transparent);
+  }
+  .bottom-nav-mobile a > span:first-child:not(.bottom-create-icon) {
+    display: grid !important;
+    place-items: center !important;
+    width: 25px !important;
+    height: 25px !important;
+    margin: 0 !important;
+    font-size: 0 !important;
+  }
+  .bottom-nav-mobile a > span:first-child:not(.bottom-create-icon) svg {
+    display: block !important;
+    width: 20px !important;
+    height: 20px !important;
+    fill: none !important;
+    stroke: currentColor !important;
+    stroke-width: 1.85 !important;
+    stroke-linecap: round !important;
+    stroke-linejoin: round !important;
+  }
+  .bottom-nav-mobile a > span:last-child { max-width: 100% !important; overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important; }
+  .bottom-nav-mobile a[data-sheet="create"] { color: var(--color-text-secondary) !important; }
+  .bottom-nav-mobile .bottom-create-icon {
+    display: grid !important;
+    place-items: center !important;
+    width: 38px !important;
+    height: 38px !important;
+    flex: 0 0 38px !important;
+    margin: -10px 0 0 !important;
+    border: 3px solid color-mix(in srgb, var(--color-surface) 84%, transparent) !important;
+    border-radius: 50% !important;
+    background: var(--color-primary) !important;
+    color: #fff !important;
+    box-shadow: 0 7px 16px color-mix(in srgb, var(--color-primary) 40%, transparent) !important;
+    transform: none !important;
+  }
+  .bottom-nav-mobile .bottom-create-icon svg { width: 19px !important; height: 19px !important; stroke: currentColor !important; }
+  .bottom-nav-mobile a[data-sheet="create"]::after {
+    content: "Buat";
+    display: block;
+    margin-top: -1px;
+    color: var(--color-text-secondary);
+    font-size: 9px;
+    font-weight: 800;
+  }
+  .bottom-nav-mobile a[data-sheet="create"] { font-size: 0 !important; }
+}
+@media (min-width: 768px) and (max-width: 1199px) {
+  .bottom-nav-mobile { width: min(calc(100% - 32px), 820px) !important; }
+  .bottom-nav-mobile a { font-size: 10px !important; }
+  .bottom-nav-mobile a[data-sheet="create"]::after { font-size: 10px; }
+}
+@media (max-width: 380px) {
+  .bottom-nav-mobile { width: calc(100% - 12px) !important; min-height: 58px !important; height: 58px !important; padding-inline: 4px !important; }
+  .bottom-nav-mobile a { min-height: 48px !important; height: 48px !important; font-size: 8px !important; }
+  .bottom-nav-mobile a > span:first-child:not(.bottom-create-icon) { width: 23px !important; height: 23px !important; }
+  .bottom-nav-mobile a > span:first-child:not(.bottom-create-icon) svg { width: 19px !important; height: 19px !important; }
+  .bottom-nav-mobile .bottom-create-icon { width: 36px !important; height: 36px !important; flex-basis: 36px !important; }
+  .bottom-nav-mobile a[data-sheet="create"]::after { font-size: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bottom-nav-mobile a { transition: none !important; }
+}
