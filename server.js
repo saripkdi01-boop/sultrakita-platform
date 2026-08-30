@@ -11,6 +11,7 @@ const { normalizeRole, ROLE_LEVELS, permissionList, roleSummary, requirePermissi
 const adminApiV2 = require('./api/admin');
 const { adminEmailAllowlist, adminGoogleRedirectUri, adminGoogleConfigured, createState, createAdminState, verifyAdminState, createExchangeCode, hashExchangeCode, safeAdminNext, parseCookie, setAdminOAuthCookies, clearAdminOAuthCookies, googleAuthorizationUrl, fetchVerifiedGoogleProfile } = require('./google-admin-sso');
 const { SITE_URL, slugify, listingPage, collectionPage, absolute } = require('./seo');
+const { createWhatsAppWebhookRouter } = require('./api/whatsapp-webhook');
 const { CATEGORIES, REGIONS, ALL_DISTRICTS } = require('./shared/taxonomy');
 
 dotenv.config();
@@ -23,7 +24,7 @@ const districts = ALL_DISTRICTS;
 const allowedOrigins = (process.env.CORS_ORIGINS || process.env.CORS_ORIGIN || 'https://sultrakita-platform.vercel.app').split(',').map(value => value.trim()).filter(Boolean);
 app.use(cors({ origin: (origin, callback) => { if (!origin || allowedOrigins.includes(origin)) return callback(null, true); return callback(new Error('Origin tidak diizinkan')); }, credentials: true }));
 app.use('/api/donation/webhook/aulaa', express.raw({ type: 'application/json', limit: '256kb' }));
-app.use(express.json({ limit: '1mb' }));
+app.use(express.json({ limit: '3mb', verify: (req, _res, buffer) => { req.rawBody = Buffer.from(buffer); } }));
 app.use(authenticate);
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024, files: 5 }, fileFilter: (_req, file, cb) => cb(null, ['image/jpeg', 'image/png', 'image/webp'].includes(file.mimetype)) });
 const objectStorageConfigured = Boolean(process.env.R2_UPLOAD_URL && process.env.R2_UPLOAD_TOKEN && process.env.R2_PUBLIC_BASE_URL);
@@ -53,6 +54,7 @@ app.use(express.static(path.join(__dirname, 'public'), { setHeaders: (res, fileP
 app.use('/api', rateLimit());
 // Section 4 adapter is additive; existing /api/admin endpoints remain untouched for backward compatibility.
 app.use('/api/admin/v2', adminApiV2);
+app.use('/api/webhooks', createWhatsAppWebhookRouter({ query, run }));
 
 const ok = (res, data, meta) => res.json({ success: true, data, ...(meta ? { meta } : {}) });
 const fail = (res, status, message, details) => res.status(status).json({ success: false, error: message, ...(details ? { details } : {}) });
