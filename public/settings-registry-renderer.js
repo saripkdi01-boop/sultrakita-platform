@@ -18,10 +18,10 @@
     item.setAttribute('aria-label',feature.title);
     if(feature.route&&feature.status==='active'){item.href=feature.route;const anchor=feature.route.split('#')[1];if(anchor&&(location.hash==='#'+anchor||(!location.hash&&feature.id==='account')))item.classList.add('active');}
     else {item.href='#';item.setAttribute('aria-disabled','true');item.addEventListener('click',event=>event.preventDefault());}
-    const icon=document.createElement('span');icon.className=compact?'drawer-setting-icon':'settings-icon';icon.textContent=feature.icon;icon.setAttribute('aria-hidden','true');
+    const icon=document.createElement('span');icon.className=compact?'drawer-setting-icon':'settings-icon';icon.setAttribute('aria-hidden','true');const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 24 24');const use=document.createElementNS('http://www.w3.org/2000/svg','use');use.setAttribute('href','#i-'+feature.iconKey);svg.appendChild(use);icon.appendChild(svg);
     const copy=document.createElement('span');copy.className=compact?'drawer-registry-copy':'settings-registry-copy';
     const title=document.createElement('b');title.textContent=feature.title;copy.appendChild(title);
-    const description=document.createElement('small');description.textContent=feature.status==='coming_soon'?'Segera hadir':feature.description;copy.appendChild(description);
+    if(!compact){const description=document.createElement('small');description.textContent=feature.status==='coming_soon'?'Segera hadir':feature.description;copy.appendChild(description);}
     const chevron=document.createElement('strong');chevron.className='registry-chevron';chevron.textContent=feature.status==='active'?'›':'·';
     item.append(icon,copy,chevron);return item;
   }

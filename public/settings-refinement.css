@@ -11,7 +11,7 @@
 .settings-nav a small{margin-left:auto;color:var(--muted);font-size:10px;font-weight:500}
 .settings-nav a::after{content:'›';margin-left:auto;color:var(--muted);font-size:22px;font-weight:400;line-height:1}
 .settings-nav a small+*{margin-left:0}
-.settings-icon{display:grid;place-items:center;flex:0 0 var(--settings-icon);width:var(--settings-icon);height:var(--settings-icon);border:1px solid rgba(101,215,183,.32);border-radius:10px;background:rgba(26,157,124,.1);color:#65d7b7;font-size:17px;font-weight:700}
+.settings-icon{display:grid;place-items:center;flex:0 0 var(--settings-icon);width:var(--settings-icon);height:var(--settings-icon);border:1px solid rgba(101,215,183,.32);border-radius:10px;background:rgba(26,157,124,.1);color:#65d7b7;font-size:17px;font-weight:700}.settings-icon svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .settings-nav a[aria-disabled=true]{opacity:.6;pointer-events:none}
 .settings-content{min-width:0}
 .settings-card{border:1px solid var(--settings-divider);box-shadow:none;border-radius:16px;padding:24px;margin-bottom:24px}
