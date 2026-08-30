@@ -1,11 +1,11 @@
 /* Native SultraKita drawer settings contract. */
 .drawer-settings-content{display:block!important;max-height:620px!important;padding:4px 0 8px!important;background:rgba(255,255,255,.018)}
-.drawer-settings-content>a{display:flex;align-items:center;gap:16px;min-height:64px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.08);color:var(--text);text-decoration:none}
-.drawer-settings-content>a:hover{background:rgba(101,215,183,.08)}
-.drawer-settings-content>a>span:nth-child(2){display:flex;flex:1;min-width:0;flex-direction:column;gap:2px}
-.drawer-settings-content>a b{font-size:13px;font-weight:700}
-.drawer-settings-content>a small{color:var(--muted);font-size:11px;line-height:1.25}
-.drawer-settings-content>a>strong{color:var(--muted);font-size:24px;font-weight:400}
+.drawer-registry-heading{display:block;padding:14px 16px 6px;color:var(--muted);font-size:10px;letter-spacing:.1em}.drawer-registry-item{display:flex;align-items:center;gap:16px;min-height:64px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.08);color:var(--text);text-decoration:none}
+.drawer-registry-item:hover{background:rgba(101,215,183,.08)}
+.drawer-registry-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:2px}
+.drawer-registry-item b{font-size:13px;font-weight:700}
+.drawer-registry-item small{color:var(--muted);font-size:11px;line-height:1.25}
+.registry-chevron{color:var(--muted);font-size:24px;font-weight:400}
 .drawer-setting-icon{display:grid!important;place-items:center;flex:0 0 32px!important;width:32px;height:32px;border:1px solid rgba(101,215,183,.34);border-radius:10px;background:rgba(26,157,124,.12);color:#65d7b7;font-size:16px;font-weight:700}
 .drawer-setting-primary{background:rgba(26,157,124,.09)}
 .drawer-setting-tools{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 16px 4px}
