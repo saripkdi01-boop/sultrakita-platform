@@ -1,0 +1,23 @@
+/* SultraKita settings contract: quiet surfaces, native glyphs, predictable rows. */
+.settings-page{--settings-row:64px;--settings-pad:16px;--settings-icon:32px;--settings-gap:16px;--settings-divider:rgba(255,255,255,.09)}
+.settings-layout{align-items:start;gap:32px}
+.settings-nav{position:sticky;top:88px;padding:8px 0;border:0;background:transparent;box-shadow:none}
+.settings-nav strong{display:block;padding:18px var(--settings-pad) 8px;color:var(--muted);font-size:10px;letter-spacing:.12em}
+.settings-nav strong:first-child{padding-top:8px}
+.settings-nav a{display:flex;align-items:center;gap:var(--settings-gap);min-height:var(--settings-row);padding:12px var(--settings-pad);border:0;border-bottom:1px solid var(--settings-divider);border-radius:0;background:transparent;color:var(--text);font-weight:600;text-decoration:none}
+.settings-nav a:first-of-type{border-top:1px solid var(--settings-divider)}
+.settings-nav a:hover{background:rgba(255,255,255,.04)}
+.settings-nav a.active{background:rgba(26,157,124,.12);color:#65d7b7}
+.settings-nav a small{margin-left:auto;color:var(--muted);font-size:10px;font-weight:500}
+.settings-nav a::after{content:'›';margin-left:auto;color:var(--muted);font-size:22px;font-weight:400;line-height:1}
+.settings-nav a small+*{margin-left:0}
+.settings-icon{display:grid;place-items:center;flex:0 0 var(--settings-icon);width:var(--settings-icon);height:var(--settings-icon);border:1px solid rgba(101,215,183,.32);border-radius:10px;background:rgba(26,157,124,.1);color:#65d7b7;font-size:17px;font-weight:700}
+.settings-nav a[aria-disabled=true]{opacity:.6;pointer-events:none}
+.settings-content{min-width:0}
+.settings-card{border:1px solid var(--settings-divider);box-shadow:none;border-radius:16px;padding:24px;margin-bottom:24px}
+.settings-card+.settings-card{margin-top:0}
+.settings-card h2{letter-spacing:-.02em}
+.setting-row{min-height:var(--settings-row);padding:12px 0;border-bottom:1px solid var(--settings-divider)}
+.setting-row:last-child{border-bottom:0}
+.button{min-height:40px}
+@media(max-width:760px){.settings-layout{display:block}.settings-nav{position:static;display:flex;gap:0;overflow-x:auto;margin:0 -16px 24px;padding:0 16px;border-bottom:1px solid var(--settings-divider);scrollbar-width:none}.settings-nav::-webkit-scrollbar{display:none}.settings-nav strong{display:none}.settings-nav a{flex:0 0 auto;min-height:56px;padding:10px 14px;border:0!important;white-space:nowrap;border-bottom:2px solid transparent!important}.settings-nav a.active{border-bottom-color:#65d7b7!important;background:transparent}.settings-nav a::after{display:none}.settings-nav a .settings-icon{width:28px;height:28px;flex-basis:28px;font-size:14px}.settings-nav a small{display:none}.settings-card{padding:20px 16px;margin-bottom:20px}}
