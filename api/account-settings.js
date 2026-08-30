@@ -119,4 +119,32 @@ router.post('/deletion-request/cancel', requireAuth, async (req, res, next) => {
   } catch (error) { return next(error); }
 });
 
+router.get('/devices', requireAuth, async (req, res, next) => {
+  try { return ok(res, await query('SELECT id, device_name, device_type, os_info, browser_info, last_active, is_current_device, created_at FROM device_sessions WHERE user_id = ? ORDER BY last_active DESC LIMIT 25', [req.user.id])); } catch (error) { return next(error); }
+});
+router.delete('/devices/:id', requireAuth, async (req, res, next) => {
+  try { await run('DELETE FROM device_sessions WHERE id = ? AND user_id = ? AND is_current_device = false', [req.params.id, req.user.id]); return ok(res, { revoked: true }); } catch (error) { return next(error); }
+});
+router.get('/promotion-activity', requireAuth, async (req, res, next) => {
+  try { return ok(res, await query('SELECT id, listing_id, activity_type, metadata, created_at FROM ad_activity_logs WHERE user_id = ? ORDER BY created_at DESC LIMIT 50', [req.user.id])); } catch (error) { return next(error); }
+});
+router.get('/link-history', requireAuth, async (req, res, next) => {
+  try { return ok(res, await query('SELECT id, url, title, source, clicked_at FROM link_history WHERE user_id = ? ORDER BY clicked_at DESC LIMIT 50', [req.user.id])); } catch (error) { return next(error); }
+});
+router.get('/data-usage', requireAuth, async (req, res, next) => {
+  try { const [summary] = await query('SELECT COALESCE(SUM(bytes_uploaded),0)::bigint AS bytes_uploaded, COALESCE(SUM(bytes_downloaded),0)::bigint AS bytes_downloaded, COUNT(*)::int AS requests FROM data_usage_logs WHERE user_id = ? LIMIT 1', [req.user.id]); return ok(res, summary || { bytes_uploaded: 0, bytes_downloaded: 0, requests: 0 }); } catch (error) { return next(error); }
+});
+router.get('/time-management', requireAuth, async (req, res, next) => {
+  try { const [row] = await query('SELECT id, daily_limit_minutes, created_at, updated_at FROM time_management_limits WHERE user_id = ? LIMIT 1', [req.user.id]); return ok(res, row || { daily_limit_minutes: null }); } catch (error) { return next(error); }
+});
+router.patch('/time-management', requireAuth, async (req, res, next) => {
+  try { const minutes = Number(req.body?.daily_limit_minutes); if (!Number.isInteger(minutes) || minutes < 1 || minutes > 1440) return fail(res, 422, 'Batas waktu harus 1 sampai 1.440 menit'); const [row] = await query('INSERT INTO time_management_limits (user_id, daily_limit_minutes) VALUES (?, ?) ON CONFLICT (user_id) DO UPDATE SET daily_limit_minutes = EXCLUDED.daily_limit_minutes, updated_at = CURRENT_TIMESTAMP RETURNING id, daily_limit_minutes, created_at, updated_at', [req.user.id, minutes]); return ok(res, row); } catch (error) { return next(error); }
+});
+router.get('/orders', requireAuth, async (req, res, next) => {
+  try { return ok(res, await query('SELECT id, order_number, subtotal, shipping_amount, insurance_amount, total_amount, payment_method, payment_status, order_status, escrow_status, created_at, updated_at FROM orders WHERE buyer_id = ? ORDER BY id DESC LIMIT 50', [req.user.id])); } catch (error) { return next(error); }
+});
+router.get('/privacy-checkup', requireAuth, async (req, res, next) => {
+  try { const [row] = await query(selectSettings, [req.user.id]); if (!row) return fail(res, 404, 'Akun tidak ditemukan'); const data = serialize(row); return ok(res, { completed: [data.privacy.profile_visibility, data.privacy.show_activity_status, data.privacy.allow_tagging, data.privacy.data_sharing_consent].filter(value => value !== undefined).length, total: 4, sections: data.privacy }); } catch (error) { return next(error); }
+});
+
 module.exports = { createAccountSettingsRouter: () => router };
