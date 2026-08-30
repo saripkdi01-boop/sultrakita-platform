@@ -29,4 +29,7 @@ async function writeActivity(userId, action, entityType, metadata = {}) {
   return run('INSERT INTO account_activity_logs (user_id,action,entity_type,metadata) VALUES (?,?,?,?)', [userId, action, entityType, JSON.stringify(metadata)]);
 }
 
-module.exports = { getAccountBundle, upsertPreferences, upsertPrivacy, upsertNotifications, writeActivity };
+async function listBlocks(userId) { return query(`SELECT b.id,b.blocked_user_id,u.name AS blocked_name,u.avatar_url,b.reason,b.created_at FROM user_blocks b JOIN users u ON u.id=b.blocked_user_id WHERE b.blocker_id=? ORDER BY b.created_at DESC LIMIT 100`, [userId]); }
+async function createBlock(userId, blockedUserId, reason) { return query(`INSERT INTO user_blocks (blocker_id,blocked_user_id,reason) VALUES (?,?,?) ON CONFLICT (blocker_id,blocked_user_id) DO UPDATE SET reason=EXCLUDED.reason RETURNING id,blocked_user_id,reason,created_at`, [userId, blockedUserId, reason]); }
+async function deleteBlock(userId, blockId) { return run('DELETE FROM user_blocks WHERE id=? AND blocker_id=?', [blockId, userId]); }
+module.exports = { getAccountBundle, upsertPreferences, upsertPrivacy, upsertNotifications, writeActivity, listBlocks, createBlock, deleteBlock };

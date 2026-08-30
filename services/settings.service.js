@@ -1,4 +1,5 @@
 const { upsertPreferences, upsertPrivacy, upsertNotifications, writeActivity } = require('../repositories/settings.repository');
+const APP_ICONS = ['default','sultra-green','teluk-kendari','mosalaki'];
 
 const bool = (value, fallback) => value === undefined ? fallback : Boolean(value);
 const enumValue = (value, allowed, fallback) => allowed.includes(String(value)) ? String(value) : fallback;
@@ -6,7 +7,7 @@ const text = (value, fallback, max) => value === undefined ? fallback : String(v
 
 function normalizePreferences(input = {}, current = {}) {
   return {
-    dark_mode: bool(input.dark_mode, current.dark_mode ?? false), language: enumValue(input.language, ['id','en'], current.language || 'id'), app_icon: text(input.app_icon, current.app_icon || 'default', 40), notifications_enabled: bool(input.notifications_enabled, current.notifications_enabled ?? true),
+    dark_mode: bool(input.dark_mode, current.dark_mode ?? false), language: enumValue(input.language, ['id','en'], current.language || 'id'), app_icon: APP_ICONS.includes(String(input.app_icon)) ? String(input.app_icon) : (APP_ICONS.includes(current.app_icon) ? current.app_icon : 'default'), notifications_enabled: bool(input.notifications_enabled, current.notifications_enabled ?? true),
     autoplay_videos: bool(input.autoplay_videos, current.autoplay_videos ?? true), reduce_motion: bool(input.reduce_motion, current.reduce_motion ?? false), personalized_feed: bool(input.personalized_feed, current.personalized_feed ?? true), personalized_ads: bool(input.personalized_ads, current.personalized_ads ?? true), show_sensitive_content: bool(input.show_sensitive_content, current.show_sensitive_content ?? false), save_link_history: bool(input.save_link_history, current.save_link_history ?? true)
   };
 }
@@ -26,4 +27,4 @@ function normalizeNotifications(input = {}, current = {}) {
 async function savePreferences(userId, input, current) { const values = normalizePreferences(input, current); await upsertPreferences(userId, values); await writeActivity(userId, 'preferences_updated', 'settings'); return values; }
 async function savePrivacy(userId, input, current) { const values = normalizePrivacy(input, current); await upsertPrivacy(userId, values); await writeActivity(userId, 'privacy_updated', 'privacy_settings'); return values; }
 async function saveNotifications(userId, input, current) { const values = normalizeNotifications(input, current); await upsertNotifications(userId, values); await writeActivity(userId, 'notification_updated', 'notification_settings'); return values; }
-module.exports = { normalizePreferences, normalizePrivacy, normalizeNotifications, savePreferences, savePrivacy, saveNotifications };
+module.exports = { APP_ICONS, normalizePreferences, normalizePrivacy, normalizeNotifications, savePreferences, savePrivacy, saveNotifications };
