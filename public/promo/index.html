@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#111827">
+  <meta name="description" content="SUKI PROMO HUB — kelola promosi organik seller SultraKita.">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/design-tokens.css">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/promo/promo.css">
+  <title>SUKI PROMO HUB · SultraKita</title>
+</head>
+<body class="promo-body">
+  <a class="promo-skip" href="#promo-main">Lewati ke konten utama</a>
+  <header class="promo-topbar">
+    <a class="promo-brand" href="/"><span class="promo-mark">S</span><span>Sultra<span>Kita</span></span></a>
+    <div class="promo-top-actions"><a class="promo-back" href="/">Kembali ke SultraKita</a><button class="promo-menu" id="mobile-nav" type="button" aria-label="Buka menu">☰</button></div>
+  </header>
+  <div class="promo-layout">
+    <aside class="promo-sidebar" id="promo-sidebar" aria-label="Navigasi Promo Hub">
+      <div class="promo-sidebar-head"><span class="promo-kicker">SUKI PROMO HUB</span><h1>Promosi organik,<br>lebih terarah.</h1><p>Satu listing. Materi siap pakai. Status channel yang jujur.</p></div>
+      <nav class="promo-nav">
+        <button class="promo-nav-item is-active" data-section="overview">Overview</button>
+        <button class="promo-nav-item" data-section="campaigns">Campaigns</button>
+        <button class="promo-nav-item" data-section="create">Buat Campaign</button>
+        <button class="promo-nav-item" data-section="connections">Connections</button>
+        <button class="promo-nav-item" data-section="analytics">Analytics</button>
+      </nav>
+      <div class="promo-side-note"><strong>FREE ORGANIC PROMOTION</strong><span>SultraKita · manual export · link sharing · QR siap di fase berikutnya</span></div>
+    </aside>
+    <main id="promo-main" class="promo-main" tabindex="-1">
+      <section class="promo-section" data-panel="overview">
+        <div class="promo-hero-row"><div><span class="promo-eyebrow">WORKSPACE SELLER</span><h2>Jangkau warga<br><em>Sulawesi Tenggara.</em></h2><p class="promo-lead">Buat campaign dari listing aktif Anda, lalu pilih apakah akan dipublikasikan native di SultraKita atau diekspor untuk publikasi manual.</p></div><button class="promo-primary" data-section-target="create">＋ Buat campaign</button></div>
+        <div id="overview-notice" class="promo-notice" hidden></div>
+        <div class="promo-stat-grid" id="promo-stats"><article><span>Campaign aktif</span><strong>—</strong><small>memuat data</small></article><article><span>Channel native</span><strong>1</strong><small>Marketplace SultraKita</small></article><article><span>Provider eksternal</span><strong>0</strong><small>siap publish langsung</small></article><article><span>Compliance</span><strong>ON</strong><small>identity & ownership gate</small></article></div>
+        <div class="promo-section-heading"><div><span class="promo-eyebrow">ALUR P0</span><h3>Campaign yang bisa diaudit</h3></div><span class="promo-muted">Draft → approval → publish / export</span></div>
+        <div class="promo-flow"><div><b>01</b><strong>Pilih listing</strong><span>Identity seller diambil dari session.</span></div><div><b>02</b><strong>Siapkan channel</strong><span>State setiap channel terlihat.</span></div><div><b>03</b><strong>Bagikan dengan aman</strong><span>Native atau manual, tanpa klaim palsu.</span></div></div>
+        <div class="promo-section-heading campaign-heading"><div><span class="promo-eyebrow">TERBARU</span><h3>Campaign Anda</h3></div><button class="promo-link" data-section-target="campaigns">Lihat semua →</button></div>
+        <div id="overview-campaigns" class="promo-campaign-grid"><div class="promo-loading">Memuat campaign…</div></div>
+      </section>
+
+      <section class="promo-section" data-panel="campaigns" hidden>
+        <div class="promo-page-heading"><div><span class="promo-eyebrow">LIBRARY</span><h2>Campaigns</h2><p>Semua campaign terikat pada listing milik akun yang sedang masuk.</p></div><button class="promo-primary" data-section-target="create">＋ Campaign baru</button></div>
+        <div class="promo-toolbar"><label>Filter status<select id="campaign-filter"><option value="">Semua status</option><option>DRAFT</option><option>READY</option><option>PUBLISHED</option><option>MANUAL_ACTION_REQUIRED</option><option>FAILED</option></select></label><button class="promo-secondary" id="refresh-campaigns">Muat ulang</button></div>
+        <div id="all-campaigns" class="promo-campaign-grid"></div>
+      </section>
+
+      <section class="promo-section" data-panel="create" hidden>
+        <div class="promo-page-heading"><div><span class="promo-eyebrow">P0 · CAMPAIGN DRAFT</span><h2>Buat campaign</h2><p>Budget di sini hanya perencanaan. Fitur paid ads belum aktif.</p></div><span class="promo-phase-badge">PHASE P0</span></div>
+        <form id="campaign-form" class="promo-form" novalidate>
+          <div class="promo-form-card"><div class="promo-form-card-head"><span>01</span><div><h3>Identitas campaign</h3><p>Mulai dari listing aktif yang ingin Anda dorong.</p></div></div><label>Nama campaign<input name="name" required maxlength="120" placeholder="Contoh: Kopi Tolaki — Kendari September"><span class="field-hint">Gunakan nama yang mudah ditemukan kembali.</span></label><label>Listing aktif<select name="listing_id" id="listing-select" required><option value="">Memuat listing milik Anda…</option></select></label><div id="listing-preview" class="promo-listing-preview" hidden></div></div>
+          <div class="promo-form-card"><div class="promo-form-card-head"><span>02</span><div><h3>Tujuan & jangkauan</h3><p>Data ini mengatur konteks campaign, bukan iklan berbayar.</p></div></div><div class="promo-two-col"><label>Objective<select name="objective"><option value="awareness">Awareness</option><option value="traffic">Traffic</option><option value="leads">Leads</option><option value="sales">Sales</option><option value="engagement">Engagement</option><option value="retention">Retention</option></select></label><label>Lokasi<input name="location" maxlength="120" placeholder="Kendari"></label></div><div class="promo-two-col"><label>Budget perencanaan<input name="budget" type="number" min="0" inputmode="numeric" placeholder="0"><span class="field-hint">Opsional · tidak mengaktifkan paid ads.</span></label><label>CTA<input name="cta" maxlength="160" value="Lihat listing"></label></div></div>
+          <div class="promo-form-card"><div class="promo-form-card-head"><span>03</span><div><h3>Channel organik</h3><p>Pilih channel yang benar-benar akan Anda gunakan.</p></div></div><div class="promo-channel-picks"><label class="promo-check active"><input type="checkbox" name="channels" value="sultrakita" checked><span><b>SultraKita</b><small>Native marketplace</small></span><i>READY</i></label><label class="promo-check"><input type="checkbox" name="channels" value="facebook"><span><b>Facebook</b><small>Manual export</small></span><i>MANUAL</i></label><label class="promo-check"><input type="checkbox" name="channels" value="instagram"><span><b>Instagram</b><small>Manual export</small></span><i>MANUAL</i></label><label class="promo-check"><input type="checkbox" name="channels" value="tiktok"><span><b>TikTok</b><small>Manual export</small></span><i>MANUAL</i></label><label class="promo-check"><input type="checkbox" name="channels" value="google"><span><b>Google Business</b><small>Manual export</small></span><i>MANUAL</i></label><label class="promo-check"><input type="checkbox" name="channels" value="whatsapp"><span><b>WhatsApp</b><small>Manual export</small></span><i>MANUAL</i></label></div><div class="promo-inline-warning">Channel eksternal tidak terhubung pada P0. Tidak ada pesan massal atau publikasi otomatis.</div></div>
+          <div class="promo-form-actions"><button type="button" class="promo-secondary" data-section-target="overview">Batal</button><button class="promo-primary" type="submit">Simpan sebagai draft →</button></div><div id="form-feedback" class="promo-feedback" role="status" aria-live="polite"></div>
+        </form>
+      </section>
+
+      <section class="promo-section" data-panel="connections" hidden><div class="promo-page-heading"><div><span class="promo-eyebrow">CAPABILITY MAP</span><h2>Connections</h2><p>Status ini berasal dari capability P0. Provider eksternal belum diklaim terhubung.</p></div></div><div id="connections-grid" class="promo-connection-grid"></div></section>
+      <section class="promo-section" data-panel="analytics" hidden><div class="promo-page-heading"><div><span class="promo-eyebrow">MEASUREMENT</span><h2>Analytics</h2><p>Hanya event yang diterima dan dideduplikasi yang dihitung.</p></div></div><div class="promo-zero-state"><span class="promo-zero-icon">∅</span><h3>Data akan muncul setelah campaign berjalan</h3><p>P0 belum membuat estimasi reach atau conversion. Klik, lead, dan event lainnya harus benar-benar diterima terlebih dahulu.</p></div><div id="analytics-output"></div></section>
+    </main>
+  </div>
+  <div id="campaign-drawer" class="promo-drawer" hidden><div class="promo-drawer-backdrop" data-close-drawer></div><aside class="promo-drawer-panel" role="dialog" aria-modal="true" aria-labelledby="drawer-title"><button class="promo-drawer-close" data-close-drawer aria-label="Tutup">×</button><div id="drawer-content"></div></aside></div>
+  <div id="promo-toast" class="promo-toast" role="status" aria-live="polite"></div>
+  <script src="/promo/promo.js"></script>
+</body>
+</html>

@@ -16,6 +16,7 @@ const { createAccountSettingsRouter } = require('./api/account-settings');
 const { createSettingsRouter } = require('./api/settings');
 const { CATEGORIES, REGIONS, ALL_DISTRICTS } = require('./shared/taxonomy');
 const v2Api = require('./api/v2');
+const { router: promoApi } = require('./api/promo');
 
 dotenv.config();
 const app = express();
@@ -55,7 +56,9 @@ const sendAdminShell = (_req, res) => { res.setHeader('Cache-Control', 'no-store
 app.get(['/admin', '/admin/', '/admin/login', '/admin/dashboard'], sendAdminShell);
 
 const sendSettingsShell = (_req, res) => res.sendFile(path.join(__dirname, 'public', 'settings.html'));
+const sendPromoShell = (_req, res) => res.sendFile(path.join(__dirname, 'public', 'promo', 'index.html'));
 app.get(['/settings.html','/settings','/settings/account','/settings/preferences','/settings/notifications','/settings/privacy','/settings/privacy/checkup','/settings/security','/settings/devices','/settings/time','/settings/promotions','/settings/link-history','/settings/activity','/settings/orders','/settings/payments','/settings/data','/settings/data/export'], sendSettingsShell);
+app.get(['/promo', '/promo/'], sendPromoShell);
 app.use(express.static(path.join(__dirname, 'public'), { setHeaders: (res, filePath) => { if (filePath.includes(`${path.sep}public${path.sep}admin${path.sep}`) && filePath.endsWith('.html')) { res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate'); res.setHeader('Pragma', 'no-cache'); return; } if (filePath.endsWith('sw.js') || filePath.endsWith('index.html')) return; if (/\.(?:js|css|woff2?|png|jpe?g|webp|avif|svg|ico|webmanifest)$/.test(filePath)) res.setHeader('Cache-Control', 'public, max-age=31536000, immutable'); } }));
 app.use('/api', rateLimit());
 // Section 4 adapter is additive; existing /api/admin endpoints remain untouched for backward compatibility.
@@ -64,6 +67,7 @@ app.use('/api/webhooks', createWhatsAppWebhookRouter({ query, run }));
 app.use('/api/account', createAccountSettingsRouter());
 app.use('/api/settings', createSettingsRouter());
 app.use('/api/v2', v2Api);
+app.use('/api/v2/promo', promoApi);
 
 const ok = (res, data, meta) => res.json({ success: true, data, ...(meta ? { meta } : {}) });
 const fail = (res, status, message, details) => res.status(status).json({ success: false, error: message, ...(details ? { details } : {}) });
