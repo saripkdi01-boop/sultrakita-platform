@@ -132,4 +132,10 @@ BEGIN
 END;
 $$;
 
-GRANT EXECUTE ON FUNCTION award_sultrakita_points(BIGINT, INTEGER, TEXT, TEXT, TEXT) TO service_role;
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'service_role') THEN
+    EXECUTE 'GRANT EXECUTE ON FUNCTION award_sultrakita_points(BIGINT, INTEGER, TEXT, TEXT, TEXT) TO service_role';
+  END IF;
+END;
+$$;
