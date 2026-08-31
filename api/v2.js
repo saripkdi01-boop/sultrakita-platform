@@ -84,7 +84,7 @@ router.get('/discovery/search', async (req, res, next) => {
     const params = [];
     const clauses = ["l.status = 'active'"];
     if (q) {
-      clauses.push("(l.search_vector @@ plainto_tsquery('simple', ?) OR l.title ILIKE ? OR l.description ILIKE ?)");
+      clauses.push("(to_tsvector('simple', coalesce(l.title, '') || ' ' || coalesce(l.description, '')) @@ plainto_tsquery('simple', ?) OR l.title ILIKE ? OR l.description ILIKE ?)");
       params.push(q, `%${q}%`, `%${q}%`);
     }
     if (district) { clauses.push('lower(l.district) = lower(?)'); params.push(district); }
@@ -98,7 +98,7 @@ router.get('/discovery/search', async (req, res, next) => {
         ? 'l.price DESC, l.created_at DESC'
         : sort === 'newest'
           ? 'l.created_at DESC'
-          : "CASE WHEN ? <> '' THEN ts_rank_cd(l.search_vector, plainto_tsquery('simple', ?)) ELSE 0 END DESC, COALESCE(l.is_promoted, false) DESC, COALESCE(l.is_featured, false) DESC, l.created_at DESC";
+          : "CASE WHEN ? <> '' THEN ts_rank_cd(to_tsvector('simple', coalesce(l.title, '') || ' ' || coalesce(l.description, '')), plainto_tsquery('simple', ?)) ELSE 0 END DESC, COALESCE(l.is_promoted, false) DESC, COALESCE(l.is_featured, false) DESC, l.created_at DESC";
     const itemParams = [...params];
     if (sort === 'relevant') itemParams.push(q, q);
     itemParams.push(limit, pageOffset(page, limit));
