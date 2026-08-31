@@ -36,6 +36,19 @@ async function main() {
   assert(invalidConversation.response.status === 400, 'conversation endpoint must reject non-numeric IDs');
   assert(invalidConversation.body?.success === false, 'invalid conversation ID must use failure envelope');
 
+  const invalidConversationIds = await Promise.all([
+    request('/api/conversations/-1/messages'),
+    request('/api/conversations/1.5/messages'),
+    request('/api/conversations/9007199254740992/messages'),
+  ]);
+  for (const result of invalidConversationIds) {
+    assert(result.response.status === 400, 'conversation endpoint must reject negative, fractional, or unsafe IDs');
+    assert(result.body?.success === false, 'noncanonical conversation ID must use failure envelope');
+  }
+  const missingConversationId = await request('/api/conversations//messages');
+  assert(missingConversationId.response.status === 404, 'conversation endpoint must reject a missing ID route');
+  assert(missingConversationId.body?.success === false, 'missing conversation ID must use failure envelope');
+
   const invalidMessage = await request('/api/conversations/1/messages', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
@@ -117,6 +130,8 @@ async function main() {
   const conversation = await request('/api/conversations', { method: 'POST', headers: authHeaders, body: JSON.stringify({ listing_id: fixtureListing.id, buyer_id: authLogin.body.data.user.id, seller_id: fixtureSeller.id }) });
   assert(conversation.response.status === 201 || conversation.response.status === 200, 'authenticated buyer should create or reuse a conversation');
   const conversationId = conversation.body?.data?.id;
+  const authorizedRead = await request(`/api/conversations/${conversationId}/messages`, { headers: authHeaders });
+  assert(authorizedRead.response.status === 200 && authorizedRead.body?.success === true, 'conversation member should read conversation history');
   const outsider = await run('INSERT INTO users (name, phone, role, district, phone_verified) VALUES (?, ?, ?, ?, true)', ['Outsider', `08${crypto.randomInt(100000000, 999999999)}${crypto.randomInt(10, 99)}`, 'buyer', 'Kendari']);
   const outsiderToken = crypto.randomBytes(32).toString('hex');
   await run('INSERT INTO sessions (token_hash, user_id, expires_at) VALUES (?, ?, ?)', [hashToken(outsiderToken), outsider.id, Date.now() + 60 * 60 * 1000]);
@@ -146,7 +161,7 @@ async function main() {
   });
   assert(invalidReport.response.status === 422, 'report endpoint must reject invalid payloads');
 
-  for (const result of [unauthenticatedAdmin, invalidConversation, invalidMessage, otpRequest, lockedOtp, authLogin, spoofedListing, otherSellerListing, publicProfile, publicListing, conversation, outsiderRead, outsiderStream, spoofedSuggestion, anonymousUpload, logout, revoked, invalidReport]) {
+  for (const result of [unauthenticatedAdmin, invalidConversation, ...invalidConversationIds, missingConversationId, invalidMessage, otpRequest, lockedOtp, authLogin, spoofedListing, otherSellerListing, publicProfile, publicListing, conversation, authorizedRead, outsiderRead, outsiderStream, spoofedSuggestion, anonymousUpload, logout, revoked, invalidReport]) {
     const lower = result.text.toLowerCase();
     for (const forbidden of ['stack trace', 'node_modules', 'database password', 'authorization: bearer']) {
       assert(!lower.includes(forbidden), `response appears to disclose forbidden detail: ${forbidden}`);
