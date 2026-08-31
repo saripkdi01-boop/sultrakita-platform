@@ -11,3 +11,7 @@ Mode gelap tetap memakai key `sultra-dark`; preferensi lain tetap memakai key ex
 ### Validasi
 
 `npm run lint` dan `npm run build` harus tetap dijalankan sebelum merge. Test suite saat audit memiliki satu kegagalan pre-existing pada kontrak versi asset admin (`admin.css?v=4` di test, sedangkan implementasi memakai `v=5`); kegagalan ini tidak menyentuh homepage atau perubahan branch ini.
+
+## 2026-08-31 — Forensic P0 security increment
+
+Authorization for conversations and messages now binds buyer/sender identity to the authenticated session, with reusable conversation-membership middleware. Public seller verification badges use canonical `verification_status` only, and an additive Supabase migration backfills, constrains, and indexes the canonical state. Added security regression coverage and forensic execution status documentation.
