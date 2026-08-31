@@ -15,6 +15,7 @@ const { createWhatsAppWebhookRouter } = require('./api/whatsapp-webhook');
 const { createAccountSettingsRouter } = require('./api/account-settings');
 const { createSettingsRouter } = require('./api/settings');
 const { CATEGORIES, REGIONS, ALL_DISTRICTS } = require('./shared/taxonomy');
+const v2Api = require('./api/v2');
 
 dotenv.config();
 const app = express();
@@ -61,6 +62,7 @@ app.use('/api/admin/v2', adminApiV2);
 app.use('/api/webhooks', createWhatsAppWebhookRouter({ query, run }));
 app.use('/api/account', createAccountSettingsRouter());
 app.use('/api/settings', createSettingsRouter());
+app.use('/api/v2', v2Api);
 
 const ok = (res, data, meta) => res.json({ success: true, data, ...(meta ? { meta } : {}) });
 const fail = (res, status, message, details) => res.status(status).json({ success: false, error: message, ...(details ? { details } : {}) });
