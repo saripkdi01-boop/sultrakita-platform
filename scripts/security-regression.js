@@ -22,6 +22,10 @@ async function request(path, options = {}) {
   return { response, body, text };
 }
 
+async function requestStream(path, options = {}) {
+  return { response: await fetch(`${baseUrl}${path}`, options), text: '' };
+}
+
 async function main() {
   server = app.listen(0);
   await new Promise(resolve => server.once('listening', resolve));
@@ -35,6 +39,36 @@ async function main() {
   const invalidConversation = await request('/api/conversations/not-an-id/messages');
   assert(invalidConversation.response.status === 400, 'conversation endpoint must reject non-numeric IDs');
   assert(invalidConversation.body?.success === false, 'invalid conversation ID must use failure envelope');
+
+  const invalidConversationIds = await Promise.all([
+    request('/api/conversations/-1/messages'),
+    request('/api/conversations/1.5/messages'),
+    request('/api/conversations/9007199254740992/messages'),
+  ]);
+  for (const result of invalidConversationIds) {
+    assert(result.response.status === 400, 'conversation endpoint must reject negative, fractional, or unsafe IDs');
+    assert(result.body?.success === false, 'noncanonical conversation ID must use failure envelope');
+  }
+  const missingConversationId = await request('/api/conversations//messages');
+  assert(missingConversationId.response.status === 404, 'conversation endpoint must reject a missing ID route');
+  assert(missingConversationId.body?.success === false, 'missing conversation ID must use failure envelope');
+
+  const invalidSseIds = await Promise.all([
+    request('/api/conversations/not-an-id/stream'),
+    request('/api/conversations/-1/stream'),
+    request('/api/conversations/1.5/stream'),
+    request('/api/conversations/0/stream'),
+    request('/api/conversations/9007199254740992/stream'),
+    request('/api/conversations/999999999999999999999999/stream'),
+  ]);
+  for (const result of invalidSseIds) {
+    assert(result.response.status === 400, 'SSE endpoint must reject malformed, noncanonical, or unsafe IDs before authorization');
+    assert(result.body?.success === false, 'invalid SSE conversation ID must use failure envelope');
+  }
+  const missingSseId = await request('/api/conversations//stream');
+  assert(missingSseId.response.status === 404, 'SSE endpoint must reject a missing ID route');
+  const anonymousSse = await request('/api/conversations/1/stream');
+  assert(anonymousSse.response.status === 401, 'SSE endpoint must reject anonymous valid conversation access');
 
   const invalidMessage = await request('/api/conversations/1/messages', {
     method: 'POST',
@@ -117,14 +151,23 @@ async function main() {
   const conversation = await request('/api/conversations', { method: 'POST', headers: authHeaders, body: JSON.stringify({ listing_id: fixtureListing.id, buyer_id: authLogin.body.data.user.id, seller_id: fixtureSeller.id }) });
   assert(conversation.response.status === 201 || conversation.response.status === 200, 'authenticated buyer should create or reuse a conversation');
   const conversationId = conversation.body?.data?.id;
+  const authorizedRead = await request(`/api/conversations/${conversationId}/messages`, { headers: authHeaders });
+  assert(authorizedRead.response.status === 200 && authorizedRead.body?.success === true, 'conversation member should read conversation history');
   const outsider = await run('INSERT INTO users (name, phone, role, district, phone_verified) VALUES (?, ?, ?, ?, true)', ['Outsider', `08${crypto.randomInt(100000000, 999999999)}${crypto.randomInt(10, 99)}`, 'buyer', 'Kendari']);
   const outsiderToken = crypto.randomBytes(32).toString('hex');
   await run('INSERT INTO sessions (token_hash, user_id, expires_at) VALUES (?, ?, ?)', [hashToken(outsiderToken), outsider.id, Date.now() + 60 * 60 * 1000]);
   const outsiderHeaders = { 'content-type': 'application/json', authorization: `Bearer ${outsiderToken}` };
+  const expiredToken = crypto.randomBytes(32).toString('hex');
+  await run('INSERT INTO sessions (token_hash, user_id, expires_at) VALUES (?, ?, ?)', [hashToken(expiredToken), outsider.id, Date.now() - 60 * 60 * 1000]);
+  const expiredSse = await request(`/api/conversations/${conversationId}/stream`, { headers: { authorization: `Bearer ${expiredToken}` } });
+  assert(expiredSse.response.status === 401, 'expired session must not open an SSE conversation stream');
   const outsiderRead = await request(`/api/conversations/${conversationId}/messages`, { headers: outsiderHeaders });
   assert(outsiderRead.response.status === 403, 'conversation history must require membership');
   const outsiderStream = await request(`/api/conversations/${conversationId}/stream`, { headers: outsiderHeaders });
   assert(outsiderStream.response.status === 403, 'conversation stream must require membership');
+  const authorizedStream = await requestStream(`/api/conversations/${conversationId}/stream`, { headers: authHeaders });
+  assert(authorizedStream.response.status === 200 && authorizedStream.response.headers.get('content-type')?.includes('text/event-stream'), 'authorized user should open an SSE conversation stream');
+  await authorizedStream.response.body?.cancel();
   const spoofedSuggestion = await request('/api/suggestions', { method: 'POST', headers: outsiderHeaders, body: JSON.stringify({ user_id: authLogin.body.data.user.id, name: 'Outsider', body: 'Percobaan identity spoofing' }) });
   assert(spoofedSuggestion.response.status === 403, 'suggestion user identity must come from session');
   const anonymousUpload = await request(`/api/listings/${fixtureListing.id}/images`, { method: 'POST' });
@@ -146,7 +189,7 @@ async function main() {
   });
   assert(invalidReport.response.status === 422, 'report endpoint must reject invalid payloads');
 
-  for (const result of [unauthenticatedAdmin, invalidConversation, invalidMessage, otpRequest, lockedOtp, authLogin, spoofedListing, otherSellerListing, publicProfile, publicListing, conversation, outsiderRead, outsiderStream, spoofedSuggestion, anonymousUpload, logout, revoked, invalidReport]) {
+  for (const result of [unauthenticatedAdmin, invalidConversation, ...invalidConversationIds, missingConversationId, ...invalidSseIds, missingSseId, anonymousSse, invalidMessage, otpRequest, lockedOtp, authLogin, spoofedListing, otherSellerListing, publicProfile, publicListing, conversation, authorizedRead, expiredSse, outsiderRead, outsiderStream, authorizedStream, spoofedSuggestion, anonymousUpload, logout, revoked, invalidReport]) {
     const lower = result.text.toLowerCase();
     for (const forbidden of ['stack trace', 'node_modules', 'database password', 'authorization: bearer']) {
       assert(!lower.includes(forbidden), `response appears to disclose forbidden detail: ${forbidden}`);
