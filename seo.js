@@ -23,4 +23,15 @@ function collectionPage({ title, description, canonical, heading, intro, listing
   return layout({ title, description, canonical, body: `<a href="/" class="brand">SultraKita</a><h1>${esc(heading)}</h1><p>${esc(intro)}</p><section class="listing-grid">${cards}</section>`, jsonLd });
 }
 
-module.exports = { SITE_URL, slugify, listingPage, collectionPage, absolute };
+function sellerPage(seller, listings = []) {
+  const name = seller.name || 'Seller lokal';
+  const district = seller.district || 'Sulawesi Tenggara';
+  const canonical = `${SITE_URL}/seller/${slugify(name)}-${seller.id}`;
+  const verified = seller.verification_status === 'approved';
+  const description = `${name} adalah seller lokal SultraKita di ${district}. Lihat profil, status verifikasi, dan listing aktifnya.`;
+  const cards = listings.map(row => `<article class="listing"><h2><a href="/listing/${esc(slugify(row.title))}-${row.id}">${esc(row.title)}</a></h2><p>Rp ${new Intl.NumberFormat('id-ID').format(Number(row.price || 0))} · ${esc(row.district || district)}</p><p>${esc(String(row.description || '').slice(0, 140))}</p></article>`).join('') || '<p>Seller ini belum memiliki listing aktif.</p>';
+  const jsonLd = { '@context': 'https://schema.org', '@type': 'Person', name, url: canonical, description, address: { '@type': 'PostalAddress', addressLocality: district, addressRegion: 'Sulawesi Tenggara', addressCountry: 'ID' }, ...(verified ? { hasCredential: { '@type': 'EducationalOccupationalCredential', credentialCategory: 'Seller terverifikasi SultraKita' } } : {}) };
+  const body = `<a href="/" class="brand">SultraKita</a><nav><a href="/">Beranda</a> / Profil seller</nav><article><p class="eyebrow">Profil seller · ${esc(district)}</p><h1>${esc(name)}</h1><p>${verified ? '✓ Seller terverifikasi SultraKita' : 'Seller lokal SultraKita'}</p><p>${esc(seller.bio || 'Seller lokal SultraKita. Tanyakan detail produk sebelum transaksi dan gunakan jalur komunikasi resmi untuk keamanan bersama.')}</p><p>Rating ${Number(seller.rating_average || 0).toFixed(1)} dari ${Number(seller.rating_count || 0)} ulasan.</p></article><section class="listing-grid"><h2>Listing aktif</h2>${cards}</section>`;
+  return layout({ title: `${name} — Seller ${district} | SultraKita`, description, canonical, jsonLd, body });
+}
+module.exports = { SITE_URL, slugify, listingPage, collectionPage, sellerPage, absolute };

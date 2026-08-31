@@ -81,6 +81,7 @@ const createWhatsAppWebhookRouter = ({ query, run }) => {
       const eventId = buildEventId(payload);
       const payloadHash = hash(payloadText);
       const inserted = await run('INSERT INTO whatsapp_events (provider_event_id, event_type, payload_hash, payload_json) VALUES (?, ?, ?, ?::jsonb) ON CONFLICT (provider_event_id) DO NOTHING', [eventId, 'messages', payloadHash, payloadText]);
+      if (inserted?.rowCount === 0) return res.status(200).json({ success: true, received: true, event_id: eventId, duplicate: true, processed_messages: 0 });
       const messages = flattenMessages(payload);
       let processed = 0;
       for (const message of messages) {

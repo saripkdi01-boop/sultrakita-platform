@@ -129,6 +129,10 @@ async function main() {
   assert(spoofedSuggestion.response.status === 403, 'suggestion user identity must come from session');
   const anonymousUpload = await request(`/api/listings/${fixtureListing.id}/images`, { method: 'POST' });
   assert(anonymousUpload.response.status === 401, 'image upload must reject anonymous requests before file processing');
+  const fakeImage = new FormData();
+  fakeImage.append('images', new Blob(['not-a-real-jpeg'], { type: 'image/jpeg' }), 'listing.jpg');
+  const invalidSignatureUpload = await request(`/api/listings/${fixtureListing.id}/images`, { method: 'POST', headers: { authorization: `Bearer ${token}` }, body: fakeImage });
+  assert(invalidSignatureUpload.response.status === 422, 'upload must reject a fake image signature');
 
   const logout = await request('/api/auth/logout', { method: 'POST', headers: authHeaders });
   assert(logout.response.status === 200, 'logout should revoke the active session');

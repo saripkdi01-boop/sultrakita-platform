@@ -7,11 +7,12 @@ process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN = 'test-verify-token';
 delete process.env.META_APP_SECRET;
 
 const calls = [];
+let eventSeen = false;
 const app = express();
 app.use(express.json({ limit: '3mb', verify: (req, _res, buffer) => { req.rawBody = Buffer.from(buffer); } }));
 app.use('/api/webhooks', createWhatsAppWebhookRouter({
   query: async () => [],
-  run: async (sql, params) => { calls.push({ sql, params }); return { id: 101 }; },
+  run: async (sql, params) => { calls.push({ sql, params }); if (sql.includes('INSERT INTO whatsapp_events')) { if (eventSeen) return { id: null, rowCount: 0 }; eventSeen = true; return { id: 101, rowCount: 1 }; } return { id: 101, rowCount: 1 }; },
 }));
 
 const request = (method, path, body) => new Promise((resolve, reject) => {
@@ -45,5 +46,13 @@ const request = (method, path, body) => new Promise((resolve, reject) => {
   assert.ok(calls.some(call => call.sql.includes('whatsapp_contacts')));
   assert.ok(calls.some(call => call.sql.includes('whatsapp_messages')));
   assert.ok(calls.some(call => call.sql.includes('whatsapp_leads')));
-  console.log('PASS: WhatsApp webhook smoke test');
+  const duplicate = await request('POST', '/api/webhooks/whatsapp', {
+    object: 'whatsapp_business_account',
+    entry: [{ changes: [{ field: 'messages', value: { messages: [{ id: 'wamid.TEST.001', from: '6281993532722', type: 'text', text: { body: 'Saya ingin cari motor di Kendari' } }] } }] }],
+  });
+  assert.equal(duplicate.status, 200);
+  const duplicateBody = JSON.parse(duplicate.data);
+  assert.equal(duplicateBody.duplicate, true);
+  assert.equal(duplicateBody.processed_messages, 0);
+  console.log('PASS: WhatsApp webhook smoke test and replay idempotency');
 })().catch(error => { console.error(error); process.exitCode = 1; });

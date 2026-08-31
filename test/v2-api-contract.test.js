@@ -49,3 +49,24 @@ test('v2 migration is additive and uses deny-by-default RLS for server-owned tab
   assert.match(migration, /USING \(false\) WITH CHECK \(false\)/);
   assert.match(migration, /CREATE OR REPLACE FUNCTION award_sultrakita_points/);
 });
+
+
+test('seller SEO surface uses canonical verification and indexable URLs', () => {
+  const serverSource = fs.readFileSync(path.join(__dirname, '..', 'server.js'), 'utf8');
+  const seoSource = fs.readFileSync(path.join(__dirname, '..', 'seo.js'), 'utf8');
+  const migration = fs.readFileSync(path.join(__dirname, '..', 'database', 'migrations', '021_seller_verification_source_of_truth.sql'), 'utf8');
+  assert.match(serverSource, /app\.get\('\/seller\/:slug-:id'/);
+  assert.match(serverSource, /verified: seller\.verification_status === 'approved'/);
+  assert.match(serverSource, /sellerPage\(seller, listings\)/);
+  assert.match(serverSource, /sellers\.map\(row => SITE_URL \+ '\/seller\/'/);
+  assert.match(seoSource, /function sellerPage\(/);
+  assert.match(seoSource, /EducationalOccupationalCredential/);
+  assert.match(migration, /verification_status is canonical/);
+  assert.match(migration, /users_verification_sync/);
+});
+
+test('SEO search no longer assumes the optional search_vector column', () => {
+  const serverSource = fs.readFileSync(path.join(__dirname, '..', 'server.js'), 'utf8');
+  assert.match(serverSource, /to_tsvector\('simple'/);
+  assert.match(serverSource, /coalesce\(description, ''\)/);
+});
