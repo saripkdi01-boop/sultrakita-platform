@@ -106,7 +106,7 @@ router.get('/discovery/search', async (req, res, next) => {
                                       l.image_url, l.created_at, l.updated_at, COALESCE(l.views_count, l.views, 0) AS views_count,
                                       COALESCE(l.favorites_count, 0) AS favorites_count, c.name AS category_name, c.slug AS category_slug,
                                       u.id AS seller_id, u.name AS seller_name, u.rating_average AS seller_rating,
-                                      CASE WHEN COALESCE(u.verification_status, 'unverified') = 'approved' OR LOWER(COALESCE(u.is_verified::text, 'false')) IN ('1', 'true', 't', 'yes', 'y') THEN 1 ELSE 0 END AS seller_verified
+                                      CASE WHEN COALESCE(u.verification_status, 'unverified') = 'approved' THEN 1 ELSE 0 END AS seller_verified
                                FROM listings l JOIN categories c ON c.id = l.category_id LEFT JOIN users u ON u.id = l.seller_id
                                WHERE ${where} ORDER BY ${order} LIMIT ? OFFSET ?`, itemParams);
     const [{ total }] = await query(`SELECT COUNT(*) AS total FROM listings l JOIN categories c ON c.id = l.category_id WHERE ${where}`, params);
