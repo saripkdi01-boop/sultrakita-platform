@@ -50,15 +50,15 @@ jobs:
           test "$(grep -c '^APPLY ' artifacts-first-migration.log)" -eq 22
           node -e "const fs=require('fs'); const rows=JSON.parse(fs.readFileSync('artifacts/first/step28-migration-ledger.json')); const versions=rows.map(row=>row.version); if(rows.length!==22 || new Set(versions).size!==22 || rows.some(row=>!row.version || !/^[a-f0-9]{64}$/.test(row.checksum) || row.status!=='APPLIED')) process.exit(1); console.log('ledger: 22 unique rows with SHA-256 checksums')"
           mkdir -p artifacts/step28
-          cp artifacts/first/step28-schema-manifest.json artifacts/step28-schema-manifest.json
-          cp artifacts/first/step28-schema-manifest.sha256 artifacts/step28-schema-manifest.sha256
-          cp artifacts/first/step28-migration-ledger.json artifacts/step28-migration-ledger.json
+          cp artifacts/first/step28-schema-manifest.json artifacts/step28/step28-schema-manifest.json
+          cp artifacts/first/step28-schema-manifest.sha256 artifacts/step28/step28-schema-manifest.sha256
+          cp artifacts/first/step28-migration-ledger.json artifacts/step28/step28-migration-ledger.json
       - name: Capture logs and reject secret-like output
         run: |
-          cat artifacts-first-migration.log artifacts-second-migration.log > artifacts/step28-migration-output.log
+          cat artifacts-first-migration.log artifacts-second-migration.log > artifacts/step28/step28-migration-output.log
           ! grep -E -i 'password|token|secret|DATABASE_URL|SUPABASE_SERVICE_ROLE|R2_' artifacts/step28-migration-output.log
-          cp artifacts-first-migration.log artifacts/step28-first-migration.log
-          cp artifacts-second-migration.log artifacts/step28-second-migration.log
+          cp artifacts-first-migration.log artifacts/step28/step28-first-migration.log
+          cp artifacts-second-migration.log artifacts/step28/step28-second-migration.log
       - name: Upload disposable schema artifacts
         uses: actions/upload-artifact@v4
         with:
