@@ -1,0 +1,67 @@
+name: SultraKita Disposable Schema Export
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  schema-export:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: sultrakita_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd="pg_isready -U postgres -d sultrakita_test"
+          --health-interval=10s --health-timeout=5s --health-retries=5
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/sultrakita_test
+      DATABASE_SSL: 'false'
+      NODE_ENV: test
+      SCHEMA_EXPORT_DIR: artifacts/step28
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Verify disposable target
+        run: |
+          node -e "const u=new URL(process.env.DATABASE_URL); if (!['127.0.0.1','localhost'].includes(u.hostname) || u.pathname !== '/sultrakita_test' || process.env.DATABASE_SSL !== 'false') process.exit(1); console.log('DATABASE_TARGET=disposable'); console.log('DATABASE_HOST='+u.hostname); console.log('DATABASE_NAME='+u.pathname.slice(1)); console.log('DATABASE_SSL='+process.env.DATABASE_SSL)"
+      - name: First migration run
+        run: npm run db:migrate 2>&1 | tee artifacts-first-migration.log
+      - name: Export first structural manifest
+        run: node scripts/export-schema-manifest.js artifacts/first
+      - name: Second migration run
+        run: npm run db:migrate 2>&1 | tee artifacts-second-migration.log
+      - name: Export second structural manifest and verify determinism
+        run: |
+          node scripts/export-schema-manifest.js artifacts/second
+          cmp artifacts/first/step28-schema-manifest.json artifacts/second/step28-schema-manifest.json
+          cmp artifacts/first/step28-schema-manifest.sha256 artifacts/second/step28-schema-manifest.sha256
+          test "$(grep -c '^SKIP ' artifacts-second-migration.log)" -eq 22
+          test "$(grep -c '^APPLY ' artifacts-first-migration.log)" -eq 22
+          node -e "const fs=require('fs'); const rows=JSON.parse(fs.readFileSync('artifacts/first/step28-migration-ledger.json')); const versions=rows.map(row=>row.version); if(rows.length!==22 || new Set(versions).size!==22 || rows.some(row=>!row.version || !/^[a-f0-9]{64}$/.test(row.checksum) || row.status!=='APPLIED')) process.exit(1); console.log('ledger: 22 unique rows with SHA-256 checksums')"
+          cp artifacts/first/step28-schema-manifest.json artifacts/step28-schema-manifest.json
+          cp artifacts/first/step28-schema-manifest.sha256 artifacts/step28-schema-manifest.sha256
+          cp artifacts/first/step28-migration-ledger.json artifacts/step28-migration-ledger.json
+      - name: Capture logs and reject secret-like output
+        run: |
+          cat artifacts-first-migration.log artifacts-second-migration.log > artifacts/step28-migration-output.log
+          ! grep -E -i 'password|token|secret|DATABASE_URL|SUPABASE_SERVICE_ROLE|R2_' artifacts/step28-migration-output.log
+          cp artifacts-first-migration.log artifacts/step28-first-migration.log
+          cp artifacts-second-migration.log artifacts/step28-second-migration.log
+      - name: Upload disposable schema artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: step28-disposable-schema
+          path: artifacts/step28/
+          if-no-files-found: error
+          retention-days: 14
