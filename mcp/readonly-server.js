@@ -2,6 +2,8 @@ const readline = require('node:readline');
 
 const MAX_LIMIT = 50;
 const DEFAULT_TIMEOUT_MS = 8000;
+const DEFAULT_RATE_LIMIT = 60;
+const DEFAULT_RATE_WINDOW_MS = 60000;
 const SENSITIVE_KEYS = new Set([
   'password', 'password_hash', 'session_secret', 'token', 'access_token',
   'refresh_token', 'supabase_service_role_key', 'r2_credentials',
@@ -77,10 +79,30 @@ function apiUrl(baseUrl, path, params) {
   return url;
 }
 
-function createApiAdapter({ baseUrl = process.env.SULTRAKITA_API_BASE_URL || 'http://127.0.0.1:3000', fetchImpl = globalThis.fetch, timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
+function createRateLimiter({ limit = DEFAULT_RATE_LIMIT, windowMs = DEFAULT_RATE_WINDOW_MS, clock = Date.now } = {}) {
+  const buckets = new Map();
+  return function rateLimit(key = 'anonymous') {
+    const now = clock();
+    const current = buckets.get(key);
+    if (!current || now - current.startedAt >= windowMs) {
+      buckets.set(key, { startedAt: now, count: 1 });
+      return;
+    }
+    if (current.count >= limit) fail('RATE_LIMITED', 'MCP tool rate limit exceeded');
+    current.count += 1;
+  };
+}
+
+function configuredAllowedHosts() {
+  return String(process.env.SULTRAKITA_API_ALLOWED_HOSTS || '127.0.0.1,localhost')
+    .split(',').map((host) => host.trim().toLowerCase()).filter(Boolean);
+}
+
+function createApiAdapter({ baseUrl = process.env.SULTRAKITA_API_BASE_URL || 'http://127.0.0.1:3000', fetchImpl = globalThis.fetch, timeoutMs = DEFAULT_TIMEOUT_MS, allowedHosts = configuredAllowedHosts() } = {}) {
   if (!fetchImpl) fail('UPSTREAM_UNAVAILABLE', 'fetch is unavailable');
   const parsed = new URL(baseUrl);
   if (!['http:', 'https:'].includes(parsed.protocol)) fail('INVALID_CONFIG', 'API base URL must use HTTP(S)');
+  if (!allowedHosts.includes(parsed.hostname.toLowerCase())) fail('INVALID_CONFIG', 'API host is not allowlisted');
   return async function get(path, params) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -110,8 +132,10 @@ const TOOL_DEFINITIONS = [
   { name: 'get_platform_statistics', description: 'Get aggregate public platform statistics.', inputSchema: { type: 'object', properties: {}, additionalProperties: false } },
 ];
 
-function createToolHandler({ get }) {
+function createToolHandler({ get, rateLimit = createRateLimiter(), audit = () => {} } = {}) {
   return async function call(name, input) {
+    rateLimit(name);
+    audit({ tool: name, outcome: 'started' });
     switch (name) {
       case 'search_listings':
       case 'search_products': return jsonResult(await get('/api/listings', safeListingSearch(input)));
@@ -154,4 +178,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { MAX_LIMIT, TOOL_DEFINITIONS, createApiAdapter, createMcpServer, createToolHandler, redact, safeBusinessId, safeListingSearch };
+module.exports = { MAX_LIMIT, TOOL_DEFINITIONS, createApiAdapter, createMcpServer, createRateLimiter, createToolHandler, redact, safeBusinessId, safeListingSearch };

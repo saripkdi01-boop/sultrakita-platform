@@ -3,6 +3,8 @@ const assert = require('node:assert/strict');
 const {
   TOOL_DEFINITIONS,
   createMcpServer,
+  createApiAdapter,
+  createRateLimiter,
   createToolHandler,
   redact,
   safeListingSearch,
@@ -26,6 +28,20 @@ test('rejects malformed and unsafe listing input', () => {
 test('redacts sensitive fields recursively', () => {
   const output = redact({ id: 1, email: 'hidden', nested: { token: 'hidden', name: 'public' } });
   assert.deepEqual(output, { id: 1, nested: { name: 'public' } });
+});
+
+test('rejects non-allowlisted API hosts to prevent SSRF', () => {
+  assert.throws(() => createApiAdapter({ baseUrl: 'https://example.com', fetchImpl: async () => ({}) }), /allowlisted/);
+});
+
+test('enforces a bounded per-tool rate limit', () => {
+  let now = 1000;
+  const rateLimit = createRateLimiter({ limit: 2, windowMs: 100, clock: () => now });
+  rateLimit('search_listings');
+  rateLimit('search_listings');
+  assert.throws(() => rateLimit('search_listings'), /rate limit/);
+  now += 101;
+  assert.doesNotThrow(() => rateLimit('search_listings'));
 });
 
 test('routes tools through GET-only adapter and returns bounded public data', async () => {
