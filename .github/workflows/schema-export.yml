@@ -49,6 +49,7 @@ jobs:
           test "$(grep -c '^SKIP ' artifacts-second-migration.log)" -eq 22
           test "$(grep -c '^APPLY ' artifacts-first-migration.log)" -eq 22
           node -e "const fs=require('fs'); const rows=JSON.parse(fs.readFileSync('artifacts/first/step28-migration-ledger.json')); const versions=rows.map(row=>row.version); if(rows.length!==22 || new Set(versions).size!==22 || rows.some(row=>!row.version || !/^[a-f0-9]{64}$/.test(row.checksum) || row.status!=='APPLIED')) process.exit(1); console.log('ledger: 22 unique rows with SHA-256 checksums')"
+          mkdir -p artifacts/step28
           cp artifacts/first/step28-schema-manifest.json artifacts/step28-schema-manifest.json
           cp artifacts/first/step28-schema-manifest.sha256 artifacts/step28-schema-manifest.sha256
           cp artifacts/first/step28-migration-ledger.json artifacts/step28-migration-ledger.json
