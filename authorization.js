@@ -17,12 +17,17 @@ function requireOwnership(getOwnerId) {
 }
 
 function requireConversationMember() {
-  return requireOwnership(async req => {
-    if (!Number.isSafeInteger(Number(req.params.id)) || Number(req.params.id) < 1) return null;
-    const [conversation] = await query('SELECT buyer_id, seller_id FROM conversations WHERE id = ?', [Number(req.params.id)]);
+  const ownership = requireOwnership(async req => {
+    const conversationId = Number(req.params.id);
+    const [conversation] = await query('SELECT buyer_id, seller_id FROM conversations WHERE id = ?', [conversationId]);
     if (!conversation) return null;
     return Number(conversation.buyer_id) === Number(req.user.id) || Number(conversation.seller_id) === Number(req.user.id) ? req.user.id : null;
   });
+  return (req, res, next) => {
+    const conversationId = Number(req.params.id);
+    if (!Number.isSafeInteger(conversationId) || conversationId < 1) return res.status(400).json({ success: false, error: 'ID percakapan tidak valid' });
+    return ownership(req, res, next);
+  };
 }
 
 function requireSellerOwnership(getSellerId) {
