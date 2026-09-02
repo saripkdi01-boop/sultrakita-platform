@@ -8,7 +8,7 @@ test('exposes four CRUD tools only when write mode is explicitly enabled', async
   const server = createMcpServer({ handler: async () => ({ content: [{ type: 'text', text: '{}' }] }) });
   const result = await server({ jsonrpc: '2.0', id: 1, method: 'tools/list' });
   assert.equal(WRITE_TOOL_DEFINITIONS.length, 4);
-  assert.equal(result.result.tools.length, 9);
+  assert.equal(result.result.tools.length, 10);
   assert.ok(result.result.tools.some((tool) => tool.name === 'create_listing'));
 });
 

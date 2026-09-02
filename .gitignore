@@ -5,3 +5,9 @@ node_modules/
 data/
 
 /uploads/
+
+# Local-only generated artifacts archived outside repository
+STEP46-*.md
+public/payment.html
+public/payment.css
+public/payment.js

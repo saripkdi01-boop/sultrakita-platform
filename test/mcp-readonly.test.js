@@ -12,7 +12,7 @@ const {
 
 test('exposes only allowlisted read-only tools', () => {
   assert.deepEqual(TOOL_DEFINITIONS.map((tool) => tool.name), [
-    'search_listings', 'search_products', 'list_categories', 'get_business', 'get_platform_statistics',
+    'get_mcp_usage_stats', 'search_listings', 'search_products', 'list_categories', 'get_business', 'get_platform_statistics',
   ]);
   assert.equal(TOOL_DEFINITIONS.some((tool) => /write|delete|upload|message/i.test(tool.name)), false);
 });
@@ -73,6 +73,6 @@ test('supports MCP initialize, tools/list, and tools/call', async () => {
   const listed = await server({ jsonrpc: '2.0', id: 2, method: 'tools/list' });
   const called = await server({ jsonrpc: '2.0', id: 3, method: 'tools/call', params: { name: 'list_categories', arguments: {} } });
   assert.equal(initialized.result.serverInfo.name, 'sultrakita-readonly');
-  assert.equal(listed.result.tools.length, 5);
+  assert.equal(listed.result.tools.length, 6);
   assert.equal(called.result.content[0].text, '{}');
 });

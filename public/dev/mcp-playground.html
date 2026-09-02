@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>SultraKita MCP Playground</title>
+  <link rel="stylesheet" href="/dev/mcp-playground.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <p class="eyebrow">Developer tools · internal</p>
+      <h1>SultraKita MCP Playground</h1>
+      <p>Inspect tool contracts, prepare bounded payloads, and export a request collection. This page does not execute write operations from the browser.</p>
+    </header>
+    <section class="notice" role="note"><strong>Safety boundary.</strong> The playground is schema-first and read-only in the browser. Authentication, ownership, confirmation, and mutations remain server-side.</section>
+    <section class="grid">
+      <aside class="panel" aria-labelledby="tools-title">
+        <h2 id="tools-title">Tool catalog</h2>
+        <label for="tool-select">Choose a tool</label>
+        <select id="tool-select"></select>
+        <div id="tool-summary" class="summary"></div>
+      </aside>
+      <section class="panel" aria-labelledby="schema-title">
+        <h2 id="schema-title">JSON Schema</h2>
+        <pre id="schema-output" tabindex="0"></pre>
+        <button id="export-button" type="button">Export request manifest</button>
+        <output id="feedback" role="status" aria-live="polite"></output>
+      </section>
+    </section>
+  </main>
+  <script src="/dev/mcp-schema-ui.js" defer></script>
+  <script src="/dev/mcp-playground.js" defer></script>
+</body>
+</html>
