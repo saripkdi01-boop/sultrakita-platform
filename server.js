@@ -118,7 +118,7 @@ const loadExternalJobs = async () => { const feeds = parseFeedConfig(process.env
 app.get('/api/health', async (_req, res) => {
   let db = 'down';
   try { await query('SELECT 1 AS ok'); db = 'up'; } catch (error) { console.error('[health-db]', error.message); }
-  res.status(200).json({ success: true, data: { api: 'up', db, storage: (objectStorageConfigured || presignStorageConfigured) ? 'configured' : 'down', build: process.env.VERCEL_GIT_COMMIT_SHA || process.env.COMMIT_SHA || 'local', time: new Date().toISOString() } });
+  res.status(200).json({ success: true, data: { api: 'up', db, db_driver: process.env.DATABASE_URL || process.env.SUPABASE_DB_URL ? 'postgres' : 'unconfigured', storage: (objectStorageConfigured || presignStorageConfigured) ? 'configured' : 'down', build: process.env.VERCEL_GIT_COMMIT_SHA || process.env.COMMIT_SHA || 'local', time: new Date().toISOString() } });
 });
 
 
