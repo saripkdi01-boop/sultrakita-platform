@@ -44,6 +44,7 @@ const publicObjectUrl = key => `${String(process.env.R2_PUBLIC_BASE_URL || '').r
 const uploadObject = async file => { if (nativeR2Configured) { const key = objectKey(file); await r2Client.send(new PutObjectCommand({ Bucket: process.env.R2_BUCKET_NAME, Key: key, Body: file.buffer, ContentType: file.mimetype, CacheControl: 'public, max-age=31536000, immutable' })); return publicObjectUrl(key); } if (!objectStorageConfigured) throw new Error('Object storage belum dikonfigurasi. Set R2_ACCOUNT_ID, R2_BUCKET_NAME, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_PUBLIC_BASE_URL, dan R2_S3_ENDPOINT.'); const key = objectKey(file); const response = await fetch(`${process.env.R2_UPLOAD_URL}/${key}`, { method: 'PUT', headers: { authorization: `Bearer ${process.env.R2_UPLOAD_TOKEN}`, 'content-type': file.mimetype, 'cache-control': 'public, max-age=31536000, immutable' }, body: file.buffer }); if (!response.ok) throw new Error('Upload object storage gagal'); return publicObjectUrl(key); };
 const rateLimit = (windowMs = 60_000, max = 60) => async (req, res, next) => { const key = `${req.ip}:${req.path}`; try { const rows = await query(`INSERT INTO rate_limits (key, window_started_at, hit_count) VALUES (?, now(), 1) ON CONFLICT (key) DO UPDATE SET hit_count = CASE WHEN rate_limits.window_started_at <= now() - (? * interval '1 millisecond') THEN 1 ELSE rate_limits.hit_count + 1 END, window_started_at = CASE WHEN rate_limits.window_started_at <= now() - (? * interval '1 millisecond') THEN now() ELSE rate_limits.window_started_at END, updated_at = now() RETURNING hit_count, window_started_at`, [key, windowMs, windowMs]); const hit = Number(rows[0]?.hit_count || 0); if (hit > max) return fail(res, 429, 'Terlalu banyak permintaan. Silakan coba lagi nanti.'); return next(); } catch (error) { console.error('[rate-limit-degraded]', error.message); return next(); } };
 const otpRateLimit = rateLimit(5 * 60_000, 10);
+const otpDestinationCooldownSeconds = Math.min(300, Math.max(30, Number(process.env.OTP_DESTINATION_COOLDOWN_SECONDS || 60)));
 const retentionDays = Math.min(730, Math.max(7, Number(process.env.ANALYTICS_RETENTION_DAYS || 90)));
 setInterval(() => { run("DELETE FROM analytics_events WHERE created_at < now() - (? * interval '1 day')", [retentionDays]).catch(() => {}); run('DELETE FROM sessions WHERE expires_at <= ?', [Date.now()]).catch(() => {}); run("DELETE FROM auth_otp_challenges WHERE expires_at < now()").catch(() => {}); run("DELETE FROM auth_login_exchanges WHERE expires_at < now() OR consumed_at IS NOT NULL").catch(() => {}); }, 24 * 60 * 60 * 1000).unref();
 const escapeXml = value => String(value).replace(/[<>&\"']/g, char => ({ '<':'&lt;', '>':'&gt;', '&':'&amp;', '\"':'&quot;', "'":'&apos;' }[char]));
@@ -165,6 +166,11 @@ app.post('/api/auth/request-otp', otpRateLimit, async (req, res, next) => {
     if (channel === 'email' && !email) return fail(res, 422, 'Alamat email belum valid');
     const destination = channel === 'email' ? email : phone;
     const destinationHash = otpDestinationHash(channel, destination);
+    const recentChallenge = await query('SELECT id FROM auth_otp_challenges WHERE channel = ? AND destination_hash = ? AND consumed_at IS NULL AND created_at > now() - (? * interval \'1 second\') LIMIT 1', [channel, destinationHash, otpDestinationCooldownSeconds]);
+    if (recentChallenge.length) {
+      res.setHeader('Retry-After', String(otpDestinationCooldownSeconds));
+      return failCode(res, 429, 'OTP_COOLDOWN', `Permintaan OTP untuk tujuan ini dapat dilakukan lagi dalam ${otpDestinationCooldownSeconds} detik.`);
+    }
     const code = String(crypto.randomInt(100000, 1000000));
     const codeHash = crypto.createHash('sha256').update(code).digest('hex');
     await run('DELETE FROM auth_otp_challenges WHERE (channel = ? AND destination_hash = ?) OR expires_at < now()', [channel, destinationHash]);
