@@ -7,7 +7,7 @@
     "start": "node server.js",
     "dev": "node --watch server.js",
     "lint": "node scripts/lint-check.js",
-    "test": "node --test",
+    "test": "node --test test/*.test.js scripts/test-*.js",
     "build": "node scripts/build-check.js",
     "test:security": "node scripts/security-regression.js",
     "test:auth-upgrade": "node scripts/auth-upgrade-regression.js",
