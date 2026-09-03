@@ -1,3 +1,17 @@
 :root{--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-7:32px;--space-8:40px;--space-9:48px;--space-10:64px;--page-gutter:16px;--section-gap:32px;--surface-border:rgba(255,255,255,.08);--surface-soft:rgba(255,255,255,.035);--radius-card:16px}
 @media(min-width:640px){:root{--page-gutter:24px}}
 @media(min-width:1024px){:root{--page-gutter:32px}}
+
+/* SultraKita v3 visual layer — additive tokens */
+:root {
+  --sk-v3-primary: #0a7c4f;
+  --sk-v3-primary-deep: #064e3b;
+  --sk-v3-accent: #f59e0b;
+  --sk-v3-blue: #1688c9;
+  --sk-v3-hero: linear-gradient(135deg, #064e3b 0%, #0a7c4f 44%, #f59e0b 100%);
+  --sk-v3-glass: rgba(255, 255, 255, 0.72);
+  --sk-v3-glass-border: rgba(255, 255, 255, 0.34);
+  --sk-v3-float-shadow: 0 22px 52px -18px rgba(4, 55, 40, 0.42);
+  --sk-v3-radius: 28px;
+}
+html[data-theme='light'] { --sk-v3-glass: rgba(255, 255, 255, 0.84); }
