@@ -1,0 +1,124 @@
+{
+  "name": "SultraKita - Listing Media Processing",
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "saveExecutionProgress": true,
+    "errorWorkflow": "SultraKita - Workflow Error Handler"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "templateNote": "The browser uploads directly to R2 through a short-lived presigned URL created by Express. Do not send large multipart files through this workflow."
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "sultrakita/listing/media-uploaded",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode"
+      },
+      "id": "media-webhook",
+      "name": "Webhook - Media Uploaded",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "webhookId": "sultrakita-listing-media-uploaded"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body ?? $json;\nconst eventId = String(body.event_id || '').trim();\nconst objectKey = String(body.object_key || '').trim();\nconst listingId = String(body.listing_id || '').trim();\nconst contentType = String(body.content_type || '').toLowerCase();\nconst byteSize = Number(body.byte_size);\nif (!eventId || !objectKey || !listingId) throw new Error('Missing event_id, object_key, or listing_id');\nif (!/^users\\/[a-zA-Z0-9_-]+\\/listings\\/[a-zA-Z0-9_-]+\\//.test(objectKey)) throw new Error('Invalid object key scope');\nif (!['image/jpeg','image/png','image/webp'].includes(contentType)) throw new Error('Unsupported content type');\nif (!Number.isSafeInteger(byteSize) || byteSize <= 0 || byteSize > 10 * 1024 * 1024) throw new Error('Invalid media size');\nreturn [{ json: { event_id: eventId, listing_id: listingId, object_key: objectKey, content_type: contentType, byte_size: byteSize, request_id: body.request_id || eventId } }];"
+      },
+      "id": "media-validate",
+      "name": "Code - Validate Event and Media",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SULTRAKITA_API_BASE_URL + '/api/internal/media/claim'}}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{$('Code - Validate Event and Media').item.json}}",
+        "options": { "timeout": 10000 }
+      },
+      "id": "media-claim",
+      "name": "Express - Claim Idempotent Media Job",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 0]
+    },
+    {
+      "parameters": {
+        "method": "HEAD",
+        "url": "={{$env.R2_PUBLIC_BASE_URL + '/' + $('Code - Validate Event and Media').item.json.object_key}}",
+        "options": { "timeout": 10000 }
+      },
+      "id": "media-head",
+      "name": "R2 - Verify Object Exists",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [700, 0],
+      "continueOnFail": false
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SULTRAKITA_API_BASE_URL + '/api/internal/media/process'}}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { event_id: $('Code - Validate Event and Media').item.json.event_id, listing_id: $('Code - Validate Event and Media').item.json.listing_id, object_key: $('Code - Validate Event and Media').item.json.object_key, content_type: $('Code - Validate Event and Media').item.json.content_type } }}",
+        "options": { "timeout": 30000 }
+      },
+      "id": "media-process",
+      "name": "Media Service - Create Thumbnail",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [940, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SULTRAKITA_API_BASE_URL + '/api/internal/media/ready'}}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { event_id: $('Code - Validate Event and Media').item.json.event_id, listing_id: $('Code - Validate Event and Media').item.json.listing_id, variants: $json.variants || [], workflow_status: 'PENDING_REVIEW' } }}"
+      },
+      "id": "media-ready",
+      "name": "Express - Mark Media Ready",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1180, 0]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { success: true, status: 'READY', event_id: $('Code - Validate Event and Media').item.json.event_id } }}",
+        "options": { "responseCode": 200 }
+      },
+      "id": "media-response",
+      "name": "Respond - Media Ready",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1420, 0]
+    }
+  ],
+  "connections": {
+    "Webhook - Media Uploaded": { "main": [[{ "node": "Code - Validate Event and Media", "type": "main", "index": 0 }]] },
+    "Code - Validate Event and Media": { "main": [[{ "node": "Express - Claim Idempotent Media Job", "type": "main", "index": 0 }]] },
+    "Express - Claim Idempotent Media Job": { "main": [[{ "node": "R2 - Verify Object Exists", "type": "main", "index": 0 }]] },
+    "R2 - Verify Object Exists": { "main": [[{ "node": "Media Service - Create Thumbnail", "type": "main", "index": 0 }]] },
+    "Media Service - Create Thumbnail": { "main": [[{ "node": "Express - Mark Media Ready", "type": "main", "index": 0 }]] },
+    "Express - Mark Media Ready": { "main": [[{ "node": "Respond - Media Ready", "type": "main", "index": 0 }]] }
+  },
+  "pinData": {}
+}

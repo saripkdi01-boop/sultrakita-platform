@@ -1,0 +1,125 @@
+{
+  "name": "SultraKita - User Registration OTP",
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "saveExecutionProgress": true,
+    "errorWorkflow": "SultraKita - Workflow Error Handler"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "templateNote": "Bind Supabase service role, provider API, and SULTRAKITA_WEBHOOK_HMAC credentials after import. Keep inactive until staging tests pass."
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "sultrakita/user/request-otp",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": { "rawBody": true }
+      },
+      "id": "otp-webhook",
+      "name": "Webhook - Request OTP",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "webhookId": "sultrakita-user-request-otp"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body ?? $json;\nconst destination = String(body.destination ?? '').trim();\nconst purpose = String(body.purpose ?? 'REGISTRATION').toUpperCase();\nif (!/^\\+?[1-9]\\d{7,14}$/.test(destination)) throw new Error('Invalid E.164 destination');\nif (!['REGISTRATION','LOGIN','PHONE_VERIFICATION','PASSWORD_RESET'].includes(purpose)) throw new Error('Invalid OTP purpose');\nconst requestId = $json.headers?.['x-request-id'] || `req_${Date.now()}`;\nconst devMode = String($env.OTP_DEV_MODE || 'false').toLowerCase() === 'true';\nconst otp = devMode ? '123456' : String(Math.floor(100000 + Math.random() * 900000));\nreturn [{ json: { destination, purpose, request_id: requestId, dev_mode: devMode, otp, expires_at: new Date(Date.now() + 5 * 60 * 1000).toISOString() } }];"
+      },
+      "id": "otp-validate",
+      "name": "Code - Validate and Generate OTP",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SULTRAKITA_API_BASE_URL + '/api/internal/otp/challenge'}}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { destination: $json.destination, purpose: $json.purpose, otp: $json.otp, expires_at: $json.expires_at, request_id: $json.request_id } }}",
+        "options": { "timeout": 10000 }
+      },
+      "id": "otp-persist",
+      "name": "Express - Persist OTP Hash",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 0]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [{ "value1": "={{$('Code - Validate and Generate OTP').item.json.dev_mode}}", "operation": "isFalse" }]
+        }
+      },
+      "id": "otp-dev-mode",
+      "name": "IF - Send Only Outside DEV_MODE",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [700, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.OTP_PROVIDER_URL}}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { destination: $('Code - Validate and Generate OTP').item.json.destination, message: 'Kode OTP SultraKita: ' + $('Code - Validate and Generate OTP').item.json.otp + '. Berlaku 5 menit.' } }}",
+        "options": { "timeout": 10000, "retry": { "maxTries": 3, "waitBetweenTries": 2000 } }
+      },
+      "id": "otp-provider",
+      "name": "HTTP - WhatsApp/SMS Provider",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [940, -120],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SULTRAKITA_API_BASE_URL + '/api/internal/otp/delivery-status'}}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { request_id: $('Code - Validate and Generate OTP').item.json.request_id, provider_response: $json, status: $json.error ? 'FAILED' : 'SENT' } }}"
+      },
+      "id": "otp-status",
+      "name": "Express - Save Delivery Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1180, -120]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { success: true, status: $('Code - Validate and Generate OTP').item.json.dev_mode ? 'DEV_MODE' : 'SENT', request_id: $('Code - Validate and Generate OTP').item.json.request_id } }}",
+        "options": { "responseCode": 202 }
+      },
+      "id": "otp-response",
+      "name": "Respond - OTP Queued",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1420, 0]
+    }
+  ],
+  "connections": {
+    "Webhook - Request OTP": { "main": [[{ "node": "Code - Validate and Generate OTP", "type": "main", "index": 0 }]] },
+    "Code - Validate and Generate OTP": { "main": [[{ "node": "Express - Persist OTP Hash", "type": "main", "index": 0 }]] },
+    "Express - Persist OTP Hash": { "main": [[{ "node": "IF - Send Only Outside DEV_MODE", "type": "main", "index": 0 }]] },
+    "IF - Send Only Outside DEV_MODE": { "main": [[{ "node": "HTTP - WhatsApp/SMS Provider", "type": "main", "index": 0 }], [{ "node": "Respond - OTP Queued", "type": "main", "index": 0 }]] },
+    "HTTP - WhatsApp/SMS Provider": { "main": [[{ "node": "Express - Save Delivery Status", "type": "main", "index": 0 }]] },
+    "Express - Save Delivery Status": { "main": [[{ "node": "Respond - OTP Queued", "type": "main", "index": 0 }]] }
+  },
+  "pinData": {}
+}

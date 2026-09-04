@@ -1,0 +1,128 @@
+{
+  "name": "SultraKita - Seller Verification Admin Notification",
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "saveExecutionProgress": true,
+    "errorWorkflow": "SultraKita - Workflow Error Handler"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "templateNote": "Keep verification documents private. Notify admins with a short-lived review reference, never a permanent public document URL."
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "sultrakita/seller-verification/submitted",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode"
+      },
+      "id": "verification-webhook",
+      "name": "Webhook - Verification Submitted",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "webhookId": "sultrakita-seller-verification-submitted"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body ?? $json;\nconst eventId = String(body.event_id || '').trim();\nconst verificationId = String(body.verification_id || '').trim();\nconst documentKey = String(body.document_key || '').trim();\nif (!eventId || !verificationId || !documentKey) throw new Error('Missing verification event fields');\nif (!/^private\\/seller-verification\\//.test(documentKey)) throw new Error('Document key is outside private verification scope');\nreturn [{ json: { event_id: eventId, verification_id: verificationId, document_key: documentKey, user_id: body.user_id, request_id: body.request_id || eventId } }];"
+      },
+      "id": "verification-validate",
+      "name": "Code - Validate Private Document Event",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SULTRAKITA_API_BASE_URL + '/api/internal/seller-verifications/claim'}}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{$('Code - Validate Private Document Event').item.json}}",
+        "options": { "timeout": 10000 }
+      },
+      "id": "verification-claim",
+      "name": "Express - Claim Verification Job",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SULTRAKITA_API_BASE_URL + '/api/internal/seller-verifications/review-link'}}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { verification_id: $('Code - Validate Private Document Event').item.json.verification_id, document_key: $('Code - Validate Private Document Event').item.json.document_key, expires_in: 600 } }}",
+        "options": { "timeout": 10000 }
+      },
+      "id": "verification-link",
+      "name": "Express - Create Short-Lived Review Link",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [700, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.TELEGRAM_BOT_API_URL || 'https://api.telegram.org/bot' + $env.TELEGRAM_BOT_TOKEN + '/sendMessage'}}",
+        "authentication": "none",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { chat_id: $env.TELEGRAM_ADMIN_CHAT_ID, parse_mode: 'HTML', text: '<b>Seller verification baru</b>\\nID: ' + $('Code - Validate Private Document Event').item.json.verification_id + '\\nReview: ' + $json.review_url } }}",
+        "options": { "timeout": 10000, "retry": { "maxTries": 3, "waitBetweenTries": 2000 } }
+      },
+      "id": "verification-telegram",
+      "name": "Telegram - Notify Admin",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [940, -120],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SULTRAKITA_API_BASE_URL + '/api/internal/seller-verifications/notified'}}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { event_id: $('Code - Validate Private Document Event').item.json.event_id, verification_id: $('Code - Validate Private Document Event').item.json.verification_id, provider_response: $json, workflow_status: $json.error ? 'FAILED' : 'AWAITING_REVIEW' } }}"
+      },
+      "id": "verification-status",
+      "name": "Express - Save Notification Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1180, -120]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { success: true, status: 'AWAITING_REVIEW', verification_id: $('Code - Validate Private Document Event').item.json.verification_id } }}",
+        "options": { "responseCode": 202 }
+      },
+      "id": "verification-response",
+      "name": "Respond - Verification Queued",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1420, 0]
+    }
+  ],
+  "connections": {
+    "Webhook - Verification Submitted": { "main": [[{ "node": "Code - Validate Private Document Event", "type": "main", "index": 0 }]] },
+    "Code - Validate Private Document Event": { "main": [[{ "node": "Express - Claim Verification Job", "type": "main", "index": 0 }]] },
+    "Express - Claim Verification Job": { "main": [[{ "node": "Express - Create Short-Lived Review Link", "type": "main", "index": 0 }]] },
+    "Express - Create Short-Lived Review Link": { "main": [[{ "node": "Telegram - Notify Admin", "type": "main", "index": 0 }]] },
+    "Telegram - Notify Admin": { "main": [[{ "node": "Express - Save Notification Status", "type": "main", "index": 0 }]] },
+    "Express - Save Notification Status": { "main": [[{ "node": "Respond - Verification Queued", "type": "main", "index": 0 }]] }
+  },
+  "pinData": {}
+}
