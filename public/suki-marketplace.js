@@ -182,7 +182,7 @@ async function loadLiveListings() {
     if (!response.ok) throw new Error('API tidak tersedia');
     const payload = await response.json();
     const rows = Array.isArray(payload.data) ? payload.data : [];
-    const propertyRows = rows.filter((item) => /properti|rumah|tanah|ruko|komers/i.test(String(item.category_name || item.category || '')));
+    const propertyRows = rows.filter((item) => /properti|rumah|tanah|ruko|komers/i.test(String(item.category_name || item.category || '')) && !/^demo[-_]?seed/i.test(String(item.title || '')) && !/^demo[-_]?seed/i.test(String(item.provenance || '')));
     if (!propertyRows.length || payload.meta?.source === 'degraded') throw new Error('fallback');
     const liveProperties = propertyRows.map((item, index) => ({
       id: Number(item.id) || 1000 + index,
