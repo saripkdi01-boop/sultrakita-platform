@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { postToApi } from '@/lib/api/client';
 
 const schema = z.object({ amount: z.coerce.number().min(10000, 'Minimum dukungan Rp 10.000'), note: z.string().max(240).optional() });
 type SupportValues = z.infer<typeof schema>;
@@ -13,22 +14,16 @@ export function ModalSupport({ open, onClose }: { open: boolean; onClose: () => 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<SupportValues>({ resolver: zodResolver(schema), defaultValues: { amount: 50000 } });
   async function submit(values: SupportValues) {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || ''}/api/donations`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          campaign_id: 1,
-          name: 'Hamba Allah',
-          amount: values.amount,
-          message: values.note || null,
-          payment_method: 'qris',
-        }),
+      const payload = await postToApi<{ payment_url?: string }, { campaign_id: number; name: string; amount: number; message: string | null; payment_method: string }>('/api/donations', {
+        campaign_id: 1,
+        name: 'Hamba Allah',
+        amount: values.amount,
+        message: values.note || null,
+        payment_method: 'qris',
       });
-      const payload = await response.json().catch(() => null);
-      if (!response.ok || payload?.ok === false) throw new Error('Donation API request failed');
-      setMessage(payload?.data?.payment_url ? 'Dukungan tercatat. Silakan lanjutkan pembayaran.' : 'Terima kasih. Dukungan tercatat dan menunggu pembayaran.');
-    } catch {
-      setMessage('Dukungan belum tercatat. Coba lagi.');
+      setMessage(payload.payment_url ? 'Dukungan tercatat. Silakan lanjutkan pembayaran.' : 'Terima kasih. Dukungan tercatat dan menunggu pembayaran.');
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Dukungan belum tercatat. Coba lagi.');
     }
   }
   if (!open) return null;

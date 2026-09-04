@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { postToApi } from '@/lib/api/client';
 
 const schema = z.object({ name: z.string().min(2, 'Nama wajib diisi'), email: z.string().email('Email belum valid'), organization: z.string().min(2, 'Organisasi wajib diisi') });
 type PartnershipValues = z.infer<typeof schema>;
@@ -13,20 +14,14 @@ export function ModalPartnership({ open, onClose }: { open: boolean; onClose: ()
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<PartnershipValues>({ resolver: zodResolver(schema) });
   async function submit(values: PartnershipValues) {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || ''}/api/suggestions`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          name: values.name,
-          email: values.email,
-          body: `Minat kemitraan dari organisasi: ${values.organization}`,
-        }),
+      await postToApi<{ id: number; message: string }, { name: string; email: string; body: string }>('/api/suggestions', {
+        name: values.name,
+        email: values.email,
+        body: `Minat kemitraan dari organisasi: ${values.organization}`,
       });
-      const payload = await response.json().catch(() => null);
-      if (!response.ok || payload?.ok === false) throw new Error('Partnership API request failed');
       setMessage('Terima kasih. Tim kami akan menghubungi Anda.');
-    } catch {
-      setMessage('Form belum terkirim. Coba lagi.');
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Form belum terkirim. Coba lagi.');
     }
   }
   if (!open) return null;
