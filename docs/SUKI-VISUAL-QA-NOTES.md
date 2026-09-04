@@ -33,3 +33,11 @@ Pemicu langsung pada tombol `Buka simulator KPR` berhasil membuka modal `SIMULAS
 ## Catatan tambahan
 
 Pemicu langsung pada tombol view map tidak mengubah tampilan screenshot saat filter komersial aktif, sehingga mode map tetap dipertahankan sebagai fitur yang perlu diverifikasi pada viewport breakpoint yang tepat. Dialog KPR berhasil dipastikan tampil melalui pemicu langsung dan tidak mengganggu halaman setelah ditutup.
+
+## Deployment Vercel
+
+Deployment dari commit `4a8b7bd` berstatus `READY`. URL preview standar mengarah ke login Vercel karena deployment protection tim aktif. Tautan shareable sementara berhasil membuka halaman publik tanpa login dan menampilkan title `SUKI Suits — Properti Terpercaya di Sulawesi Tenggara`, hero, search panel, trust SiKumbang, serta delapan kartu listing dengan kontrol interaktif.
+
+## Frame demo
+
+Screenshot bersih `00-04-18` dan `00-04-27` memperlihatkan kartu pertama dalam state carousel berbeda dengan counter `3 / 3` dan `2 / 3`, sekaligus memperlihatkan heart tersimpan dan panel peta. Frame ini dapat dipakai untuk dokumentasi visual slider.
