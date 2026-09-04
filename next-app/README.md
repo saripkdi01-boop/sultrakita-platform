@@ -14,15 +14,15 @@ Buka `http://localhost:3000`.
 
 ## Environment
 
-`NEXT_PUBLIC_SUPABASE_URL` dan `NEXT_PUBLIC_SUPABASE_ANON_KEY` dipakai oleh client Supabase. `NEXT_PUBLIC_R2_BUCKET_URL` disiapkan sebagai hook URL aset avatar/listing Cloudflare R2; URL tersebut belum dipakai untuk upload nyata pada prototipe ini.
+`NEXT_PUBLIC_SUPABASE_URL` dan `NEXT_PUBLIC_SUPABASE_ANON_KEY` dipakai oleh client Supabase untuk session, profil, dan notifikasi. `NEXT_PUBLIC_API_BASE_URL` menunjuk ke API Express produksi yang menangani donasi dan saran kemitraan. `NEXT_PUBLIC_R2_BUCKET_URL` hanya untuk URL publik aset; kredensial R2 tidak boleh dikirim ke browser.
 
 ## Supabase
 
-Buat tabel `notifications` dengan kolom `id`, `is_read`, dan `user_id` untuk badge notifikasi. Buat tabel `donations` dengan `amount`, `note`, dan `status`, serta tabel `partnerships` dengan `name`, `email`, `organization`, dan `status`. Terapkan RLS sebelum data produksi diaktifkan. Modal hanya mencatat intent sebagai `pending support` atau `pending`; tidak ada pembayaran nyata.
+Skema Supabase yang dipakai oleh repository harus disinkronkan melalui seluruh berkas `../supabase/migrations/`, bukan melalui tabel baru yang hanya cocok dengan prototipe. Modal dukungan mengirim `POST /api/donations` dengan `campaign_id`, `name`, `amount`, `message`, dan `payment_method`; modal kemitraan mengirim `POST /api/suggestions` dengan `name`, `email`, dan `body`. API tersebut memakai database PostgreSQL yang dikonfigurasi melalui `DATABASE_URL` pada server dan meneruskan donasi ke provider pembayaran hanya jika provider telah dikonfigurasi.
 
 ## Vercel
 
-Import repository GitHub ke Vercel, set **Root Directory** ke `next-app`, gunakan build command `npm run build`, dan tambahkan tiga environment variable pada Project Settings untuk Preview dan Production. Preview deployment dapat dipakai untuk QA sebelum merge ke branch utama.
+Import repository GitHub ke Vercel, set **Root Directory** ke `next-app`, gunakan build command `npm run build`, dan tambahkan `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_API_BASE_URL`, serta `NEXT_PUBLIC_R2_BUCKET_URL` pada Project Settings untuk Preview dan Production. Preview deployment dapat dipakai untuk QA sebelum merge ke branch utama.
 
 ## Cloudflare R2
 
@@ -30,4 +30,4 @@ Buat bucket R2 privat untuk aset pengguna, expose melalui custom domain/CDN, lal
 
 ## Catatan RBAC
 
-`requiredRole` sudah tersedia pada `config/navigation.ts`. Sidebar menyembunyikan menu seller/admin secara default dan memiliki komentar TODO untuk menggantinya dengan role dari Supabase Auth Session.
+`requiredRole` sudah tersedia pada `config/navigation.ts`. Sidebar membaca role, nama, headline, avatar, dan status session dari `useSessionProfile`; menu seller/admin disembunyikan ketika role belum tersedia.
