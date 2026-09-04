@@ -1,0 +1,1 @@
+import { create } from 'zustand'; type UIState={collapsed:boolean;mobileOpen:boolean;toggleCollapsed:()=>void;toggleMobile:()=>void}; export const useUIStore=create<UIState>((set)=>({collapsed:false,mobileOpen:false,toggleCollapsed:()=>set(s=>({collapsed:!s.collapsed})),toggleMobile:()=>set(s=>({mobileOpen:!s.mobileOpen}))}));

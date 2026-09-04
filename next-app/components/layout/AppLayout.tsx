@@ -1,0 +1,3 @@
+'use client';
+import { Header } from './Header'; import { SidebarDesktop } from './SidebarDesktop'; import { SidebarMobileDrawer } from './SidebarMobileDrawer'; import { useUIStore } from '@/store/ui';
+export function AppLayout({ children }: { children: React.ReactNode }) { const { mobileOpen } = useUIStore(); return <><Header/><div className="app-frame"><SidebarDesktop/><SidebarMobileDrawer open={mobileOpen}/><div className="content-wrap">{children}</div></div></>; }
