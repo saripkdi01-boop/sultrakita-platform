@@ -1,0 +1,35 @@
+# SUKI Suits — Catatan QA Visual
+
+## Pemeriksaan desktop awal
+
+Halaman root memuat dengan status HTTP 200. Hero menampilkan brand SUKI, copy lokal, search panel empat kolom, dan visual hunian dengan stamp SiKumbang. Trust strip menampilkan tiga pola kepercayaan serta CTA pemilik properti. Pada section explore, kartu tampil dalam grid dua kolom dan panel peta berada sticky di sisi kanan. Setiap kartu menampilkan status badge, tombol heart, foto bergeser, indikator dots/counter, harga Rupiah, spesifikasi, ID lokasi, dan sisa unit.
+
+Pada screenshot browser, struktur visual terbaca baik pada viewport desktop. Aset foto eksternal termuat dan memberi variasi visual; karena file data SiKumbang asli tidak ikut tersedia di shared files, halaman memakai curated fallback delapan listing dengan ID SiKumbang yang dipetakan ke contoh area Kendari dan akan mencoba `/api/listings?limit=50` saat runtime tersedia.
+
+## Catatan tindak lanjut
+
+Uji berikutnya mencakup carousel manual, favorit, filter komersial, mode peta, modal detail/KPR, submit newsletter, dan responsive mobile. Jika backend tidak memiliki kredensial database di lingkungan lokal, status fallback sample dianggap jalur yang valid dan tidak boleh menyebabkan halaman gagal.
+
+## Hasil interaksi desktop
+
+Tombol heart pada kartu pertama berhasil mengubah state menjadi `♥`, menampilkan badge `1` pada ikon tersimpan di header, dan menampilkan toast konfirmasi. Tombol foto berikutnya berhasil mengubah counter dari `3 / 3` menjadi `1 / 3` lalu carousel mengikuti state baru; timer otomatis juga tetap berjalan. Hover pada kartu menampilkan kontrol panah dengan jelas.
+
+## Hasil filter dan explore
+
+Filter `Komersial premium` berhasil menyaring hasil menjadi dua listing, yaitu Villa Pesisir Nambo dan Ruko Boulevard Teluk, sambil memperbarui ringkasan hasil serta jumlah listing pada peta. Mode daftar/peta tetap menampilkan struktur map panel dan marker harga sehingga split-view siap digunakan pada desktop serta dapat berubah menjadi peta penuh pada breakpoint responsif.
+
+## Hasil modal detail
+
+Modal detail berhasil terbuka dari kartu melalui klik pada area non-kontrol. Dialog menampilkan foto utama, label status/tipe, harga, judul, lokasi, rating agen, deskripsi, ID data lokasi, sisa unit, serta aksi `Hubungi agen` dan `Simpan`. Dialog juga berhasil ditutup melalui tombol close.
+
+## Hasil simulator dan lower sections
+
+Section agen dan simulator KPR tampil bersebelahan pada desktop. Simulator memiliki field harga properti, uang muka, tenor, output cicilan, dan catatan bahwa angka bersifat indikatif. Tombol pembuka simulator tersedia untuk dialog lanjutan. Closing newsletter dan footer juga tampil pada akhir halaman dengan kontras yang memadai.
+
+## Hasil simulator KPR
+
+Pemicu langsung pada tombol `Buka simulator KPR` berhasil membuka modal `SIMULASI KPR SUKI`. Dialog memuat input harga, pilihan uang muka, tenor, tombol hitung, dan hasil estimasi awal sekitar Rp 3,8 jt per bulan. Modal menggunakan backdrop blur dan dapat ditutup dengan tombol `×`.
+
+## Catatan tambahan
+
+Pemicu langsung pada tombol view map tidak mengubah tampilan screenshot saat filter komersial aktif, sehingga mode map tetap dipertahankan sebagai fitur yang perlu diverifikasi pada viewport breakpoint yang tepat. Dialog KPR berhasil dipastikan tampil melalui pemicu langsung dan tidak mengganggu halaman setelah ditutup.
