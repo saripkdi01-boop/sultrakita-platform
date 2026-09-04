@@ -41,3 +41,7 @@ Deployment dari commit `4a8b7bd` berstatus `READY`. URL preview standar mengarah
 ## Frame demo
 
 Screenshot bersih `00-04-18` dan `00-04-27` memperlihatkan kartu pertama dalam state carousel berbeda dengan counter `3 / 3` dan `2 / 3`, sekaligus memperlihatkan heart tersimpan dan panel peta. Frame ini dapat dipakai untuk dokumentasi visual slider.
+
+## Verifikasi final production
+
+Deployment `dpl_FSoN3ffR1VwvfFQF46pi62i1ceMk` berstatus `READY` dengan target `production` dan alias domain utama `sultrakita-platform.vercel.app`. Pemeriksaan langsung pada URL deployment terbaru menampilkan **8 listing** dan marker peta **8 listing di area ini**, sehingga fallback curated berjalan benar setelah seed demo non-properti dikeluarkan dari feed live.
