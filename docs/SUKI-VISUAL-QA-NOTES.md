@@ -45,3 +45,7 @@ Screenshot bersih `00-04-18` dan `00-04-27` memperlihatkan kartu pertama dalam s
 ## Verifikasi final production
 
 Deployment `dpl_FSoN3ffR1VwvfFQF46pi62i1ceMk` berstatus `READY` dengan target `production` dan alias domain utama `sultrakita-platform.vercel.app`. Pemeriksaan langsung pada URL deployment terbaru menampilkan **8 listing** dan marker peta **8 listing di area ini**, sehingga fallback curated berjalan benar setelah seed demo non-properti dikeluarkan dari feed live.
+
+## Pemisahan sesi Facebook dan Property
+
+Root `/` telah dipulihkan ke desain SultraKita/SUKI Marketplace bergaya Facebook dengan feed sosial, stories, composer, sidebar komunitas, notifikasi, dan Marketplace legacy. Tombol `SUKI Suits Property` tersedia pada topbar, sidebar, header Marketplace, dan mobile nav. Klik tombol tersebut membuka `/property/`, sedangkan tombol `← SultraKita` pada header Property kembali ke `/`. Sesi Property menampilkan 8 listing curated, carousel, peta, trust SiKumbang, dan simulator KPR tanpa mengubah desain root.

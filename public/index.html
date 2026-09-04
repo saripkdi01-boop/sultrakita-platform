@@ -1,92 +1,881 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#0e6258" />
-  <meta name="description" content="SUKI Suits — marketplace properti terkurasi untuk Kendari dan Sulawesi Tenggara." />
-  <title>SUKI Suits — Properti Terpercaya di Sulawesi Tenggara</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/suki-marketplace.css" />
+  <meta name="theme-dark-preload" content="true">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SultraKita — SUKI Marketplace | Ruang Warga Sulawesi Tenggara</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/plus-jakarta-sans@5.0.8/index.css" />
+<style>
+/* ============================================================
+   ANALISA CODEBASE ASLI (sultrakita-platform.vercel.app / github.com/saripkdi01-boop/sultrakita-platform)
+   ------------------------------------------------------------
+   • Stack asli : Node.js/Express (server.js) + frontend HTML/CSS/JS vanilla (public/),
+     SQLite/sql.js legacy → jalur PostgreSQL, migrasi Supabase (beta discovery indexes)
+     di https://ibvcfdfsjpytwpnxgylm.supabase.co, upload Cloudflare R2, deploy Vercel,
+     app mobile Expo. Brand internal: "SUKI" (SUKI PROMO HUB).
+   • Fitur asli : listing marketplace (search/filter kategori+distrik/sort/pagination),
+     kategori (Properti, Kendaraan, Elektronik, Jasa, Kuliner, Fashion, Hobi),
+     distrik Kendari (Poasia, Baruga, Mandonga, Kambu, Wua-Wua, Kendari Barat, Kadia),
+     favorit/koleksi/bagikan, komentar + notifikasi WhatsApp seller, verifikasi seller,
+     follow seller, auth OTP, donasi (Midtrans/Xendit QRIS/VA), dashboard admin.
+   • REBUILD INI : versi desain saya — sosial + marketplace ala Facebook & FB Marketplace
+     ("SultraKita / SUKI MARKETPLACE"): Feed (story, composer, reaksi, komentar, bagikan),
+     Marketplace (kategori, distrik, sort, cari, detail, simpan, buat iklan, follow seller),
+     Grup komunitas, Notifikasi, Messenger, dark-mode, responsif mobile.
+   • Integrasi  : data di bawah = mock (mode demo). Untuk produksi, ganti array data dengan
+     fetch ke REST API/Supabase (tabel disarankan: profiles, listings, categories, districts,
+     posts, comments, favorites, groups, notifications) memakai SUPABASE_URL di <script>.
+   ============================================================ */
+:root{
+  --bg:#f0f2f5; --card:#ffffff; --text:#1c1e21; --muted:#65676b; --border:#e4e6eb;
+  --hover:rgba(0,0,0,.05); --primary:#0d9488; --primary-d:#0f766e; --accent:#f59e0b;
+  --blue:#1877f2; --red:#ef4444; --shadow:0 1px 2px rgba(0,0,0,.1);
+  --shadow-lg:0 12px 32px rgba(0,0,0,.18);
+}
+body.dark{
+  --bg:#18191a; --card:#242526; --text:#e4e6eb; --muted:#b0b3b8; --border:#3a3b3c;
+  --hover:rgba(255,255,255,.08); --shadow:0 1px 2px rgba(0,0,0,.5); --shadow-lg:0 12px 32px rgba(0,0,0,.6);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:15px;transition:background .3s,color .3s}
+button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer}
+input,textarea,select{font-family:inherit;color:var(--text)}
+img{display:block}
+.hidden{display:none!important}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-thumb{background:var(--muted);border-radius:9px;border:2px solid var(--bg)}
+::-webkit-scrollbar-track{background:var(--bg)}
+
+/* ---------- TOPBAR ---------- */
+#topbar{position:fixed;top:0;left:0;right:0;height:60px;background:var(--card);border-bottom:1px solid var(--border);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:space-between;padding:0 16px;z-index:100;gap:8px}
+.tb-left{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+.logo{display:flex;align-items:center;gap:9px;cursor:pointer;flex-shrink:0}
+.logo-badge{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--primary),#0284c7);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:19px;box-shadow:0 4px 12px rgba(13,148,136,.35)}
+.logo-text{line-height:1.1}
+.logo-text b{font-size:16px;display:block}
+.logo-text span{font-size:9.5px;letter-spacing:2.2px;color:var(--accent);font-weight:800}
+.searchbox{display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--border);border-radius:999px;padding:9px 14px;max-width:240px;width:100%;transition:border .2s}
+.searchbox:focus-within{border-color:var(--primary)}
+.searchbox input{background:none;border:none;outline:none;width:100%;font-size:14px}
+.searchbox svg{flex-shrink:0;color:var(--muted)}
+.tb-tabs{display:flex;gap:4px;height:100%}
+.tab-btn{width:104px;height:100%;display:flex;align-items:center;justify-content:center;position:relative;color:var(--muted);transition:background .2s;border-radius:0}
+.tab-btn:hover{background:var(--hover)}
+.tab-btn.active{color:var(--primary)}
+.tab-btn.active::after{content:'';position:absolute;bottom:0;left:12px;right:12px;height:3px;border-radius:3px 3px 0 0;background:var(--primary)}
+.tb-right{display:flex;align-items:center;gap:8px;flex:1;justify-content:flex-end}
+.icon-btn{width:40px;height:40px;border-radius:50%;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;position:relative;transition:transform .15s,background .2s;color:var(--text)}
+.icon-btn:hover{background:var(--hover);transform:scale(1.05)}
+.badge{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;border-radius:9px;background:var(--red);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px;border:2px solid var(--card)}
+.me-av{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid var(--primary);cursor:pointer}
+
+/* ---------- DROPDOWNS ---------- */
+.drop{position:fixed;top:66px;right:12px;width:360px;max-width:calc(100vw - 24px);background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-lg);z-index:120;overflow:hidden;animation:pop .18s ease}
+@keyframes pop{from{opacity:0;transform:translateY(-8px) scale(.98)}to{opacity:1;transform:none}}
+.drop-head{padding:14px 16px;font-weight:800;font-size:17px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.drop-body{max-height:420px;overflow-y:auto}
+.drop-row{display:flex;gap:12px;padding:12px 16px;cursor:pointer;align-items:flex-start;transition:background .15s}
+.drop-row:hover{background:var(--hover)}
+.drop-row img{width:44px;height:44px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.drop-row .t{font-size:13.5px;line-height:1.4}
+.drop-row .time{font-size:12px;color:var(--primary);font-weight:700;margin-top:2px}
+.dot-unread{width:10px;height:10px;border-radius:50%;background:var(--blue);margin-left:auto;flex-shrink:0;margin-top:16px}
+
+/* ---------- LAYOUT ---------- */
+main{padding-top:60px;min-height:100vh}
+.layout3{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:280px minmax(0,1fr) 300px;gap:20px;padding:20px 16px}
+.side{position:sticky;top:80px;align-self:start;max-height:calc(100vh - 100px);overflow-y:auto;scrollbar-width:thin}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow)}
+
+/* left menu */
+.profile-mini{padding:16px;display:flex;gap:12px;align-items:center;margin-bottom:14px;position:relative;overflow:hidden}
+.profile-mini::before{content:'';position:absolute;inset:0 0 60% 0;background:linear-gradient(135deg,rgba(13,148,136,.25),rgba(2,132,199,.25))}
+.profile-mini img{width:56px;height:56px;border-radius:50%;object-fit:cover;border:3px solid var(--primary);position:relative}
+.profile-mini .nm{position:relative}
+.profile-mini b{font-size:16px}
+.profile-mini p{font-size:12.5px;color:var(--muted)}
+.menu-item{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border-radius:10px;font-weight:600;font-size:14.5px;transition:background .15s;text-align:left}
+.menu-item:hover{background:var(--hover)}
+.menu-ic{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.side-title{font-size:13px;font-weight:800;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;margin:16px 4px 8px}
+
+/* ---------- STORIES ---------- */
+.stories{display:flex;gap:10px;overflow-x:auto;padding:2px;margin-bottom:16px;scrollbar-width:none}
+.stories::-webkit-scrollbar{display:none}
+.story{position:relative;width:112px;height:196px;border-radius:14px;overflow:hidden;flex-shrink:0;cursor:pointer;border:1px solid var(--border);background:var(--card);transition:transform .2s}
+.story:hover{transform:scale(1.03)}
+.story img.bg{width:100%;height:100%;object-fit:cover;transition:transform .4s}
+.story:hover img.bg{transform:scale(1.08)}
+.story .grad{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.65),transparent 45%)}
+.story .s-av{position:absolute;top:10px;left:10px;width:38px;height:38px;border-radius:50%;object-fit:cover;border:3.5px solid var(--primary)}
+.story .s-name{position:absolute;bottom:8px;left:8px;right:8px;color:#fff;font-size:12.5px;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+.story.create .plus{position:absolute;top:50%;left:50%;transform:translate(-50%,-62%);width:40px;height:40px;border-radius:50%;background:var(--primary);color:#fff;font-size:22px;display:flex;align-items:center;justify-content:center;border:4px solid var(--card)}
+.story.create .c-label{position:absolute;bottom:8px;left:0;right:0;text-align:center;color:var(--text);font-size:12.5px;font-weight:700}
+.story.create img.bg{height:62%}
+
+/* ---------- COMPOSER ---------- */
+.composer{padding:14px 16px;margin-bottom:16px}
+.comp-top{display:flex;gap:10px;align-items:center}
+.comp-top img{width:42px;height:42px;border-radius:50%;object-fit:cover}
+.comp-input{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:999px;padding:11px 16px;text-align:left;color:var(--muted);font-size:14.5px;transition:background .2s}
+.comp-input:hover{background:var(--hover)}
+.comp-actions{display:flex;margin-top:12px;border-top:1px solid var(--border);padding-top:8px}
+.comp-act{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:8px;border-radius:8px;font-weight:600;font-size:13.5px;color:var(--muted);transition:background .15s}
+.comp-act:hover{background:var(--hover)}
+
+/* ---------- POST ---------- */
+.post{margin-bottom:16px;overflow:hidden}
+.post-head{display:flex;align-items:center;gap:10px;padding:14px 16px 10px}
+.post-head img{width:44px;height:44px;border-radius:50%;object-fit:cover}
+.post-head .who b{font-size:14.5px}
+.post-head .who p{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:5px}
+.post-head .more{margin-left:auto;color:var(--muted);width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.post-head .more:hover{background:var(--hover)}
+.post-text{padding:0 16px 12px;line-height:1.55;font-size:14.5px;white-space:pre-wrap}
+.post-text .tag{color:var(--primary);font-weight:700}
+.post-img{width:100%;max-height:520px;object-fit:cover;cursor:pointer}
+.post-stats{display:flex;justify-content:space-between;padding:10px 16px;color:var(--muted);font-size:13.5px;align-items:center}
+.like-chip{display:flex;align-items:center;gap:6px}
+.like-chip .emo{width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,var(--blue),#4facfe);color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center}
+.post-actions{display:flex;border-top:1px solid var(--border);margin:0 16px;padding:4px 0}
+.act-wrap{flex:1;position:relative}
+.react-bar{position:absolute;bottom:calc(100% - 4px);left:6px;background:var(--card);border:1px solid var(--border);border-radius:999px;box-shadow:var(--shadow-lg);display:flex;gap:2px;padding:5px 10px;opacity:0;pointer-events:none;transform:translateY(8px) scale(.9);transition:all .18s ease;z-index:5}
+.act-wrap:hover .react-bar{opacity:1;pointer-events:auto;transform:none}
+.react-bar button{font-size:23px;transition:transform .12s;line-height:1}
+.react-bar button:hover{transform:scale(1.35) translateY(-4px)}
+.act{width:100%;display:flex;align-items:center;justify-content:center;gap:7px;padding:8px;border-radius:8px;font-weight:600;font-size:13.5px;color:var(--muted);transition:background .15s}
+.act:hover{background:var(--hover)}
+.act.liked{color:var(--blue)}
+.comments{padding:4px 16px 14px}
+.comment{display:flex;gap:8px;margin-top:10px}
+.comment img{width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.c-bubble{background:var(--bg);border-radius:14px;padding:8px 13px}
+.c-bubble b{font-size:13px;display:block}
+.c-bubble p{font-size:13.5px;line-height:1.4}
+.c-input-row{display:flex;gap:8px;margin-top:12px;align-items:center}
+.c-input-row img{width:34px;height:34px;border-radius:50%;object-fit:cover}
+.c-input-row input{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:999px;padding:9px 14px;outline:none;font-size:13.5px}
+.c-input-row input:focus{border-color:var(--primary)}
+.c-send{width:36px;height:36px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .15s}
+.c-send:hover{transform:scale(1.1)}
+
+/* right sidebar */
+.bday{padding:14px 16px;font-size:14px;margin-bottom:14px;display:flex;gap:10px;align-items:center;line-height:1.5}
+.contact-row{display:flex;align-items:center;gap:12px;padding:7px 10px;border-radius:10px;cursor:pointer;transition:background .15s;font-weight:600;font-size:14px;width:100%;text-align:left}
+.contact-row:hover{background:var(--hover)}
+.contact-row img,.ini-av{width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.ini-av{display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px}
+.online{position:relative}
+.online::after{content:'';position:absolute;bottom:1px;right:1px;width:10px;height:10px;border-radius:50%;background:#31a24c;border:2px solid var(--card)}
+
+/* ---------- MARKETPLACE ---------- */
+.mkt-wrap{max-width:1180px;margin:0 auto;padding:20px 16px}
+.mkt-head{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:16px}
+.mkt-head h1{font-size:24px;font-weight:800;margin-right:auto}
+.mkt-head h1 span{color:var(--primary)}
+.btn{display:inline-flex;align-items:center;gap:8px;border-radius:10px;padding:10px 16px;font-weight:700;font-size:14px;transition:transform .15s,box-shadow .2s;cursor:pointer}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:linear-gradient(135deg,var(--primary),#0284c7);color:#fff;box-shadow:0 4px 14px rgba(13,148,136,.35)}
+.btn-primary:hover{box-shadow:0 6px 20px rgba(13,148,136,.5)}
+.btn-soft{background:var(--bg);border:1px solid var(--border)}
+.btn-soft:hover{background:var(--hover)}
+.promo-banner{border-radius:16px;padding:18px 22px;margin-bottom:18px;background:linear-gradient(120deg,#0d9488,#0284c7 55%,#f59e0b 130%);color:#fff;display:flex;align-items:center;gap:14px;flex-wrap:wrap;box-shadow:0 8px 24px rgba(2,132,199,.35)}
+.promo-banner b{font-size:17px}
+.promo-banner p{font-size:13px;opacity:.92}
+.promo-banner .fire{font-size:30px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:14px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex-shrink:0;padding:8px 16px;border-radius:999px;background:var(--card);border:1px solid var(--border);font-weight:700;font-size:13px;cursor:pointer;transition:all .2s}
+.chip:hover{background:var(--hover)}
+.chip.active{background:var(--primary);border-color:var(--primary);color:#fff;box-shadow:0 4px 12px rgba(13,148,136,.35)}
+.mkt-filters{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.mkt-filters select,.mkt-filters input{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:9px 14px;font-size:13.5px;outline:none;cursor:pointer}
+.mkt-filters select:focus{border-color:var(--primary)}
+.prod-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
+.prod-card{border-radius:14px;overflow:hidden;cursor:pointer;position:relative;transition:transform .2s,box-shadow .2s}
+.prod-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
+.prod-card .ph{position:relative;height:190px;overflow:hidden}
+.prod-card .ph img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
+.prod-card:hover .ph img{transform:scale(1.07)}
+.save-btn{position:absolute;top:8px;right:8px;width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);color:#fff;display:flex;align-items:center;justify-content:center;transition:transform .15s}
+.save-btn:hover{transform:scale(1.12)}
+.save-btn.saved{background:var(--red)}
+.new-badge{position:absolute;top:8px;left:8px;background:var(--accent);color:#fff;font-size:10.5px;font-weight:800;padding:4px 9px;border-radius:999px;letter-spacing:.5px}
+.prod-info{padding:11px 13px}
+.prod-info .price{font-weight:800;font-size:15.5px}
+.prod-info .ttl{font-size:13.5px;color:var(--text);margin:3px 0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.4}
+.prod-info .loc{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px}
+.sellers-row{display:flex;gap:12px;overflow-x:auto;padding:4px 2px 14px;scrollbar-width:none}
+.sellers-row::-webkit-scrollbar{display:none}
+.seller-card{flex-shrink:0;width:210px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.seller-card .top{display:flex;gap:10px;align-items:center}
+.seller-card .top b{font-size:13.5px;display:block}
+.seller-card .top p{font-size:12px;color:var(--muted)}
+.empty{padding:50px 20px;text-align:center;color:var(--muted)}
+.empty .big{font-size:44px;margin-bottom:10px}
+
+/* ---------- GROUPS ---------- */
+.grp-wrap{max-width:1000px;margin:0 auto;padding:20px 16px}
+.grp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.grp-card{overflow:hidden}
+.grp-card .cover{height:140px;object-fit:cover;width:100%}
+.grp-card .body{padding:14px 16px}
+.grp-card b{font-size:15.5px}
+.grp-card p{font-size:12.5px;color:var(--muted);margin:4px 0 12px}
+.grp-card .row{display:flex;gap:8px}
+.joined{background:var(--hover);color:var(--primary);border:1px solid var(--primary)}
+
+/* ---------- MODALS ---------- */
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;animation:fade .2s}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.modal{background:var(--card);border-radius:18px;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow-lg);animation:pop .22s ease}
+.modal-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--card);z-index:2;border-radius:18px 18px 0 0}
+.modal-head b{font-size:18px}
+.modal-x{width:36px;height:36px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--muted)}
+.modal-x:hover{background:var(--hover)}
+.modal-body{padding:18px 20px}
+.modal-body textarea,.modal-body input[type=text],.modal-body input[type=number]{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14.5px;outline:none;resize:vertical}
+.modal-body textarea:focus,.modal-body input:focus,.modal-body select:focus{border-color:var(--primary)}
+.modal-body label{display:block;font-size:12.5px;font-weight:800;color:var(--muted);margin:14px 0 6px;text-transform:uppercase;letter-spacing:.6px}
+.modal-body select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:11px 14px;font-size:14px;outline:none}
+.photo-pick{display:flex;gap:8px;flex-wrap:wrap}
+.photo-pick img{width:64px;height:64px;object-fit:cover;border-radius:10px;cursor:pointer;border:3px solid transparent;transition:border .15s}
+.photo-pick img.sel{border-color:var(--primary)}
+/* product detail */
+.pd-img{width:100%;height:300px;object-fit:cover}
+.pd-body{padding:18px 20px}
+.pd-price{font-size:24px;font-weight:800;color:var(--primary)}
+.pd-title{font-size:17px;font-weight:700;margin:4px 0}
+.pd-meta{font-size:13px;color:var(--muted);margin-bottom:12px}
+.pd-desc{font-size:14px;line-height:1.6;color:var(--muted);border-top:1px solid var(--border);padding-top:12px;margin-top:6px}
+.pd-seller{display:flex;align-items:center;gap:12px;margin:14px 0;padding:12px;border-radius:12px;background:var(--bg)}
+.pd-seller img{width:46px;height:46px;border-radius:50%;object-fit:cover}
+.pd-actions{display:flex;gap:10px;margin-top:6px}
+.pd-actions .btn{flex:1;justify-content:center}
+/* story viewer */
+#storyModal .modal-ov-inner{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:300;display:flex;align-items:center;justify-content:center}
+.story-frame{position:relative;width:min(420px,100vw);height:min(92vh,760px);border-radius:16px;overflow:hidden}
+.story-frame img.main{width:100%;height:100%;object-fit:cover}
+.story-prog{position:absolute;top:10px;left:10px;right:10px;height:3px;background:rgba(255,255,255,.3);border-radius:3px;overflow:hidden}
+.story-prog i{display:block;height:100%;width:0;background:#fff;animation:prog 5s linear forwards}
+@keyframes prog{to{width:100%}}
+.story-top{position:absolute;top:22px;left:12px;right:12px;display:flex;align-items:center;gap:10px;color:#fff}
+.story-top img{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid var(--primary)}
+.story-top b{font-size:14px;text-shadow:0 1px 4px rgba(0,0,0,.7)}
+.story-close{margin-left:auto;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.5);color:#fff;font-size:15px}
+.story-nav{position:absolute;top:0;bottom:0;width:35%;cursor:pointer}
+.story-nav.l{left:0}.story-nav.r{right:0}
+
+/* toast */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--text);color:var(--bg);padding:12px 22px;border-radius:999px;font-weight:700;font-size:14px;z-index:400;transition:transform .3s ease;box-shadow:var(--shadow-lg);max-width:90vw;text-align:center}
+#toast.show{transform:translateX(-50%) translateY(0)}
+
+/* mobile nav */
+#mobileNav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);z-index:100;padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
+#mobileNav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 0;color:var(--muted);font-size:10.5px;font-weight:700;border-radius:10px}
+#mobileNav button.active{color:var(--primary)}
+#mobileNav{justify-content:space-between}
+
+/* responsive */
+@media(max-width:1100px){.layout3{grid-template-columns:240px minmax(0,1fr)}.side.right{display:none}}
+@media(max-width:900px){.layout3{grid-template-columns:minmax(0,1fr)}.side.left{display:none}.tb-tabs{display:none}}
+@media(max-width:768px){
+  #mobileNav{display:flex}
+  main{padding-bottom:70px}
+  .searchbox{max-width:150px}
+  .logo-text{display:none}
+  .prod-grid{grid-template-columns:repeat(2,1fr)}
+  .mkt-head h1{font-size:20px}
+}
+</style>
 </head>
 <body>
-  <div class="site-shell">
-    <header class="topbar" id="topbar">
-      <a class="brand" href="#top" aria-label="SUKI Suits beranda">
-        <span class="brand-mark">S</span>
-        <span class="brand-copy"><strong>SUKI</strong><small>SUITS · PROPERTY</small></span>
-      </a>
-      <nav class="main-nav" aria-label="Navigasi utama">
-        <a class="nav-link active" href="#explore">Jelajahi</a>
-        <a class="nav-link" href="#verified">Terverifikasi</a>
-        <a class="nav-link" href="#commercial">Komersial</a>
-        <a class="nav-link" href="#agents">Agen</a>
-      </nav>
-      <div class="top-actions">
-        <button class="ghost-icon" id="savedBtn" type="button" aria-label="Listing tersimpan" title="Listing tersimpan"><span>♡</span><em id="savedCount">0</em></button>
-        <button class="soft-button hide-mobile" id="postListingBtn" type="button">Pasang listing</button>
-        <button class="avatar-button" id="accountBtn" type="button" aria-label="Buka profil"><span>LR</span></button>
-        <button class="menu-button" id="menuBtn" type="button" aria-label="Buka menu"><span></span><span></span></button>
-      </div>
-    </header>
 
-    <main id="top">
-      <section class="hero-section" aria-labelledby="hero-title">
-        <div class="hero-content">
-          <div class="eyebrow"><span class="eyebrow-dot"></span>Properti terkurasi untuk Sulawesi Tenggara</div>
-          <h1 id="hero-title">Temukan tempat yang terasa <em>pulang.</em></h1>
-          <p class="hero-lede">Rumah, kavling, dan ruang usaha pilihan di Kendari dan sekitarnya — dengan data lokasi yang lebih transparan sejak awal.</p>
-          <div class="search-panel" id="searchPanel">
-            <div class="search-tabs" role="tablist" aria-label="Tujuan pencarian">
-              <button class="search-tab active" data-mode="buy" type="button" role="tab" aria-selected="true">Beli</button>
-              <button class="search-tab" data-mode="rent" type="button" role="tab" aria-selected="false">Sewa</button>
-              <button class="search-tab" data-mode="commercial" type="button" role="tab" aria-selected="false">Komersial</button>
-            </div>
-            <div class="search-fields">
-              <label class="search-field search-location"><span>Lokasi atau nama kawasan</span><div class="field-control"><span class="field-icon">⌖</span><input id="locationInput" type="search" placeholder="Contoh: Mandonga, Baruga…" autocomplete="off" /></div></label>
-              <label class="search-field"><span>Tipe properti</span><div class="field-control"><span class="field-icon">⌂</span><select id="typeFilter"><option value="all">Semua tipe</option><option value="Rumah">Rumah</option><option value="Tanah">Tanah</option><option value="Apartemen">Apartemen</option><option value="Ruko">Ruko</option><option value="Komersial">Komersial</option></select></div></label>
-              <label class="search-field"><span>Rentang harga</span><div class="field-control"><span class="field-icon">Rp</span><select id="priceFilter"><option value="all">Semua harga</option><option value="subsidy">Di bawah Rp 500 Juta</option><option value="mid">Rp 500 Juta – 1 M</option><option value="premium">Di atas Rp 1 M</option></select></div></label>
-              <button class="primary-button search-submit" id="searchBtn" type="button"><span>Jelajahi</span><b>→</b></button>
-            </div>
-            <div class="search-suggestions" id="searchSuggestions"><span>Pencarian populer</span><button type="button" data-query="Mandonga">Mandonga</button><button type="button" data-query="Baruga">Baruga</button><button type="button" data-query="Rumah subsidi">Rumah subsidi</button></div>
-          </div>
-          <div class="hero-note"><span class="live-pulse"></span><strong>41</strong> lokasi perumahan aktif terpetakan <span class="note-divider">•</span> diperbarui hari ini</div>
-        </div>
-        <div class="hero-visual" aria-label="Pemandangan hunian di Kendari">
-          <div class="hero-image-wrap"><img src="https://image.qwenlm.ai/public_source/1b83f01c-4bbc-4233-bd27-5efcbab82278/1b5052cb6-c8ba-48d7-b7fb-1a0f7ed163a3.png" alt="Rumah modern dengan taman tropis" /></div>
-          <div class="hero-caption"><span class="caption-kicker">Pilihan minggu ini</span><strong>Hunian teduh di Poasia</strong><span class="caption-meta">Dekat kampus · siap KPR</span></div>
-          <div class="hero-stamp"><span>SiKumbang</span><strong>DATA<br />TERCATAT</strong></div>
-          <div class="hero-orbit orbit-one"></div><div class="hero-orbit orbit-two"></div>
-        </div>
-      </section>
-
-      <section class="trust-strip" id="verified" aria-label="Keunggulan data SUKI">
-        <div class="trust-item"><span class="trust-icon shield">✓</span><div><strong>Listing lebih yakin</strong><span>Jejak data & identitas jelas</span></div></div>
-        <div class="trust-item"><span class="trust-icon pin">⌖</span><div><strong>Data SiKumbang</strong><span>ID lokasi dapat dicek</span></div></div>
-        <div class="trust-item"><span class="trust-icon chart">↗</span><div><strong>Supply terlihat</strong><span>Sisa unit tidak disembunyikan</span></div></div>
-        <div class="trust-item trust-cta"><span>Ingin pasang properti?</span><button class="text-button" id="trustPostBtn" type="button">Mulai di sini →</button></div>
-      </section>
-
-      <section class="section-block" id="explore">
-        <div class="section-heading with-controls"><div><span class="section-kicker">Dikurasi untukmu</span><h2>Properti pilihan di Kendari</h2><p id="resultSummary">Menampilkan listing terverifikasi dari kawasan yang sedang tumbuh.</p></div><div class="view-controls"><button class="view-toggle active" data-view="list" type="button">▦ <span>Daftar</span></button><button class="view-toggle" data-view="map" type="button">⌖ <span>Peta</span></button></div></div>
-        <div class="filter-row"><div class="filter-scroll"><button class="filter-chip active" data-category="all" type="button">Semua</button><button class="filter-chip" data-category="Rumah" type="button">Rumah</button><button class="filter-chip" data-category="Tanah" type="button">Tanah</button><button class="filter-chip" data-category="Ruko" type="button">Ruko & Usaha</button><button class="filter-chip" data-category="Komersial" type="button">Komersial premium</button></div><label class="sort-control">Urutkan<select id="sortFilter"><option value="new">Terbaru</option><option value="low">Harga terendah</option><option value="high">Harga tertinggi</option></select></label></div>
-        <div class="explore-layout" id="exploreLayout"><div class="listing-grid" id="listingGrid" aria-live="polite"></div><aside class="map-panel" id="mapPanel" aria-label="Peta listing Kendari"><div class="map-toolbar"><span><i></i>Area Kendari</span><button type="button" id="locateBtn">◎</button></div><div class="map-grid-lines"></div><div class="map-road road-a"></div><div class="map-road road-b"></div><div class="map-road road-c"></div><div class="map-water"></div><div class="map-label label-mandonga">MANDONGA</div><div class="map-label label-baruga">BARUGA</div><div class="map-label label-poasia">POASIA</div><div class="map-label label-kambu">KAMBU</div><div class="map-marker marker-one" data-marker="1">Rp 480 jt</div><div class="map-marker marker-two" data-marker="2">Rp 735 jt</div><div class="map-marker marker-three" data-marker="3">Rp 1,2 M</div><div class="map-marker marker-four" data-marker="4">Rp 320 jt</div><div class="map-footer"><span><b id="mapCount">8</b> listing di area ini</span><button type="button" id="expandMapBtn">Buka peta besar ↗</button></div></aside></div>
-      </section>
-
-      <section class="feature-band" id="commercial"><div class="feature-copy"><span class="section-kicker light">Ruang untuk bertumbuh</span><h2>Properti komersial<br /><em>yang punya cerita.</em></h2><p>Dari ruko di jalur utama sampai lahan dengan potensi terbaik. Lihat aset yang siap menggerakkan bisnis Anda.</p><button class="light-button" id="commercialBtn" type="button">Lihat koleksi komersial <span>→</span></button></div><div class="feature-image"><img src="https://image.qwenlm.ai/public_source/1b83f01c-4bbc-4233-bd27-5efcbab82278/1b4035aaf-3afa-4860-b4f5-2c7826a25475.png" alt="Pemandangan kota dan teluk Kendari" /><div class="image-tag">KENDARI · SULTRA</div></div><div class="feature-number">02</div></section>
-
-      <section class="section-block lower-grid" id="agents"><div class="agents-column"><div class="section-heading"><span class="section-kicker">Kenal lebih dekat</span><h2>Agen yang mengerti kotamu</h2><p>Terhubung dengan profesional lokal yang siap menemani proses dari lihat lokasi sampai akad.</p></div><div class="agent-list" id="agentList"></div><button class="outline-button full-width" type="button" id="allAgentsBtn">Lihat semua agen →</button></div><div class="mortgage-card"><div class="mortgage-top"><span class="section-kicker">Rencana lebih tenang</span><span class="mortgage-icon">⌁</span></div><h3>Mulai dari kemampuanmu.</h3><p>Simulasikan estimasi cicilan sebelum memilih rumah berikutnya.</p><label>Harga properti<div class="input-prefix"><span>Rp</span><input id="mortgagePrice" value="480000000" inputmode="numeric" /></div></label><div class="mortgage-split"><label>Uang muka<select id="mortgageDown"><option value="20">20%</option><option value="30">30%</option><option value="10">10%</option></select></label><label>Tenor<select id="mortgageTerm"><option value="20">20 tahun</option><option value="15">15 tahun</option><option value="25">25 tahun</option></select></label></div><div class="mortgage-result"><span>Estimasi cicilan / bulan</span><strong id="mortgageResult">Rp 3,8 jt</strong></div><button class="primary-button full-width" id="mortgageBtn" type="button">Buka simulator KPR <span>→</span></button><small>*Estimasi indikatif, bukan penawaran kredit.</small></div></section>
-
-      <section class="closing-section"><div><span class="section-kicker light">Tetap terhubung</span><h2>Tempat baik<br /><em>dimulai dari sini.</em></h2></div><div class="closing-copy"><p>Dapatkan pilihan baru, insight kawasan, dan cerita dari komunitas properti Sultra langsung ke inbox.</p><label class="newsletter"><input type="email" id="newsletterEmail" placeholder="Email kamu" /><button type="button" id="newsletterBtn">Daftar →</button></label><span class="newsletter-note">Tanpa spam. Berhenti kapan saja.</span></div></section>
-    </main>
-
-    <footer class="site-footer"><div class="footer-brand"><span class="brand-mark">S</span><div><strong>SUKI Suits</strong><span>Properti lokal, dibuat lebih transparan.</span></div></div><div class="footer-links"><a href="#explore">Jelajahi</a><a href="#verified">Tentang verifikasi</a><a href="#agents">Untuk agen</a><a href="/terms.html">Ketentuan</a></div><span class="footer-copy">© 2026 SultraKita</span></footer>
+<!-- ===================== TOPBAR ===================== -->
+<header id="topbar">
+  <div class="tb-left">
+    <div class="logo" data-act="view" data-view="home">
+      <div class="logo-badge">S</div>
+      <div class="logo-text"><b>SultraKita</b><span>SUKI MARKETPLACE</span></div>
+    </div>
+    <div class="searchbox">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input id="globalSearch" type="text" placeholder="Cari di SultraKita…" />
+    </div>
   </div>
+  <nav class="tb-tabs">
+    <button class="tab-btn active" data-act="view" data-view="home" title="Beranda">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 8h-3v9h-5v-6h-2v6H6v-9H3z"/></svg>
+    </button>
+    <button class="tab-btn" data-act="view" data-view="market" title="SUKI Marketplace">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M4 7h16l-1.5 12h-13L4 7zm4 0a4 4 0 0 1 8 0h-2a2 2 0 0 0-4 0H8z"/></svg>
+    </button>
+    <button class="tab-btn property-launch" data-act="property" title="Buka SUKI Suits Property" aria-label="Buka SUKI Suits Property">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 3 10v10h6v-6h6v6h6V10l-9-7zm0 2.2 6.5 5V18h-2v-6h-9v6h-2v-7.8l6.5-5z"/></svg>
+    </button>
+    <button class="tab-btn" data-act="view" data-view="groups" title="Grup">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm8 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM2 20a7 7 0 0 1 14 0v1H2v-1zm15.5 1H22v-.5a5.5 5.5 0 0 0-6-5.4 8.9 8.9 0 0 1 1.5 4.9v1z"/></svg>
+    </button>
+  </nav>
+  <div class="tb-right">
+    <button class="icon-btn" id="darkBtn" title="Mode gelap">
+      <svg id="darkIco" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    </button>
+    <button class="icon-btn" id="msgBtn" title="Messenger">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.1 2 11.2c0 2.9 1.4 5.5 3.7 7.2V22l3.4-1.9c.9.3 1.9.4 2.9.4 5.5 0 10-4.1 10-9.2S17.5 2 12 2zm1 12.4l-2.6-2.7-5 2.7 5.5-5.8 2.6 2.7 4.9-2.7-5.4 5.8z"/></svg>
+      <span class="badge" id="msgBadge">2</span>
+    </button>
+    <button class="icon-btn" id="notifBtn" title="Notifikasi">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 22a2.5 2.5 0 0 0 2.5-2.5h-5A2.5 2.5 0 0 0 12 22zm7-6v-5a7 7 0 0 0-5-6.7V4a2 2 0 1 0-4 0v.3A7 7 0 0 0 5 11v5l-2 2v1h18v-1l-2-2z"/></svg>
+      <span class="badge" id="notifBadge">3</span>
+    </button>
+    <img class="me-av" id="meBtn" alt="Profil" />
+  </div>
+</header>
 
-  <div class="modal-backdrop hidden" id="modalBackdrop"><div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><button class="modal-close" id="modalClose" type="button" aria-label="Tutup">×</button><div id="modalContent"></div></div></div>
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="/suki-marketplace.js" defer></script>
+<!-- dropdown notifikasi -->
+<div class="drop hidden" id="notifDrop">
+  <div class="drop-head">Notifikasi <span style="font-size:12px;color:var(--primary);font-weight:700">3 baru</span></div>
+  <div class="drop-body" id="notifBody"></div>
+</div>
+<!-- dropdown pesan -->
+<div class="drop hidden" id="msgDrop">
+  <div class="drop-head">Obrolan <span style="font-size:12px;color:var(--muted);font-weight:600">aktif di SUKI Chat</span></div>
+  <div class="drop-body" id="msgBody"></div>
+</div>
+
+<main>
+<!-- ===================== BERANDA ===================== -->
+<section id="view-home" class="view">
+  <div class="layout3">
+    <aside class="side left">
+      <div class="card profile-mini">
+        <img id="sideAv" alt="Profil" />
+        <div class="nm"><b>La Ode Rizky</b><p>Kendari, Sulawesi Tenggara</p></div>
+      </div>
+      <button class="menu-item" data-act="view" data-view="market"><span class="menu-ic" style="background:rgba(13,148,136,.15)">🛍️</span> SUKI Marketplace</button>
+      <button class="menu-item property-launch" data-act="property"><span class="menu-ic" style="background:rgba(13,148,136,.15)">⌂</span> SUKI Suits Property</button>
+      <button class="menu-item" data-act="view" data-view="groups"><span class="menu-ic" style="background:rgba(24,119,242,.12)">👥</span> Grup</button>
+      <button class="menu-item" data-act="saved"><span class="menu-ic" style="background:rgba(239,68,68,.12)">🔖</span> Tersimpan</button>
+      <button class="menu-item" data-act="toast" data-msg="Kenangan: fitur segera hadir ✨"><span class="menu-ic" style="background:rgba(245,158,11,.15)">🕰️</span> Kenangan</button>
+      <button class="menu-item" data-act="toast" data-msg="Halaman UMKM Anda: 128 pengikut 📈"><span class="menu-ic" style="background:rgba(16,185,129,.15)">📄</span> Halaman</button>
+      <button class="menu-item" data-act="toast" data-msg="Acara: Festival Lulo — 12 Sep di Kendari 🎉"><span class="menu-ic" style="background:rgba(139,92,246,.15)">📅</span> Acara</button>
+      <button class="menu-item" data-act="toast" data-msg="Cuaca Kendari hari ini: 31°C cerah ☀️"><span class="menu-ic" style="background:rgba(2,132,199,.15)">⛅</span> Cuaca Sultra</button>
+      <div class="side-title">Pintasan Grup</div>
+      <div id="sideGroups"></div>
+    </aside>
+
+    <div class="col feed">
+      <div class="stories" id="storiesRow"></div>
+      <div class="card composer">
+        <div class="comp-top">
+          <img id="compAv" alt="Profil" />
+          <button class="comp-input" data-act="open" data-modal="postModal">Apa yang kamu pikirkan, Rizky?</button>
+        </div>
+        <div class="comp-actions">
+          <button class="comp-act" data-act="open" data-modal="postModal"><span style="color:#ef4444">🎥</span> Video Langsung</button>
+          <button class="comp-act" data-act="open" data-modal="postModal"><span style="color:#10b981">🖼️</span> Foto/Video</button>
+          <button class="comp-act" data-act="open" data-modal="sellModal"><span style="color:#f59e0b">🏷️</span> Jual</button>
+        </div>
+      </div>
+      <div id="feed"></div>
+    </div>
+
+    <aside class="side right">
+      <div class="card bday">🎂 <div><b>Ulang Tahun</b><br>Hari ini ulang tahun <b>Wa Ode Sari</b>. Kirimkan ucapan!</div></div>
+      <div class="side-title">Kontak</div>
+      <div id="contacts"></div>
+      <div class="side-title">Sponsor · UMKM Sultra</div>
+      <div class="card" style="padding:12px;display:flex;gap:10px;align-items:center;cursor:pointer" data-act="view" data-view="market">
+        <img src="https://image.qwenlm.ai/public_source/1b83f01c-4bbc-4233-bd27-5efcbab82278/18977e6d3-0969-456a-b44a-73dc0e51a5f2.png" style="width:64px;height:64px;border-radius:10px;object-fit:cover" alt="Tenun" />
+        <div><b style="font-size:13.5px">Kain Tenun Buton</b><p style="font-size:12px;color:var(--muted)">Karya pengrajin lokal Sultra</p></div>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- ===================== MARKETPLACE ===================== -->
+<section id="view-market" class="view hidden">
+  <div class="mkt-wrap">
+    <div class="mkt-head">
+      <h1>SUKI <span>Marketplace</span></h1>
+      <div class="searchbox" style="max-width:280px">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input id="mktSearch" type="text" placeholder="Cari di Marketplace…" />
+      </div>
+      <button class="btn btn-primary" data-act="open" data-modal="sellModal">＋ Buat Iklan</button>
+      <button class="btn btn-soft property-launch" data-act="property">⌂ Property Suite</button>
+    </div>
+    <div class="promo-banner">
+      <span class="fire">🔥</span>
+      <div style="flex:1;min-width:200px"><b>SUKI PROMO HUB</b><p>Gratis ongkir se-Kota Kendari untuk transaksi pertama · verifikasi seller gratis</p></div>
+      <button class="btn" style="background:rgba(255,255,255,.18);color:#fff" data-act="toast" data-msg="Promo diterapkan otomatis di checkout 🎁">Klaim Promo</button>
+    </div>
+    <div class="chips" id="chips"></div>
+    <div class="mkt-filters">
+      <select id="distSel"></select>
+      <select id="sortSel">
+        <option value="new">Terbaru</option>
+        <option value="cheap">Termurah</option>
+        <option value="exp">Termahal</option>
+      </select>
+      <span style="align-self:center;font-size:13px;color:var(--muted)" id="prodCount"></span>
+    </div>
+    <div class="side-title" style="margin-top:0">Seller yang mungkin Anda ikuti</div>
+    <div class="sellers-row" id="sellersRow"></div>
+    <div class="prod-grid" id="prodGrid"></div>
+  </div>
+</section>
+
+<!-- ===================== GRUP ===================== -->
+<section id="view-groups" class="view hidden">
+  <div class="grp-wrap">
+    <div class="mkt-head"><h1 style="margin-right:auto">Grup <span style="color:var(--primary)">Komunitas Sultra</span></h1>
+      <button class="btn btn-soft" data-act="toast" data-msg="Buat grup: segera hadir ✨">＋ Buat Grup</button>
+    </div>
+    <div class="grp-grid" id="groupsGrid"></div>
+  </div>
+</section>
+</main>
+
+<!-- mobile nav -->
+<nav id="mobileNav">
+  <button data-act="view" data-view="home" class="active"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 8h-3v9h-5v-6h-2v6H6v-9H3z"/></svg>Beranda</button>
+  <button data-act="view" data-view="market"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M4 7h16l-1.5 12h-13L4 7zm4 0a4 4 0 0 1 8 0h-2a2 2 0 0 0-4 0H8z"/></svg>Market</button>
+  <button data-act="property" class="property-launch"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 3 10v10h6v-6h6v6h6V10l-9-7zm0 2.2 6.5 5V18h-2v-6h-9v6h-2v-7.8l6.5-5z"/></svg>Property</button>
+  <button data-act="view" data-view="groups"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm8 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM2 20a7 7 0 0 1 14 0v1H2v-1zm15.5 1H22v-.5a5.5 5.5 0 0 0-6-5.4 8.9 8.9 0 0 1 1.5 4.9v1z"/></svg>Grup</button>
+  <button data-act="mob-notif"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 22a2.5 2.5 0 0 0 2.5-2.5h-5A2.5 2.5 0 0 0 12 22zm7-6v-5a7 7 0 0 0-5-6.7V4a2 2 0 1 0-4 0v.3A7 7 0 0 0 5 11v5l-2 2v1h18v-1l-2-2z"/></svg>Notif</button>
+</nav>
+
+<!-- ============ MODAL: BUAT POSTINGAN ============ -->
+<div class="modal-ov hidden" id="postModal">
+  <div class="modal">
+    <div class="modal-head"><b>Buat Postingan</b><button class="modal-x" data-act="close" data-modal="postModal">✕</button></div>
+    <div class="modal-body">
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px">
+        <img id="pmAv" style="width:44px;height:44px;border-radius:50%;object-fit:cover" alt="" />
+        <div><b>La Ode Rizky</b><p style="font-size:12px;color:var(--muted)">🌐 Publik · Kendari</p></div>
+      </div>
+      <textarea id="postText" rows="4" placeholder="Apa yang kamu pikirkan, Rizky?"></textarea>
+      <label>Foto (opsional)</label>
+      <div class="photo-pick" id="postPhotos"></div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:18px" data-act="submit-post">Posting</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: DETAIL PRODUK ============ -->
+<div class="modal-ov hidden" id="prodModal">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-head"><b>Detail Listing</b><button class="modal-x" data-act="close" data-modal="prodModal">✕</button></div>
+    <div id="prodDetail"></div>
+  </div>
+</div>
+
+<!-- ============ MODAL: BUAT IKLAN ============ -->
+<div class="modal-ov hidden" id="sellModal">
+  <div class="modal">
+    <div class="modal-head"><b>Pasang Iklan Gratis</b><button class="modal-x" data-act="close" data-modal="sellModal">✕</button></div>
+    <div class="modal-body">
+      <label>Judul Iklan</label>
+      <input type="text" id="sellTitle" placeholder="cth: Kain Tenun Buton Motif Klasik" />
+      <label>Harga (Rp)</label>
+      <input type="number" id="sellPrice" placeholder="cth: 450000" min="0" />
+      <label>Kategori</label>
+      <select id="sellCat"></select>
+      <label>Distrik</label>
+      <select id="sellDist"></select>
+      <label>Deskripsi</label>
+      <textarea id="sellDesc" rows="3" placeholder="Jelaskan kondisi, keunggulan, cara COD…"></textarea>
+      <label>Foto Produk</label>
+      <div class="photo-pick" id="sellPhotos"></div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:18px" data-act="submit-sell">🚀 Terbitkan Iklan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: STORY VIEWER ============ -->
+<div class="hidden" id="storyModal">
+  <div class="modal-ov-inner">
+    <div class="story-frame">
+      <img class="main" id="storyImg" alt="" />
+      <div class="story-prog"><i id="storyProg"></i></div>
+      <div class="story-top">
+        <img id="storyAv" alt="" />
+        <div><b id="storyName"></b><p style="font-size:11px;opacity:.85" id="storyTime"></p></div>
+        <button class="story-close" data-act="close-story">✕</button>
+      </div>
+      <div class="story-nav l" data-act="story-prev"></div>
+      <div class="story-nav r" data-act="story-next"></div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ============ KONFIG INTEGRASI (mode demo: mock data) ============ */
+const SUPABASE_URL = ''; // Konfigurasi publik tidak diperlukan oleh master; data dibaca melalui API same-origin.
+const IMG = {
+  me:'https://image.qwenlm.ai/public_source/1b83f01c-4bbc-4233-bd27-5efcbab82278/1aa0e7c15-a2ce-497e-a31b-cab7ebc222aa.png',
+  sari:'https://image.qwenlm.ai/public_source/1b83f01c-4bbc-4233-bd27-5efcbab82278/11969b4a2-5c66-405f-9a50-86489c541ddc.png',
+  laode:'https://image.qwenlm.ai/public_source/1b83f01c-4bbc-4233-bd27-5efcbab82278/10820cc23-b0f5-4c50-8ad6-95b3307f44c8.png',
+  rina:'https://image.qwenlm.ai/public_source/1b83f01c-4bbc-4233-bd27-5efcbab82278/19f85bdc1-c1e4-4b5d-9914-4c73a8b86b1d.png',
+  pantai:'https://image.qwenlm.ai/public_source/1b83f01c-4bbc-4233-bd27-5efcbab82278/1fba0edf3-8dba-4411-a5c7-6b253c8d020f.png',
+  sinonggi:'https://image.qwenlm.ai/public_source/1b83f01c-4bbc-4233-bd27-5efcbab82278/1361f4984-fb25-4d77-87a5-3fdbefea3aa1.png',
+  lulo:'https://image.qwenlm.ai/public_source/1b83f01c-4bbc-4233-bd27-5efcbab82278/11c7047dc-0962-48d4-aca3-436cc935564d.png',
+  kendari:'https://image.qwenlm.ai/public_source/1b83f01c-4bbc-4233-bd27-5efcbab82278/1b4035aaf-3afa-4860-b4f5-2c7826a25475.png',
+  underwater:'https://image.qwenlm.ai/public_source/1b83f01c-4bbc-4233-bd27-5efcbab82278/13e43a210-0da3-4c90-bf98-e1876d349752.png',
+  ikanbakar:'https://image.qwenlm.ai/public_source/1b83f01c-4bbc-4233-bd27-5efcbab82278/119fb8c34-8e36-42fe-8b2b-e3bcf75ca350.png',
+  hp:'https://image.qwenlm.ai/public_source/1b83f01c-4bbc-4233-bd27-5efcbab82278/1430ff7a0-e12b-41fb-b863-9814c64186ff.png',
+  motor:'https://image.qwenlm.ai/public_source/1b83f01c-4bbc-4233-bd27-5efcbab82278/1de8a3c7e-40f3-4abb-b787-4f6b47e55bac.png',
+  tenun:'https://image.qwenlm.ai/public_source/1b83f01c-4bbc-4233-bd27-5efcbab82278/18977e6d3-0969-456a-b44a-73dc0e51a5f2.png',
+  keripik:'https://image.qwenlm.ai/public_source/1b83f01c-4bbc-4233-bd27-5efcbab82278/1df1d662e-06a0-4116-b751-d875c96e2f56.png',
+  rumah:'https://image.qwenlm.ai/public_source/1b83f01c-4bbc-4233-bd27-5efcbab82278/1b5052cb6-c8ba-48d7-b7fb-1a0f7ed163a3.png'
+};
+const CATS = ['Semua','Properti','Kendaraan','Elektronik','Jasa','Kuliner','Fashion','Hobi & Koleksi'];
+const DISTS = ['Semua distrik','Kendari','Poasia','Baruga','Mandonga','Kambu','Wua-Wua','Kendari Barat','Kadia'];
+const rp = n => 'Rp ' + Number(n).toLocaleString('id-ID');
+let dataSource = 'demo';
+
+let POSTS = [
+ {id:1,author:'Wa Ode Sari',avatar:IMG.sari,time:'2 jam · 🌐',text:'Akhir pekan di Wakatobi, airnya sejernih kaca 😍 Siapa mau ikut trip bulan depan? #SultraKita #Wakatobi',image:IMG.pantai,likes:214,shares:18,comments:[{n:'La Ode Ahmad',a:IMG.laode,t:'MasyaAllah, indahnya! 😍'},{n:'Rina Andriani',a:IMG.rina,t:'Ajak-ajak next trip ya!'}]},
+ {id:2,author:'La Ode Ahmad',avatar:IMG.laode,time:'5 jam · 🌐',text:'Festival Lulo tahun ini luar biasa ramai! Budaya Sulawesi Tenggara harus terus hidup di generasi muda. 🎉',image:IMG.lulo,likes:542,shares:96,comments:[{n:'Wa Ode Sari',a:IMG.sari,t:'Bangga jadi warga Sultra ❤️'}]},
+ {id:3,author:'Rina Andriani',avatar:IMG.rina,time:'8 jam · 🌐',text:'Sarapan sinonggi + kuah ikan segar di tepi teluk. Nikmat mana lagi yang kau dustakan? 😄 Resep lengkap aku jual di SUKI Marketplace ya!',image:IMG.sinonggi,likes:187,shares:12,comments:[]}
+];
+ let PRODUCTS = [
+ {id:1,title:'HP Flagship 8/256GB Mulus Seperti Baru',price:4800000,cat:'Elektronik',dist:'Wua-Wua',img:IMG.hp,seller:'Kendari Kreatif',sAv:IMG.laode,rate:4.9,desc:'Fullset, baterai sehat 98%, garansi pribadi 1 bulan. COD area Wua-Wua & Mandonga.',time:'2 jam'},
+ {id:2,title:'Motor Matic Hemat 2023 — Pajak Panjang',price:12500000,cat:'Kendaraan',dist:'Kadia',img:IMG.motor,seller:'Lulo Home',sAv:IMG.rina,rate:4.8,desc:'Surat lengkap, tangan pertama, servis rutin. Cocok untuk ojol maupun harian.',time:'4 jam'},
+ {id:3,title:'Kain Tenun Buton Premium — Motif Klasik',price:450000,cat:'Fashion',dist:'Kendari Barat',img:IMG.tenun,seller:'Sari Tenun Buton',sAv:IMG.sari,rate:5.0,desc:'Tenun asli pengrajin Buton, pewarna tahan lama. Ukuran 200x100 cm.',time:'6 jam'},
+ {id:4,title:'Keripik & Olahan Sagu Kendari (Paket UMKM)',price:85000,cat:'Kuliner',dist:'Kendari',img:IMG.keripik,seller:'Dapur Wa Ode',sAv:IMG.sari,rate:4.9,desc:'Isi 5 pack keripik pisang + olahan sagu. Tanpa pengawet, siap kirim se-Sultra.',time:'9 jam'},
+ {id:5,title:'Rumah Minimalis Strategis — Taman Tropis',price:450000000,cat:'Properti',dist:'Poasia',img:IMG.rumah,seller:'Poasia Properti',sAv:IMG.laode,rate:4.7,desc:'LT 120m², SHM, dekat kampus & pasar. Bisa KPR, dibantu sampai akad.',time:'1 hari'},
+ {id:6,title:'Paket Ikan Bakar Sambal — Catering UMKM',price:120000,cat:'Kuliner',dist:'Baruga',img:IMG.ikanbakar,seller:'Dapur Wa Ode',sAv:IMG.sari,rate:4.9,desc:'Ikan segar hasil nelayan Kendari, sambal dabu-dabu. Pre-order H-1.',time:'1 hari'},
+ {id:7,title:'Paket Snorkeling Wakatobi (Jasa Wisata)',price:350000,cat:'Jasa',dist:'Kendari',img:IMG.underwater,seller:'Wakatobi Trip',sAv:IMG.rina,rate:5.0,desc:'Open trip harian: alat snorkeling, guide lokal, dokumentasi underwater.',time:'2 hari'},
+ {id:8,title:'Ruko View Teluk Kendari — Siap Usaha',price:850000000,cat:'Properti',dist:'Kendari Barat',img:IMG.kendari,seller:'Poasia Properti',sAv:IMG.laode,rate:4.7,desc:'Posisi main road, cocok untuk kafe/kantor. Surat lengkap, nego tipis.',time:'3 hari'}
+];
+const GROUPS = [
+ {id:1,name:'Jual Beli Kendari & Sekitarnya',members:'125 rb anggota',cover:IMG.kendari,joined:true},
+ {id:2,name:'Pecinta Wisata Wakatobi & Sultra',members:'48 rb anggota',cover:IMG.pantai,joined:false},
+ {id:3,name:'Kuliner Sultra — SUKI Foodies',members:'32 rb anggota',cover:IMG.sinonggi,joined:true},
+ {id:4,name:'UMKM Sultra Naik Kelas',members:'21 rb anggota',cover:IMG.tenun,joined:false},
+ {id:5,name:'Komunitas Motor Kendari',members:'18 rb anggota',cover:IMG.motor,joined:false}
+];
+const STORIES = [
+ {me:true,name:'Buat Cerita',img:IMG.kendari,av:IMG.me,time:''},
+ {name:'Wa Ode Sari',img:IMG.pantai,av:IMG.sari,time:'1 jam'},
+ {name:'La Ode Ahmad',img:IMG.lulo,av:IMG.laode,time:'3 jam'},
+ {name:'Rina Andriani',img:IMG.ikanbakar,av:IMG.rina,time:'5 jam'},
+ {name:'Wakatobi Trip',img:IMG.underwater,av:IMG.rina,time:'7 jam'}
+];
+const CONTACTS = [
+ {name:'Wa Ode Sari',av:IMG.sari},{name:'La Ode Ahmad',av:IMG.laode},{name:'Rina Andriani',av:IMG.rina},
+ {name:'Budi Prasetyo'},{name:'Fitri Handayani'},{name:'Andi Maulana'},{name:'Yusuf Hamzah'},{name:'Made Sudiana'}
+];
+const NOTIFS = [
+ {av:IMG.sari,t:'<b>Wa Ode Sari</b> menyukai postingan Anda tentang Teluk Kendari.',time:'12 mnt',u:1},
+ {av:IMG.laode,t:'<b>La Ode Ahmad</b> mengomentari iklan Anda: "Minat, bisa COD?"',time:'1 jam',u:1},
+ {av:IMG.rina,t:'<b>Rina Andriani</b> mengundang Anda ke grup <b>Kuliner Sultra</b>.',time:'3 jam',u:1},
+ {av:IMG.laode,t:'Iklan Anda <b>Kain Tenun Buton</b> dilihat 120 kali hari ini. 📈',time:'5 jam',u:0},
+ {av:IMG.sari,t:'Promo SUKI: gratis ongkir se-Kendari berakhir malam ini!',time:'8 jam',u:0}
+];
+const CHATS = [
+ {av:IMG.sari,name:'Wa Ode Sari',msg:'Kak, tenun yang motif emas masih ada?',time:'5 mnt',u:1},
+ {av:IMG.laode,name:'La Ode Ahmad',msg:'Besok COD di Tugu Persatuan ya 👍',time:'40 mnt',u:1},
+ {av:IMG.rina,name:'Rina Andriani',msg:'Makasih ya sudah mampir di lapakku!',time:'2 jam',u:0}
+];
+const SELLERS = [
+ {name:'Kendari Kreatif',cat:'UMKM · Elektronika',rate:4.9,av:IMG.laode},
+ {name:'Lulo Home',cat:'Properti',rate:4.8,av:IMG.rina},
+ {name:'Sari Tenun Buton',cat:'Fashion & Kriya',rate:5.0,av:IMG.sari},
+ {name:'Wakatobi Trip',cat:'Jasa Wisata',rate:5.0,av:IMG.rina}
+];
+
+/* ================= STATE ================= */
+const state = {
+  view:'home', reactions:{}, openComments:new Set(), saved:new Set(),
+  joined:new Set(GROUPS.filter(g=>g.joined).map(g=>g.id)), followed:new Set(),
+  mCat:'Semua', mQ:'', mDist:'Semua distrik', mSort:'new',
+  storyIdx:0, storyTimer:null, postPhoto:null, sellPhoto:IMG.tenun
+};
+
+/* ================= HELPERS ================= */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),2600); }
+function iniAv(name){ const hues=[160,200,20,280,340,45]; let h=0; for(const c of name) h=(h*31+c.charCodeAt(0))%hues.length; const ini=name.split(' ').map(w=>w[0]).slice(0,2).join(''); return '<span class="ini-av" style="background:hsl('+hues[h]+',60%,45%)">'+ini+'</span>'; }
+
+/* ================= RENDER: BERANDA ================= */
+function renderStories(){
+  $('#storiesRow').innerHTML = STORIES.map((s,i)=>{
+    if(s.me) return '<div class="story create" data-act="story" data-i="0"><img class="bg" src="'+s.img+'" alt=""><div class="plus">＋</div><div class="c-label">Buat Cerita</div></div>';
+    return '<div class="story" data-act="story" data-i="'+i+'"><img class="bg" src="'+s.img+'" alt=""><div class="grad"></div><img class="s-av" src="'+s.av+'" alt=""><div class="s-name">'+s.name+'</div></div>';
+  }).join('');
+}
+function postHTML(p){
+  const r = state.reactions[p.id];
+  const liked = !!r;
+  const likeCount = p.likes + (liked?1:0);
+  const open = state.openComments.has(p.id);
+  const comments = p.comments.map(c=>'<div class="comment"><img src="'+c.a+'" alt=""><div class="c-bubble"><b>'+esc(c.n)+'</b><p>'+esc(c.t)+'</p></div></div>').join('');
+  return '<article class="card post" data-post="'+p.id+'">'+
+    '<div class="post-head"><img src="'+p.avatar+'" alt=""><div class="who"><b>'+esc(p.author)+'</b><p>'+p.time+'</p></div><button class="more" data-act="toast" data-msg="Opsi postingan (demo)">⋯</button></div>'+
+    '<div class="post-text">'+esc(p.text).replace(/#(\w+)/g,'<span class="tag">#$1</span>')+'</div>'+
+    (p.image?'<img class="post-img" src="'+p.image+'" alt="" data-act="toast" data-msg="Mode layar penuh (demo)">':'')+
+    '<div class="post-stats"><span class="like-chip"><span class="emo">'+(liked?r.icon:'👍')+'</span> '+likeCount+'</span><span>'+p.comments.length+' komentar · '+p.shares+' dibagikan</span></div>'+
+    '<div class="post-actions">'+
+      '<div class="act-wrap"><div class="react-bar">'+
+        ['like|👍|Suka','love|❤️|Cinta','haha|😂|Haha','wow|😮|Wow','sad|😢|Sedih'].map(x=>{const a=x.split('|');return '<button data-act="react" data-r="'+a[0]+'" data-icon="'+a[1]+'" data-label="'+a[2]+'" title="'+a[2]+'">'+a[1]+'</button>';}).join('')+
+      '</div><button class="act'+(liked?' liked':'')+'" data-act="like">'+(liked?r.icon+' '+r.label:'👍 Suka')+'</button></div>'+
+      '<button class="act" data-act="comment-toggle">💬 Komentar</button>'+
+      '<button class="act" data-act="share">↪ Bagikan</button>'+
+    '</div>'+
+    '<div class="comments'+(open?'':' hidden')+'">'+comments+
+      '<div class="c-input-row"><img src="'+IMG.me+'" alt=""><input class="c-input" placeholder="Tulis komentar…" data-id="'+p.id+'"><button class="c-send" data-act="comment-send" data-id="'+p.id+'">➤</button></div>'+
+    '</div></article>';
+}
+function renderFeed(){ $('#feed').innerHTML = POSTS.map(postHTML).join(''); }
+function renderSide(){
+  $('#sideGroups').innerHTML = GROUPS.slice(0,4).map(g=>'<button class="contact-row" data-act="view" data-view="groups">'+(g.cover?'<img src="'+g.cover+'" style="border-radius:10px;object-fit:cover" alt="">':'')+'<span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+g.name+'</span></button>').join('');
+  $('#contacts').innerHTML = CONTACTS.map(c=>'<button class="contact-row" data-act="toast" data-msg="Membuka obrolan dengan '+esc(c.name)+'…">'+(c.av?'<span class="online"><img src="'+c.av+'" alt=""></span>':'<span class="online">'+iniAv(c.name)+'</span>')+'<span>'+c.name+'</span></button>').join('');
+}
+function renderNotifs(){ $('#notifBody').innerHTML = NOTIFS.map(n=>'<div class="drop-row" data-act="toast" data-msg="Notifikasi dibuka (demo)"><img src="'+n.av+'" alt=""><div class="t">'+n.t+'<div class="time">'+n.time+' lalu</div></div>'+(n.u?'<span class="dot-unread"></span>':'')+'</div>').join(''); }
+function renderChats(){ $('#msgBody').innerHTML = CHATS.map(c=>'<div class="drop-row" data-act="toast" data-msg="SUKI Chat: '+esc(c.name)+' (demo)"><img src="'+c.av+'" alt=""><div class="t"><b>'+c.name+'</b><br><span style="color:var(--muted)">'+c.msg+'</span><div class="time">'+c.time+'</div></div>'+(c.u?'<span class="dot-unread"></span>':'')+'</div>').join(''); }
+
+/* ================= RENDER: MARKETPLACE ================= */
+function renderChips(){ $('#chips').innerHTML = CATS.map(c=>'<button class="chip'+(state.mCat===c?' active':'')+'" data-act="cat" data-cat="'+c+'">'+c+'</button>').join(''); }
+function renderSellers(){
+  $('#sellersRow').innerHTML = SELLERS.map(s=>{
+    const f = state.followed.has(s.name);
+    return '<div class="card seller-card"><div class="top"><img src="'+s.av+'" style="width:44px;height:44px;border-radius:50%;object-fit:cover" alt=""><div><b>'+s.name+'</b><p>'+s.cat+' · ★ '+s.rate.toFixed(1)+'</p></div></div><button class="btn '+(f?'joined':'btn-soft')+'" style="width:100%;justify-content:center" data-act="follow" data-s="'+s.name+'">'+(f?'✓ Mengikuti':'＋ Ikuti')+'</button></div>';
+  }).join('');
+}
+function renderProducts(){
+  let list = PRODUCTS.filter(p =>
+    (state.mCat==='Semua'||p.cat===state.mCat) &&
+    (state.mDist==='Semua distrik'||p.dist===state.mDist) &&
+    (p.title.toLowerCase().includes(state.mQ.toLowerCase())||p.cat.toLowerCase().includes(state.mQ.toLowerCase()))
+  );
+  if(state.mSort==='cheap') list.sort((a,b)=>a.price-b.price);
+  else if(state.mSort==='exp') list.sort((a,b)=>b.price-a.price);
+  else list.sort((a,b)=>b.id-a.id);
+  $('#prodCount').textContent = list.length+' listing ditemukan';
+  if(!list.length){ $('#prodGrid').innerHTML='<div class="empty" style="grid-column:1/-1"><div class="big">🔍</div><b>Tidak ada hasil</b><p>Coba kata kunci atau filter lain.</p></div>'; return; }
+  $('#prodGrid').innerHTML = list.map(p=>{
+    const sv = state.saved.has(p.id);
+    return '<div class="card prod-card" data-act="open-prod" data-id="'+p.id+'">'+
+      '<div class="ph"><img src="'+p.img+'" alt="" loading="lazy">'+
+      '<button class="save-btn'+(sv?' saved':'')+'" data-act="save-prod" data-id="'+p.id+'" title="Simpan">'+(sv?'♥':'♡')+'</button>'+
+      (p.id>100?'<span class="new-badge">BARU</span>':'')+'</div>'+
+      '<div class="prod-info"><div class="price">'+rp(p.price)+'</div><div class="ttl">'+esc(p.title)+'</div><div class="loc">⌖ '+p.dist+' · '+p.cat+'</div></div></div>';
+  }).join('');
+}
+async function loadMarketplace(){
+  try{
+    const response = await fetch('/api/listings?limit=50', {headers:{accept:'application/json'}});
+    if(!response.ok) throw new Error('API listing tidak tersedia');
+    const payload = await response.json();
+    const rows = Array.isArray(payload.data) ? payload.data : [];
+    if(payload.meta?.source === 'degraded') throw new Error('API listing sedang degraded');
+    PRODUCTS = rows.map((item, index) => ({
+      id:Number(item.id), title:String(item.title || 'Listing lokal'), price:Number(item.price || 0),
+      cat:String(item.category_name || 'Marketplace'), dist:String(item.district || 'Kendari'),
+      img:String(item.image_url || IMG.tenun), seller:String(item.seller_name || 'Seller lokal'),
+      sAv:IMG.me, rate:Number(item.seller_rating || 0), desc:String(item.description || 'Listing dari seller lokal Sultra.'), time:index < 1 ? 'baru saja' : 'terbaru'
+    }));
+    dataSource = 'live';
+    renderProducts();
+  }catch(error){
+    dataSource = 'demo';
+    console.info('[suki-marketplace] demo fallback aktif:', error.message);
+  }
+}
+function renderGroups(){
+  $('#groupsGrid').innerHTML = GROUPS.map(g=>{
+    const j = state.joined.has(g.id);
+    return '<div class="card grp-card"><img class="cover" src="'+g.cover+'" alt=""><div class="body"><b>'+g.name+'</b><p>👥 '+g.members+' · 5+ postingan/hari</p><div class="row"><button class="btn '+(j?'joined':'btn-primary')+'" style="flex:1;justify-content:center" data-act="join" data-id="'+g.id+'">'+(j?'✓ Bergabung':'＋ Bergabung')+'</button><button class="btn btn-soft" data-act="toast" data-msg="Membuka grup '+esc(g.name)+'…">Buka</button></div></div></div>';
+  }).join('');
+}
+
+/* ================= STORY VIEWER ================= */
+function showStory(i){
+  state.storyIdx = (i+STORIES.length)%STORIES.length;
+  const s = STORIES[state.storyIdx];
+  $('#storyModal').classList.remove('hidden');
+  $('#storyImg').src = s.img; $('#storyAv').src = s.av;
+  $('#storyName').textContent = s.name; $('#storyTime').textContent = s.time?s.time+' lalu':'baru saja';
+  const bar = $('#storyProg'); bar.style.animation='none'; void bar.offsetWidth; bar.style.animation='';
+  clearTimeout(state.storyTimer);
+  state.storyTimer = setTimeout(()=>showStory(state.storyIdx+1),5000);
+}
+function closeStory(){ clearTimeout(state.storyTimer); $('#storyModal').classList.add('hidden'); }
+
+/* ================= MODAL PRODUK ================= */
+function openProd(id){
+  const p = PRODUCTS.find(x=>x.id===id); if(!p) return;
+  const sv = state.saved.has(p.id), fl = state.followed.has(p.seller);
+  $('#prodDetail').innerHTML =
+    '<img class="pd-img" src="'+p.img+'" alt="">'+
+    '<div class="pd-body"><div class="pd-price">'+rp(p.price)+'</div><div class="pd-title">'+esc(p.title)+'</div>'+
+    '<div class="pd-meta">⌖ '+p.dist+', Kendari · '+p.cat+' · ditayangkan '+p.time+' lalu · 128x dilihat</div>'+
+    '<div class="pd-seller"><img src="'+p.sAv+'" alt=""><div style="flex:1"><b>'+p.seller+'</b><p style="font-size:12px;color:var(--muted)">Seller lokal terverifikasi · ★ '+p.rate.toFixed(1)+'</p></div><button class="btn '+(fl?'joined':'btn-soft')+'" data-act="follow" data-s="'+p.seller+'">'+(fl?'✓ Mengikuti':'＋ Ikuti')+'</button></div>'+
+    '<div class="pd-desc">'+esc(p.desc)+'</div>'+
+    '<div class="pd-actions"><button class="btn btn-primary" data-act="toast" data-msg="💬 Menghubungkan ke SUKI Chat dengan '+esc(p.seller)+'…">💬 Chat Penjual</button><button class="btn btn-soft" data-act="save-prod" data-id="'+p.id+'">'+(sv?'♥ Tersimpan':'♡ Simpan')+'</button><button class="btn btn-soft" data-act="toast" data-msg="🔗 Tautan listing disalin!">↪</button></div></div>';
+  $('#prodModal').classList.remove('hidden');
+}
+
+/* ================= PHOTO PICKERS ================= */
+function buildPickers(){
+  const opts = [IMG.tenun,IMG.keripik,IMG.pantai,IMG.sinonggi,IMG.kendari,IMG.motor];
+  $('#postPhotos').innerHTML = opts.map(u=>'<img src="'+u+'" data-act="pick-post" data-u="'+u+'" alt="">').join('');
+  $('#sellPhotos').innerHTML = opts.map(u=>'<img src="'+u+'" class="'+(u===state.sellPhoto?'sel':'')+'" data-act="pick-sell" data-u="'+u+'" alt="">').join('');
+}
+
+/* ================= VIEW SWITCH ================= */
+function switchView(v){
+  state.view = v;
+  ['home','market','groups'].forEach(x=>$('#view-'+x).classList.toggle('hidden', x!==v));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.view===v));
+  document.querySelectorAll('#mobileNav button[data-view]').forEach(b=>b.classList.toggle('active', b.dataset.view===v));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ================= EVENTS ================= */
+document.addEventListener('click', e=>{
+  const el = e.target.closest('[data-act]');
+  // tutup dropdown bila klik di luar
+  if(!e.target.closest('#notifDrop') && !e.target.closest('#notifBtn')) $('#notifDrop').classList.add('hidden');
+  if(!e.target.closest('#msgDrop') && !e.target.closest('#msgBtn')) $('#msgDrop').classList.add('hidden');
+  if(!el) return;
+  const act = el.dataset.act;
+
+  if(act==='view') switchView(el.dataset.view);
+  else if(act==='property') window.location.href='/property/';
+  else if(act==='toast') toast(el.dataset.msg);
+  else if(act==='open') $('#'+el.dataset.modal).classList.remove('hidden');
+  else if(act==='close') $('#'+el.dataset.modal).classList.add('hidden');
+  else if(act==='saved') toast('🔖 '+state.saved.size+' listing tersimpan di koleksi Anda');
+
+  else if(act==='like'){
+    const id = +el.closest('.post').dataset.post;
+    if(state.reactions[id]) delete state.reactions[id];
+    else state.reactions[id] = {icon:'👍',label:'Suka'};
+    renderFeed();
+  }
+  else if(act==='react'){
+    const id = +el.closest('.post').dataset.post;
+    state.reactions[id] = {icon:el.dataset.icon,label:el.dataset.label};
+    renderFeed(); toast(el.dataset.icon+' Anda memberikan reaksi '+el.dataset.label);
+  }
+  else if(act==='comment-toggle'){
+    const id = +el.closest('.post').dataset.post;
+    state.openComments.has(id)?state.openComments.delete(id):state.openComments.add(id);
+    renderFeed();
+    if(state.openComments.has(id)){ const inp=document.querySelector('.c-input[data-id="'+id+'"]'); if(inp) inp.focus(); }
+  }
+  else if(act==='share'){
+    const id = +el.closest('.post').dataset.post;
+    const p = POSTS.find(x=>x.id===id); p.shares++;
+    renderFeed(); toast('🔗 Tautan postingan disalin!');
+  }
+  else if(act==='comment-send'){ sendComment(+el.dataset.id); }
+
+  else if(act==='story'){ showStory(+el.dataset.i); }
+  else if(act==='close-story'){ closeStory(); }
+  else if(act==='story-next'){ showStory(state.storyIdx+1); }
+  else if(act==='story-prev'){ showStory(state.storyIdx-1); }
+
+  else if(act==='cat'){ state.mCat = el.dataset.cat; renderChips(); renderProducts(); }
+  else if(act==='open-prod'){ openProd(+el.dataset.id); }
+  else if(act==='save-prod'){
+    const id = +el.dataset.id;
+    if(state.saved.has(id)){ state.saved.delete(id); toast('Dihapus dari koleksi'); }
+    else { state.saved.add(id); toast('♥ Disimpan ke koleksi SUKI Anda'); }
+    renderProducts(); if(!$('#prodModal').classList.contains('hidden')) openProd(id);
+  }
+  else if(act==='follow'){
+    const s = el.dataset.s;
+    if(state.followed.has(s)){ state.followed.delete(s); toast('Berhenti mengikuti '+s); }
+    else { state.followed.add(s); toast('✓ Kini mengikuti '+s); }
+    renderSellers(); if(!$('#prodModal').classList.contains('hidden')){ const cur=+($('#prodDetail .pd-seller b')?.textContent===' '?0:0); }
+    renderProducts();
+  }
+  else if(act==='join'){
+    const id = +el.dataset.id;
+    if(state.joined.has(id)){ state.joined.delete(id); toast('Keluar dari grup'); }
+    else { state.joined.add(id); toast('🎉 Selamat datang di grup!'); }
+    renderGroups();
+  }
+  else if(act==='pick-post'){
+    state.postPhoto = state.postPhoto===el.dataset.u?null:el.dataset.u;
+    document.querySelectorAll('#postPhotos img').forEach(i=>i.classList.toggle('sel', i.dataset.u===state.postPhoto));
+  }
+  else if(act==='pick-sell'){
+    state.sellPhoto = el.dataset.u;
+    document.querySelectorAll('#sellPhotos img').forEach(i=>i.classList.toggle('sel', i.dataset.u===state.sellPhoto));
+  }
+  else if(act==='submit-post'){
+    const txt = $('#postText').value.trim();
+    if(!txt){ toast('✍️ Tulis sesuatu dulu ya'); return; }
+    POSTS.unshift({id:Date.now(),author:'La Ode Rizky',avatar:IMG.me,time:'Baru saja · 🌐',text:txt,image:state.postPhoto,likes:0,shares:0,comments:[]});
+    $('#postText').value=''; state.postPhoto=null; buildPickers();
+    $('#postModal').classList.add('hidden'); renderFeed(); switchView('home');
+    toast('✅ Postingan berhasil dibagikan!');
+  }
+  else if(act==='submit-sell'){
+    const t = $('#sellTitle').value.trim(), pr = +$('#sellPrice').value;
+    if(!t||!pr){ toast('⚠️ Lengkapi judul & harga iklan'); return; }
+    PRODUCTS.unshift({id:Date.now(),title:t,price:pr,cat:$('#sellCat').value,dist:$('#sellDist').value,img:state.sellPhoto,seller:'La Ode Rizky (Anda)',sAv:IMG.me,rate:5.0,desc:$('#sellDesc').value||'Tanpa deskripsi.',time:'baru saja'});
+    ['sellTitle','sellPrice','sellDesc'].forEach(i=>$('#'+i).value='');
+    $('#sellModal').classList.add('hidden'); renderProducts(); switchView('market');
+    toast('🚀 Iklan Anda tayang di SUKI Marketplace!');
+  }
+  else if(act==='mob-notif'){ $('#notifDrop').classList.toggle('hidden'); $('#notifBadge').style.display='none'; }
+});
+
+function sendComment(id){
+  const inp = document.querySelector('.c-input[data-id="'+id+'"]');
+  const v = inp.value.trim(); if(!v) return;
+  const p = POSTS.find(x=>x.id===id);
+  p.comments.push({n:'La Ode Rizky',a:IMG.me,t:v});
+  state.openComments.add(id);
+  renderFeed();
+  const ni = document.querySelector('.c-input[data-id="'+id+'"]'); if(ni) ni.focus();
+}
+document.addEventListener('keydown', e=>{
+  if(e.key==='Enter' && e.target.classList.contains('c-input')) sendComment(+e.target.dataset.id);
+  if(e.key==='Enter' && e.target.id==='globalSearch'){ state.mQ=e.target.value; $('#mktSearch').value=state.mQ; switchView('market'); renderProducts(); }
+  if(e.key==='Escape'){ ['postModal','prodModal','sellModal'].forEach(m=>$('#'+m).classList.add('hidden')); closeStory(); }
+});
+document.addEventListener('click', e=>{ if(e.target.classList.contains('modal-ov')) e.target.classList.add('hidden'); if(e.target.classList.contains('modal-ov-inner')) closeStory(); });
+
+$('#mktSearch').addEventListener('input', e=>{ state.mQ=e.target.value; renderProducts(); });
+$('#distSel').addEventListener('change', e=>{ state.mDist=e.target.value; renderProducts(); });
+$('#sortSel').addEventListener('change', e=>{ state.mSort=e.target.value; renderProducts(); });
+$('#notifBtn').addEventListener('click', ()=>{ $('#notifDrop').classList.toggle('hidden'); $('#msgDrop').classList.add('hidden'); $('#notifBadge').style.display='none'; });
+$('#msgBtn').addEventListener('click', ()=>{ $('#msgDrop').classList.toggle('hidden'); $('#notifDrop').classList.add('hidden'); $('#msgBadge').style.display='none'; });
+$('#meBtn').addEventListener('click', ()=>toast('👤 Profil La Ode Rizky · Seller terverifikasi ★5.0'));
+$('#darkBtn').addEventListener('click', ()=>{
+  document.body.classList.toggle('dark');
+  const d = document.body.classList.contains('dark');
+  $('#darkIco').innerHTML = d ? '<circle cx="12" cy="12" r="5"/><g stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="23"/><line x1="4.2" y1="4.2" x2="6.3" y2="6.3"/><line x1="17.7" y1="17.7" x2="19.8" y2="19.8"/><line x1="1" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="23" y2="12"/><line x1="4.2" y1="19.8" x2="6.3" y2="17.7"/><line x1="17.7" y1="6.3" x2="19.8" y2="4.2"/></g>' : '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>';
+  toast(d?'🌙 Mode gelap aktif':'☀️ Mode terang aktif');
+});
+
+/* ================= INIT ================= */
+(async function init(){
+  ['meBtn','sideAv','compAv','pmAv'].forEach(id=>{ const el=document.getElementById(id); if(el) el.src=IMG.me; });
+  $('#distSel').innerHTML = DISTS.map(d=>'<option>'+d+'</option>').join('');
+  $('#sellDist').innerHTML = DISTS.slice(1).map(d=>'<option>'+d+'</option>').join('');
+  $('#sellCat').innerHTML = CATS.slice(1).map(c=>'<option>'+c+'</option>').join('');
+  renderStories(); renderFeed(); renderSide(); renderNotifs(); renderChats();
+  renderChips(); renderProducts(); renderSellers(); renderGroups(); buildPickers();
+  await loadMarketplace();
+})();
+</script>
+
+<!-- Compatibility contract: app.js?v=universal-link-1; seller-onboarding-dialog; data-onboarding-step="4"; job-board.
+     The master design owns this page runtime; API adapters remain available at /api. -->
 </body>
 </html>

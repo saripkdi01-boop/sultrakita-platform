@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0e6258" />
+  <meta name="description" content="SUKI Suits — marketplace properti terkurasi untuk Kendari dan Sulawesi Tenggara." />
+  <title>SUKI Suits — Properti Terpercaya di Sulawesi Tenggara</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/suki-marketplace.css" />
+</head>
+<body>
+  <div class="site-shell">
+    <header class="topbar" id="topbar">
+      <a class="brand" href="#top" aria-label="SUKI Suits beranda">
+        <span class="brand-mark">S</span>
+        <span class="brand-copy"><strong>SUKI</strong><small>SUITS · PROPERTY</small></span>
+      </a>
+      <a class="social-return" href="/" aria-label="Kembali ke SultraKita Marketplace">← SultraKita</a>
+      <nav class="main-nav" aria-label="Navigasi utama">
+        <a class="nav-link active" href="#explore">Jelajahi</a>
+        <a class="nav-link" href="#verified">Terverifikasi</a>
+        <a class="nav-link" href="#commercial">Komersial</a>
+        <a class="nav-link" href="#agents">Agen</a>
+      </nav>
+      <div class="top-actions">
+        <button class="ghost-icon" id="savedBtn" type="button" aria-label="Listing tersimpan" title="Listing tersimpan"><span>♡</span><em id="savedCount">0</em></button>
+        <button class="soft-button hide-mobile" id="postListingBtn" type="button">Pasang listing</button>
+        <button class="avatar-button" id="accountBtn" type="button" aria-label="Buka profil"><span>LR</span></button>
+        <button class="menu-button" id="menuBtn" type="button" aria-label="Buka menu"><span></span><span></span></button>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="hero-section" aria-labelledby="hero-title">
+        <div class="hero-content">
+          <div class="eyebrow"><span class="eyebrow-dot"></span>Properti terkurasi untuk Sulawesi Tenggara</div>
+          <h1 id="hero-title">Temukan tempat yang terasa <em>pulang.</em></h1>
+          <p class="hero-lede">Rumah, kavling, dan ruang usaha pilihan di Kendari dan sekitarnya — dengan data lokasi yang lebih transparan sejak awal.</p>
+          <div class="search-panel" id="searchPanel">
+            <div class="search-tabs" role="tablist" aria-label="Tujuan pencarian">
+              <button class="search-tab active" data-mode="buy" type="button" role="tab" aria-selected="true">Beli</button>
+              <button class="search-tab" data-mode="rent" type="button" role="tab" aria-selected="false">Sewa</button>
+              <button class="search-tab" data-mode="commercial" type="button" role="tab" aria-selected="false">Komersial</button>
+            </div>
+            <div class="search-fields">
+              <label class="search-field search-location"><span>Lokasi atau nama kawasan</span><div class="field-control"><span class="field-icon">⌖</span><input id="locationInput" type="search" placeholder="Contoh: Mandonga, Baruga…" autocomplete="off" /></div></label>
+              <label class="search-field"><span>Tipe properti</span><div class="field-control"><span class="field-icon">⌂</span><select id="typeFilter"><option value="all">Semua tipe</option><option value="Rumah">Rumah</option><option value="Tanah">Tanah</option><option value="Apartemen">Apartemen</option><option value="Ruko">Ruko</option><option value="Komersial">Komersial</option></select></div></label>
+              <label class="search-field"><span>Rentang harga</span><div class="field-control"><span class="field-icon">Rp</span><select id="priceFilter"><option value="all">Semua harga</option><option value="subsidy">Di bawah Rp 500 Juta</option><option value="mid">Rp 500 Juta – 1 M</option><option value="premium">Di atas Rp 1 M</option></select></div></label>
+              <button class="primary-button search-submit" id="searchBtn" type="button"><span>Jelajahi</span><b>→</b></button>
+            </div>
+            <div class="search-suggestions" id="searchSuggestions"><span>Pencarian populer</span><button type="button" data-query="Mandonga">Mandonga</button><button type="button" data-query="Baruga">Baruga</button><button type="button" data-query="Rumah subsidi">Rumah subsidi</button></div>
+          </div>
+          <div class="hero-note"><span class="live-pulse"></span><strong>41</strong> lokasi perumahan aktif terpetakan <span class="note-divider">•</span> diperbarui hari ini</div>
+        </div>
+        <div class="hero-visual" aria-label="Pemandangan hunian di Kendari">
+          <div class="hero-image-wrap"><img src="https://image.qwenlm.ai/public_source/1b83f01c-4bbc-4233-bd27-5efcbab82278/1b5052cb6-c8ba-48d7-b7fb-1a0f7ed163a3.png" alt="Rumah modern dengan taman tropis" /></div>
+          <div class="hero-caption"><span class="caption-kicker">Pilihan minggu ini</span><strong>Hunian teduh di Poasia</strong><span class="caption-meta">Dekat kampus · siap KPR</span></div>
+          <div class="hero-stamp"><span>SiKumbang</span><strong>DATA<br />TERCATAT</strong></div>
+          <div class="hero-orbit orbit-one"></div><div class="hero-orbit orbit-two"></div>
+        </div>
+      </section>
+
+      <section class="trust-strip" id="verified" aria-label="Keunggulan data SUKI">
+        <div class="trust-item"><span class="trust-icon shield">✓</span><div><strong>Listing lebih yakin</strong><span>Jejak data & identitas jelas</span></div></div>
+        <div class="trust-item"><span class="trust-icon pin">⌖</span><div><strong>Data SiKumbang</strong><span>ID lokasi dapat dicek</span></div></div>
+        <div class="trust-item"><span class="trust-icon chart">↗</span><div><strong>Supply terlihat</strong><span>Sisa unit tidak disembunyikan</span></div></div>
+        <div class="trust-item trust-cta"><span>Ingin pasang properti?</span><button class="text-button" id="trustPostBtn" type="button">Mulai di sini →</button></div>
+      </section>
+
+      <section class="section-block" id="explore">
+        <div class="section-heading with-controls"><div><span class="section-kicker">Dikurasi untukmu</span><h2>Properti pilihan di Kendari</h2><p id="resultSummary">Menampilkan listing terverifikasi dari kawasan yang sedang tumbuh.</p></div><div class="view-controls"><button class="view-toggle active" data-view="list" type="button">▦ <span>Daftar</span></button><button class="view-toggle" data-view="map" type="button">⌖ <span>Peta</span></button></div></div>
+        <div class="filter-row"><div class="filter-scroll"><button class="filter-chip active" data-category="all" type="button">Semua</button><button class="filter-chip" data-category="Rumah" type="button">Rumah</button><button class="filter-chip" data-category="Tanah" type="button">Tanah</button><button class="filter-chip" data-category="Ruko" type="button">Ruko & Usaha</button><button class="filter-chip" data-category="Komersial" type="button">Komersial premium</button></div><label class="sort-control">Urutkan<select id="sortFilter"><option value="new">Terbaru</option><option value="low">Harga terendah</option><option value="high">Harga tertinggi</option></select></label></div>
+        <div class="explore-layout" id="exploreLayout"><div class="listing-grid" id="listingGrid" aria-live="polite"></div><aside class="map-panel" id="mapPanel" aria-label="Peta listing Kendari"><div class="map-toolbar"><span><i></i>Area Kendari</span><button type="button" id="locateBtn">◎</button></div><div class="map-grid-lines"></div><div class="map-road road-a"></div><div class="map-road road-b"></div><div class="map-road road-c"></div><div class="map-water"></div><div class="map-label label-mandonga">MANDONGA</div><div class="map-label label-baruga">BARUGA</div><div class="map-label label-poasia">POASIA</div><div class="map-label label-kambu">KAMBU</div><div class="map-marker marker-one" data-marker="1">Rp 480 jt</div><div class="map-marker marker-two" data-marker="2">Rp 735 jt</div><div class="map-marker marker-three" data-marker="3">Rp 1,2 M</div><div class="map-marker marker-four" data-marker="4">Rp 320 jt</div><div class="map-footer"><span><b id="mapCount">8</b> listing di area ini</span><button type="button" id="expandMapBtn">Buka peta besar ↗</button></div></aside></div>
+      </section>
+
+      <section class="feature-band" id="commercial"><div class="feature-copy"><span class="section-kicker light">Ruang untuk bertumbuh</span><h2>Properti komersial<br /><em>yang punya cerita.</em></h2><p>Dari ruko di jalur utama sampai lahan dengan potensi terbaik. Lihat aset yang siap menggerakkan bisnis Anda.</p><button class="light-button" id="commercialBtn" type="button">Lihat koleksi komersial <span>→</span></button></div><div class="feature-image"><img src="https://image.qwenlm.ai/public_source/1b83f01c-4bbc-4233-bd27-5efcbab82278/1b4035aaf-3afa-4860-b4f5-2c7826a25475.png" alt="Pemandangan kota dan teluk Kendari" /><div class="image-tag">KENDARI · SULTRA</div></div><div class="feature-number">02</div></section>
+
+      <section class="section-block lower-grid" id="agents"><div class="agents-column"><div class="section-heading"><span class="section-kicker">Kenal lebih dekat</span><h2>Agen yang mengerti kotamu</h2><p>Terhubung dengan profesional lokal yang siap menemani proses dari lihat lokasi sampai akad.</p></div><div class="agent-list" id="agentList"></div><button class="outline-button full-width" type="button" id="allAgentsBtn">Lihat semua agen →</button></div><div class="mortgage-card"><div class="mortgage-top"><span class="section-kicker">Rencana lebih tenang</span><span class="mortgage-icon">⌁</span></div><h3>Mulai dari kemampuanmu.</h3><p>Simulasikan estimasi cicilan sebelum memilih rumah berikutnya.</p><label>Harga properti<div class="input-prefix"><span>Rp</span><input id="mortgagePrice" value="480000000" inputmode="numeric" /></div></label><div class="mortgage-split"><label>Uang muka<select id="mortgageDown"><option value="20">20%</option><option value="30">30%</option><option value="10">10%</option></select></label><label>Tenor<select id="mortgageTerm"><option value="20">20 tahun</option><option value="15">15 tahun</option><option value="25">25 tahun</option></select></label></div><div class="mortgage-result"><span>Estimasi cicilan / bulan</span><strong id="mortgageResult">Rp 3,8 jt</strong></div><button class="primary-button full-width" id="mortgageBtn" type="button">Buka simulator KPR <span>→</span></button><small>*Estimasi indikatif, bukan penawaran kredit.</small></div></section>
+
+      <section class="closing-section"><div><span class="section-kicker light">Tetap terhubung</span><h2>Tempat baik<br /><em>dimulai dari sini.</em></h2></div><div class="closing-copy"><p>Dapatkan pilihan baru, insight kawasan, dan cerita dari komunitas properti Sultra langsung ke inbox.</p><label class="newsletter"><input type="email" id="newsletterEmail" placeholder="Email kamu" /><button type="button" id="newsletterBtn">Daftar →</button></label><span class="newsletter-note">Tanpa spam. Berhenti kapan saja.</span></div></section>
+    </main>
+
+    <footer class="site-footer"><div class="footer-brand"><span class="brand-mark">S</span><div><strong>SUKI Suits</strong><span>Properti lokal, dibuat lebih transparan.</span></div></div><div class="footer-links"><a href="#explore">Jelajahi</a><a href="#verified">Tentang verifikasi</a><a href="#agents">Untuk agen</a><a href="/terms.html">Ketentuan</a></div><span class="footer-copy">© 2026 SultraKita</span></footer>
+  </div>
+
+  <div class="modal-backdrop hidden" id="modalBackdrop"><div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><button class="modal-close" id="modalClose" type="button" aria-label="Tutup">×</button><div id="modalContent"></div></div></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="/suki-marketplace.js" defer></script>
+</body>
+</html>
