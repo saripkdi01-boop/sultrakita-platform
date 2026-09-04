@@ -1,0 +1,150 @@
+{
+  "name": "SultraKita - New Listing Moderation Notification",
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "saveExecutionProgress": true
+  },
+  "meta": {
+    "templateNote": "Import this workflow after configuring the internal API credential and Telegram credential. Keep it inactive until staging tests pass."
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "sultrakita/listings/new",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode"
+      },
+      "id": "new-listing-webhook",
+      "name": "Webhook - New Listing",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "webhookId": "sultrakita-new-listing"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body ?? $json;\nconst eventId = String(body.event_id || '').trim();\nconst listingId = String(body.listing_id || '').trim();\nconst sellerId = String(body.seller_id || '').trim();\nconst title = String(body.title || '').trim();\nconst status = String(body.status || 'PENDING_REVIEW').toUpperCase();\nif (!eventId || !listingId || !sellerId || !title) throw new Error('event_id, listing_id, seller_id, and title are required');\nif (!['PENDING_REVIEW', 'ACTIVE'].includes(status)) throw new Error('Unsupported listing status');\nreturn [{ json: { event_id: eventId, listing_id: listingId, seller_id: sellerId, title: title.slice(0, 120), status, request_id: body.request_id || eventId } }];"
+      },
+      "id": "new-listing-validate",
+      "name": "Code - Validate Listing Event",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SULTRAKITA_API_BASE_URL + '/api/internal/listings/claim-moderation'}}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{$('Code - Validate Listing Event').item.json}}",
+        "options": { "timeout": 10000 }
+      },
+      "id": "listing-claim",
+      "name": "Express - Claim Idempotent Event",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 0]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [{ "value1": "={{$json.claim_status}}", "operation": "equals", "value2": "ALREADY_PROCESSED" }]
+        }
+      },
+      "id": "listing-duplicate-check",
+      "name": "IF - Already Processed",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [700, 0]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { success: true, status: 'IDEMPOTENT_NOOP', event_id: $('Code - Validate Listing Event').item.json.event_id } }}",
+        "options": { "responseCode": 200 }
+      },
+      "id": "listing-noop-response",
+      "name": "Respond - Duplicate Safe No-op",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [940, -140]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SULTRAKITA_API_BASE_URL + '/api/internal/listings/moderation-status'}}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { event_id: $('Code - Validate Listing Event').item.json.event_id, listing_id: $('Code - Validate Listing Event').item.json.listing_id, workflow_status: 'AWAITING_REVIEW' } }}",
+        "options": { "timeout": 10000 }
+      },
+      "id": "listing-status",
+      "name": "Express - Mark Awaiting Review",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [940, 80]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.TELEGRAM_BOT_API_URL || 'https://api.telegram.org/bot' + $env.TELEGRAM_BOT_TOKEN + '/sendMessage'}}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { chat_id: $env.TELEGRAM_ADMIN_CHAT_ID, parse_mode: 'HTML', text: '<b>Listing baru menunggu moderasi</b>\\nID: ' + $('Code - Validate Listing Event').item.json.listing_id + '\\nJudul: ' + $('Code - Validate Listing Event').item.json.title } }}",
+        "options": { "timeout": 10000, "retry": { "maxTries": 3, "waitBetweenTries": 2000 } }
+      },
+      "id": "listing-admin-notify",
+      "name": "Telegram - Notify Moderator",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1180, 80],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SULTRAKITA_API_BASE_URL + '/api/internal/listings/moderation-notified'}}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { event_id: $('Code - Validate Listing Event').item.json.event_id, listing_id: $('Code - Validate Listing Event').item.json.listing_id, notification_status: $json.error ? 'FAILED' : 'SENT', provider_response: $json } }}"
+      },
+      "id": "listing-notification-status",
+      "name": "Express - Save Notification Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1420, 80]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { success: true, status: 'AWAITING_REVIEW', listing_id: $('Code - Validate Listing Event').item.json.listing_id } }}",
+        "options": { "responseCode": 202 }
+      },
+      "id": "listing-response",
+      "name": "Respond - Moderation Queued",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1660, 80]
+    }
+  ],
+  "connections": {
+    "Webhook - New Listing": { "main": [[{ "node": "Code - Validate Listing Event", "type": "main", "index": 0 }]] },
+    "Code - Validate Listing Event": { "main": [[{ "node": "Express - Claim Idempotent Event", "type": "main", "index": 0 }]] },
+    "Express - Claim Idempotent Event": { "main": [[{ "node": "IF - Already Processed", "type": "main", "index": 0 }]] },
+    "IF - Already Processed": { "main": [[{ "node": "Respond - Duplicate Safe No-op", "type": "main", "index": 0 }], [{ "node": "Express - Mark Awaiting Review", "type": "main", "index": 0 }]] },
+    "Express - Mark Awaiting Review": { "main": [[{ "node": "Telegram - Notify Moderator", "type": "main", "index": 0 }]] },
+    "Telegram - Notify Moderator": { "main": [[{ "node": "Express - Save Notification Status", "type": "main", "index": 0 }]] },
+    "Express - Save Notification Status": { "main": [[{ "node": "Respond - Moderation Queued", "type": "main", "index": 0 }]] }
+  },
+  "pinData": {}
+}

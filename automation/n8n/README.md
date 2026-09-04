@@ -9,6 +9,24 @@ Direktori ini berisi template workflow n8n yang dapat di-import ke instance n8n 
 | `workflows/01-user-registration-otp.json` | Validasi request OTP, persist challenge melalui Express, kirim ke provider WhatsApp/SMS, simpan delivery status | Webhook POST |
 | `workflows/02-listing-media-processing.json` | Claim event media, verifikasi object R2, panggil media processor, dan update status listing | Webhook POST |
 | `workflows/03-seller-verification-admin-notification.json` | Claim verification, membuat review link singkat, mengirim notifikasi admin, dan menyimpan status | Webhook POST |
+| `workflows/04-new-listing-moderation-notification.json` | Claim listing baru secara idempotent, mengubah status menjadi menunggu review, dan memberi tahu moderator | Webhook POST |
+
+## Contoh alur listing baru
+
+Workflow `04-new-listing-moderation-notification.json` menggunakan urutan berikut:
+
+```text
+Webhook listing.created
+  → Code: validasi event_id, listing_id, seller_id, title, dan status
+  → Express: claim idempotency event
+  → IF: duplicate → safe no-op
+  → Express: set workflow_status = AWAITING_REVIEW
+  → Telegram: notify moderator
+  → Express: simpan notification status
+  → Respond: 202 Accepted
+```
+
+Workflow tidak otomatis mengubah listing menjadi `ACTIVE`. Persetujuan tetap harus dilakukan oleh moderator melalui jalur admin yang terautorisasi.
 
 ## Import
 
@@ -48,4 +66,4 @@ Semua workflow harus memiliki error workflow global. Error path wajib memperbaru
 
 ## Deployment note
 
-Pada sesi implementasi ini connector n8n belum aktif dan URL/API key instance n8n belum tersedia. Karena itu repository berisi template importable dan migration, tetapi workflow belum dapat di-import atau diaktifkan secara remote. Setelah user menyediakan atau mengaktifkan instance n8n, import template tersebut ke staging terlebih dahulu.
+Template ini dapat di-import ke instance n8n setelah konektor terotorisasi. Import ke staging terlebih dahulu, lakukan smoke test, dan biarkan workflow inactive sampai credential, endpoint internal, signature, dan failure path tervalidasi.
