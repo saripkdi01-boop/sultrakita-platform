@@ -23,6 +23,12 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=<supabase-anon-key>
 
 Client ID dan secret OAuth dikonfigurasi di Supabase Authentication Providers, bukan disimpan di browser atau source code Next.js.
 
+## Gateway Google backend lama
+
+Repository juga memiliki gateway Express historis pada `GET /api/auth/google/start`, dengan callback `GET /api/auth/google/callback` dan handoff `POST /api/auth/google/exchange`. Konfigurasinya memakai `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, dan `GOOGLE_REDIRECT_URI=https://sultrakita-platform.vercel.app/api/auth/google/callback`. Gateway ini menerbitkan session legacy, bukan session Supabase.
+
+Karena middleware dan dashboard Next.js membaca session Supabase, gateway lama **tidak diaktifkan sebagai default**. Environment `NEXT_PUBLIC_GOOGLE_OAUTH_GATEWAY_URL` sengaja kosong pada `next-app/.env.example`; mengisinya sebelum session bridge tersedia akan membuat OAuth selesai di backend legacy tetapi user tetap dianggap guest oleh middleware Next.js. Tombol Google tetap memakai Supabase OAuth yang kompatibel dengan auth gate saat ini. Jika gateway lama akan dipakai, buat dan uji bridge server-side yang menukar identitas Google legacy menjadi session Supabase sebelum mengaktifkan environment tersebut.
+
 ## 3. Provider Google
 
 1. Buka [Google Cloud Console](https://console.cloud.google.com/) dan buat OAuth Client ID.
