@@ -345,3 +345,30 @@ Karena deployment saat ini masih memiliki jalur SQLite/SQL.js legacy, jangan sek
 Halaman Next.js (`next-app`) menggunakan pola mobile-first bergaya Facebook untuk memisahkan ruang sosial dan marketplace. `TopNavigationBar` menyediakan logo, pencarian, create action, pesan, notifikasi, serta menu profil. `QuickNavBar` menyediakan enam shortcut utama, sedangkan `BottomNavigation` hanya tampil pada viewport mobile.
 
 Feed utama terdiri dari `StoriesSection`, `CreatePostInput`, dan `FeedPost`. Pada desktop, `LeftSidebar` menyediakan navigasi akun dan `RightSidebar` menampilkan preview marketplace, komunitas, serta topik trending. Marketplace, Reels, dan grup tetap berada pada tab terpisah agar feed sosial tidak terlalu padat. Semua komponen mendukung dark mode, keyboard focus, empty/loading state yang relevan, serta horizontal scrolling stories dengan scrollbar tersembunyi.
+
+
+## Support System
+
+### Fitur yang Tersedia
+
+Pusat Keamanan tersedia di `/security-center` dengan security checkup, trusted devices, dan tips anti-penipuan. Pusat Bantuan tersedia di `/help-center` dengan pencarian dan kategori Umum, Marketplace, Suki Suits, Chat, Pembayaran, serta Keamanan. Form `/support` membuat ticket untuk masalah teknis, fraud, pembayaran, listing, akun, dan lainnya; ticket dapat dilacak melalui `/support/tickets/[id]` dengan nomor `SUP-YYYY-XXXXXX`. Dokumen Ketentuan & Kebijakan tersedia di `/legal/[slug]`, sedangkan admin dapat mengelola ticket di `/admin/support-tickets`.
+
+### Setup Database
+
+Jalankan `supabase/migrations/20260908000000_support_system.sql` melalui Supabase SQL Editor atau pipeline migration. Migration membuat tabel `help_articles`, `support_tickets`, `security_logs`, `trusted_devices`, dan `legal_documents` dengan RLS.
+
+Seed artikel Help Center menggunakan environment yang aman:
+
+```bash
+npm run seed:help
+```
+
+Script membutuhkan `NEXT_PUBLIC_SUPABASE_URL` dan `SUPABASE_SERVICE_ROLE_KEY`. Jangan commit service role key atau memasukkannya ke environment frontend.
+
+### n8n Workflows
+
+Workflow support tersedia dalam kondisi inactive: `automation/n8n/15_support_ticket_auto_response.json` dan `automation/n8n/16_support_ticket_status_update.json`. Import ke n8n, isi credential Supabase/Resend, test webhook dengan data non-produksi, lalu aktifkan secara terkontrol.
+
+### Troubleshooting
+
+Jika sidebar tidak berubah, lakukan hard refresh (`Ctrl+Shift+R` atau `Cmd+Shift+R`), coba Incognito, dan pastikan deployment Vercel berstatus READY. Jika route support 404, periksa root directory Vercel dan pastikan route berada di `next-app/app`. Jika ticket tidak tersimpan, pastikan migration sudah dijalankan, user sudah login, dan RLS `support_tickets` aktif.
