@@ -1,0 +1,7 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { getReelsFeed } from '@/lib/actions/reels';
+import { ReelCard, type DisplayReel } from './ReelCard';
+export function ReelsFeed({ district, fallback = [] }: { district?: string; fallback?: DisplayReel[] }) { const [items, setItems] = useState<DisplayReel[]>(fallback); const [cursor, setCursor] = useState<string | null>(null); const [loading, setLoading] = useState(true); const [error, setError] = useState(''); useEffect(() => { getReelsFeed(district).then(result => { if (result.ok && result.data.length) { setItems(result.data); setCursor(result.nextCursor); } else if (!result.ok) setError(result.error || 'Reels belum dapat dimuat.'); setLoading(false); }); }, [district]); async function loadMore() { if (!cursor || loading) return; setLoading(true); const result = await getReelsFeed(district, cursor); if (result.ok) { setItems(current => [...current, ...result.data]); setCursor(result.nextCursor); } else setError(result.error || 'Reels berikutnya belum dapat dimuat.'); setLoading(false); }
+  return <div className="reels-engine"><div className="reels-snap-feed">{items.map(item => <ReelCard key={item.id} reel={item}/>)}</div>{loading && <p className="reels-status">Memuat Reels...</p>}{error && <p className="reels-status" role="status">{error}</p>}{cursor && <button className="soft-btn reels-more" onClick={loadMore}>Muat Reels berikutnya</button>}</div>; }

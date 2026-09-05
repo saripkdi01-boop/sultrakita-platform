@@ -1,0 +1,2 @@
+'use client';
+export function MiniChart({ values, labels }: { values: number[]; labels?: string[] }) { const max = Math.max(...values, 1); return <div className="mini-chart" aria-label="Grafik aktivitas listing">{values.map((value, index) => <div className="mini-chart-bar" key={`${labels?.[index] || index}`}><i style={{ height: `${Math.max(4, (value / max) * 100)}%` }} title={`${value} aktivitas`}/><small>{labels?.[index] || ''}</small></div>)}</div>; }
