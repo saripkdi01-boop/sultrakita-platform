@@ -54,6 +54,18 @@ SUPABASE_ANON_KEY=<server-side-anon-key-if-needed>
 SUPABASE_SERVICE_ROLE_KEY=<only-if-server-operation-requires-it>
 ```
 
+### Bantuan AI listing berbasis Gemini
+
+Fitur bantuan AI pada modal **Pasang Iklan** berjalan server-side melalui endpoint `/api/ai/listing-assist`. Tambahkan variabel berikut pada Vercel untuk target **Preview** dan **Production** sesuai kebutuhan:
+
+```env
+GEMINI_API_KEY=<Google AI Studio API key>
+GEMINI_API_BASE=https://generativelanguage.googleapis.com/v1beta
+GEMINI_MODEL=gemini-2.5-flash
+```
+
+`GEMINI_API_KEY` adalah secret dan tidak boleh memakai prefix `NEXT_PUBLIC_`, `VITE_`, atau ditulis ke source code. Jika key kosong atau request Gemini gagal, endpoint tetap mengembalikan fallback lokal agar alur listing tidak terputus.
+
 ### Pembayaran dan autentikasi
 
 Sebelum produksi, isi hanya provider yang benar-benar telah diverifikasi. Jangan menetapkan mode produksi sebelum webhook, signature validation, callback URL, dan settlement diuji pada staging.

@@ -91,7 +91,9 @@ app.post('/api/ai/listing-assist', async (req, res) => {
   }
   try {
     const prompt = `Tulis deskripsi marketplace dalam Bahasa Indonesia untuk listing berikut. Maksimal 3 kalimat, jujur, tidak mengarang spesifikasi, dan ajak pembeli menghubungi seller. Judul: ${title}. Kategori: ${category}. Lokasi: ${district}. Catatan pengguna: ${existing || '(tidak ada)'}`;
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(process.env.GEMINI_API_KEY)}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }), signal: AbortSignal.timeout(9000) });
+    const geminiBase = String(process.env.GEMINI_API_BASE || 'https://generativelanguage.googleapis.com/v1beta').replace(/\/$/, '');
+    const geminiModel = String(process.env.GEMINI_MODEL || 'gemini-2.5-flash').trim();
+    const response = await fetch(`${geminiBase}/models/${encodeURIComponent(geminiModel)}:generateContent?key=${encodeURIComponent(process.env.GEMINI_API_KEY)}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }), signal: AbortSignal.timeout(9000) });
     const body = await response.json().catch(() => ({}));
     const description = body?.candidates?.[0]?.content?.parts?.map(part => part.text || '').join('').trim();
     if (!response.ok || !description) throw new Error('AI response tidak valid');
