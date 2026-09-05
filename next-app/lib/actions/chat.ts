@@ -57,3 +57,47 @@ async function sendWhatsAppNotice(supabase: Awaited<ReturnType<typeof requireSer
   ]);
   await notifyN8n({ seller_phone: seller?.phone || null, buyer_name: buyer?.full_name || 'Warga SultraKita', listing_title: listing?.title || 'Listing SultraKita', message_content: content });
 }
+
+export async function getChatInbox() {
+  const { supabase, user } = await requireServerUser();
+  const { data, error } = await supabase.from('conversations').select('id,type,name,avatar_url,last_message,last_message_at,updated_at,conversation_participants!inner(user_id,last_read_at,is_muted,is_archived)').eq('conversation_participants.user_id', user.id).eq('conversation_participants.is_archived', false).order('updated_at', { ascending: false }).limit(50);
+  if (error) return { ok: false as const, error: friendly(error), data: [] };
+  return { ok: true as const, data: data || [] };
+}
+
+export async function getChatMessages(conversationId: string, before?: string) {
+  const { supabase, user } = await requireServerUser();
+  const { data: member } = await supabase.from('conversation_participants').select('id').eq('conversation_id', conversationId).eq('user_id', user.id).maybeSingle();
+  if (!member) return { ok: false as const, error: 'Kamu bukan anggota percakapan ini.', data: [] };
+  let query = supabase.from('messages').select('id,conversation_id,sender_id,content,message_type,media_url,media_metadata,reply_to_message_id,edited,deleted,created_at').eq('conversation_id', conversationId).eq('deleted', false).order('created_at', { ascending: false }).limit(50);
+  if (before) query = query.lt('created_at', before);
+  const { data, error } = await query;
+  if (error) return { ok: false as const, error: friendly(error), data: [] };
+  return { ok: true as const, data: (data || []).reverse() };
+}
+
+export async function markChatRead(conversationId: string) {
+  const { supabase, user } = await requireServerUser();
+  const { error } = await supabase.from('conversation_participants').update({ last_read_at: new Date().toISOString() }).eq('conversation_id', conversationId).eq('user_id', user.id);
+  return error ? { ok: false as const, error: friendly(error) } : { ok: true as const };
+}
+
+export async function setMessageReaction(messageId: string, emoji: string) {
+  const { supabase, user } = await requireServerUser();
+  const { data: existing } = await supabase.from('message_reactions').select('id').eq('message_id', messageId).eq('user_id', user.id).eq('emoji', emoji).maybeSingle();
+  const result = existing ? await supabase.from('message_reactions').delete().eq('id', existing.id) : await supabase.from('message_reactions').insert({ message_id: messageId, user_id: user.id, emoji });
+  return result.error ? { ok: false as const, error: friendly(result.error) } : { ok: true as const };
+}
+
+export async function setTyping(conversationId: string, isTyping: boolean) {
+  const { supabase, user } = await requireServerUser();
+  const { error } = await supabase.from('typing_indicators').upsert({ conversation_id: conversationId, user_id: user.id, is_typing: isTyping, updated_at: new Date().toISOString() }, { onConflict: 'conversation_id,user_id' });
+  return error ? { ok: false as const, error: friendly(error) } : { ok: true as const };
+}
+
+export async function setPresence(isOnline: boolean) {
+  const { supabase, user } = await requireServerUser();
+  const now = new Date().toISOString();
+  const { error } = await supabase.from('user_presence').upsert({ user_id: user.id, is_online: isOnline, last_seen: now, updated_at: now });
+  return error ? { ok: false as const, error: friendly(error) } : { ok: true as const };
+}
