@@ -1,0 +1,10 @@
+'use client';
+
+import { Play, Plus } from 'lucide-react';
+export type StoryItem = { id: string; userName: string; avatar?: string; imageUrl?: string; label?: string; videoUrl?: string };
+type StoryCardProps = { story?: StoryItem; create?: boolean; onClick?: () => void };
+export function StoryCard({ story, create = false, onClick }: StoryCardProps) {
+  if (create) return <button onClick={onClick} className="group relative h-48 w-28 shrink-0 overflow-hidden rounded-xl border border-gray-200 bg-white text-left shadow-sm transition-transform active:scale-95 dark:border-sultra-forest/30 dark:bg-sultra-dark sm:h-56 sm:w-32"><div className="grid h-32 place-items-center bg-sultra-mint/50 text-sultra-teal dark:bg-sultra-forest/40"><span className="grid h-10 w-10 place-items-center rounded-full bg-sultra-teal text-white ring-4 ring-white dark:ring-sultra-dark"><Plus size={22}/></span></div><span className="block px-3 pt-2 text-xs font-semibold text-gray-800 dark:text-sultra-sand">Buat cerita</span></button>;
+  if (!story) return null;
+  return <button onClick={onClick} className="group relative h-48 w-28 shrink-0 overflow-hidden rounded-xl bg-sultra-forest text-left shadow-sm transition-transform active:scale-95 sm:h-56 sm:w-32">{story.imageUrl ? <img src={story.imageUrl} alt="" className="absolute inset-0 h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"/> : <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-sultra-teal to-sultra-forest text-3xl font-bold text-white">{story.userName.slice(0, 1)}</div>}<div className="absolute inset-x-0 top-0 p-2"><span className="grid h-8 w-8 place-items-center overflow-hidden rounded-full border-2 border-sultra-teal bg-sultra-sand text-[10px] font-bold text-sultra-forest">{story.avatar || story.userName.slice(0, 1)}</span></div><div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 bg-gradient-to-t from-black/80 to-transparent px-2 pb-2 pt-8 text-white"><span className="truncate text-[11px] font-semibold">{story.userName}</span>{story.videoUrl && <Play size={13} fill="currentColor"/>}</div></button>;
+}
