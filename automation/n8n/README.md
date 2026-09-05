@@ -17,3 +17,7 @@ Prepare templates with named placeholders: `listing_title`, `price`, `seller_nam
 ## Production safety
 
 Do not log payment keys, KTP/NIB images, complete shipping addresses, phone numbers, or raw Midtrans payloads. Store only hashed/idempotency identifiers in operational logs. Configure error workflows and alert recipients before activation.
+
+## Property-sensitive review
+
+`12_sensitive_property_manual_review.json` is an optional inactive webhook workflow for `rumah_subsidi` and `lelang`. It sends a redacted admin notification and returns a safe acknowledgement. Activate it only after setting `ADMIN_EMAIL`, webhook authentication, and the manual-review queue policy.

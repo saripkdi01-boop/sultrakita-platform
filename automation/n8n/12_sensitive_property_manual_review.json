@@ -1,0 +1,13 @@
+{
+  "name": "SUKI - Sensitive Property Manual Review",
+  "nodes": [
+    {"parameters":{"httpMethod":"POST","path":"suki/webhooks/property_sensitive_review","responseMode":"onReceived"},"id":"property_webhook","name":"Property Webhook","type":"n8n-nodes-base.webhook","typeVersion":1,"position":[0,0]},
+    {"parameters":{"jsCode":"const input = $json;\nconst sensitive = ['rumah_subsidi','lelang'].includes(input.category);\nreturn [{json:{...input, requires_manual_review:sensitive, redacted_listing_id:input.id || input.property_id || null}}];"},"id":"route_sensitive","name":"Route Sensitive Category","type":"n8n-nodes-base.code","typeVersion":1,"position":[220,0]},
+    {"parameters":{"method":"POST","url":"={{$env.RESEND_API_URL || 'https://api.resend.com/emails'}}","sendHeaders":true,"headerParameters":{"parameters":[{"name":"Authorization","value":"=Bearer {{$env.RESEND_API_KEY}}"},{"name":"Content-Type","value":"application/json"}]},"sendBody":true,"specifyBody":"json","jsonBody":"={{JSON.stringify({from:'SultraKita <onboarding@resend.dev>',to:[$env.ADMIN_EMAIL],subject:'Review manual properti sensitif',text:'Listing kategori lelang/subsidi menunggu verifikasi manual. ID: '+($json.redacted_listing_id || 'unknown')})}}","options":{"timeout":10000}},"id":"notify_admin","name":"Notify Admin","type":"n8n-nodes-base.httpRequest","typeVersion":4,"position":[460,0]},
+    {"parameters":{"jsCode":"return [{json:{ok:true, event:'sensitive_property_review_queued', idempotency_key:$json.idempotency_key || $execution.id}}];"},"id":"safe_ack","name":"Safe Acknowledgement","type":"n8n-nodes-base.code","typeVersion":1,"position":[700,0]}
+  ],
+  "connections":{"Property Webhook":{"main":[[{"node":"Route Sensitive Category","type":"main","index":0}]]},"Route Sensitive Category":{"main":[[{"node":"Notify Admin","type":"main","index":0}]]},"Notify Admin":{"main":[[{"node":"Safe Acknowledgement","type":"main","index":0}]]}},
+  "active":false,
+  "settings":{"executionOrder":"v1","saveDataErrorExecution":"none","saveDataSuccessExecution":"none"},
+  "pinData":{},"tags":[],"meta":{"sukiAutomation":"draft","financialWorkflow":false}
+}
