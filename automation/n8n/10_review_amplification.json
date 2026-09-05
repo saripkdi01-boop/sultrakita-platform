@@ -1,0 +1,261 @@
+{
+  "name": "SUKI - 5-Star Review Amplification",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "suki/webhooks/review_advocate_created",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "webhook_trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get review and seller details\n// Replace this guarded placeholder with the connector node or approved API call.\nconst input = $json;\nreturn [{ json: { ...input, automation_step: \"Get review and seller details\", processed_at: new Date().toISOString() } }];"
+      },
+      "id": "get_review_and_seller_details",
+      "name": "Get review and seller details",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        230,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.isSafe || $json.fraudScore < 80 || $json.rating >= 4}}",
+              "operation": "true"
+            }
+          ]
+        }
+      },
+      "id": "if_rating_>=_4",
+      "name": "IF rating >= 4",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        460,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SUPABASE_URL}}/rest/v1/automation_events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({event: \"Canva thank-you story\", source: \"n8n\", idempotency_key: $json.idempotency_key || $execution.id}) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "canva_thank-you_story",
+      "name": "Canva thank-you story",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        690,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SUPABASE_URL}}/rest/v1/automation_events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({event: \"Resend seller asset email\", source: \"n8n\", idempotency_key: $json.idempotency_key || $execution.id}) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "resend_seller_asset_email",
+      "name": "Resend seller asset email",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        920,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SUPABASE_URL}}/rest/v1/automation_events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({event: \"Customer.io advocate event\", source: \"n8n\", idempotency_key: $json.idempotency_key || $execution.id}) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "customer.io_advocate_event",
+      "name": "Customer.io advocate event",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        1150,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Non-sensitive error normalization. Never log payment keys or PII.\nreturn [{json:{ok:false, workflow: \"10_review_amplification\", execution_id:$execution.id, retryable:true}}];"
+      },
+      "id": "error_handler",
+      "name": "Error Handler",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        1380,
+        180
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get review and seller details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get review and seller details": {
+      "main": [
+        [
+          {
+            "node": "IF rating >= 4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF rating >= 4": {
+      "main": [
+        [
+          {
+            "node": "Canva thank-you story",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Canva thank-you story": {
+      "main": [
+        [
+          {
+            "node": "Resend seller asset email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resend seller asset email": {
+      "main": [
+        [
+          {
+            "node": "Customer.io advocate event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Customer.io advocate event": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Error Handler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "saveManualExecutions": false
+  },
+  "versionId": null,
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "sukiAutomation": "draft"
+  },
+  "tags": []
+}

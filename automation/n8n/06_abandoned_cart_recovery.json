@@ -1,0 +1,186 @@
+{
+  "name": "SUKI - Abandoned Cart & Browse Recovery",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 */3 * * *"
+            }
+          ]
+        }
+      },
+      "id": "schedule_trigger",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Query stale wishlists and carts\n// Replace this guarded placeholder with the connector node or approved API call.\nconst input = $json;\nreturn [{ json: { ...input, automation_step: \"Query stale wishlists and carts\", processed_at: new Date().toISOString() } }];"
+      },
+      "id": "query_stale_wishlists_and_carts",
+      "name": "Query stale wishlists and carts",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        230,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Customer.io suppression check\n// Replace this guarded placeholder with the connector node or approved API call.\nconst input = $json;\nreturn [{ json: { ...input, automation_step: \"Customer.io suppression check\", processed_at: new Date().toISOString() } }];"
+      },
+      "id": "customer.io_suppression_check",
+      "name": "Customer.io suppression check",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        460,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SUPABASE_URL}}/rest/v1/automation_events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({event: \"Resend personalized reminder\", source: \"n8n\", idempotency_key: $json.idempotency_key || $execution.id}) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "resend_personalized_reminder",
+      "name": "Resend personalized reminder",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        690,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Mark reminder timestamp\n// Replace this guarded placeholder with the connector node or approved API call.\nconst input = $json;\nreturn [{ json: { ...input, automation_step: \"Mark reminder timestamp\", processed_at: new Date().toISOString() } }];"
+      },
+      "id": "mark_reminder_timestamp",
+      "name": "Mark reminder timestamp",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        920,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Non-sensitive error normalization. Never log payment keys or PII.\nreturn [{json:{ok:false, workflow: \"06_abandoned_cart_recovery\", execution_id:$execution.id, retryable:true}}];"
+      },
+      "id": "error_handler",
+      "name": "Error Handler",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        1150,
+        180
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Query stale wishlists and carts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query stale wishlists and carts": {
+      "main": [
+        [
+          {
+            "node": "Customer.io suppression check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Customer.io suppression check": {
+      "main": [
+        [
+          {
+            "node": "Resend personalized reminder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resend personalized reminder": {
+      "main": [
+        [
+          {
+            "node": "Mark reminder timestamp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark reminder timestamp": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Error Handler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "saveManualExecutions": false
+  },
+  "versionId": null,
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "sukiAutomation": "draft"
+  },
+  "tags": []
+}

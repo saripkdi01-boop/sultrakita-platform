@@ -1,0 +1,186 @@
+{
+  "name": "SUKI - Database Backup & Schema Sync",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 19 * * *"
+            }
+          ]
+        }
+      },
+      "id": "schedule_trigger",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Export critical tables\n// Replace this guarded placeholder with the connector node or approved API call.\nconst input = $json;\nreturn [{ json: { ...input, automation_step: \"Export critical tables\", processed_at: new Date().toISOString() } }];"
+      },
+      "id": "export_critical_tables",
+      "name": "Export critical tables",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        230,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Upload encrypted backup to R2\n// Replace this guarded placeholder with the connector node or approved API call.\nconst input = $json;\nreturn [{ json: { ...input, automation_step: \"Upload encrypted backup to R2\", processed_at: new Date().toISOString() } }];"
+      },
+      "id": "upload_encrypted_backup_to_r2",
+      "name": "Upload encrypted backup to R2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        460,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Create GitHub backup record\n// Replace this guarded placeholder with the connector node or approved API call.\nconst input = $json;\nreturn [{ json: { ...input, automation_step: \"Create GitHub backup record\", processed_at: new Date().toISOString() } }];"
+      },
+      "id": "create_github_backup_record",
+      "name": "Create GitHub backup record",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        690,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SUPABASE_URL}}/rest/v1/automation_events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({event: \"Resend admin digest\", source: \"n8n\", idempotency_key: $json.idempotency_key || $execution.id}) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "resend_admin_digest",
+      "name": "Resend admin digest",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        920,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Non-sensitive error normalization. Never log payment keys or PII.\nreturn [{json:{ok:false, workflow: \"11_database_backup_schema_sync\", execution_id:$execution.id, retryable:true}}];"
+      },
+      "id": "error_handler",
+      "name": "Error Handler",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        1150,
+        180
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Export critical tables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Export critical tables": {
+      "main": [
+        [
+          {
+            "node": "Upload encrypted backup to R2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload encrypted backup to R2": {
+      "main": [
+        [
+          {
+            "node": "Create GitHub backup record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create GitHub backup record": {
+      "main": [
+        [
+          {
+            "node": "Resend admin digest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resend admin digest": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Error Handler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "saveManualExecutions": false
+  },
+  "versionId": null,
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "sukiAutomation": "draft"
+  },
+  "tags": []
+}

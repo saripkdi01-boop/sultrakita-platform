@@ -1,0 +1,453 @@
+{
+  "name": "SUKI - AI Listing Publish & Social Promo",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "suki/webhooks/listing_published",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "webhook_trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SUPABASE_URL}}/rest/v1/automation_events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({event: \"Supabase fetch listing + seller\", source: \"n8n\", idempotency_key: $json.idempotency_key || $execution.id}) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "supabase_fetch_listing_+_seller",
+      "name": "Supabase fetch listing + seller",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        230,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Gemini moderation\n// Replace this guarded placeholder with the connector node or approved API call.\nconst input = $json;\nreturn [{ json: { ...input, automation_step: \"Gemini moderation\", processed_at: new Date().toISOString() } }];"
+      },
+      "id": "gemini_moderation",
+      "name": "Gemini moderation",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        460,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.isSafe || $json.fraudScore < 80 || $json.rating >= 4}}",
+              "operation": "true"
+            }
+          ]
+        }
+      },
+      "id": "if_safe?",
+      "name": "IF safe?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        690,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SUPABASE_URL}}/rest/v1/automation_events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({event: \"R2 optimize media\", source: \"n8n\", idempotency_key: $json.idempotency_key || $execution.id}) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "r2_optimize_media",
+      "name": "R2 optimize media",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        920,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SUPABASE_URL}}/rest/v1/automation_events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({event: \"Supabase publish update\", source: \"n8n\", idempotency_key: $json.idempotency_key || $execution.id}) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "supabase_publish_update",
+      "name": "Supabase publish update",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        1150,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SUPABASE_URL}}/rest/v1/automation_events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({event: \"Canva promo asset\", source: \"n8n\", idempotency_key: $json.idempotency_key || $execution.id}) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "canva_promo_asset",
+      "name": "Canva promo asset",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        1380,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SUPABASE_URL}}/rest/v1/automation_events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({event: \"Vercel ISR revalidate\", source: \"n8n\", idempotency_key: $json.idempotency_key || $execution.id}) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "vercel_isr_revalidate",
+      "name": "Vercel ISR revalidate",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        1610,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SUPABASE_URL}}/rest/v1/automation_events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({event: \"Resend seller email\", source: \"n8n\", idempotency_key: $json.idempotency_key || $execution.id}) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "resend_seller_email",
+      "name": "Resend seller email",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        1840,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SUPABASE_URL}}/rest/v1/automation_events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({event: \"Customer.io event\", source: \"n8n\", idempotency_key: $json.idempotency_key || $execution.id}) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "customer.io_event",
+      "name": "Customer.io event",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        2070,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Non-sensitive error normalization. Never log payment keys or PII.\nreturn [{json:{ok:false, workflow: \"01_listing_publish_social_promo\", execution_id:$execution.id, retryable:true}}];"
+      },
+      "id": "error_handler",
+      "name": "Error Handler",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        2300,
+        180
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Supabase fetch listing + seller",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase fetch listing + seller": {
+      "main": [
+        [
+          {
+            "node": "Gemini moderation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini moderation": {
+      "main": [
+        [
+          {
+            "node": "IF safe?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF safe?": {
+      "main": [
+        [
+          {
+            "node": "R2 optimize media",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "R2 optimize media": {
+      "main": [
+        [
+          {
+            "node": "Supabase publish update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase publish update": {
+      "main": [
+        [
+          {
+            "node": "Canva promo asset",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Canva promo asset": {
+      "main": [
+        [
+          {
+            "node": "Vercel ISR revalidate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vercel ISR revalidate": {
+      "main": [
+        [
+          {
+            "node": "Resend seller email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resend seller email": {
+      "main": [
+        [
+          {
+            "node": "Customer.io event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Customer.io event": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Error Handler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "saveManualExecutions": false
+  },
+  "versionId": null,
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "sukiAutomation": "draft"
+  },
+  "tags": []
+}

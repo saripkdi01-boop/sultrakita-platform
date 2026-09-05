@@ -1,69 +1,19 @@
-# SultraKita n8n Automation
+# SUKI Marketplace n8n automation pack
 
-Direktori ini berisi template workflow n8n yang dapat di-import ke instance n8n staging atau production. Template sengaja tidak menyimpan credential, token, API key, atau webhook secret.
+Eleven importable, inactive draft workflows are included. They deliberately do not run until credentials, webhook secrets, and connector nodes are configured. The generic HTTP/Code nodes are safe placeholders and must be replaced with the corresponding Supabase, Midtrans, R2, Resend, Customer.io, Canva, Google Sheets, GitHub, and Vercel credentials.
 
-## Workflow
+## Import order
 
-| File | Tujuan | Trigger |
-|---|---|---|
-| `workflows/01-user-registration-otp.json` | Validasi request OTP, persist challenge melalui Express, kirim ke provider WhatsApp/SMS, simpan delivery status | Webhook POST |
-| `workflows/02-listing-media-processing.json` | Claim event media, verifikasi object R2, panggil media processor, dan update status listing | Webhook POST |
-| `workflows/03-seller-verification-admin-notification.json` | Claim verification, membuat review link singkat, mengirim notifikasi admin, dan menyimpan status | Webhook POST |
-| `workflows/04-new-listing-moderation-notification.json` | Claim listing baru secara idempotent, mengubah status menjadi menunggu review, dan memberi tahu moderator | Webhook POST |
+Import workflows 1–11 into n8n, create environment variables from `.env.example`, then configure credentials and test each workflow with a fixture. Keep financial workflows 2–4 inactive until Midtrans sandbox signature verification and idempotency tests pass.
 
-## Contoh alur listing baru
+## Idempotency
 
-Workflow `04-new-listing-moderation-notification.json` menggunakan urutan berikut:
+Use `idempotency_key = provider:event_id` for Midtrans callbacks and checkout creation. Persist it in a unique database column or a dedicated `automation_events` table. The first successful insert wins; duplicate callbacks return HTTP 200 without repeating stock changes, emails, or disbursements. Financial workflows must stop on connector errors; notification/reporting branches may continue after recording an error.
 
-```text
-Webhook listing.created
-  → Code: validasi event_id, listing_id, seller_id, title, dan status
-  → Express: claim idempotency event
-  → IF: duplicate → safe no-op
-  → Express: set workflow_status = AWAITING_REVIEW
-  → Telegram: notify moderator
-  → Express: simpan notification status
-  → Respond: 202 Accepted
-```
+## Canva template brief
 
-Workflow tidak otomatis mengubah listing menjadi `ACTIVE`. Persetujuan tetap harus dilakukan oleh moderator melalui jalur admin yang terautorisasi.
+Prepare templates with named placeholders: `listing_title`, `price`, `seller_name`, `district`, `product_image`, `review_text`, `rating`, `report_period`, `total_orders`, `revenue`, and `brand_mark`. Keep text safe-area within 1080x1350 and provide fallback text for missing images.
 
-## Import
+## Production safety
 
-1. Import masing-masing JSON melalui menu **Workflows → Import from File**.
-2. Pastikan workflow masih **inactive** setelah import.
-3. Buat credential staging untuk Header Auth webhook, internal API header, provider WhatsApp/SMS, dan Telegram.
-4. Set environment variable n8n berikut pada instance n8n:
-
-```env
-SULTRAKITA_API_BASE_URL=https://sultrakita-platform.vercel.app
-R2_PUBLIC_BASE_URL=https://assets.sultrakita.com
-R2_BUCKET_NAME=sultrakita-assets
-OTP_DEV_MODE=false
-OTP_PROVIDER_URL=
-TELEGRAM_BOT_TOKEN=
-TELEGRAM_ADMIN_CHAT_ID=
-```
-
-5. Konfigurasikan `SULTRAKITA_API_BASE_URL` ke backend Express yang benar. Jika Vercel masih menyajikan root Express, gunakan domain root tersebut; jangan menunjuk ke `next-app` kecuali Next.js sudah menjadi deployment yang aktif.
-6. Aktifkan workflow hanya setelah test URL berhasil, production webhook URL telah dicatat, dan smoke test staging lulus.
-
-## Credential policy
-
-Credential disimpan pada credential store n8n, bukan pada JSON workflow atau repository. Gunakan credential berbeda untuk staging dan production. R2 secret hanya dipakai oleh Express/media service; workflow tidak boleh meneruskan secret tersebut ke browser.
-
-## Webhook verification
-
-Webhook n8n wajib menggunakan Header Auth atau JWT Auth. Untuk request dari Express, tambahkan HMAC signature pada body raw dengan timestamp dan `event_id`. Reject request yang timestamp-nya lebih tua dari lima menit atau `event_id` yang sudah sukses.
-
-## File upload policy
-
-Browser tidak mengirim multipart binary besar ke n8n. Express membuat presigned PUT URL R2, browser mengunggah langsung ke R2, lalu Express mengirim event `{ event_id, object_key, listing_id, content_type, byte_size }` ke workflow. Pola ini menghindari batas payload webhook dan mengurangi beban instance n8n.
-
-## Failure handling
-
-Semua workflow harus memiliki error workflow global. Error path wajib memperbarui `workflow_events` atau tabel status yang relevan, menambah `attempt_count`, menyimpan `n8n_execution_id`, dan memindahkan event ke `DEAD_LETTER` setelah batas retry. Jangan mengaktifkan **Continue On Fail** tanpa node berikutnya yang memeriksa error.
-
-## Deployment note
-
-Template ini dapat di-import ke instance n8n setelah konektor terotorisasi. Import ke staging terlebih dahulu, lakukan smoke test, dan biarkan workflow inactive sampai credential, endpoint internal, signature, dan failure path tervalidasi.
+Do not log payment keys, KTP/NIB images, complete shipping addresses, phone numbers, or raw Midtrans payloads. Store only hashed/idempotency identifiers in operational logs. Configure error workflows and alert recipients before activation.

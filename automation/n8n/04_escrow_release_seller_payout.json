@@ -1,0 +1,289 @@
+{
+  "name": "SUKI - Escrow Release & Seller Payout",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 18 * * *"
+            }
+          ]
+        }
+      },
+      "id": "schedule_trigger",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Query delivered orders older than 3 days\n// Replace this guarded placeholder with the connector node or approved API call.\nconst input = $json;\nreturn [{ json: { ...input, automation_step: \"Query delivered orders older than 3 days\", processed_at: new Date().toISOString() } }];"
+      },
+      "id": "query_delivered_orders_older_than_3_days",
+      "name": "Query delivered orders older than 3 days",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        230,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.isSafe || $json.fraudScore < 80 || $json.rating >= 4}}",
+              "operation": "true"
+            }
+          ]
+        }
+      },
+      "id": "skip_disputed_orders",
+      "name": "Skip disputed orders",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        460,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SUPABASE_URL}}/rest/v1/automation_events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({event: \"Midtrans disbursement\", source: \"n8n\", idempotency_key: $json.idempotency_key || $execution.id}) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "midtrans_disbursement",
+      "name": "Midtrans disbursement",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        690,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Mark escrow released\n// Replace this guarded placeholder with the connector node or approved API call.\nconst input = $json;\nreturn [{ json: { ...input, automation_step: \"Mark escrow released\", processed_at: new Date().toISOString() } }];"
+      },
+      "id": "mark_escrow_released",
+      "name": "Mark escrow released",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        920,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SUPABASE_URL}}/rest/v1/automation_events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({event: \"Resend seller payout email\", source: \"n8n\", idempotency_key: $json.idempotency_key || $execution.id}) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "resend_seller_payout_email",
+      "name": "Resend seller payout email",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        1150,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SUPABASE_URL}}/rest/v1/automation_events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({event: \"Resend buyer review email\", source: \"n8n\", idempotency_key: $json.idempotency_key || $execution.id}) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "resend_buyer_review_email",
+      "name": "Resend buyer review email",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        1380,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Non-sensitive error normalization. Never log payment keys or PII.\nreturn [{json:{ok:false, workflow: \"04_escrow_release_seller_payout\", execution_id:$execution.id, retryable:true}}];"
+      },
+      "id": "error_handler",
+      "name": "Error Handler",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        1610,
+        180
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Query delivered orders older than 3 days",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query delivered orders older than 3 days": {
+      "main": [
+        [
+          {
+            "node": "Skip disputed orders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Skip disputed orders": {
+      "main": [
+        [
+          {
+            "node": "Midtrans disbursement",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Midtrans disbursement": {
+      "main": [
+        [
+          {
+            "node": "Mark escrow released",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark escrow released": {
+      "main": [
+        [
+          {
+            "node": "Resend seller payout email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resend seller payout email": {
+      "main": [
+        [
+          {
+            "node": "Resend buyer review email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resend buyer review email": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Error Handler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "saveManualExecutions": false
+  },
+  "versionId": null,
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "sukiAutomation": "draft"
+  },
+  "tags": []
+}

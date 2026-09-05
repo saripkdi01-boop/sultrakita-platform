@@ -1,0 +1,244 @@
+{
+  "name": "SUKI - Proactive Fraud & Anomaly Detection",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "suki/webhooks/fraud_review_created",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "webhook_trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Collect behavior and listing signals\n// Replace this guarded placeholder with the connector node or approved API call.\nconst input = $json;\nreturn [{ json: { ...input, automation_step: \"Collect behavior and listing signals\", processed_at: new Date().toISOString() } }];"
+      },
+      "id": "collect_behavior_and_listing_signals",
+      "name": "Collect behavior and listing signals",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        230,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Gemini fraud score\n// Replace this guarded placeholder with the connector node or approved API call.\nconst input = $json;\nreturn [{ json: { ...input, automation_step: \"Gemini fraud score\", processed_at: new Date().toISOString() } }];"
+      },
+      "id": "gemini_fraud_score",
+      "name": "Gemini fraud score",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        460,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.isSafe || $json.fraudScore < 80 || $json.rating >= 4}}",
+              "operation": "true"
+            }
+          ]
+        }
+      },
+      "id": "if_score_>_80_suspend",
+      "name": "IF score > 80 suspend",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        690,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Create GitHub high-priority issue\n// Replace this guarded placeholder with the connector node or approved API call.\nconst input = $json;\nreturn [{ json: { ...input, automation_step: \"Create GitHub high-priority issue\", processed_at: new Date().toISOString() } }];"
+      },
+      "id": "create_github_high-priority_issue",
+      "name": "Create GitHub high-priority issue",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        920,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SUPABASE_URL}}/rest/v1/automation_events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({event: \"Alert admin with Resend\", source: \"n8n\", idempotency_key: $json.idempotency_key || $execution.id}) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "alert_admin_with_resend",
+      "name": "Alert admin with Resend",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        1150,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.isSafe || $json.fraudScore < 80 || $json.rating >= 4}}",
+              "operation": "true"
+            }
+          ]
+        }
+      },
+      "id": "if_score_40-79_manual_review",
+      "name": "IF score 40-79 manual review",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        1380,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Non-sensitive error normalization. Never log payment keys or PII.\nreturn [{json:{ok:false, workflow: \"08_fraud_anomaly_detection\", execution_id:$execution.id, retryable:true}}];"
+      },
+      "id": "error_handler",
+      "name": "Error Handler",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        1610,
+        180
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Collect behavior and listing signals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect behavior and listing signals": {
+      "main": [
+        [
+          {
+            "node": "Gemini fraud score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini fraud score": {
+      "main": [
+        [
+          {
+            "node": "IF score > 80 suspend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF score > 80 suspend": {
+      "main": [
+        [
+          {
+            "node": "Create GitHub high-priority issue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create GitHub high-priority issue": {
+      "main": [
+        [
+          {
+            "node": "Alert admin with Resend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alert admin with Resend": {
+      "main": [
+        [
+          {
+            "node": "IF score 40-79 manual review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF score 40-79 manual review": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Error Handler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "saveManualExecutions": false
+  },
+  "versionId": null,
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "sukiAutomation": "draft"
+  },
+  "tags": []
+}
