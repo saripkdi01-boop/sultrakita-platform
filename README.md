@@ -338,3 +338,10 @@ Untuk transaksi donasi, cocokkan dashboard analytics SultraKita dengan laporan p
 ### Cutover runtime
 
 Karena deployment saat ini masih memiliki jalur SQLite/SQL.js legacy, jangan sekadar mengisi `DATABASE_URL` lalu menganggap aplikasi otomatis berpindah ke PostgreSQL. Urutan aman adalah provision PostgreSQL, migrate, import atau rekonsiliasi data, jalankan staging smoke test, deploy adapter runtime PostgreSQL secara eksplisit, pantau error dan latency, lalu siapkan rollback ke deployment sebelumnya. Perubahan database runtime adalah migration yang memengaruhi data live, sehingga harus dilakukan dalam maintenance window dan dengan backup tervalidasi.
+
+
+## Struktur layout sosial SultraKita
+
+Halaman Next.js (`next-app`) menggunakan pola mobile-first bergaya Facebook untuk memisahkan ruang sosial dan marketplace. `TopNavigationBar` menyediakan logo, pencarian, create action, pesan, notifikasi, serta menu profil. `QuickNavBar` menyediakan enam shortcut utama, sedangkan `BottomNavigation` hanya tampil pada viewport mobile.
+
+Feed utama terdiri dari `StoriesSection`, `CreatePostInput`, dan `FeedPost`. Pada desktop, `LeftSidebar` menyediakan navigasi akun dan `RightSidebar` menampilkan preview marketplace, komunitas, serta topik trending. Marketplace, Reels, dan grup tetap berada pada tab terpisah agar feed sosial tidak terlalu padat. Semua komponen mendukung dark mode, keyboard focus, empty/loading state yang relevan, serta horizontal scrolling stories dengan scrollbar tersembunyi.
