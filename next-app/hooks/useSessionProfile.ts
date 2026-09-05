@@ -12,18 +12,21 @@ export function useSessionProfile() {
 
   useEffect(() => {
     let active = true;
+    const client = supabase;
+    if (!client) return () => { active = false; };
     async function hydrate(nextUser: User | null) {
       if (!active) return;
+      if (!client) return;
       setUser(nextUser);
       if (!nextUser) { setProfile(null); setNotificationCount(0); return; }
       const [{ data: nextProfile }, { count }] = await Promise.all([
-        supabase.from('profiles').select('id,full_name,avatar_url,role,headline').eq('id', nextUser.id).maybeSingle(),
-        supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('user_id', nextUser.id).eq('is_read', false),
+        client.from('profiles').select('id,full_name,avatar_url,role,headline').eq('id', nextUser.id).maybeSingle(),
+        client.from('notifications').select('id', { count: 'exact', head: true }).eq('user_id', nextUser.id).eq('is_read', false),
       ]);
       if (active) { setProfile(nextProfile as Profile | null); setNotificationCount(count || 0); }
     }
-    supabase.auth.getSession().then(({ data }) => hydrate(data.session?.user ?? null));
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => { void hydrate(session?.user ?? null); });
+    client.auth.getSession().then(({ data }) => hydrate(data.session?.user ?? null));
+    const { data: listener } = client.auth.onAuthStateChange((_event, session) => { void hydrate(session?.user ?? null); });
     return () => { active = false; listener.subscription.unsubscribe(); };
   }, []);
 
