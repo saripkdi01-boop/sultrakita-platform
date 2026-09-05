@@ -1,8 +1,8 @@
-import { createClient } from '@supabase/supabase-js';
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL; const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 if (!url || !key) throw new Error('Set NEXT_PUBLIC_SUPABASE_URL dan SUPABASE_SERVICE_ROLE_KEY terlebih dahulu.');
-const supabase = createClient(url, key);
 const rows = [
   ['Apa itu SultraKita?', 'apa-itu-sultrakita', 'Platform sosial-commerce lokal untuk warga Sulawesi Tenggara.', 'umum'], ['Cara mendaftar akun baru', 'cara-mendaftar-akun-baru', 'Buat akun dengan email aktif, lengkapi profil, lalu verifikasi identitas bila diminta.', 'umum'], ['Cara bertransaksi aman', 'cara-bertransaksi-aman', 'Gunakan chat dan metode pembayaran resmi. Jangan pernah membagikan OTP atau PIN.', 'marketplace'], ['Cara mencari rumah di Suki Suits', 'cara-mencari-rumah-di-suki-suits', 'Gunakan kategori, distrik, dan filter harga untuk menemukan hunian yang sesuai.', 'suki_suits'], ['Verifikasi properti dan legalitas', 'verifikasi-properti-dan-legalitas', 'Periksa badge verifikasi, dokumen, dan lakukan viewing sebelum membuat keputusan.', 'suki_suits'], ['Tips menghindari penipuan online', 'tips-menghindari-penipuan-online', 'Waspadai harga tidak masuk akal, tautan mencurigakan, dan permintaan transfer di luar platform.', 'security'], ['Cara mengamankan akun', 'cara-mengamankan-akun', 'Gunakan password unik, aktifkan 2FA, dan tinjau perangkat yang dikenali secara berkala.', 'security'], ['Metode pembayaran yang tersedia', 'metode-pembayaran-yang-tersedia', 'Pilih metode pembayaran yang tampil di checkout dan simpan bukti transaksi.', 'payment']
 ].map(([title, slug, content, category]) => ({ title, slug, content, category, tags: [category], is_published: true, published_at: new Date().toISOString() }));
-const { error } = await supabase.from('help_articles').upsert(rows, { onConflict: 'slug' }); if (error) throw error; console.log(`Seeded ${rows.length} help articles.`);
+const response = await fetch(`${url}/rest/v1/help_articles?on_conflict=slug`, { method: 'POST', headers: { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(rows) });
+if (!response.ok) throw new Error(`Supabase seed gagal: ${response.status} ${await response.text()}`);
+console.log(`Seeded ${rows.length} help articles.`);

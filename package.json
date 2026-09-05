@@ -27,7 +27,8 @@
     "verify:local": "npm run lint && npm test && npm run build && npm run test:security && npm run smoke:api && npm run smoke:donation",
     "db:migrate": "node scripts/migrate-postgres.js",
     "db:seed:demo": "SEED_DEMO=true NODE_ENV=staging node scripts/seed-demo.js",
-    "check:single-runtime": "node scripts/modernization-check.js"
+    "check:single-runtime": "node scripts/modernization-check.js",
+    "seed:help": "tsx scripts/seed-help-articles.ts"
   },
   "keywords": [
     "marketplace",
@@ -46,5 +47,8 @@
     "multer": "^2.0.2",
     "pg": "^8.23.0",
     "resend": "^6.25.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.23.13"
   }
 }

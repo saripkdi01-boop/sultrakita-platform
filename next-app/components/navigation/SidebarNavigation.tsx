@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Bell, BookOpen, Building, CalendarDays, Gavel, Home, Landmark, RefreshCw, Clapperboard, Clock3, Cog, FileText, HelpCircle, LockKeyhole, LogOut, Newspaper, PanelLeft, ShieldCheck, ShoppingBag, Sparkles, Store, UserRound, UserPlus, WalletCards, Users } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Bell, BookOpen, Building, CalendarDays, Gavel, Home, Landmark, RefreshCw, Clapperboard, Clock3, Cog, FileText, HelpCircle, LockKeyhole, LogOut, Newspaper, PanelLeft, Shield, AlertTriangle, ShieldCheck, ShoppingBag, Sparkles, Store, UserRound, UserPlus, WalletCards, Users } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { useSessionProfile } from '@/hooks/useSessionProfile';
 import { ExpandableSection } from './ExpandableSection';
@@ -16,9 +17,9 @@ const mainItems = [
   ['Meta AI Sultra', '#ai-assistant', Sparkles, 'Bantuan cerdas untuk warga'], ['Tersimpan', '#saved', BookOpen, 'Listing, Reels, dan postingan'], ['Kenangan', '#memories', Clock3, 'Momen dari aktivitasmu'], ['Suki Properti', '/properti', Building, 'Rumah sewa, kos, takeover, lelang, subsidi'], ['Marketplace', '/marketplace', Store, 'SUKI Marketplace'], ['Acara', '#events', CalendarDays, 'Kegiatan Sultra'], ['Reels', '/reels', Clapperboard, 'Video singkat warga'], ['Teman', '#friends', UserPlus, 'Teman dan warga online'], ['Halaman', '#pages', FileText, 'Halaman bisnis'], ['Kabar', '#news', Newspaper, 'Berita lokal'],
 ] as const;
 export function SidebarNavigation({ isOpen, onClose, onNavigate }: SidebarNavigationProps) {
-  const { user, profile, notificationCount } = useSessionProfile(); const [darkMode, setDarkMode] = useState(false);
+  const router = useRouter(); const { user, profile, notificationCount } = useSessionProfile(); const [darkMode, setDarkMode] = useState(false);
   useEffect(() => { setDarkMode(document.documentElement.classList.contains('dark')); }, []);
-  function navigate(href: string) { onNavigate?.(href); onClose(); }
+  function navigate(href: string) { onNavigate?.(href); if (href.startsWith('/')) router.push(href); else if (href.startsWith('#')) window.location.hash = href.slice(1); onClose(); }
   function toggleDark() { const next = !darkMode; setDarkMode(next); document.documentElement.classList.toggle('dark', next); localStorage.setItem('sultra-dark-mode', next ? 'dark' : 'light'); }
   async function logout() { if (!window.confirm('Keluar dari akun SultraKita?')) return; await supabase?.auth.signOut(); onClose(); }
   const name = profile?.full_name || user?.email || 'Warga SultraKita'; const role = profile?.role === 'seller' ? 'Seller SultraKita' : profile?.role === 'admin' ? 'Admin SultraKita' : 'Warga SultraKita';
