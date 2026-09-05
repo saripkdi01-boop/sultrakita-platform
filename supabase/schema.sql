@@ -51,6 +51,8 @@ create table if not exists public.listings (
   views integer not null default 0,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
+  is_ai_assisted boolean not null default false,
+  ai_generation_timestamp timestamptz,
   unique (seller_id, slug)
 );
 
