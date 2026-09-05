@@ -23,7 +23,7 @@
     wireReels(section);
     observe(section);
   }
-  function showReels() { document.querySelectorAll('main > .view').forEach(view => view.classList.toggle('hidden', view.id !== 'view-reels')); document.querySelectorAll('.tab-btn,[data-mvp-nav]').forEach(x => x.classList.toggle('active', x.dataset.mvpNav === 'reels')); ensureSection(); window.scrollTo({top:0, behavior:'smooth'}); }
+  function showReels() { ensureSection(); document.querySelectorAll('main > .view').forEach(view => view.classList.toggle('hidden', view.id !== 'view-reels')); document.querySelectorAll('.tab-btn,[data-mvp-nav]').forEach(x => x.classList.toggle('active', x.dataset.mvpNav === 'reels')); window.scrollTo({top:0, behavior:'smooth'}); }
   function wireReels(root) {
     root.addEventListener('click', event => { const button = event.target.closest('[data-reel-action]'); if (!button) return; const post = button.closest('.mvp-reel'); const video = post?.querySelector('video'); if (!post || !video) return; const action = button.dataset.reelAction;
       if (action === 'play') { if (video.paused) { video.play().catch(() => {}); button.textContent = '❚❚'; } else { video.pause(); button.textContent = '▶'; } }
