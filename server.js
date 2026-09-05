@@ -78,6 +78,30 @@ app.use('/api/settings', createSettingsRouter());
 app.use('/api/v2', v2Api);
 app.use('/api/v2/promo', promoApi);
 
+// Additive MVP endpoint for the vanilla runtime's listing assistant. It degrades
+// gracefully when Gemini is not configured, while keeping the API contract stable.
+app.post('/api/ai/listing-assist', async (req, res) => {
+  const title = String(req.body?.title || '').trim().slice(0, 140);
+  const category = String(req.body?.category || 'produk lokal').trim().slice(0, 80);
+  const district = String(req.body?.district || 'Sulawesi Tenggara').trim().slice(0, 80);
+  const existing = String(req.body?.description || '').trim().slice(0, 800);
+  if (title.length < 3) return res.status(422).json({ success: false, error: 'Judul listing belum valid' });
+  if (!process.env.GEMINI_API_KEY) {
+    return res.json({ success: true, data: { description: `${title} pilihan warga ${district}. Produk ${category} dengan kualitas baik dan siap dipertimbangkan. Hubungi penjual untuk detail, stok, dan kesepakatan COD.${existing ? ` ${existing}` : ''}`.slice(0, 900), provider: 'local-fallback' } });
+  }
+  try {
+    const prompt = `Tulis deskripsi marketplace dalam Bahasa Indonesia untuk listing berikut. Maksimal 3 kalimat, jujur, tidak mengarang spesifikasi, dan ajak pembeli menghubungi seller. Judul: ${title}. Kategori: ${category}. Lokasi: ${district}. Catatan pengguna: ${existing || '(tidak ada)'}`;
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(process.env.GEMINI_API_KEY)}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }), signal: AbortSignal.timeout(9000) });
+    const body = await response.json().catch(() => ({}));
+    const description = body?.candidates?.[0]?.content?.parts?.map(part => part.text || '').join('').trim();
+    if (!response.ok || !description) throw new Error('AI response tidak valid');
+    return res.json({ success: true, data: { description: description.slice(0, 900), provider: 'gemini' } });
+  } catch (error) {
+    console.warn('[listing-assist-fallback]', error.message);
+    return res.json({ success: true, data: { description: `${title} pilihan warga ${district}. Produk ${category} yang cocok untuk kebutuhan harian. Hubungi penjual untuk detail, stok, dan kesepakatan COD.`, provider: 'local-fallback' } });
+  }
+});
+
 const ok = (res, data, meta) => res.json({ success: true, data, ...(meta ? { meta } : {}) });
 const fail = (res, status, message, details) => res.status(status).json({ success: false, error: message, ...(details ? { details } : {}) });
 const failCode = (res, status, code, message, details) => res.status(status).json({ success: false, code, error: message, ...(details ? { details } : {}) });
