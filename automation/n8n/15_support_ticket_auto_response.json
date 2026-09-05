@@ -1,0 +1,11 @@
+{
+  "name": "SUKI - Support Ticket Auto Response",
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "nodes": [
+    { "parameters": { "httpMethod": "POST", "path": "suki-support-ticket", "responseMode": "onReceived", "options": {} }, "id": "support-webhook", "name": "Support Ticket Webhook", "type": "n8n-nodes-base.webhook", "typeVersion": 2, "position": [260, 300], "webhookId": "suki-support-ticket" },
+    { "parameters": { "method": "POST", "url": "={{$env.SUPABASE_URL}}/rest/v1/notifications", "sendHeaders": true, "headerParameters": { "parameters": [{ "name": "apikey", "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY}}" }, { "name": "Authorization", "value": "=Bearer {{$env.SUPABASE_SERVICE_ROLE_KEY}}" }, { "name": "Content-Type", "value": "application/json" }, { "name": "Prefer", "value": "return=minimal" }] }, "sendBody": true, "jsonBody": "={\"user_id\": $json.user_id, \"title\": \"Laporan {{$json.ticket_number}} diterima\", \"body\": \"Tim support akan merespons dalam 24–48 jam.\"}", "options": {} }, "id": "notify-user", "name": "Notify User", "type": "n8n-nodes-base.httpRequest", "typeVersion": 4, "position": [540, 300] }
+  ],
+  "connections": { "Support Ticket Webhook": { "main": [[{ "node": "Notify User", "type": "main", "index": 0 }]] }
+  }
+}

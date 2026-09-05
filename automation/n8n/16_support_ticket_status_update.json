@@ -1,0 +1,11 @@
+{
+  "name": "SUKI - Support Ticket Status Update",
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "nodes": [
+    { "parameters": { "httpMethod": "POST", "path": "suki-support-ticket-status", "responseMode": "onReceived", "options": {} }, "id": "status-webhook", "name": "Ticket Status Webhook", "type": "n8n-nodes-base.webhook", "typeVersion": 2, "position": [260, 300], "webhookId": "suki-support-ticket-status" },
+    { "parameters": { "method": "POST", "url": "={{$env.SUPABASE_URL}}/rest/v1/notifications", "sendHeaders": true, "headerParameters": { "parameters": [{ "name": "apikey", "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY}}" }, { "name": "Authorization", "value": "=Bearer {{$env.SUPABASE_SERVICE_ROLE_KEY}}" }, { "name": "Content-Type", "value": "application/json" }, { "name": "Prefer", "value": "return=minimal" }] }, "sendBody": true, "jsonBody": "={\"user_id\": $json.user_id, \"title\": \"Update ticket {{$json.ticket_number}}\", \"body\": \"Status laporan kamu: {{$json.status}}\"}", "options": {} }, "id": "notify-status", "name": "Notify Ticket Owner", "type": "n8n-nodes-base.httpRequest", "typeVersion": 4, "position": [540, 300] }
+  ],
+  "connections": { "Ticket Status Webhook": { "main": [[{ "node": "Notify Ticket Owner", "type": "main", "index": 0 }]] }
+  }
+}
