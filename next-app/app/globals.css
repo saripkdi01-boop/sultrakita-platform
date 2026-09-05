@@ -71,3 +71,10 @@ html.dark{background:#292524}html.dark body,html.dark .top-header,html.dark .des
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+
+
+/* SultraKita auth gate */
+.auth-input { width: 100%; border: 1px solid #e0ece6; border-radius: 0.8rem; background: #fbfefc; padding: 0.78rem 0.9rem 0.78rem 2.65rem; color: #143b35; font-size: 0.875rem; outline: none; transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease; }
+.auth-input:focus { border-color: #1b8f7d; background: #fff; box-shadow: 0 0 0 4px rgba(27,143,125,.1); }
+.field-icon { position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); color: #7b9990; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .auth-input { transition: none; } }
