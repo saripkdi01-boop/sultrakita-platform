@@ -1,0 +1,9 @@
+'use client';
+
+import { Bell, RefreshCw } from 'lucide-react';
+
+type ProfileHeaderProps = { name: string; avatarUrl?: string | null; role?: string; notificationCount?: number; onProfile?: () => void; onRefresh?: () => void };
+export function ProfileHeader({ name, avatarUrl, role = 'Warga SultraKita', notificationCount = 0, onProfile, onRefresh }: ProfileHeaderProps) {
+  const initials = name.split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase();
+  return <button onClick={onProfile} className="flex w-full items-center gap-3 rounded-xl bg-gray-50 p-3 text-left transition-colors hover:bg-sultra-mint/30 dark:bg-sultra-forest/10 dark:hover:bg-sultra-forest/20"><span className="relative grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-full bg-sultra-teal text-sm font-semibold text-white">{avatarUrl ? <img src={avatarUrl} alt={name} className="h-full w-full object-cover"/> : initials}<i className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white bg-emerald-500 dark:border-sultra-dark"/></span><span className="min-w-0 flex-1"><strong className="block truncate text-sm text-sultra-forest dark:text-sultra-mint">{name}</strong><small className="block truncate text-xs text-gray-500 dark:text-sultra-sand/60">{role} · Lihat profil</small></span><span className="flex shrink-0 items-center gap-1"><span onClick={event => { event.stopPropagation(); onRefresh?.(); }} className="rounded-full p-1.5 text-sultra-teal hover:bg-gray-200 dark:hover:bg-sultra-forest/30" role="button" aria-label="Perbarui status"><RefreshCw size={16}/></span><span className="relative rounded-full p-1.5 text-sultra-teal"><Bell size={17}/>{notificationCount > 0 && <b className="absolute -right-1 -top-1 min-w-4 rounded-full bg-red-500 px-1 text-center text-[9px] leading-4 text-white">{notificationCount > 9 ? '9+' : notificationCount}</b>}</span></span></button>;
+}
