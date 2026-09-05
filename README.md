@@ -372,3 +372,12 @@ Workflow support tersedia dalam kondisi inactive: `automation/n8n/15_support_tic
 ### Troubleshooting
 
 Jika sidebar tidak berubah, lakukan hard refresh (`Ctrl+Shift+R` atau `Cmd+Shift+R`), coba Incognito, dan pastikan deployment Vercel berstatus READY. Jika route support 404, periksa root directory Vercel dan pastikan route berada di `next-app/app`. Jika ticket tidak tersimpan, pastikan migration sudah dijalankan, user sudah login, dan RLS `support_tickets` aktif.
+
+
+## Support System
+
+Pusat Keamanan tersedia di `/security-center` dengan security checkup, trusted devices, dan tips anti-penipuan. Pusat Bantuan tersedia di `/help-center` dengan pencarian dan kategori Umum, Marketplace, Suki Suits, Chat, Pembayaran, serta Keamanan. Form `/support` membuat ticket untuk masalah teknis, fraud, pembayaran, listing, akun, dan lainnya; ticket dapat dilacak melalui `/support/tickets/[id]` dengan nomor `SUP-YYYY-XXXXXX`. Dokumen Ketentuan & Kebijakan tersedia di `/legal/[slug]`, sedangkan admin dapat mengelola ticket di `/admin/support-tickets`.
+
+Migration `supabase/migrations/20260908000000_support_system.sql` harus dijalankan melalui Supabase SQL Editor atau pipeline migration. Seed artikel dapat dijalankan dengan `npm run seed:help` menggunakan `NEXT_PUBLIC_SUPABASE_URL` dan `SUPABASE_SERVICE_ROLE_KEY` pada environment yang aman. Dua workflow n8n support tersedia dalam kondisi inactive di `automation/n8n/15_support_ticket_auto_response.json` dan `automation/n8n/16_support_ticket_status_update.json`.
+
+Jika sidebar tidak berubah, lakukan hard refresh, coba Incognito, dan pastikan deployment Vercel berstatus READY. Jika route support 404, periksa root directory Vercel dan pastikan route berada di `next-app/app`. Jika ticket tidak tersimpan, pastikan migration sudah dijalankan, user sudah login, dan RLS `support_tickets` aktif.
