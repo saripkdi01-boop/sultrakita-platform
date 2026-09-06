@@ -80,7 +80,7 @@ export const menuSections: { title: string; items: MenuItemConfig[] }[] = [
     items: [
       { label: 'SUKI Chat', route: '/chat', icon: MessageCircle },
       { label: 'SUKI Events', route: '/groups', icon: CalendarDays },
-      { label: 'SUKI Jobs', route: '#jobs', icon: BriefcaseBusiness, badge: 'Segera hadir' },
+      { label: 'SUKI Jobs', route: '/jobs', icon: BriefcaseBusiness, badge: 'NEW' },
       { label: 'SUKI Properti', route: '/properti', icon: Home },
     ],
   },
