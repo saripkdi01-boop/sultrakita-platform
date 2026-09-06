@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
   const url = request.nextUrl;
-  const publicRoutes = ['/login', '/signup', '/auth/callback', '/legal/'];
+  const publicRoutes = ['/', '/login', '/signup', '/auth/callback', '/legal/'];
   const isPublicRoute = publicRoutes.some(route => route === '/legal/' ? url.pathname.startsWith('/legal/') : url.pathname === route || url.pathname.startsWith(`${route}/`));
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
     return isPublicRoute ? NextResponse.next() : NextResponse.redirect(new URL('/login', request.url));
