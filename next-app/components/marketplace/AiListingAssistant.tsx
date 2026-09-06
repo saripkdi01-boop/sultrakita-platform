@@ -38,18 +38,17 @@ export function AiListingAssistant({ file, onGenerated }: Props) {
       onGenerated(response.data);
       setGenerated(true);
       setMessage('Draft listing berhasil diisi. Silakan periksa dan edit sebelum terbitkan.');
-    } catch {
-      setMessage('Sistem sedang sibuk, silakan isi manual atau coba lagi sebentar.');
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'AI belum dapat membantu. Silakan isi manual.');
     } finally {
       setLoading(false);
     }
   }
 
-  return <div className="ai-listing-assistant bg-sultra-mint/70 text-sultra-forest shadow-soft" aria-live="polite">
+  return <div className="ai-listing-assistant bg-mint/70 text-forest shadow-soft" aria-live="polite">
     <div className="ai-listing-copy"><span className="ai-listing-icon"><WandSparkles size={17}/></span><div><strong>Listing lebih cepat dengan AI</strong><small>Analisis foto untuk menyusun judul, deskripsi, kategori, dan perkiraan harga.</small></div></div>
-    <button type="button" className="ai-listing-button bg-sultra-gold" onClick={handleGenerate} disabled={loading}>{loading ? <><span className="ai-spinner"/> Menganalisis...</> : <><Sparkles size={15}/> Generate Otomatis dengan AI</>}</button>
-    {loading && <div className="mt-3 space-y-2" aria-label="AI sedang memproses"><div className="h-3 w-3/4 rounded bg-sultra-mint animate-pulse"/><div className="h-3 w-1/2 rounded bg-sultra-mint animate-pulse"/></div>}
-    {message && <p className={`ai-listing-message ${generated ? 'success' : ''}`} role="status">{message}</p>}
+    <button type="button" className="ai-listing-button bg-gold" onClick={handleGenerate} disabled={loading}>{loading ? <><span className="ai-spinner"/> Menganalisis...</> : <><Sparkles size={15}/> Generate Otomatis dengan AI</>}</button>
+    {message && <p className={`ai-listing-message ${generated ? 'success' : ''}`}>{message}</p>}
     {generated && <button type="button" className="ai-edit-manual" onClick={() => setMessage('Silakan ubah field di atas sesuai kondisi produk sebenarnya.')}>Edit Manual</button>}
   </div>;
 }
