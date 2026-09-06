@@ -21,4 +21,7 @@ export async function middleware(request: NextRequest) {
   return response;
 }
 
-export const config = { matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)'] };
+// API routes own their authentication and error responses. Keeping them out of
+// this page middleware prevents unauthenticated API calls from becoming HTML 307
+// redirects to /login.
+export const config = { matcher: ['/((?!api|_next/static|_next/image|favicon.ico|.*\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)'] };

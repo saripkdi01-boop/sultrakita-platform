@@ -6,7 +6,14 @@ export function getServerSupabase() {
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !key) throw new Error('Supabase belum dikonfigurasi.');
   const store = cookies();
-  return createServerClient(url, key, { cookies: { getAll: () => store.getAll(), setAll: () => undefined } });
+  return createServerClient(url, key, {
+    cookies: {
+      getAll: () => store.getAll(),
+      // Server Components cannot mutate cookies. Route Handlers and middleware
+      // provide their own response-aware client when a session must be written.
+      setAll: () => undefined,
+    },
+  });
 }
 
 export async function requireServerUser() {
