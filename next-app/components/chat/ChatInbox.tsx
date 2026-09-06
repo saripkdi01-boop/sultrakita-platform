@@ -1,6 +1,6 @@
 'use client';
 
-import { MessageCircle, MoreHorizontal, Search, Settings2, Users, X } from 'lucide-react';
+import { MessageCircle, MoreHorizontal, Plus, Search, Settings2, Users } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { getChatInbox, setPresence } from '@/lib/actions/chat';
@@ -44,6 +44,7 @@ export function ChatInbox() {
   return <section className="chat-shell">
     <aside className={`chat-inbox ${selected ? 'chat-inbox-hidden-mobile' : ''}`}>
       <header className="chat-inbox-header"><div className="chat-brand"><span className="chat-brand-mark"><MessageCircle size={19} /></span><div><h1>SUKI Chat</h1><p>Pesan warga Sultra</p></div></div><div className="chat-header-actions"><button aria-label="Pengaturan chat"><Settings2 size={17} /></button><button aria-label="Opsi chat"><MoreHorizontal size={18} /></button></div></header>
+      <div className="chat-stories" aria-label="Cerita aktif"><button className="chat-story"><span className="chat-story-avatar chat-story-own"><Users size={19} /><i><Plus size={11} /></i></span><span>Cerita Anda</span></button>{['Wa Ode', 'La Ode', 'Rina', 'Budi', 'Siti'].map((name, index) => <button className="chat-story" key={name}><span className={`chat-story-avatar chat-story-${index + 1}`}>{name.slice(0, 1)}<i /></span><span>{name}</span></button>)}</div>
       <div className="chat-inbox-title"><div><span className="eyebrow">Messenger lokal</span><h2>Pesan</h2></div><span className="chat-online-pill"><i /> Aktif</span></div>
       <label className="chat-search"><Search size={16} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Cari percakapan" aria-label="Cari percakapan" /></label>
       {error && <p className="chat-error chat-inbox-error" role="alert">{error}</p>}
