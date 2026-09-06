@@ -278,7 +278,22 @@ main{padding-top:60px;min-height:100vh}
 #mobileNav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 0;color:var(--muted);font-size:10.5px;font-weight:700;border-radius:10px}
 #mobileNav button.active{color:var(--primary)}
 #mobileNav{justify-content:space-between}
-
+/* ---------- SULTRAKITA SIDEBAR DRAWER ---------- */
+#sidebarMenuBtn{display:none;width:40px;height:40px;border-radius:50%;background:var(--bg);border:1px solid var(--border);align-items:center;justify-content:center;font-size:20px}
+#sidebarBackdrop{position:fixed;inset:0;background:rgba(0,0,0,.58);z-index:180;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .2s ease,visibility .2s ease}
+#sidebarBackdrop.open{opacity:1;visibility:visible;pointer-events:auto}
+#sidebarDrawer{position:fixed;top:0;bottom:0;left:0;width:min(350px,calc(100vw - 28px));background:var(--card);z-index:190;transform:translateX(-105%);transition:transform .24s cubic-bezier(.23,1,.32,1);box-shadow:16px 0 42px rgba(0,0,0,.22);overflow-y:auto;padding:18px 14px calc(24px + env(safe-area-inset-bottom))}
+#sidebarDrawer.open{transform:translateX(0)}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;padding:2px 4px 14px;border-bottom:1px solid var(--border)}
+.drawer-head strong{font-size:18px}.drawer-close{width:36px;height:36px;border-radius:50%;background:var(--bg);font-size:22px}
+.drawer-profile{display:flex;align-items:center;gap:11px;padding:16px 7px 12px}.drawer-profile img{width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid var(--primary)}
+.drawer-profile strong{display:block;font-size:14px}.drawer-profile small{color:var(--muted);font-size:11px}.drawer-profile .status{margin-left:auto;color:#31a24c;font-size:12px;font-weight:800}
+.drawer-section-title{display:flex;align-items:center;justify-content:space-between;margin:16px 4px 8px;color:var(--muted);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.7px}
+.drawer-shortcuts{display:grid;grid-template-columns:1fr 1fr;gap:8px}.drawer-shortcut{display:flex;align-items:center;gap:8px;padding:10px 8px;border:1px solid var(--border);border-radius:11px;text-align:left;background:var(--bg);font-size:11px;font-weight:700}.drawer-shortcut span{display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:rgba(13,148,136,.14);font-size:15px}.drawer-shortcut small{display:block;color:var(--muted);font-size:9px;font-weight:500;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.drawer-link{display:flex;align-items:center;gap:11px;width:100%;padding:10px 9px;border-radius:10px;text-align:left;font-size:13px;font-weight:650;transition:background .15s,color .15s}.drawer-link:hover,.drawer-link:focus-visible{background:var(--hover);color:var(--primary)}.drawer-link .drawer-icon{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:rgba(13,148,136,.12);font-size:16px;flex:none}.drawer-link .drawer-badge{margin-left:auto;border-radius:999px;padding:3px 7px;background:rgba(245,158,11,.16);color:#b45309;font-size:9px;font-weight:800}.dark .drawer-link .drawer-badge{color:#fbbf24}
+.drawer-accordion{border-top:1px solid var(--border);margin-top:8px}.drawer-accordion-trigger{display:flex;align-items:center;gap:10px;width:100%;padding:13px 9px;border:0;border-bottom:1px solid var(--border);background:transparent;text-align:left;font-size:13px;font-weight:750}.drawer-accordion-trigger span:last-child{margin-left:auto;color:var(--muted);transition:transform .2s}.drawer-accordion-trigger[aria-expanded="true"] span:last-child{transform:rotate(180deg)}.drawer-accordion-content{display:none;padding:4px 0 6px}.drawer-accordion-content.open{display:block}.drawer-footer{margin-top:18px;padding-top:14px;border-top:1px solid var(--border)}
+@media(max-width:900px){#sidebarMenuBtn{display:flex}.tb-left{gap:7px}.searchbox{max-width:180px}}
+@media(min-width:901px){#sidebarDrawer,#sidebarBackdrop{display:none!important}}
 /* responsive */
 @media(max-width:1100px){.layout3{grid-template-columns:240px minmax(0,1fr)}.side.right{display:none}}
 @media(max-width:900px){.layout3{grid-template-columns:minmax(0,1fr)}.side.left{display:none}.tb-tabs{display:none}}
@@ -297,6 +312,7 @@ main{padding-top:60px;min-height:100vh}
 <!-- ===================== TOPBAR ===================== -->
 <header id="topbar">
   <div class="tb-left">
+    <button id="sidebarMenuBtn" aria-label="Buka menu navigasi" title="Menu">☰</button>
     <div class="logo" data-act="view" data-view="home">
       <div class="logo-badge">S</div>
       <div class="logo-text"><b>SultraKita</b><span>SUKI MARKETPLACE</span></div>
@@ -335,6 +351,30 @@ main{padding-top:60px;min-height:100vh}
     <img class="me-av" id="meBtn" alt="Profil" />
   </div>
 </header>
+
+<!-- ===================== RESPONSIVE SIDEBAR DRAWER ===================== -->
+<div id="sidebarBackdrop" aria-hidden="true"></div>
+<aside id="sidebarDrawer" aria-label="Navigasi SultraKita" aria-hidden="true">
+  <div class="drawer-head"><strong>Menu SultraKita</strong><button class="drawer-close" id="sidebarClose" aria-label="Tutup menu">×</button></div>
+  <div class="drawer-profile"><img id="drawerAv" alt="Profil La Ode Rizky"><div><strong>La Ode Rizky</strong><small>Seller terverifikasi · Kendari</small></div><span class="status">● Aktif</span></div>
+  <div class="drawer-section-title"><span>Pintasan Anda</span><span>2</span></div>
+  <div class="drawer-shortcuts">
+    <button class="drawer-shortcut" data-act="view" data-view="market"><span>🛍️</span><b>Promo Belanja<small>Penawaran lokal</small></b></button>
+    <button class="drawer-shortcut property-launch" data-act="property"><span>⌂</span><b>Grand Boulevard<small>Properti SUKI</small></b></button>
+  </div>
+  <button class="drawer-link" data-act="toast" data-msg="Pintasan tambahan segera hadir"><span class="drawer-icon">＋</span>Lihat selengkapnya</button>
+  <div class="drawer-section-title"><span>Menu Utama</span></div>
+  <button class="drawer-link" data-act="toast" data-msg="SUKI AI segera hadir"><span class="drawer-icon">✦</span>SultraKita AI</button>
+  <button class="drawer-link" data-act="saved"><span class="drawer-icon">🔖</span>Tersimpan</button>
+  <button class="drawer-link" data-act="toast" data-msg="Kenangan: fitur segera hadir"><span class="drawer-icon">🕰️</span>Kenangan</button>
+  <button class="drawer-link" data-act="view" data-view="market"><span class="drawer-icon">🛍️</span>Marketplace</button>
+  <button class="drawer-link" data-act="view" data-view="groups"><span class="drawer-icon">👥</span>Grup</button>
+  <div class="drawer-accordion"><button class="drawer-accordion-trigger" aria-expanded="false"><span>🛡️</span>Bantuan dan Dukungan<span>⌄</span></button><div class="drawer-accordion-content"><button class="drawer-link" data-act="toast" data-msg="Pusat Perlindungan Penipuan segera hadir"><span class="drawer-icon">🛡️</span>Pusat Perlindungan Penipuan</button><button class="drawer-link" data-act="toast" data-msg="Dukungan SultraKita segera hadir"><span class="drawer-icon">?</span>Dukungan</button><button class="drawer-link" data-act="toast" data-msg="Laporkan masalah melalui pusat bantuan"><span class="drawer-icon">!</span>Laporkan masalah</button><button class="drawer-link" data-act="toast" data-msg="Ketentuan dan Kebijakan tersedia di footer situs"><span class="drawer-icon">▤</span>Ketentuan dan Kebijakan</button></div></div>
+  <div class="drawer-accordion"><button class="drawer-accordion-trigger" aria-expanded="false"><span>⚙️</span>Pengaturan dan Privasi<span>⌄</span></button><div class="drawer-accordion-content"><button class="drawer-link" data-act="toast" data-msg="Pengaturan akun segera hadir"><span class="drawer-icon">⚙️</span>Pengaturan</button><button class="drawer-link" data-act="toast" data-msg="Pusat privasi segera hadir"><span class="drawer-icon">🔒</span>Pusat Privasi</button><button class="drawer-link" data-act="toast" data-msg="Manajemen waktu segera hadir"><span class="drawer-icon">◷</span>Manajemen waktu</button><button class="drawer-link" data-act="toast" data-msg="Bahasa: Bahasa Indonesia"><span class="drawer-icon">文</span>Bahasa</button><button class="drawer-link" data-act="theme"><span class="drawer-icon">◐</span>Mode gelap</button></div></div>
+  <div class="drawer-section-title"><span>Ekosistem SUKI</span></div>
+  <button class="drawer-link" data-act="view" data-view="home"><span class="drawer-icon">💬</span>SUKI Chat</button><button class="drawer-link" data-act="view" data-view="groups"><span class="drawer-icon">📅</span>SUKI Events</button><button class="drawer-link" data-act="toast" data-msg="SUKI Jobs segera hadir"><span class="drawer-icon">💼</span>SUKI Jobs<span class="drawer-badge">Segera hadir</span></button><button class="drawer-link property-launch" data-act="property"><span class="drawer-icon">⌂</span>SUKI Properti</button>
+  <div class="drawer-footer"><button class="drawer-link" data-act="toast" data-msg="SultraKita Premium segera hadir"><span class="drawer-icon">♛</span>SultraKita Premium</button><button class="drawer-link" data-act="toast" data-msg="Anda telah keluar dari demo SultraKita"><span class="drawer-icon">↪</span>Keluar</button></div>
+</aside>
 
 <!-- dropdown notifikasi -->
 <div class="drop hidden" id="notifDrop">
@@ -850,7 +890,12 @@ document.addEventListener('keydown', e=>{
   if(e.key==='Escape'){ ['postModal','prodModal','sellModal'].forEach(m=>$('#'+m).classList.add('hidden')); closeStory(); }
 });
 document.addEventListener('click', e=>{ if(e.target.classList.contains('modal-ov')) e.target.classList.add('hidden'); if(e.target.classList.contains('modal-ov-inner')) closeStory(); });
-
+const sidebarDrawer=$('#sidebarDrawer'),sidebarBackdrop=$('#sidebarBackdrop');
+function setSidebar(open){if(!sidebarDrawer)return;sidebarDrawer.classList.toggle('open',open);sidebarBackdrop.classList.toggle('open',open);sidebarDrawer.setAttribute('aria-hidden',String(!open));sidebarBackdrop.setAttribute('aria-hidden',String(!open));document.body.style.overflow=open?'hidden':'';if(open)$('#sidebarClose')?.focus()}
+$('#sidebarMenuBtn')?.addEventListener('click',()=>setSidebar(true));$('#sidebarClose')?.addEventListener('click',()=>setSidebar(false));sidebarBackdrop?.addEventListener('click',()=>setSidebar(false));
+document.querySelectorAll('.drawer-accordion-trigger').forEach(trigger=>trigger.addEventListener('click',()=>{const open=trigger.getAttribute('aria-expanded')==='true';trigger.setAttribute('aria-expanded',String(!open));trigger.nextElementSibling?.classList.toggle('open',!open)}));
+document.addEventListener('click',e=>{const action=e.target.closest('#sidebarDrawer [data-act]');if(!action)return;if(action.dataset.act==='theme'){document.body.classList.toggle('dark');toast(document.body.classList.contains('dark')?'🌙 Mode gelap aktif':'☀️ Mode terang aktif')}if(['view','property'].includes(action.dataset.act))setSidebar(false)});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sidebarDrawer?.classList.contains('open'))setSidebar(false)});
 $('#mktSearch').addEventListener('input', e=>{ state.mQ=e.target.value; renderProducts(); });
 $('#distSel').addEventListener('change', e=>{ state.mDist=e.target.value; renderProducts(); });
 $('#sortSel').addEventListener('change', e=>{ state.mSort=e.target.value; renderProducts(); });
@@ -866,7 +911,7 @@ $('#darkBtn').addEventListener('click', ()=>{
 
 /* ================= INIT ================= */
 (async function init(){
-  ['meBtn','sideAv','compAv','pmAv'].forEach(id=>{ const el=document.getElementById(id); if(el) el.src=IMG.me; });
+  ['meBtn','sideAv','compAv','pmAv','drawerAv'].forEach(id=>{ const el=document.getElementById(id); if(el) el.src=IMG.me; });
   $('#distSel').innerHTML = DISTS.map(d=>'<option>'+d+'</option>').join('');
   $('#sellDist').innerHTML = DISTS.slice(1).map(d=>'<option>'+d+'</option>').join('');
   $('#sellCat').innerHTML = CATS.slice(1).map(c=>'<option>'+c+'</option>').join('');
