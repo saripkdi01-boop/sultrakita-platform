@@ -1,0 +1,3 @@
+'use client';
+import { Bell, MessageCircle, Plus, Search } from 'lucide-react';
+export function TopNavBar({ onCreate }: { onCreate?: () => void }) { return <header className="beranda-topnav"><a href="/" className="beranda-brand"><span>S</span><strong>SultraKita</strong></a><label className="beranda-search"><Search size={16}/><input placeholder="Cari di SultraKita" aria-label="Cari di SultraKita"/></label><div className="beranda-top-actions"><button onClick={onCreate} aria-label="Buat postingan"><Plus size={18}/><span>Buat</span></button><a href="/chat" aria-label="Buka SUKI Chat"><MessageCircle size={19}/></a><button aria-label="Notifikasi"><Bell size={19}/><i>3</i></button><a href="#profile" className="beranda-avatar">SH</a></div></header>; }
