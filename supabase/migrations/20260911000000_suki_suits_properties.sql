@@ -30,4 +30,4 @@ drop policy if exists suki_suits_properties_update on public.properties;
 create policy suki_suits_properties_update on public.properties for update to authenticated using (auth.uid() = seller_id) with check (auth.uid() = seller_id);
 
 update public.suki_ecosystem_apps set route = '/properti', updated_at = now() where slug = 'suki-suits';
-update public.suki_ecosystem_apps set route = '/suki-marketplace', updated_at = now() where slug = 'suki-marketplace';
+update public.suki_ecosystem_apps set route = '/marketplace', updated_at = now() where slug = 'suki-marketplace';
