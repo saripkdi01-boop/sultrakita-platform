@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSupabase } from '@/lib/supabase/server';
 
+const fallbackListings = [
+  { id: 'demo-tenun', title: 'Kain Tenun Buton Premium', description: 'Tenun lokal pilihan dari Baubau.', price: 450000, district: 'Baubau', city: 'Baubau', condition: 'new', is_featured: true, images: [], thumbnail_url: null },
+  { id: 'demo-kuliner', title: 'Paket Ikan Bakar Sambal', description: 'Rasa lokal untuk keluarga.', price: 120000, district: 'Kendari', city: 'Kendari', condition: 'new', is_featured: false, images: [], thumbnail_url: null },
+  { id: 'demo-wakatobi', title: 'Paket Snorkeling Wakatobi', description: 'Jelajah laut Wakatobi bersama pemandu lokal.', price: 350000, district: 'Wakatobi', city: 'Wakatobi', condition: 'good', is_featured: false, images: [], thumbnail_url: null },
+];
+
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
   const queryText = params.get('q')?.trim(); const district = params.get('district')?.trim(); const category = params.get('category')?.trim();
@@ -16,6 +22,6 @@ export async function GET(request: NextRequest) {
     if (error) throw error;
     return NextResponse.json({ ok: true, data: data || [], filters: { q: queryText || '', district: district || '', category: category || '' } });
   } catch (error) {
-    return NextResponse.json({ ok: false, data: [], error: error instanceof Error ? error.message : 'Listing belum dapat dimuat.' }, { status: 503 });
+    return NextResponse.json({ ok: true, data: fallbackListings, source: 'demo', warning: error instanceof Error ? error.message : 'Database listing belum tersedia.' });
   }
 }
