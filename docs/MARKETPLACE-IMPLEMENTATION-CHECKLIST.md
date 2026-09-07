@@ -108,3 +108,11 @@ feat(marketplace): implement SUKI Facebook-style marketplace experience
 ## Kesimpulan
 
 **Belum semuanya di-commit, push ke GitHub, atau deploy ke Vercel.** Implementasi lokal dan validasi build sudah berhasil. Tahap proyek sekarang adalah **pre-commit / pre-deployment**, dengan pekerjaan berikutnya berupa review diff, commit, push, deploy, dan QA browser.
+
+## Rilis terbaru
+
+- Commit: `c06b0a6`
+- GitHub: pushed to `origin/main`
+- Vercel preview: https://sultrakita-platform-gronr5gz6-saripkdi01-boops-projects.vercel.app
+- Vercel deployment ID: `dpl_5vsvLjv6qobdTzqg8xW3DVrjPJnU`
+- Status saat dibuat: INITIALIZING
