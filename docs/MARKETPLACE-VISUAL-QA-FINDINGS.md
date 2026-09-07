@@ -26,3 +26,15 @@ Seller Tools production juga berhasil dimuat. Hero seller, tombol Buat listing, 
 | `/marketplace/seller-tools` | ✅ Lulus pemeriksaan render | Seller hero, analytics login state, quick actions dan tips terlihat |
 | Interaksi modal/filter | ⏳ Belum diuji penuh | Memerlukan langkah klik/input lanjutan |
 | Lighthouse | ⏳ Belum dijalankan | Memerlukan audit browser khusus |
+
+
+## Interaction QA
+
+- Filter panel: ✅ berhasil dibuka.
+- Harga minimum: ✅ query URL berubah menjadi `minPrice=200000`.
+- Kondisi: ✅ query URL berubah menjadi `condition=new` dan listing terfilter; listing terawat menghilang.
+- Quick View: ✅ modal terbuka dengan detail produk, harga, lokasi, kondisi, status verifikasi, dan link detail.
+- Quick View close: ✅ modal berhasil ditutup melalui tombol close.
+- Compare selection: ✅ listing pertama berubah menjadi state `Dipilih` dan compare bar muncul.
+- Compare panel full: ⏳ belum selesai dibuka karena selection kedua memerlukan interaction lanjutan.
+- Mobile breakpoint dan Lighthouse: ⏳ belum diuji.
