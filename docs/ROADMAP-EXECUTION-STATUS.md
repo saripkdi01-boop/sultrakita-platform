@@ -7,7 +7,7 @@
 | P0-C OTP/Webhook | Existing partial controls | Existing smoke coverage | Per-phone cooldown, telemetry, signature matrix |
 | P0-D Runtime parity | Pending | Existing modernization checks | Shared service matrix and worker smoke |
 | P1 Marketplace E2E | Existing partial | Existing local E2E | Complete discovery-to-review acceptance |
-| F2.3 AI Listing Assistant | Hardened and deployed | `npm run test:ai-listing`; Next.js type-check/build | Add provider telemetry, manual QA with real seller photos, then define F2.4 |
+| F2.3 AI Listing Assistant | Hardened and deployed | Regression, type-check/build, production QA passed | Collect seller feedback, then define F2.4 |
 
 ## F2.3 Delivery Notes
 
@@ -19,6 +19,6 @@
 
 ## Next Execution Order
 
-1. Review privacy-safe AI usage telemetry in production (success/failure class and latency only; never store photo contents or API keys).
-2. Run manual QA on mobile and desktop with valid JPG/PNG/WebP files, an unsupported file, and a file above 8 MB.
-3. Review seller feedback and only then plan F2.4; do not expand AI scope into auto-publish or unverified price claims.
+1. Monitor privacy-safe AI usage telemetry in production (success/failure class and latency only; never store photo contents or API keys).
+2. Gather seller feedback from the deployed assistant before changing prompts, mappings, or price guidance.
+3. Define F2.4 from observed feedback; do not expand AI scope into auto-publish or unverified price claims.
