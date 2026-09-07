@@ -45,3 +45,17 @@ Seller Tools production juga berhasil dimuat. Hero seller, tombol Buat listing, 
 Compare Listings berhasil diuji end-to-end melalui browser production. Dua listing dapat dipilih sehingga keduanya berubah ke state `Dipilih`, Compare Bar menampilkan CTA, dan klik CTA membuka satu elemen dialog (`role="dialog"`) untuk perbandingan. Pemeriksaan DOM mengonfirmasi kedua judul produk tetap tersedia di panel.
 
 Pada viewport browser saat ini (`1422px` lebar, `1222px` tinggi), document scroll width tidak melebihi viewport secara horizontal (`1405px`), sehingga tidak ditemukan horizontal overflow pada desktop. Tool browser yang tersedia tidak menyediakan pengubahan viewport langsung untuk deployment production; karena itu breakpoint mobile belum dapat dinyatakan lulus melalui browser production dan masih perlu diverifikasi dengan device emulation/Lighthouse.
+
+
+## Lighthouse final
+
+Audit dijalankan pada production build lokal di port terisolasi setelah proses lama pada port audit dibersihkan. Skor final valid adalah sebagai berikut:
+
+| Mode | Performance | Accessibility | Best Practices | SEO |
+|---|---:|---:|---:|---:|
+| Desktop | 97 | 89 | 100 | 100 |
+| Mobile | 91 | 89 | 96 | 100 |
+
+Audit masih menandai cumulative layout shift, color contrast, beberapa atribut ARIA legacy, unused CSS/JavaScript, dan sebagian metrik mobile sebagai peluang perbaikan lanjutan. Tidak ada isu canonical, title, language, viewport, atau meta description pada audit valid terakhir.
+
+Laporan JSON tersimpan di `qa/lighthouse/marketplace-desktop.json` dan `qa/lighthouse/marketplace-mobile.json`. Skrip reproducible tersedia di `scripts/run-marketplace-lighthouse.sh`.

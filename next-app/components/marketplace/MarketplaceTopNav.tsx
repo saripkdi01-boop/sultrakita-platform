@@ -25,7 +25,7 @@ export function MarketplaceTopNav({ onMenu }: { onMenu?: () => void }) {
             return <Link key={label} href={href} className={`marketplace-topnav-link ${active ? 'active' : ''}`} aria-label={label} aria-current={active ? 'page' : undefined}><Icon size={20} /><span>{label}</span></Link>;
           })}
         </div>
-        <Link href="/marketplace/profile" className="marketplace-profile-chip" aria-label="Buka profil marketplace"><span className="marketplace-avatar">SU</span><span className="marketplace-profile-name">Profil</span></Link>
+        <Link href="/marketplace/profile" className="marketplace-profile-chip" aria-label="Profil Marketplace"><span className="marketplace-avatar">SU</span><span className="marketplace-profile-name">Profil</span></Link>
       </div>
     </nav>
   );

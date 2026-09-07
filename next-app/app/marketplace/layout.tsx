@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://sultrakita-platform-28icbgib9-saripkdi01-boops-projects.vercel.app'),
   title: 'Marketplace Sultra | Produk Lokal Sulawesi Tenggara',
   description: 'Temukan produk, jasa, kendaraan, properti, dan penawaran lokal terpercaya dari Kendari, Baubau, Kolaka, Konawe, dan seluruh Sulawesi Tenggara.',
   keywords: ['marketplace Sultra', 'jual beli Kendari', 'produk lokal Sulawesi Tenggara', 'SUKI Marketplace'],
