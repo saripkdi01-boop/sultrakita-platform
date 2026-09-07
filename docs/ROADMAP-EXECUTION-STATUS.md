@@ -8,7 +8,7 @@
 | P0-D Runtime parity | Pending | Existing modernization checks | Shared service matrix and worker smoke |
 | P1 Marketplace E2E | Existing partial | Existing local E2E | Complete discovery-to-review acceptance |
 | F2.3 AI Listing Assistant | Hardened and deployed | Regression, type-check/build, production QA passed | Collect seller feedback, then define F2.4 |
-| F2.4 AI feedback loop | Implemented in code; migration pending apply | Privacy/static regression, type-check/build | Apply migration, observe feedback volume, then refine F2.5 |
+| F2.4 AI feedback loop | Implemented and applied to production | Privacy/static regression, type-check/build, production schema/RLS verification | Observe feedback volume, then refine F2.5 |
 
 ## F2.3 Delivery Notes
 
@@ -22,11 +22,11 @@
 
 - **Feedback scope:** After a successful draft, the seller can optionally mark the result as helpful or needing improvement and add a comment of up to 1,000 characters. Feedback never blocks manual editing or publishing.
 - **Stored fields:** The feedback table stores seller ownership, an opaque generation UUID, helpful/not-helpful choice, optional comment, corrected-field labels, and timestamp. It does not store photos, prompts, generated titles/descriptions, prices, model responses, or provider errors.
-- **Access control:** RLS permits an authenticated seller to insert and read only their own feedback. Aggregated product analytics must use a separately controlled server-side/admin path.
+- **Access control:** Production RLS is enabled and exposes only authenticated-seller insert/read-own policies. Anonymous REST verification returned HTTP 200 with an empty result; aggregated product analytics must use a separately controlled server-side/admin path.
 - **Duplicate safety:** One feedback record is accepted per seller and generation UUID; repeated submits are idempotent from the UI perspective.
 
 ## Next Execution Order
 
-1. Apply `supabase/migrations/20260907000000_ai_listing_feedback.sql` in staging, verify RLS, then apply it to the intended production database.
-2. Monitor privacy-safe AI usage telemetry and feedback volume/ratio without retaining photo contents or AI output.
+1. Monitor privacy-safe AI usage telemetry and feedback volume/ratio without retaining photo contents or AI output.
+2. Verify an authenticated seller feedback submission/read-own flow with a QA account; no test row was inserted during this migration verification.
 3. Review seller feedback before changing prompts, mappings, or price guidance; do not expand AI scope into auto-publish or unverified price claims.

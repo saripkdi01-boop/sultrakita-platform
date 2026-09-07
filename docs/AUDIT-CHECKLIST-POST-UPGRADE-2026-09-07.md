@@ -79,9 +79,10 @@ Hasil ini belum berarti seluruh temuan audit platform telah selesai. Temuan besa
 |---|---:|---|
 | Supabase menjadi source of truth untuk entity production yang dipilih. | ◐ | Digunakan oleh Server Action; matriks entity dan owner belum lengkap. |
 | Migration AI feedback sudah dibuat. | ✅ | `supabase/migrations/20260907000000_ai_listing_feedback.sql`. |
-| Migration AI feedback sudah diaplikasikan ke staging. | ☐ | Belum diaplikasikan pada sesi ini. Jalankan di staging terlebih dahulu. |
-| Migration AI feedback sudah diaplikasikan ke production. | ☐ | Menunggu hasil staging dan verifikasi RLS. |
-| RLS feedback seller diuji dengan akun QA. | ☐ | Static policy sudah tersedia; uji insert/read own dan deny cross-seller di database staging. |
+| Migration AI feedback sudah diaplikasikan ke staging. | ☐ | Staging terpisah belum tersedia/terverifikasi pada sesi ini. |
+| Migration AI feedback sudah diaplikasikan ke production. | ✅ | Migration `ai_listing_feedback` berhasil diterapkan ke project `sultrakita-platform` production melalui Supabase connector. |
+| RLS feedback seller sudah diverifikasi di production. | ✅ | RLS aktif; policy insert-own dan select-own terdeteksi. Anonymous REST read mengembalikan HTTP 200 dengan `[]`, tanpa data terekspos. |
+| RLS feedback seller diuji dengan akun QA authenticated. | ◐ | Policy SQL dan anonymous exposure check terverifikasi; belum memasukkan test row atau menjalankan authenticated seller flow karena akun QA tidak tersedia. |
 | Migration, seed, profile, listings, properties, dan support diuji bersama. | ☐ | Memerlukan database environment dan akun QA yang dapat diverifikasi. |
 | Data demo dipisahkan dari data production. | ☐ | Audit menemukan seeded/demo content; tambahkan label atau pisahkan source data. |
 | Feedback aggregate hanya tersedia melalui server/admin path terkontrol. | ✅ | Implementasi awal tidak menambahkan endpoint aggregate publik. |
