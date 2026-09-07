@@ -3,9 +3,9 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const LISTING_CATEGORIES = ['Elektronik', 'Fashion', 'Kuliner', 'Properti', 'Kendaraan', 'Jasa', 'Hobi'] as const;
-export type ListingCategory = (typeof LISTING_CATEGORIES)[number];
+type ListingCategory = (typeof LISTING_CATEGORIES)[number];
 
-export type ListingAiResult = {
+type ListingAiResult = {
   title: string;
   description: string;
   category: ListingCategory;

@@ -2,7 +2,16 @@
 
 import { Sparkles, WandSparkles } from 'lucide-react';
 import { useState } from 'react';
-import { generateListingFromImage, type ListingAiResult } from '@/lib/actions/ai-listing';
+import { generateListingFromImage } from '@/lib/actions/ai-listing';
+
+type ListingAiResult = {
+  title: string;
+  description: string;
+  category: 'Elektronik' | 'Fashion' | 'Kuliner' | 'Properti' | 'Kendaraan' | 'Jasa' | 'Hobi';
+  estimated_price_min: number;
+  estimated_price_max: number;
+  suggested_tags: string[];
+};
 
 type Props = {
   file?: File;
