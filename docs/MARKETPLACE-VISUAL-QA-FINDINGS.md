@@ -38,3 +38,10 @@ Seller Tools production juga berhasil dimuat. Hero seller, tombol Buat listing, 
 - Compare selection: ✅ listing pertama berubah menjadi state `Dipilih` dan compare bar muncul.
 - Compare panel full: ⏳ belum selesai dibuka karena selection kedua memerlukan interaction lanjutan.
 - Mobile breakpoint dan Lighthouse: ⏳ belum diuji.
+
+
+## QA lanjutan
+
+Compare Listings berhasil diuji end-to-end melalui browser production. Dua listing dapat dipilih sehingga keduanya berubah ke state `Dipilih`, Compare Bar menampilkan CTA, dan klik CTA membuka satu elemen dialog (`role="dialog"`) untuk perbandingan. Pemeriksaan DOM mengonfirmasi kedua judul produk tetap tersedia di panel.
+
+Pada viewport browser saat ini (`1422px` lebar, `1222px` tinggi), document scroll width tidak melebihi viewport secara horizontal (`1405px`), sehingga tidak ditemukan horizontal overflow pada desktop. Tool browser yang tersedia tidak menyediakan pengubahan viewport langsung untuk deployment production; karena itu breakpoint mobile belum dapat dinyatakan lulus melalui browser production dan masih perlu diverifikasi dengan device emulation/Lighthouse.
