@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export function BrandLogo() {
   return (
-    <Link className="brand-lockup" href="/" aria-label="SUKI — SULTRA KITA Platforms">
+    <Link className="brand-lockup" href="/" aria-label="SUKI Platforms — Ekosistem Digital SultraKita">
       <span className="brand-symbol" aria-hidden="true">
         <svg viewBox="0 0 40 40" role="presentation">
           <path d="M20 3.5 23.2 16.8 36.5 20l-13.3 3.2L20 36.5l-3.2-13.3L3.5 20l13.3-3.2L20 3.5Z" fill="currentColor" opacity=".18" />
@@ -11,7 +11,7 @@ export function BrandLogo() {
       </span>
       <span className="brand-wordmark">
         <strong>SUKI</strong>
-        <small>SULTRA KITA <b>Platforms</b></small>
+        <small>by SultraKita</small>
       </span>
     </Link>
   );

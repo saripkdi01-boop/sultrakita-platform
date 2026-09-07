@@ -38,17 +38,17 @@ export const menuSections: { title: string; items: MenuItemConfig[] }[] = [
   {
     title: 'Pintasan Anda',
     items: [
-      { label: 'Promo Belanja', route: '/marketplace', icon: ShoppingBag },
-      { label: 'Grand Boulevard', route: '/properti', icon: Home },
+      { label: 'SUKI Marketplace', route: '/marketplace', icon: ShoppingBag },
+      { label: 'SUKI Properti', route: '/properti', icon: Home },
     ],
   },
   {
     title: 'Menu Utama',
     items: [
-      { label: 'SultraKita AI', route: '/chat', icon: Sparkles },
+      { label: 'SUKI AI', route: '/chat', icon: Sparkles },
       { label: 'Tersimpan', route: '#saved', icon: Bookmark, badge: '4' },
       { label: 'Kenangan', route: '#memories', icon: History },
-      { label: 'Marketplace', route: '/marketplace', icon: Store },
+      { label: 'SUKI Marketplace', route: '/marketplace', icon: Store },
       { label: 'Grup', route: '/groups', icon: Users },
       { label: 'Properti Saya', route: '/dashboard/properties', icon: Home },
       { label: 'Pesan Properti', route: '/dashboard/inquiries', icon: MessageCircle },
@@ -87,7 +87,7 @@ export const menuSections: { title: string; items: MenuItemConfig[] }[] = [
     ],
   },
   {
-    title: 'Juga dari SultraKita',
+    title: 'Ekosistem Digital SultraKita',
     items: [{ label: 'SUKI Partner', route: '#partner', icon: Handshake, badge: 'Segera hadir' }],
   },
 ];
