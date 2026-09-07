@@ -28,5 +28,5 @@
 ## Next Execution Order
 
 1. Monitor privacy-safe AI usage telemetry and feedback volume/ratio without retaining photo contents or AI output.
-2. Verify an authenticated seller feedback submission/read-own flow with a QA account; no test row was inserted during this migration verification.
+2. Complete an authenticated seller feedback submission/read-own flow with a QA account after Gemini successful-generation credentials/quota are available; the current QA session reached the seller form but Gemini fell back to manual mode, so no feedback row was created.
 3. Review seller feedback before changing prompts, mappings, or price guidance; do not expand AI scope into auto-publish or unverified price claims.

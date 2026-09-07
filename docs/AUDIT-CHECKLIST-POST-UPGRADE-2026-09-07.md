@@ -82,7 +82,7 @@ Hasil ini belum berarti seluruh temuan audit platform telah selesai. Temuan besa
 | Migration AI feedback sudah diaplikasikan ke staging. | ☐ | Staging terpisah belum tersedia/terverifikasi pada sesi ini. |
 | Migration AI feedback sudah diaplikasikan ke production. | ✅ | Migration `ai_listing_feedback` berhasil diterapkan ke project `sultrakita-platform` production melalui Supabase connector. |
 | RLS feedback seller sudah diverifikasi di production. | ✅ | RLS aktif; policy insert-own dan select-own terdeteksi. Anonymous REST read mengembalikan HTTP 200 dengan `[]`, tanpa data terekspos. |
-| RLS feedback seller diuji dengan akun QA authenticated. | ◐ | Policy SQL dan anonymous exposure check terverifikasi; belum memasukkan test row atau menjalankan authenticated seller flow karena akun QA tidak tersedia. |
+| RLS feedback seller diuji dengan akun QA authenticated. | ◐ | Session seller production terdeteksi sebagai `Wan Shofir`/seller terverifikasi dan halaman create property dapat dibuka. Generate AI masuk ke fallback manual karena Gemini tidak menghasilkan draft; feedback control tidak muncul, tidak ada test row yang dimasukkan, dan database tetap memiliki 0 feedback rows. |
 | Migration, seed, profile, listings, properties, dan support diuji bersama. | ☐ | Memerlukan database environment dan akun QA yang dapat diverifikasi. |
 | Data demo dipisahkan dari data production. | ☐ | Audit menemukan seeded/demo content; tambahkan label atau pisahkan source data. |
 | Feedback aggregate hanya tersedia melalui server/admin path terkontrol. | ✅ | Implementasi awal tidak menambahkan endpoint aggregate publik. |
@@ -142,7 +142,7 @@ Hasil ini belum berarti seluruh temuan audit platform telah selesai. Temuan besa
 |---|---:|---|
 | Supabase | ◐ | Verifikasi project, migration, RLS, seed, profile, listing, property, support, dan realtime dengan akun QA. |
 | Vercel | ✅ | Deployment F2.4 READY, build selesai, runtime logs bersih. Kunci Root Directory secara permanen. |
-| Google Gemini | ◐ | Fallback dan security sudah diuji; jalur successful generation perlu diuji dengan key/quota production yang aktif. |
+| Google Gemini | ◐ | Fallback dan security sudah diuji dalam session seller production; jalur successful generation dan feedback UI perlu diuji dengan key/quota production yang aktif. |
 | R2/S3-compatible storage | ☐ | Tetapkan provider tunggal, signed upload, CDN, lifecycle, dan abuse limits. |
 | Resend | ◐ | Flow inquiry notification tersedia di source; domain, template, delivery, retry, dan observability belum diverifikasi menyeluruh. |
 | n8n | ☐ | Workflow blueprint tersedia; credential, import, idempotency, staging execution, dan monitoring belum diverifikasi. |
