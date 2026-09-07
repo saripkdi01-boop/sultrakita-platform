@@ -2,6 +2,7 @@
 
 import { Bell, Menu, MessageCircle, Plus, Search, Settings, X } from 'lucide-react';
 import { useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { useUIStore } from '@/store/ui';
 
 type TopNavigationBarProps = {
@@ -17,6 +18,8 @@ type TopNavigationBarProps = {
 
 export function TopNavigationBar({ userName = 'Warga SultraKita', avatarUrl, notificationCount = 3, messageCount = 2, onCreate, onSearch, onChat, onNotifications }: TopNavigationBarProps) {
   const { mobileOpen, toggleMobile } = useUIStore();
+  const pathname = usePathname();
+  const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -33,7 +36,7 @@ export function TopNavigationBar({ userName = 'Warga SultraKita', avatarUrl, not
         <button className="grid h-9 w-9 place-items-center rounded-full transition-colors hover:bg-sultra-mint/40" onClick={onCreate} aria-label="Buat konten"><Plus size={21}/></button>
         <button className="grid h-9 w-9 place-items-center rounded-full transition-colors hover:bg-sultra-mint/40 sm:hidden" onClick={() => setSearchOpen(value => !value)} aria-label="Buka pencarian"><Search size={19}/></button>
         <button className="relative grid h-9 w-9 place-items-center rounded-full transition-colors hover:bg-sultra-mint/40" onClick={onChat} aria-label="Buka pesan"><MessageCircle size={20}/>{messageCount > 0 && <span className="absolute -right-0.5 -top-0.5 min-w-4 rounded-full bg-red-500 px-1 py-0.5 text-center text-[10px] leading-none text-white">{messageCount}</span>}</button>
-        <button className="relative grid h-9 w-9 place-items-center rounded-full transition-colors hover:bg-sultra-mint/40" onClick={onNotifications} aria-label="Buka notifikasi"><Bell size={20}/>{notificationCount > 0 && <span className="absolute -right-0.5 -top-0.5 min-w-4 rounded-full bg-red-500 px-1 py-0.5 text-center text-[10px] leading-none text-white">{notificationCount}</span>}</button>
+        <button className="relative grid h-9 w-9 place-items-center rounded-full transition-colors hover:bg-sultra-mint/40" onClick={() => { if (onNotifications) onNotifications(); else router.push(pathname.startsWith('/properti') ? '/properti' : '/beranda'); }} aria-label="Buka notifikasi"><Bell size={20}/>{notificationCount > 0 && <span className="absolute -right-0.5 -top-0.5 min-w-4 rounded-full bg-red-500 px-1 py-0.5 text-center text-[10px] leading-none text-white">{notificationCount}</span>}</button>
         <div className="relative ml-1"><button onClick={() => setMenuOpen(value => !value)} className="grid h-8 w-8 place-items-center overflow-hidden rounded-full bg-sultra-teal text-xs font-semibold text-white ring-2 ring-white dark:ring-sultra-dark" aria-expanded={menuOpen} aria-label={`Menu profil ${userName}`}>{avatarUrl ? <img src={avatarUrl} alt="" className="h-full w-full object-cover"/> : initials}</button>{menuOpen && <div className="absolute right-0 top-11 w-52 rounded-xl border border-gray-200 bg-white p-2 text-sm shadow-dropdown dark:border-sultra-forest/30 dark:bg-sultra-dark"><div className="border-b border-gray-100 px-3 py-2 dark:border-sultra-forest/30"><strong className="block text-gray-900 dark:text-sultra-sand">{userName}</strong><span className="text-xs text-gray-500">Warga SultraKita</span></div><a className="mt-1 flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-sultra-mint/30" href="#profile">Profil</a><a className="flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-sultra-mint/30" href="#settings"><Settings size={15}/> Pengaturan</a><button className="w-full rounded-lg px-3 py-2 text-left text-red-600 hover:bg-red-50" onClick={() => setMenuOpen(false)}>Keluar</button></div>}</div>
       </div>
     </div>
