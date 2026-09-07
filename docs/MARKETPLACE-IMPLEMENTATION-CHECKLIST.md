@@ -131,3 +131,11 @@ feat(marketplace): implement SUKI Facebook-style marketplace experience
 - Vercel deployment ID: `dpl_DM3QQEtJS7TJGqSD4y7cQRShfTEw`
 - Deployment terhubung ke branch `main` dan repository GitHub yang benar.
 - Deployment Protection/SSO tetap aktif pada akses URL preview, sehingga QA visual publik masih memerlukan sesi/akses Vercel yang sesuai.
+
+## Deployment terbaru — 2026-09-08
+
+- Deployment production commit `c7fa12e8659d1ab002307eb8388e6b4a79b903a0`: ✅ `READY`
+- URL deployment: https://sultrakita-platform-g7zrryl1w-saripkdi01-boops-projects.vercel.app/marketplace
+- Alias production: https://sultrakita-platform.vercel.app/marketplace
+- Deployment ID: `dpl_89a1NJf6YcTS5HdoYsSm5ewUpuEC`
+- HTTP mencapai Vercel: ✅; akses halaman dialihkan ke Vercel SSO (`302`), sehingga QA visual production tetap memerlukan sesi login Vercel.
