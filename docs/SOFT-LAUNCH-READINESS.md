@@ -21,7 +21,7 @@ Isi secret pada target **Production**, **Preview**, dan **Development** sesuai k
 | `SUPABASE_SERVICE_ROLE_KEY` | Kondisional | Hanya untuk job server-side/admin; tidak boleh masuk bundle | `server-only-secret` |
 | `GEMINI_API_KEY` | Untuk AI | API key Gemini yang hanya dibaca server action | `AIza...` |
 | `GEMINI_API_BASE` | Disarankan | Base URL Gemini | `https://generativelanguage.googleapis.com/v1beta` |
-| `GEMINI_MODEL` | Disarankan | Model AI listing yang telah diverifikasi | `gemini-2.5-flash` |
+| `GEMINI_MODEL` | Disarankan | Model AI listing yang telah diverifikasi | `gemini-3.6-flash` |
 | `N8N_WHATSAPP_WEBHOOK_URL` | Untuk WhatsApp | Endpoint webhook n8n untuk notifikasi seller | `https://n8n.example.com/webhook/sultrakita` |
 | `N8N_WEBHOOK_SECRET` | Jika webhook memakai secret | Secret header `x-webhook-secret` | `set-in-vercel-only` |
 | `NEXT_PUBLIC_API_BASE_URL` | Jika memakai Express terpisah | Base URL API Express yang diakses Next app | `https://api.example.com` |

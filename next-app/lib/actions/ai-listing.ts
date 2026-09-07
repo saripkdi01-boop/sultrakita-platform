@@ -119,7 +119,7 @@ function telemetryReason(error: unknown): AiListingTelemetry['reason'] {
 
 export async function generateListingFromImage(input: Input) {
   const startedAt = Date.now();
-  const model = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
+  const model = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
   try {
     if (!process.env.GEMINI_API_KEY) {
       emitTelemetry({ outcome: 'fallback', reason: 'configuration', model, duration_ms: Date.now() - startedAt });

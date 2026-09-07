@@ -8,7 +8,7 @@ Tambahkan variabel berikut pada **Project Settings → Environment Variables** u
 
 ```text
 GEMINI_API_KEY=<Google Gemini API key>
-GEMINI_MODEL=gemini-2.0-flash
+GEMINI_MODEL=gemini-3.6-flash
 ```
 
 `GEMINI_API_KEY` harus server-only. Jangan memakai prefix `NEXT_PUBLIC_`, jangan menaruhnya di `next-app/.env.example` dengan nilai asli, dan jangan mengirimnya ke browser.

@@ -61,7 +61,7 @@ Fitur bantuan AI pada modal **Pasang Iklan** berjalan server-side melalui endpoi
 ```env
 GEMINI_API_KEY=<Google AI Studio API key>
 GEMINI_API_BASE=https://generativelanguage.googleapis.com/v1beta
-GEMINI_MODEL=gemini-2.5-flash
+GEMINI_MODEL=gemini-3.6-flash
 ```
 
 `GEMINI_API_KEY` adalah secret dan tidak boleh memakai prefix `NEXT_PUBLIC_`, `VITE_`, atau ditulis ke source code. Jika key kosong atau request Gemini gagal, endpoint tetap mengembalikan fallback lokal agar alur listing tidak terputus.

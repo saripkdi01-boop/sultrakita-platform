@@ -142,7 +142,7 @@ Hasil ini belum berarti seluruh temuan audit platform telah selesai. Temuan besa
 |---|---:|---|
 | Supabase | ◐ | Verifikasi project, migration, RLS, seed, profile, listing, property, support, dan realtime dengan akun QA. |
 | Vercel | ✅ | Deployment F2.4 READY, build selesai, runtime logs bersih. Kunci Root Directory secara permanen. |
-| Google Gemini | ◐ | Fallback dan security sudah diuji dalam session seller production; jalur successful generation dan feedback UI perlu diuji dengan key/quota production yang aktif. |
+| Google Gemini | ◐ | Runtime telemetry production menunjukkan `GEMINI_MODEL=gemini-2.5-flash` dan fallback `provider`. Probe provider mengembalikan HTTP 404 karena model tersebut tidak tersedia untuk user baru; ini bukan bukti quota habis. Model `gemini-3.6-flash` berhasil merespons HTTP 200 pada probe. Environment Vercel tetap perlu diubah manual karena connector tidak menyediakan env-variable mutation dan dashboard meminta login. |
 | R2/S3-compatible storage | ☐ | Tetapkan provider tunggal, signed upload, CDN, lifecycle, dan abuse limits. |
 | Resend | ◐ | Flow inquiry notification tersedia di source; domain, template, delivery, retry, dan observability belum diverifikasi menyeluruh. |
 | n8n | ☐ | Workflow blueprint tersedia; credential, import, idempotency, staging execution, dan monitoring belum diverifikasi. |

@@ -28,5 +28,5 @@
 ## Next Execution Order
 
 1. Monitor privacy-safe AI usage telemetry and feedback volume/ratio without retaining photo contents or AI output.
-2. Complete an authenticated seller feedback submission/read-own flow with a QA account after Gemini successful-generation credentials/quota are available; the current QA session reached the seller form but Gemini fell back to manual mode, so no feedback row was created.
+2. Change Vercel Production `GEMINI_MODEL` from `gemini-2.5-flash` to `gemini-3.6-flash`; production telemetry and a provider probe identified the former as HTTP 404/unavailable to new users, not a confirmed quota failure. Then complete the authenticated seller feedback submission/read-own flow; no feedback row was created during the failed-generation QA.
 3. Review seller feedback before changing prompts, mappings, or price guidance; do not expand AI scope into auto-publish or unverified price claims.
