@@ -10,6 +10,7 @@
     "test": "node --test test/*.test.js scripts/test-*.js",
     "build": "node scripts/build-check.js",
     "test:security": "node scripts/security-regression.js",
+    "test:ai-listing": "tsx scripts/ai-listing-regression.js",
     "test:auth-upgrade": "node scripts/auth-upgrade-regression.js",
     "smoke:api": "node scripts/api-smoke.js",
     "smoke:resend": "node scripts/resend-smoke.js",

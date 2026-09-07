@@ -56,10 +56,11 @@ export function AiListingAssistant({ file, onGenerated }: Props) {
     }
   }
 
-  return <div className="ai-listing-assistant bg-mint/70 text-forest shadow-soft" aria-live="polite">
+  return <div className="ai-listing-assistant bg-mint/70 text-forest shadow-soft" aria-live="polite" aria-busy={loading}>
     <div className="ai-listing-copy"><span className="ai-listing-icon"><WandSparkles size={17}/></span><div><strong>Listing lebih cepat dengan AI</strong><small>Analisis foto untuk menyusun judul, deskripsi, kategori, dan perkiraan harga.</small></div></div>
-    <button type="button" className="ai-listing-button bg-gold" onClick={handleGenerate} disabled={loading}>{loading ? <><span className="ai-spinner"/> Menganalisis...</> : <><Sparkles size={15}/> Generate Otomatis dengan AI</>}</button>
-    {message && <p className={`ai-listing-message ${generated ? 'success' : ''}`}>{message}</p>}
+    <button type="button" className="ai-listing-button bg-gold" onClick={handleGenerate} disabled={loading} aria-describedby="ai-listing-help">{loading ? <><span className="ai-spinner" aria-hidden="true"/> Menganalisis...</> : <><Sparkles size={15} aria-hidden="true"/> Generate Otomatis dengan AI</>}</button>
+    <p id="ai-listing-help" className="sr-only">AI hanya mengisi draft. Periksa semua hasil dan kirim form secara manual.</p>
+    {message && <p className={`ai-listing-message ${generated ? 'success' : ''}`} role={generated ? 'status' : 'alert'}>{message}</p>}
     {generated && <button type="button" className="ai-edit-manual" onClick={() => setMessage('Silakan ubah field di atas sesuai kondisi produk sebenarnya.')}>Edit Manual</button>}
   </div>;
 }

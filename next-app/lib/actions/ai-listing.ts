@@ -77,6 +77,9 @@ async function fetchAllowedImage(imageUrl: string) {
 function providerErrorMessage(error: unknown) {
   const message = error instanceof Error ? error.message : String(error || '');
   const normalized = message.toLowerCase();
+  if (/8 mb|format foto|file storage bukan gambar|storage gambar|foto tidak dapat dibaca/.test(normalized)) {
+    return message;
+  }
   if (/429|quota|rate.?limit|resource exhausted|too many requests/.test(normalized)) {
     return 'Kuota AI sedang habis atau batas request tercapai. Silakan isi listing secara manual dan coba lagi nanti.';
   }
