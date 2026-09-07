@@ -2,7 +2,7 @@
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-export const LISTING_CATEGORIES = ['Elektronik', 'Fashion', 'Kuliner', 'Properti', 'Kendaraan', 'Jasa', 'Hobi'] as const;
+const LISTING_CATEGORIES = ['Elektronik', 'Fashion', 'Kuliner', 'Properti', 'Kendaraan', 'Jasa', 'Hobi'] as const;
 export type ListingCategory = (typeof LISTING_CATEGORIES)[number];
 
 export type ListingAiResult = {
