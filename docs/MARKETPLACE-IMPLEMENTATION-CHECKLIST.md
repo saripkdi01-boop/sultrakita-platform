@@ -116,3 +116,9 @@ feat(marketplace): implement SUKI Facebook-style marketplace experience
 - Vercel preview: https://sultrakita-platform-gronr5gz6-saripkdi01-boops-projects.vercel.app
 - Vercel deployment ID: `dpl_5vsvLjv6qobdTzqg8xW3DVrjPJnU`
 - Status saat dibuat: INITIALIZING
+
+## QA terbaru
+
+- Smoke test production lokal: ✅ `/marketplace`, `/marketplace/profile`, `/marketplace/seller-tools`, dan `/api/listings` semuanya merespons HTTP 200.
+- Preview Vercel: ⚠️ URL merespons tetapi dialihkan ke Vercel SSO/Deployment Protection, sehingga QA browser publik belum dapat dilakukan.
+- Production alias: ⏳ belum diverifikasi.
