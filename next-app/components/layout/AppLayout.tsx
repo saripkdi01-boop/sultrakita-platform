@@ -6,7 +6,7 @@ import { SidebarDesktop } from './SidebarDesktop';
 import { SidebarMobileDrawer } from './SidebarMobileDrawer';
 import { getHeaderEcosystemApps } from '@/lib/actions/ecosystem';
 import { useUIStore } from '@/store/ui';
-const fallbackRoutes = { suits: '/properti', marketplace: '/suki-marketplace' };
+const fallbackRoutes = { suits: '/properti', marketplace: '/marketplace' };
 export function AppLayout({ children, onCreate, active = 'home' }: { children: React.ReactNode; onCreate?: () => void; active?: QuickNavKey }) {
   const { mobileOpen } = useUIStore(); const [routes, setRoutes] = useState(fallbackRoutes);
   useEffect(() => { void getHeaderEcosystemApps().then((result) => { if (result.ok) { const suits = result.data.find((item) => item.slug === 'suki-suits')?.route; const marketplace = result.data.find((item) => item.slug === 'suki-marketplace')?.route; setRoutes({ suits: suits || fallbackRoutes.suits, marketplace: marketplace || fallbackRoutes.marketplace }); } }); }, []);
