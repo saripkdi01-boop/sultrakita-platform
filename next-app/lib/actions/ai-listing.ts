@@ -16,6 +16,13 @@ export type ListingAiResult = {
 
 type Input = { imageUrl?: string; base64?: string; mimeType?: string };
 
+type AiListingTelemetry = {
+  outcome: 'success' | 'fallback';
+  reason: 'none' | 'configuration' | 'invalid_input' | 'quota' | 'provider' | 'invalid_response' | 'unsupported_image';
+  model: string;
+  duration_ms: number;
+};
+
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 const MAX_TITLE = 60;
 const MAX_DESCRIPTION = 300;
@@ -23,6 +30,11 @@ const SUPPORTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const
 
 function errorResult(message: string) {
   return { ok: false as const, error: message };
+}
+
+function emitTelemetry(event: AiListingTelemetry) {
+  // Do not add input, prompt, response, URL, user ID, or provider error text here.
+  console.info(JSON.stringify({ event: 'ai_listing_generation', ...event }));
 }
 
 function cleanResult(value: Partial<ListingAiResult>): ListingAiResult {
@@ -95,25 +107,46 @@ function providerErrorMessage(error: unknown) {
   return 'AI belum dapat menganalisis foto. Silakan isi listing secara manual atau coba lagi nanti.';
 }
 
+function telemetryReason(error: unknown): AiListingTelemetry['reason'] {
+  const message = (error instanceof Error ? error.message : String(error || '')).toLowerCase();
+  if (/8 mb|format foto|file storage bukan gambar|storage gambar|foto tidak dapat dibaca/.test(message)) return 'unsupported_image';
+  if (/respons ai|rentang harga|json|kategori/.test(message)) return 'invalid_response';
+  if (/429|quota|rate.?limit|resource exhausted|too many requests/.test(message)) return 'quota';
+  if (/api key|permission|unauthorized|forbidden|configuration|konfigurasi/.test(message)) return 'configuration';
+  if (/foto|image|gambar|pilih minimal/.test(message)) return 'invalid_input';
+  return 'provider';
+}
+
 export async function generateListingFromImage(input: Input) {
+  const startedAt = Date.now();
+  const model = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
   try {
-    if (!process.env.GEMINI_API_KEY) return errorResult('Bantuan AI belum aktif di server. Kamu tetap dapat mengisi listing secara manual.');
-    if (!input?.base64 && !input?.imageUrl) return errorResult('Pilih minimal satu foto produk terlebih dahulu.');
+    if (!process.env.GEMINI_API_KEY) {
+      emitTelemetry({ outcome: 'fallback', reason: 'configuration', model, duration_ms: Date.now() - startedAt });
+      return errorResult('Bantuan AI belum aktif di server. Kamu tetap dapat mengisi listing secara manual.');
+    }
+    if (!input?.base64 && !input?.imageUrl) {
+      emitTelemetry({ outcome: 'fallback', reason: 'invalid_input', model, duration_ms: Date.now() - startedAt });
+      return errorResult('Pilih minimal satu foto produk terlebih dahulu.');
+    }
     if (input.mimeType && !SUPPORTED_IMAGE_TYPES.includes(input.mimeType as (typeof SUPPORTED_IMAGE_TYPES)[number])) {
+      emitTelemetry({ outcome: 'fallback', reason: 'unsupported_image', model, duration_ms: Date.now() - startedAt });
       return errorResult('Format foto tidak didukung. Gunakan JPG, PNG, atau WebP.');
     }
     const image = input.base64 ? decodeBase64(input.base64) : await fetchAllowedImage(input.imageUrl as string);
     const client = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = client.getGenerativeModel({ model: process.env.GEMINI_MODEL || 'gemini-2.0-flash' });
+    const generativeModel = client.getGenerativeModel({ model });
     const prompt = `Kamu adalah asisten listing marketplace lokal Sulawesi Tenggara. Analisis foto produk secara hati-hati. Jangan mengarang merek, kondisi, ukuran, atau spesifikasi yang tidak terlihat; gunakan bahasa yang jujur dan tandai hal yang perlu dikonfirmasi seller. Pertimbangkan konteks Kendari, Buton, Konawe, Wakatobi, dan daerah Sultra untuk istilah lokal yang relevan. Perkirakan rentang harga wajar dalam Rupiah Indonesia berdasarkan visual dan kategori, bukan kepastian harga.
 
 Kembalikan HANYA JSON valid tanpa markdown dengan keys: title (maksimal 60 karakter), description (maksimal 300 karakter), category (satu dari ${LISTING_CATEGORIES.join(', ')}), estimated_price_min (integer Rupiah), estimated_price_max (integer Rupiah), suggested_tags (array string maksimal 8).`;
-    const result = await model.generateContent([{ text: prompt }, { inlineData: { data: image.data, mimeType: image.mimeType } }]);
+    const result = await generativeModel.generateContent([{ text: prompt }, { inlineData: { data: image.data, mimeType: image.mimeType } }]);
     const raw = result.response.text().replace(/^```json\s*/i, '').replace(/\s*```$/i, '').trim();
     const parsed = JSON.parse(raw) as Partial<ListingAiResult>;
-    return { ok: true as const, data: cleanResult(parsed) };
+    const data = cleanResult(parsed);
+    emitTelemetry({ outcome: 'success', reason: 'none', model, duration_ms: Date.now() - startedAt });
+    return { ok: true as const, data };
   } catch (error) {
-    console.error('generateListingFromImage failed', error);
+    emitTelemetry({ outcome: 'fallback', reason: telemetryReason(error), model, duration_ms: Date.now() - startedAt });
     return errorResult(providerErrorMessage(error));
   }
 }

@@ -15,9 +15,10 @@
 - **Seller control:** AI only fills a draft. The seller must review the generated title, description, category, and price before submitting the property form; there is no auto-publish path.
 - **Create-page integration:** `AiListingAssistant` is mounted after the primary photo input. A `Properti` category result maps to the existing `rumah_sewa` form category; other category values do not overwrite the property-specific choice.
 - **Verification contract:** Run `npm run test:ai-listing`, then `cd next-app && npx tsc --noEmit && npm run build` before pushing changes. Verify the latest `main` deployment in Vercel after each production push.
+- **Telemetry contract:** The server emits one structured `ai_listing_generation` event per attempt with only `outcome`, bounded `reason`, configured model name, and duration. It never logs the image, base64 data, prompt, model response, storage URL, API key, seller identity, or raw provider error.
 
 ## Next Execution Order
 
-1. Add privacy-safe AI usage telemetry (success/failure class and latency only; never store photo contents or API keys).
+1. Review privacy-safe AI usage telemetry in production (success/failure class and latency only; never store photo contents or API keys).
 2. Run manual QA on mobile and desktop with valid JPG/PNG/WebP files, an unsupported file, and a file above 8 MB.
 3. Review seller feedback and only then plan F2.4; do not expand AI scope into auto-publish or unverified price claims.
