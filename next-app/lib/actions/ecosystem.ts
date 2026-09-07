@@ -6,7 +6,7 @@ export type SukiEcosystemApp = { slug: 'suki-suits' | 'suki-marketplace'; name: 
 
 export async function getHeaderEcosystemApps() {
   try {
-    const supabase = getServerSupabase();
+    const supabase = await getServerSupabase();
     const { data, error } = await supabase.from('suki_ecosystem_apps').select('slug,name,short_name,route,icon,position').eq('is_active', true).order('position', { ascending: true });
     if (error) throw error;
     return { ok: true as const, data: (data || []) as SukiEcosystemApp[] };

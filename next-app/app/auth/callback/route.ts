@@ -14,12 +14,17 @@ function requestCookies(request: Request) {
       };
     }) || [];
 }
+function safeRedirect(value: string | null) {
+  if (!value || !value.startsWith('/') || value.startsWith('//')) return '/dashboard';
+  const pathname = value.split('?')[0];
+  return pathname === '/login' || pathname === '/signup' || pathname === '/auth/callback' ? '/dashboard' : value;
+}
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get('code');
   const next = url.searchParams.get('next');
-  const safeNext = next && next.startsWith('/') && !next.startsWith('//') ? next : '/dashboard';
+  const safeNext = safeRedirect(next);
 
   if (!code) {
     return NextResponse.redirect(new URL('/login?error=auth_callback', url.origin));

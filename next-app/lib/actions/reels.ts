@@ -5,7 +5,7 @@ export type ReelRecord = { id: string; user_id: string; video_url: string; thumb
 
 export async function getReelsFeed(district?: string, cursor?: string) {
   try {
-    const supabase = getServerSupabase();
+    const supabase = await getServerSupabase();
     let query = supabase.from('reels').select('id,user_id,video_url,thumbnail_url,caption,district,views_count,likes_count,created_at').eq('is_active', true).order('created_at', { ascending: false }).order('id', { ascending: false }).limit(10);
     if (district?.trim()) query = query.eq('district', district.trim());
     if (cursor) { const decoded = JSON.parse(Buffer.from(cursor, 'base64url').toString('utf8')) as { created_at: string; id: string }; if (decoded.created_at && decoded.id) query = query.lt('created_at', decoded.created_at); }
@@ -17,7 +17,7 @@ export async function getReelsFeed(district?: string, cursor?: string) {
 }
 
 export async function recordReelView(reelId: string) {
-  try { const supabase = getServerSupabase(); const { data } = await supabase.from('reels').select('views_count').eq('id', reelId).maybeSingle(); if (!data) return { ok: false as const, error: 'Reels tidak ditemukan.' }; const { error } = await supabase.from('reels').update({ views_count: (data.views_count || 0) + 1 }).eq('id', reelId); if (error) throw error; return { ok: true as const }; } catch (error) { return { ok: false as const, error: error instanceof Error ? error.message : 'View belum tercatat.' }; }
+  try { const supabase = await getServerSupabase(); const { data } = await supabase.from('reels').select('views_count').eq('id', reelId).maybeSingle(); if (!data) return { ok: false as const, error: 'Reels tidak ditemukan.' }; const { error } = await supabase.from('reels').update({ views_count: (data.views_count || 0) + 1 }).eq('id', reelId); if (error) throw error; return { ok: true as const }; } catch (error) { return { ok: false as const, error: error instanceof Error ? error.message : 'View belum tercatat.' }; }
 }
 
 export async function createReel(input: { video_url: string; thumbnail_url?: string; caption?: string; district?: string }) {

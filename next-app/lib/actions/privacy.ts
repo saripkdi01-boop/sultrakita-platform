@@ -8,16 +8,16 @@ export type VisibilitySettings = Record<string, VisibilityLevel>;
 
 const defaults: VisibilitySettings = { full_name: 'public', username: 'public', bio: 'public', phone: 'followers', email: 'private', location: 'public', interests: 'public', online_status: 'followers' };
 
-function getClient() {
+async function getClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !key) throw new Error('Supabase belum dikonfigurasi.');
-  const store = cookies();
+  const store = await cookies();
   return createServerClient(url, key, { cookies: { getAll: () => store.getAll(), setAll: () => undefined } });
 }
 
 async function userContext() {
-  const supabase = getClient();
+  const supabase = await getClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Sesi login diperlukan.');
   return { supabase, user };

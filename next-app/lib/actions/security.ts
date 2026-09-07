@@ -6,16 +6,16 @@ import { cookies } from 'next/headers';
 const MAX_ACTIVITY_DATA = 4000;
 const ALLOWED_ACTIVITY_TYPES = ['login', 'post_created', 'profile_updated', 'setting_changed', 'security_event'] as const;
 
-function client() {
+async function client() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !key) throw new Error('Supabase belum dikonfigurasi untuk fitur keamanan.');
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   return createServerClient(url, key, { cookies: { getAll: () => cookieStore.getAll(), setAll: () => undefined } });
 }
 
 async function requireUser() {
-  const supabase = client();
+  const supabase = await client();
   const { data: { user }, error } = await supabase.auth.getUser();
   if (error || !user) throw new Error('Sesi login diperlukan untuk mengelola keamanan akun.');
   return { supabase, user };

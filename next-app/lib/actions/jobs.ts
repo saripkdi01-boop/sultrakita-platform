@@ -9,7 +9,7 @@ const friendly = (error: unknown) => error instanceof Error ? error.message : 'S
 
 export async function getJobs(filters: JobFilters = {}) {
   try {
-    const client = getServerSupabase(); const limit = Math.min(filters.limit || 12, 50); const page = Math.max(filters.page || 1, 1);
+    const client = await getServerSupabase(); const limit = Math.min(filters.limit || 12, 50); const page = Math.max(filters.page || 1, 1);
     let query = client.from('jobs').select('*, company:companies(name,logo_url,rating,is_verified)', { count: 'exact' }).eq('status', 'published');
     if (filters.search?.trim()) query = query.or(`title.ilike.%${filters.search.trim()}%,description.ilike.%${filters.search.trim()}%`);
     if (filters.location) query = query.or(`city.ilike.%${filters.location}%,district.ilike.%${filters.location}%`);
@@ -25,7 +25,7 @@ export async function getJobs(filters: JobFilters = {}) {
 }
 
 export async function getJobById(id: string) {
-  const { data, error } = await getServerSupabase().from('jobs').select('*, company:companies(*)').eq('id', id).single();
+  const { data, error } = await (await getServerSupabase()).from('jobs').select('*, company:companies(*)').eq('id', id).single();
   if (error) throw error; return data as Job;
 }
 

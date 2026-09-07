@@ -50,6 +50,8 @@ export const menuSections: { title: string; items: MenuItemConfig[] }[] = [
       { label: 'Kenangan', route: '#memories', icon: History },
       { label: 'Marketplace', route: '/marketplace', icon: Store },
       { label: 'Grup', route: '/groups', icon: Users },
+      { label: 'Properti Saya', route: '/dashboard/properties', icon: Home },
+      { label: 'Pesan Properti', route: '/dashboard/inquiries', icon: MessageCircle },
     ],
   },
   {
