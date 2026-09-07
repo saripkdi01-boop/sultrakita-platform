@@ -144,7 +144,7 @@ Kembalikan HANYA JSON valid tanpa markdown dengan keys: title (maksimal 60 karak
     const parsed = JSON.parse(raw) as Partial<ListingAiResult>;
     const data = cleanResult(parsed);
     emitTelemetry({ outcome: 'success', reason: 'none', model, duration_ms: Date.now() - startedAt });
-    return { ok: true as const, data };
+    return { ok: true as const, data, generationId: crypto.randomUUID() };
   } catch (error) {
     emitTelemetry({ outcome: 'fallback', reason: telemetryReason(error), model, duration_ms: Date.now() - startedAt });
     return errorResult(providerErrorMessage(error));

@@ -8,6 +8,7 @@
 | P0-D Runtime parity | Pending | Existing modernization checks | Shared service matrix and worker smoke |
 | P1 Marketplace E2E | Existing partial | Existing local E2E | Complete discovery-to-review acceptance |
 | F2.3 AI Listing Assistant | Hardened and deployed | Regression, type-check/build, production QA passed | Collect seller feedback, then define F2.4 |
+| F2.4 AI feedback loop | Implemented in code; migration pending apply | Privacy/static regression, type-check/build | Apply migration, observe feedback volume, then refine F2.5 |
 
 ## F2.3 Delivery Notes
 
@@ -17,8 +18,15 @@
 - **Verification contract:** Run `npm run test:ai-listing`, then `cd next-app && npx tsc --noEmit && npm run build` before pushing changes. Verify the latest `main` deployment in Vercel after each production push.
 - **Telemetry contract:** The server emits one structured `ai_listing_generation` event per attempt with only `outcome`, bounded `reason`, configured model name, and duration. It never logs the image, base64 data, prompt, model response, storage URL, API key, seller identity, or raw provider error.
 
+## F2.4 Delivery Notes
+
+- **Feedback scope:** After a successful draft, the seller can optionally mark the result as helpful or needing improvement and add a comment of up to 1,000 characters. Feedback never blocks manual editing or publishing.
+- **Stored fields:** The feedback table stores seller ownership, an opaque generation UUID, helpful/not-helpful choice, optional comment, corrected-field labels, and timestamp. It does not store photos, prompts, generated titles/descriptions, prices, model responses, or provider errors.
+- **Access control:** RLS permits an authenticated seller to insert and read only their own feedback. Aggregated product analytics must use a separately controlled server-side/admin path.
+- **Duplicate safety:** One feedback record is accepted per seller and generation UUID; repeated submits are idempotent from the UI perspective.
+
 ## Next Execution Order
 
-1. Monitor privacy-safe AI usage telemetry in production (success/failure class and latency only; never store photo contents or API keys).
-2. Gather seller feedback from the deployed assistant before changing prompts, mappings, or price guidance.
-3. Define F2.4 from observed feedback; do not expand AI scope into auto-publish or unverified price claims.
+1. Apply `supabase/migrations/20260907000000_ai_listing_feedback.sql` in staging, verify RLS, then apply it to the intended production database.
+2. Monitor privacy-safe AI usage telemetry and feedback volume/ratio without retaining photo contents or AI output.
+3. Review seller feedback before changing prompts, mappings, or price guidance; do not expand AI scope into auto-publish or unverified price claims.

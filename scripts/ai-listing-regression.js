@@ -8,6 +8,8 @@ async function main() {
   if (typeof generateListingFromImage !== 'function') throw new Error('Could not load generateListingFromImage from the server action.');
   const createPage = fs.readFileSync(path.join(process.cwd(), 'next-app/app/properti/create/page.tsx'), 'utf8');
   const assistant = fs.readFileSync(path.join(process.cwd(), 'next-app/components/marketplace/AiListingAssistant.tsx'), 'utf8');
+  const feedbackAction = fs.readFileSync(path.join(process.cwd(), 'next-app/lib/actions/ai-listing-feedback.ts'), 'utf8');
+  const feedbackMigration = fs.readFileSync(path.join(process.cwd(), 'supabase/migrations/20260907000000_ai_listing_feedback.sql'), 'utf8');
 
   const originalKey = process.env.GEMINI_API_KEY;
   const originalInfo = console.info;
@@ -43,6 +45,14 @@ async function main() {
     assert.match(createPage, /result\.category === 'Properti'/);
     assert.match(assistant, /aria-busy=\{loading\}/);
     assert.match(assistant, /role=\{generated \? 'status' : 'alert'\}/);
+    assert.match(assistant, /submitAiListingFeedback/);
+    assert.match(assistant, /Apakah draft AI membantu/);
+    assert.match(feedbackAction, /export async function submitAiListingFeedback/);
+    assert.doesNotMatch(feedbackAction, /base64|prompt|response|imageUrl|api[_ -]?key/i);
+    assert.match(feedbackMigration, /seller_id uuid not null references auth\.users/);
+    assert.match(feedbackMigration, /corrected_fields text\[\]/);
+    assert.match(feedbackMigration, /enable row level security/);
+    assert.match(feedbackMigration, /auth\.uid\(\) = seller_id/);
     console.log('AI listing regression checks passed.');
   } finally {
     console.info = originalInfo;
