@@ -8,6 +8,7 @@ import { FeedPost } from '@/components/beranda/FeedPost';
 import { RightSidebar } from '@/components/beranda/RightSidebar';
 import { StoriesSection } from '@/components/beranda/StoriesSection';
 import { useInfiniteFeed, type FeedFilter } from '@/hooks/useInfiniteFeed';
+import { setPostLike } from '@/lib/feed-interactions';
 
 const filters: Array<{ value: FeedFilter; label: string }> = [
   { value: 'recommended', label: 'Rekomendasi' },
@@ -36,7 +37,7 @@ export default function BerandaPage() {
     {notice && <div className="beranda-notice" role="status"><span>{notice}</span><button onClick={() => setNotice('')}>Tutup</button></div>}
     {error && <div className="feed-state feed-error" role="alert"><span>{error}</span><button type="button" onClick={reload}><RefreshCw size={15}/> Coba lagi</button></div>}
     {!error && !loading && items.length === 0 && <div className="feed-state"><strong>Belum ada cerita di sini.</strong><span>Coba filter lain atau kembali lagi nanti.</span></div>}
-    {items.map((post) => <FeedPost key={post.id} post={post} onLike={(id, liked) => setNotice(liked ? 'Suka dicatat di perangkat ini.' : 'Suka dibatalkan.')} onComment={() => setNotice('Kolom komentar akan tersedia setelah Anda login.')}/>)}
+    {items.map((post) => <FeedPost key={post.id} post={post} onLike={(id, liked) => { void setPostLike(id, liked).then(() => setNotice(liked ? 'Suka dicatat.' : 'Suka dibatalkan.')).catch((caught: unknown) => setNotice(caught instanceof Error && caught.message === 'authentication_required' ? 'Silakan login untuk menyukai postingan.' : 'Interaksi belum dapat disimpan.')); }} onComment={() => setNotice('Kolom komentar akan tersedia setelah Anda login.')}/>)}
     {loading && <div className="feed-loading" aria-live="polite"><LoaderCircle size={18} className="spin"/> Memuat cerita warga...</div>}
     <div ref={sentinelRef} className="feed-sentinel" aria-hidden="true" />
     {!hasNextPage && items.length > 0 && !loading && <p className="feed-end">Anda sudah melihat semua cerita terbaru.</p>}
