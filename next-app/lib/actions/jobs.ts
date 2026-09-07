@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { getServerSupabase, requireServerUser } from '@/lib/supabase/server';
 
-export type Job = { id: string; company_id: string; title: string; slug: string; description: string; job_type: string; work_type: string; experience_level: string; salary_min?: number; salary_max?: number; is_salary_hidden?: boolean; location: string; district?: string; city: string; status: string; published_at: string; is_featured?: boolean; skills?: string[]; company?: { name: string; logo_url?: string; rating?: number; is_verified?: boolean } };
+export type Job = { id: string; company_id: string; title: string; slug: string; description: string; requirements?: string[]; responsibilities?: string[]; job_type: string; work_type: string; experience_level: string; salary_min?: number; salary_max?: number; is_salary_hidden?: boolean; location: string; district?: string; city: string; status: string; published_at: string; is_featured?: boolean; skills?: string[]; company?: { name: string; logo_url?: string; rating?: number; is_verified?: boolean } };
 export type JobFilters = { search?: string; location?: string; jobType?: string; workType?: string; experienceLevel?: string; salaryMin?: number; salaryMax?: number; page?: number; limit?: number };
 const friendly = (error: unknown) => error instanceof Error ? error.message : 'SUKI Jobs belum dapat memproses permintaan.';
 
