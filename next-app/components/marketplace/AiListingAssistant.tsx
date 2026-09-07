@@ -9,6 +9,9 @@ type Props = {
   onGenerated: (result: ListingAiResult) => void;
 };
 
+const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+const SUPPORTED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+
 function readAsDataUrl(file: File) {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
@@ -26,6 +29,14 @@ export function AiListingAssistant({ file, onGenerated }: Props) {
   async function handleGenerate() {
     if (!file) {
       setMessage('Pilih foto produk terlebih dahulu agar AI dapat menganalisisnya.');
+      return;
+    }
+    if (!SUPPORTED_TYPES.has(file.type)) {
+      setMessage('Format foto tidak didukung. Gunakan JPG, PNG, atau WebP.');
+      return;
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      setMessage('Ukuran foto maksimal 8 MB. Silakan pilih foto yang lebih kecil.');
       return;
     }
     setLoading(true);

@@ -19,29 +19,44 @@ type Input = { imageUrl?: string; base64?: string; mimeType?: string };
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 const MAX_TITLE = 60;
 const MAX_DESCRIPTION = 300;
+const SUPPORTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
 
 function errorResult(message: string) {
   return { ok: false as const, error: message };
 }
 
 function cleanResult(value: Partial<ListingAiResult>): ListingAiResult {
-  const category = LISTING_CATEGORIES.includes(value.category as ListingCategory) ? value.category as ListingCategory : 'Hobi';
-  const title = String(value.title || 'Produk pilihan Sulawesi Tenggara').trim().slice(0, MAX_TITLE);
-  const description = String(value.description || 'Tambahkan detail kondisi, keunggulan, dan cara transaksi produk ini.').trim().slice(0, MAX_DESCRIPTION);
-  const min = Math.max(0, Math.round(Number(value.estimated_price_min) || 0));
-  const max = Math.max(min, Math.round(Number(value.estimated_price_max) || min));
+  if (!value.title || !value.description || !LISTING_CATEGORIES.includes(value.category as ListingCategory)) {
+    throw new Error('Respons AI belum lengkap atau kategorinya tidak valid.');
+  }
+  const min = Number(value.estimated_price_min);
+  const max = Number(value.estimated_price_max);
+  if (!Number.isFinite(min) || !Number.isFinite(max) || min < 0 || max < min) {
+    throw new Error('Rentang harga dari AI tidak valid.');
+  }
   const tags = Array.isArray(value.suggested_tags)
     ? value.suggested_tags.map(tag => String(tag).trim().toLowerCase()).filter(Boolean).slice(0, 8)
     : [];
-  return { title, description, category, estimated_price_min: min, estimated_price_max: max, suggested_tags: tags };
+  return {
+    title: String(value.title).trim().slice(0, MAX_TITLE),
+    description: String(value.description).trim().slice(0, MAX_DESCRIPTION),
+    category: value.category as ListingCategory,
+    estimated_price_min: Math.round(min),
+    estimated_price_max: Math.round(max),
+    suggested_tags: tags,
+  };
 }
 
 function decodeBase64(input: string) {
   const match = input.match(/^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=\s]+)$/);
   if (!match) throw new Error('Format foto tidak didukung. Gunakan JPG, PNG, atau WebP.');
+  const mimeType = match[1];
+  if (!SUPPORTED_IMAGE_TYPES.includes(mimeType as (typeof SUPPORTED_IMAGE_TYPES)[number])) {
+    throw new Error('Format foto tidak didukung. Gunakan JPG, PNG, atau WebP.');
+  }
   const buffer = Buffer.from(match[2], 'base64');
   if (buffer.byteLength > MAX_IMAGE_BYTES) throw new Error('Ukuran foto maksimal 8 MB.');
-  return { data: buffer.toString('base64'), mimeType: match[1] };
+  return { data: buffer.toString('base64'), mimeType };
 }
 
 async function fetchAllowedImage(imageUrl: string) {
@@ -53,16 +68,37 @@ async function fetchAllowedImage(imageUrl: string) {
   const response = await fetch(target, { cache: 'no-store' });
   if (!response.ok) throw new Error('Foto tidak dapat dibaca dari storage.');
   const contentType = response.headers.get('content-type') || '';
-  if (!/^image\/(jpeg|png|webp)$/.test(contentType)) throw new Error('File storage bukan gambar yang didukung.');
+  if (!SUPPORTED_IMAGE_TYPES.includes(contentType as (typeof SUPPORTED_IMAGE_TYPES)[number])) throw new Error('File storage bukan gambar yang didukung.');
   const buffer = Buffer.from(await response.arrayBuffer());
   if (buffer.byteLength > MAX_IMAGE_BYTES) throw new Error('Ukuran foto maksimal 8 MB.');
   return { data: buffer.toString('base64'), mimeType: contentType };
 }
 
+function providerErrorMessage(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error || '');
+  const normalized = message.toLowerCase();
+  if (/429|quota|rate.?limit|resource exhausted|too many requests/.test(normalized)) {
+    return 'Kuota AI sedang habis atau batas request tercapai. Silakan isi listing secara manual dan coba lagi nanti.';
+  }
+  if (/401|403|api key|permission|unauthorized|forbidden/.test(normalized)) {
+    return 'Bantuan AI belum dapat digunakan karena konfigurasi server belum valid. Kamu tetap dapat mengisi listing secara manual.';
+  }
+  if (/timeout|timed out|503|502|500|unavailable|overloaded|fetch failed/.test(normalized)) {
+    return 'Layanan AI sedang tidak tersedia. Silakan isi listing secara manual atau coba lagi nanti.';
+  }
+  if (/respons ai|rentang harga/.test(normalized)) {
+    return 'Respons AI belum lengkap. Silakan periksa dan isi listing secara manual.';
+  }
+  return 'AI belum dapat menganalisis foto. Silakan isi listing secara manual atau coba lagi nanti.';
+}
+
 export async function generateListingFromImage(input: Input) {
   try {
-    if (!process.env.GEMINI_API_KEY) return errorResult('Bantuan AI belum aktif di server. Kamu tetap dapat mengisi iklan secara manual.');
+    if (!process.env.GEMINI_API_KEY) return errorResult('Bantuan AI belum aktif di server. Kamu tetap dapat mengisi listing secara manual.');
     if (!input?.base64 && !input?.imageUrl) return errorResult('Pilih minimal satu foto produk terlebih dahulu.');
+    if (input.mimeType && !SUPPORTED_IMAGE_TYPES.includes(input.mimeType as (typeof SUPPORTED_IMAGE_TYPES)[number])) {
+      return errorResult('Format foto tidak didukung. Gunakan JPG, PNG, atau WebP.');
+    }
     const image = input.base64 ? decodeBase64(input.base64) : await fetchAllowedImage(input.imageUrl as string);
     const client = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = client.getGenerativeModel({ model: process.env.GEMINI_MODEL || 'gemini-2.0-flash' });
@@ -75,6 +111,6 @@ Kembalikan HANYA JSON valid tanpa markdown dengan keys: title (maksimal 60 karak
     return { ok: true as const, data: cleanResult(parsed) };
   } catch (error) {
     console.error('generateListingFromImage failed', error);
-    return errorResult(error instanceof Error ? error.message : 'AI belum dapat menganalisis foto. Silakan coba lagi atau isi manual.');
+    return errorResult(providerErrorMessage(error));
   }
 }
