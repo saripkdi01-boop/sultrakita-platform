@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useUIStore } from '@/store/ui';
 import { ProfileHub } from '@/components/profile/ProfileHub';
+import { CreateMenu } from './CreateMenu';
 import { BrandLogo } from './BrandLogo';
 
 export function Header({ onCreate }: { onCreate?: () => void }) {
@@ -29,6 +30,7 @@ export function Header({ onCreate }: { onCreate?: () => void }) {
     </div>
 
     <div className="header-actions">
+      <CreateMenu />
       <button className="header-icon" type="button" aria-label="Buka notifikasi" onClick={() => router.push(pathname.startsWith('/properti') ? '/properti' : '/beranda')}><Bell size={19} aria-hidden="true" /><i aria-label="3 notifikasi baru">3</i></button>
       <ProfileHub />
     </div>
