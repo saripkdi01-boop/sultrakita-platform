@@ -9,6 +9,7 @@ const feedRoute = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'app', 
 const listingsRoute = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'app', 'api', 'listings', 'route.ts'), 'utf8');
 const postsAction = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'lib', 'actions', 'posts.ts'), 'utf8');
 const composer = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'components', 'beranda', 'CreatePostModal.tsx'), 'utf8');
+const mediaActionIcon = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'components', 'beranda', 'MediaActionIcon.tsx'), 'utf8');
 
 test('feed route selects only profile columns that exist in Supabase', () => {
   assert.match(feedRoute, /profiles\(display_name,avatar_url\)/);
@@ -47,4 +48,15 @@ test('Create Post binds identity server-side and supports safe idempotent publis
   assert.match(composer, /localStorage/);
   assert.match(composer, /isInstagramActive/);
   assert.match(composer, /Musik/);
+});
+
+test('MediaActionIcon exposes reusable active and default variants', () => {
+  assert.match(mediaActionIcon, /icon: ReactNode/);
+  assert.match(mediaActionIcon, /label: string/);
+  assert.match(mediaActionIcon, /onClick: \(\) => void/);
+  assert.match(mediaActionIcon, /'default' \| 'active'/);
+  assert.match(mediaActionIcon, /min-w-\[88px\]/);
+  assert.match(mediaActionIcon, /h-\[72px\]/);
+  assert.match(mediaActionIcon, /ring-2 ring-teal-200/);
+  assert.match(composer, /MediaActionIcon/);
 });

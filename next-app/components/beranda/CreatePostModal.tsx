@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ArrowUp, ChevronDown, Image as ImageIcon, MapPin, Menu, Music2, Smile, Tag, Users, Video, X } from 'lucide-react';
+import { ArrowUp, Image as ImageIcon, MapPin, Menu, Music2, Smile, Tag, Users, Video, X } from 'lucide-react';
 import { createPost } from '@/lib/actions/posts';
+import { MediaActionIcon } from './MediaActionIcon';
 
 type Privacy = 'public' | 'followers';
 type PostType = 'post' | 'reel';
@@ -106,7 +107,7 @@ export function CreatePostModal({ open, initialType = 'post', onClose, onCreated
 
           <div className="relative mt-3 border-b border-slate-200 pb-2"><textarea autoFocus value={textContent} onChange={(event) => updateText(event.target.value)} placeholder="Apa yang sedang Anda pikirkan?" maxLength={MAX_CONTENT} className="min-h-[120px] w-full resize-none border-0 bg-transparent p-0 text-base leading-7 outline-none placeholder:text-slate-400 focus:ring-0" /><span className="absolute bottom-3 right-0 text-xs text-slate-400">{charCount === 0 ? MAX_CONTENT : charCount}/{MAX_CONTENT}</span></div>
 
-          <div className="mt-3 flex gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Media actions">{mediaTools.map(({ label, icon: Icon }) => <button type="button" key={label} onClick={() => selectTool(label)} className="flex min-w-[90px] shrink-0 flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-center text-xs text-slate-500 transition hover:border-teal-300 hover:bg-teal-50"><Icon size={24} className="text-slate-600"/><span>{label}</span></button>)}</div>
+          <div className="mt-3 flex gap-3 overflow-x-auto px-0 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Media actions">{mediaTools.map(({ label, icon: Icon }) => <MediaActionIcon key={label} icon={<Icon size={24}/>} label={label} onClick={() => selectTool(label)} />)}</div>
           {location && <div className="mt-2 flex items-center gap-2 rounded-lg bg-teal-50 px-3 py-2 text-sm text-teal-800"><MapPin size={15}/><span className="truncate">{location}</span></div>}
           {notice && <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800" role="status">{notice}</p>}
         </div>
