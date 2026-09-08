@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
   if ((rawMinPrice !== null && (!Number.isFinite(minPrice) || minPrice < 0)) || (rawMaxPrice !== null && (!Number.isFinite(maxPrice) || maxPrice < 0))) return NextResponse.json({ ok: false, error: 'invalid_price_filter' }, { status: 400 });
   if (rawMinPrice !== null && rawMaxPrice !== null && minPrice > maxPrice) return NextResponse.json({ ok: false, error: 'invalid_price_range' }, { status: 400 });
   try {
-    let query = (getListingsClient() || await getServerSupabase()).from('listings').select('id,title,description,price,image_url,district,city,condition,is_featured,created_at').in('status', ['published', 'active']).order('is_featured', { ascending: false }).order('created_at', { ascending: false }).limit(limit);
+    let query = (getListingsClient() || await getServerSupabase()).from('listings').select('id,title,description,price,image_url,district,city,condition,is_featured,is_demo,created_at').in('status', ['published', 'active']).or('is_demo.is.null,is_demo.eq.false').order('is_featured', { ascending: false }).order('created_at', { ascending: false }).limit(limit);
     if (queryText) query = query.or(`title.ilike.%${queryText}%,description.ilike.%${queryText}%`);
     if (district && district !== 'Semua distrik') query = query.eq('district', district);
     // Category labels are resolved by the marketplace UI; UUID category filters can be added here when supplied.

@@ -29,4 +29,5 @@ test('marketplace demo data is never used in production', () => {
   assert.doesNotMatch(listingsRoute, /select\('[^']*\bimages\b/);
   assert.match(listingsRoute, /SUPABASE_SERVICE_ROLE_KEY/);
   assert.doesNotMatch(listingsRoute, /NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY/);
+  assert.match(listingsRoute, /is_demo\.is\.null,is_demo\.eq\.false/);
 });
