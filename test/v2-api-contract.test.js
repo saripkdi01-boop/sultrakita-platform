@@ -57,6 +57,7 @@ test('seller SEO surface uses canonical verification and indexable URLs', () => 
   const migration = fs.readFileSync(path.join(__dirname, '..', 'database', 'migrations', '021_seller_verification_source_of_truth.sql'), 'utf8');
   assert.match(serverSource, /app\.get\('\/seller\/:slug-:id'/);
   assert.match(serverSource, /verified: seller\.verification_status === 'approved'/);
+  assert.doesNotMatch(serverSource, /verified: Boolean\(seller\.is_verified \|\| seller\.phone_verified \|\| seller\.verification_status === 'approved'\)/);
   assert.match(serverSource, /sellerPage\(seller, listings\)/);
   assert.match(serverSource, /sellers\.map\(row => SITE_URL \+ '\/seller\/'/);
   assert.match(seoSource, /function sellerPage\(/);

@@ -23,6 +23,10 @@ async function request(path, options = {}) {
 }
 
 async function main() {
+  if (!process.env.DATABASE_URL && !process.env.SUPABASE_DB_URL) {
+    console.log('SKIP: security regression membutuhkan DATABASE_URL atau SUPABASE_DB_URL staging; tidak menjalankan mutation terhadap database lokal/ephemeral.');
+    return;
+  }
   server = app.listen(0);
   await new Promise(resolve => server.once('listening', resolve));
   baseUrl = `http://127.0.0.1:${server.address().port}`;

@@ -1,0 +1,9 @@
+External verification 2026-09-09
+
+Supabase project ibvcfdfsjpytwpnxgylm / sultrakita-platform: ACTIVE_HEALTHY. Applied migrations include n8n_orchestration_foundation_v2 (20260904230807), social posts/media migrations, and security_definer_privileges_025 (created 20260908184802) plus jobs_manager_security_invoker_026 applied immediately after.
+
+Supabase security advisor before hardening: 61 INFO findings for RLS enabled without policies; WARN findings for 6 SECURITY DEFINER functions callable by anon/authenticated, extension pg_trgm in public, and leaked password protection disabled. After hardening, SECURITY DEFINER warnings are gone; remaining WARNs are extension_in_public and auth_leaked_password_protection, plus the 61 INFO RLS-no-policy findings. Remediation links: https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy ; https://supabase.com/docs/guides/database/database-linter?lint=0014_extension_in_public ; https://supabase.com/docs/guides/database/database-linter?lint=000? (use Supabase Auth password security docs: https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection).
+
+Vercel team: saripkdi01-boop's projects, team_sva11W6AvqPzJxVOUrpepwDl. Project sultrakita-platform, project id prj_dcrXXnQOcfb0PtAYhgROAATZfCNW, GitHub linked to saripkdi01-boop/sultrakita-platform. Latest listed production deployment READY, commit 16512ec feat(ui): add contextual notification center. Public URL https://sultrakita-platform.vercel.app responded successfully and exposed feed, SUKI Chat, Marketplace, Properti, Jobs, notification center, and property cards.
+
+Sandbox has no DATABASE_URL, SUPABASE_DB_URL, R2_PUBLIC_BASE_URL, OTP_PROVIDER, or RESEND_API_KEY, so DB mutation security suite, storage durability, and OTP provider smoke cannot be executed from sandbox.

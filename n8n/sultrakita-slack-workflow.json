@@ -1,0 +1,312 @@
+{
+  "name": "SultraKita - Workflow Events to Slack",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "c2f9a7a6-9f41-4ab1-ae9a-000000000001",
+      "name": "Poll every minute",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{$env.SUPABASE_URL}}/rest/v1/workflow_events",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "*"
+            },
+            {
+              "name": "status",
+              "value": "eq.QUEUED"
+            },
+            {
+              "name": "available_at",
+              "value": "lte.{{$now.toISO()}}"
+            },
+            {
+              "name": "order",
+              "value": "created_at.asc"
+            },
+            {
+              "name": "limit",
+              "value": "50"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json",
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "c2f9a7a6-9f41-4ab1-ae9a-000000000002",
+      "name": "Get queued events",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = Array.isArray($json) ? $json : [$json];\nreturn rows.filter(row => row && row.id).map(row => ({ json: row }));"
+      },
+      "id": "c2f9a7a6-9f41-4ab1-ae9a-000000000003",
+      "name": "Expand events",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{$env.SUPABASE_URL}}/rest/v1/workflow_events?id=eq.{{$json.id}}&status=eq.QUEUED",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"status\":\"PROCESSING\",\"attempt_count\":{{Number($json.attempt_count || 0) + 1}},\"n8n_execution_id\":\"{{$execution.id}}\",\"updated_at\":\"{{$now.toISO()}}\"}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json",
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "c2f9a7a6-9f41-4ab1-ae9a-000000000004",
+      "name": "Claim event",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        960,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = Array.isArray($json) ? $json : [$json];\nreturn rows.filter(row => row && row.id).map(row => ({ json: row }));"
+      },
+      "id": "c2f9a7a6-9f41-4ab1-ae9a-000000000005",
+      "name": "Keep claimed event",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SLACK_WEBHOOK_URL}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { text: 'SultraKita workflow event\n*Type:* ' + ($json.event_type || '-') + '\n*Status:* ' + ($json.status || '-') + '\n*Event ID:* ' + $json.id + '\n*Aggregate:* ' + ($json.aggregate_type || '-') + ' / ' + ($json.aggregate_id || '-') + '\n*Created:* ' + ($json.created_at || '-') + '\n```' + JSON.stringify($json.payload || {}).slice(0, 2500) + '```' } }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json",
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "c2f9a7a6-9f41-4ab1-ae9a-000000000006",
+      "name": "Send to Slack",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1440,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{$env.SUPABASE_URL}}/rest/v1/workflow_events?id=eq.{{$('Keep claimed event').item.json.id}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"status\":\"SUCCEEDED\",\"processed_at\":\"{{$now.toISO()}}\",\"updated_at\":\"{{$now.toISO()}}\",\"last_error_code\":null,\"last_error_message\":null}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json",
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "c2f9a7a6-9f41-4ab1-ae9a-000000000007",
+      "name": "Mark succeeded",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1680,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Poll every minute": {
+      "main": [
+        [
+          {
+            "node": "Get queued events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get queued events": {
+      "main": [
+        [
+          {
+            "node": "Expand events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Expand events": {
+      "main": [
+        [
+          {
+            "node": "Claim event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claim event": {
+      "main": [
+        [
+          {
+            "node": "Keep claimed event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Keep claimed event": {
+      "main": [
+        [
+          {
+            "node": "Send to Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send to Slack": {
+      "main": [
+        [
+          {
+            "node": "Mark succeeded",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "c2f9a7a6-9f41-4ab1-ae9a-000000000099",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": []
+}
