@@ -10,6 +10,7 @@ const listingsRoute = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'ap
 const postsAction = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'lib', 'actions', 'posts.ts'), 'utf8');
 const composer = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'components', 'beranda', 'CreatePostModal.tsx'), 'utf8');
 const mediaActionIcon = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'components', 'beranda', 'MediaActionIcon.tsx'), 'utf8');
+const tagToolRow = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'components', 'beranda', 'TagToolRow.tsx'), 'utf8');
 
 test('feed route selects only profile columns that exist in Supabase', () => {
   assert.match(feedRoute, /profiles\(display_name,avatar_url\)/);
@@ -59,4 +60,16 @@ test('MediaActionIcon exposes reusable active and default variants', () => {
   assert.match(mediaActionIcon, /h-\[72px\]/);
   assert.match(mediaActionIcon, /ring-2 ring-teal-200/);
   assert.match(composer, /MediaActionIcon/);
+});
+
+test('TagToolRow manages selected metadata chips and supports controlled state', () => {
+  assert.match(tagToolRow, /id: string/);
+  assert.match(tagToolRow, /icon: ReactNode/);
+  assert.match(tagToolRow, /selectedTags\?: string\[\]/);
+  assert.match(tagToolRow, /onSelectedTagsChange\?/);
+  assert.match(tagToolRow, /aria-pressed/);
+  assert.match(tagToolRow, /Metadata terpilih/);
+  assert.match(tagToolRow, /overflow-x-auto/);
+  assert.match(composer, /TagToolRow/);
+  assert.match(composer, /selectedTags/);
 });

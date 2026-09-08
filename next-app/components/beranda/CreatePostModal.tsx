@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ArrowUp, Image as ImageIcon, MapPin, Menu, Music2, Smile, Tag, Users, Video, X } from 'lucide-react';
+import { ArrowUp, Image as ImageIcon, MapPin, Menu, Smile, Tag, Users, Video, X } from 'lucide-react';
 import { createPost } from '@/lib/actions/posts';
 import { MediaActionIcon } from './MediaActionIcon';
+import { TagToolRow } from './TagToolRow';
 
 type Privacy = 'public' | 'followers';
 type PostType = 'post' | 'reel';
@@ -23,6 +24,7 @@ export function CreatePostModal({ open, initialType = 'post', onClose, onCreated
   const [charCount, setCharCount] = useState(0);
   const [privacy, setPrivacy] = useState<Privacy>('public');
   const [isInstagramActive, setIsInstagramActive] = useState(false);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [location, setLocation] = useState('');
   const [postType, setPostType] = useState<PostType>(initialType);
   const [notice, setNotice] = useState('');
@@ -41,6 +43,7 @@ export function CreatePostModal({ open, initialType = 'post', onClose, onCreated
         setCharCount(draftText.length);
         setLocation(typeof draft.location === 'string' ? draft.location : '');
         setPrivacy(draft.privacy === 'followers' ? 'followers' : 'public');
+        setSelectedTags(Array.isArray(draft.selectedTags) ? draft.selectedTags.filter((tag: unknown): tag is string => typeof tag === 'string') : []);
       }
     } catch { /* local draft is optional */ }
     const onKeyDown = (event: KeyboardEvent) => { if (event.key === 'Escape' && !isSaving) onClose(); };
@@ -61,9 +64,11 @@ export function CreatePostModal({ open, initialType = 'post', onClose, onCreated
     setNotice(`${tool} akan tersedia pada tahap media berikutnya.`);
   }
 
+  function selectTagTool(tool: string) { setNotice(`${tool} dipilih.`); }
+
   function saveDraft() {
     try {
-      window.localStorage.setItem(draftKey, JSON.stringify({ content: textContent, location, privacy, savedAt: new Date().toISOString() }));
+      window.localStorage.setItem(draftKey, JSON.stringify({ content: textContent, location, privacy, selectedTags, savedAt: new Date().toISOString() }));
       setNotice('Draft tersimpan di perangkat ini.');
     } catch { setNotice('Draft tidak dapat disimpan di perangkat ini.'); }
   }
@@ -75,13 +80,13 @@ export function CreatePostModal({ open, initialType = 'post', onClose, onCreated
     setIsSaving(false);
     if (!result.ok) { setNotice(result.error.includes('Sesi') || result.error.includes('login') ? 'Silakan login terlebih dahulu untuk membuat postingan.' : result.error); return; }
     try { window.localStorage.removeItem(draftKey); } catch { /* optional cleanup */ }
-    setTextContent(''); setCharCount(0); setLocation(''); setNotice('');
+    setTextContent(''); setCharCount(0); setLocation(''); setSelectedTags([]); setNotice('');
     onCreated?.(result.duplicate ? 'Postingan sudah dibuat.' : 'Postingan berhasil dibagikan.');
     onClose();
   }
 
   const tagTools = [
-    { label: 'Musik', icon: Music2 }, { label: 'Tag warga', icon: Users }, { label: 'Lokasi', icon: MapPin }, { label: 'Perasaan', icon: Smile }, { label: 'Kategori', icon: Tag },
+    { id: 'music', label: 'Musik', icon: '🎵', action: () => selectTagTool('Musik') }, { id: 'tag', label: 'Tag warga', icon: '👥', action: () => selectTagTool('Tag warga') }, { id: 'location', label: 'Lokasi', icon: '📍', action: () => selectTagTool('Lokasi') }, { id: 'feeling', label: 'Perasaan', icon: '😊', action: () => selectTagTool('Perasaan') }, { id: 'category', label: 'Kategori', icon: '🏷️', action: () => selectTagTool('Kategori') },
   ];
   const mediaTools = [
     { label: 'Galeri', icon: ImageIcon }, { label: 'GIF', icon: Tag }, { label: 'Video', icon: Video }, { label: 'Pengumuman', icon: Menu }, { label: 'Kolaborasi', icon: Users }, { label: 'Kontak Darurat', icon: MapPin }, { label: 'Momen Spesial', icon: Smile },
@@ -103,7 +108,7 @@ export function CreatePostModal({ open, initialType = 'post', onClose, onCreated
             <select value={privacy} onChange={(event) => setPrivacy(event.target.value as Privacy)} className="max-w-[120px] rounded-full border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100" aria-label="Privasi postingan"><option value="public">Publik ▾</option><option value="followers">Pengikut ▾</option></select>
           </div>
 
-          <div className="mt-4 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Tag tools">{tagTools.map(({ label, icon: Icon }) => <button type="button" key={label} onClick={() => selectTool(label)} className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-2 text-[13px] text-slate-700 transition hover:border-teal-300 hover:bg-teal-50"><Icon size={15} className="text-teal-700"/>{label}</button>)}</div>
+          <TagToolRow items={tagTools} selectedTags={selectedTags} onSelectedTagsChange={setSelectedTags} />
 
           <div className="relative mt-3 border-b border-slate-200 pb-2"><textarea autoFocus value={textContent} onChange={(event) => updateText(event.target.value)} placeholder="Apa yang sedang Anda pikirkan?" maxLength={MAX_CONTENT} className="min-h-[120px] w-full resize-none border-0 bg-transparent p-0 text-base leading-7 outline-none placeholder:text-slate-400 focus:ring-0" /><span className="absolute bottom-3 right-0 text-xs text-slate-400">{charCount === 0 ? MAX_CONTENT : charCount}/{MAX_CONTENT}</span></div>
 
