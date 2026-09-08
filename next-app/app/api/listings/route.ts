@@ -10,7 +10,10 @@ const fallbackListings = [
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
   const queryText = params.get('q')?.trim(); const district = params.get('district')?.trim(); const category = params.get('category')?.trim();
-  const minPrice = Number(params.get('minPrice')); const maxPrice = Number(params.get('maxPrice')); const limit = Math.min(Math.max(Number(params.get('limit')) || 30, 1), 50);
+  const rawMinPrice = params.get('minPrice'); const rawMaxPrice = params.get('maxPrice');
+  const minPrice = Number(rawMinPrice); const maxPrice = Number(rawMaxPrice); const limit = Math.min(Math.max(Number(params.get('limit')) || 30, 1), 50);
+  if ((rawMinPrice !== null && (!Number.isFinite(minPrice) || minPrice < 0)) || (rawMaxPrice !== null && (!Number.isFinite(maxPrice) || maxPrice < 0))) return NextResponse.json({ ok: false, error: 'invalid_price_filter' }, { status: 400 });
+  if (rawMinPrice !== null && rawMaxPrice !== null && minPrice > maxPrice) return NextResponse.json({ ok: false, error: 'invalid_price_range' }, { status: 400 });
   try {
     let query = (await getServerSupabase()).from('listings').select('id,title,description,price,images,thumbnail_url,district,city,condition,is_featured,created_at').in('status', ['published', 'active']).order('is_featured', { ascending: false }).order('created_at', { ascending: false }).limit(limit);
     if (queryText) query = query.or(`title.ilike.%${queryText}%,description.ilike.%${queryText}%`);
@@ -22,6 +25,7 @@ export async function GET(request: NextRequest) {
     if (error) throw error;
     return NextResponse.json({ ok: true, data: data || [], filters: { q: queryText || '', district: district || '', category: category || '' } });
   } catch (error) {
-    return NextResponse.json({ ok: true, data: fallbackListings, source: 'demo', warning: error instanceof Error ? error.message : 'Database listing belum tersedia.' });
+    if (process.env.ALLOW_DEMO_DATA === 'true' && process.env.NODE_ENV !== 'production') return NextResponse.json({ ok: true, data: fallbackListings, source: 'demo', warning: 'Mode demo lokal aktif.' });
+    return NextResponse.json({ ok: false, data: [], source: 'unavailable', warning: 'Listing sementara belum tersedia. Silakan coba lagi nanti.' }, { status: 503 });
   }
 }
