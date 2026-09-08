@@ -25,4 +25,6 @@ test('marketplace demo data is never used in production', () => {
   assert.match(listingsRoute, /status: 503/);
   assert.match(listingsRoute, /invalid_price_filter/);
   assert.match(listingsRoute, /invalid_price_range/);
+  assert.match(listingsRoute, /image_url/);
+  assert.doesNotMatch(listingsRoute, /select\('[^']*\bimages\b/);
 });
