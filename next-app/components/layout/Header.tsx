@@ -1,17 +1,17 @@
 'use client';
 
-import { Bell, Menu, Search, X } from 'lucide-react';
-import { usePathname, useRouter } from 'next/navigation';
+import { Menu, Search, X } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { useUIStore } from '@/store/ui';
 import { ProfileHub } from '@/components/profile/ProfileHub';
 import { CreateMenu } from './CreateMenu';
 import { BrandLogo } from './BrandLogo';
+import { NotificationCenter } from './NotificationCenter';
 
 export function Header({ onCreate }: { onCreate?: () => void }) {
   const { mobileOpen, toggleMobile } = useUIStore();
   const pathname = usePathname();
-  const router = useRouter();
   const [searchOpen, setSearchOpen] = useState(false);
 
   return <header className="top-header">
@@ -31,7 +31,7 @@ export function Header({ onCreate }: { onCreate?: () => void }) {
 
     <div className="header-actions">
       <CreateMenu />
-      <button className="header-icon" type="button" aria-label="Buka notifikasi" onClick={() => router.push(pathname.startsWith('/properti') ? '/properti' : '/beranda')}><Bell size={19} aria-hidden="true" /><i aria-label="3 notifikasi baru">3</i></button>
+      <NotificationCenter />
       <ProfileHub />
     </div>
   </header>;
