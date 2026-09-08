@@ -18,6 +18,8 @@ export function CreatePostComposer({ open, initialType = 'post', onClose, onCrea
 
   useEffect(() => {
     if (!open) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
     setType(initialType);
     try {
       const draft = JSON.parse(window.localStorage.getItem(draftKey) || 'null');
@@ -25,7 +27,7 @@ export function CreatePostComposer({ open, initialType = 'post', onClose, onCrea
     } catch { /* local draft is optional */ }
     const onKeyDown = (event: KeyboardEvent) => { if (event.key === 'Escape' && !saving) onClose(); };
     document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
+    return () => { document.removeEventListener('keydown', onKeyDown); document.body.style.overflow = previousOverflow; };
   }, [open, initialType, onClose, saving]);
 
   const remaining = 2000 - content.length;
