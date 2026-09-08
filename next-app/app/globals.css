@@ -180,3 +180,42 @@ html,body{max-width:100%;overflow-x:hidden}.platform-shell{min-width:0;width:100
   .create-modal,.create-composer{position:relative;top:auto;right:auto;bottom:auto;max-height:calc(100dvh - 108px);overflow-x:hidden;overflow-y:auto}
   .create-composer{width:min(560px,calc(100vw - 32px))}
 }
+
+/* Compact marketplace campaign banner */
+.marketplace-banner{margin:0 0 28px;border:1px solid var(--suki-line);border-radius:18px;background:#fff;padding:7px;box-shadow:var(--shadow-soft)}
+.marketplace-banner-viewport{overflow:hidden;border-radius:13px}
+.marketplace-banner-track{display:flex;transition:transform .65s cubic-bezier(.22,.61,.36,1);will-change:transform}
+.marketplace-banner-slide{position:relative;min-width:100%;height:clamp(150px,23vw,245px);overflow:hidden;background:#d9e5e0}
+.marketplace-banner-slide:after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(18,33,31,.62),rgba(18,33,31,.08) 70%)}
+.marketplace-banner-slide img{display:block;width:100%;height:100%;object-fit:cover}
+.marketplace-banner-copy{position:absolute;z-index:1;left:clamp(18px,4vw,44px);top:50%;transform:translateY(-50%);display:grid;gap:7px;max-width:min(430px,72%);color:#fff}
+.marketplace-banner-copy span{font-size:clamp(9px,1.1vw,12px);font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:#f6dfb2}
+.marketplace-banner-copy strong{font-size:clamp(20px,3vw,35px);line-height:1.08;letter-spacing:-.045em}
+.marketplace-banner-dots{display:flex;align-items:center;justify-content:center;gap:6px;height:25px;padding-top:6px}
+.marketplace-banner-dots button{width:6px;height:6px;padding:0;border:0;border-radius:99px;background:#d6d3d1;transition:width .25s ease,background .25s ease;cursor:pointer}
+.marketplace-banner-dots button.active{width:22px;background:var(--suki-teal)}
+.marketplace-banner-dots button:focus-visible{outline:2px solid var(--suki-teal);outline-offset:3px}
+@media (max-width:700px){.marketplace-banner{margin:0 0 22px;padding:5px;border-radius:15px}.marketplace-banner-slide{height:155px}.marketplace-banner-copy{left:18px;gap:5px;max-width:78%}.marketplace-banner-copy strong{font-size:20px}.marketplace-banner-copy span{font-size:8px}.marketplace-banner-dots{height:23px}}
+@media (prefers-reduced-motion:reduce){.marketplace-banner-track{transition:none}.marketplace-banner-dots button{transition:none}}
+
+@media (max-width:700px){
+  .marketplace-page{padding:12px 14px 60px}
+  .marketplace-banner{width:100%;margin:0 0 18px;padding:4px;border-radius:14px}
+  .marketplace-banner-slide{height:150px}
+  .marketplace-banner-copy{left:16px}
+  .marketplace-content{margin-top:0}
+}
+
+/* Unified SUKI profile and marketplace icon treatment */
+.avatar img,.marketplace-avatar img{width:100%;height:100%;display:block;object-fit:cover;border-radius:inherit}
+.profile-marketplace-link{display:flex;align-items:center;gap:10px;margin:4px 10px 8px;padding:10px 11px;border-radius:11px;background:var(--suki-mint);color:var(--suki-forest);font-size:12px;font-weight:800;text-decoration:none}
+.profile-marketplace-link svg:last-child{margin-left:auto;color:var(--suki-teal)}
+.profile-marketplace-shortcuts{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:4px 10px 11px;border-bottom:1px solid var(--suki-line);margin-bottom:5px}
+.profile-marketplace-shortcuts a{display:grid;justify-items:center;gap:5px;padding:8px 3px;border-radius:9px;color:var(--suki-forest);font-size:9px;text-decoration:none}
+.profile-marketplace-shortcuts a:hover{background:var(--suki-sand)}
+.profile-marketplace-shortcuts svg{color:var(--suki-teal)}
+.marketplace-profile-chip{display:flex;align-items:center;gap:7px;border:0;background:transparent;color:var(--suki-ink);text-decoration:none}
+.marketplace-profile-chip:hover .marketplace-avatar{box-shadow:0 0 0 3px var(--suki-mint)}
+.marketplace-avatar{display:grid;place-items:center;width:38px;height:38px;overflow:hidden;border-radius:50%;background:linear-gradient(145deg,#e7f3ef,#9ed9c9);color:var(--suki-forest);font-size:11px;font-weight:800;transition:box-shadow .18s ease}
+@media (max-width:700px){.profile-marketplace-shortcuts{gap:3px}.profile-marketplace-shortcuts a{font-size:8px}.marketplace-avatar{width:36px;height:36px}}
+.marketplace-profile-avatar-large img{width:100%;height:100%;display:block;border-radius:inherit;object-fit:cover}
