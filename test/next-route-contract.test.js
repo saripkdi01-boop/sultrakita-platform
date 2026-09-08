@@ -7,6 +7,8 @@ const path = require('node:path');
 
 const feedRoute = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'app', 'api', 'feed', 'route.ts'), 'utf8');
 const listingsRoute = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'app', 'api', 'listings', 'route.ts'), 'utf8');
+const postsAction = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'lib', 'actions', 'posts.ts'), 'utf8');
+const composer = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'components', 'beranda', 'CreatePostComposer.tsx'), 'utf8');
 
 test('feed route selects only profile columns that exist in Supabase', () => {
   assert.match(feedRoute, /profiles\(display_name,avatar_url\)/);
@@ -32,4 +34,15 @@ test('marketplace demo data is never used in production', () => {
   assert.match(listingsRoute, /is_demo\.is\.null,is_demo\.eq\.false/);
   assert.match(listingsRoute, /curated_demo/);
   assert.match(listingsRoute, /DEMO-SEED-/);
+});
+
+test('Create Post binds identity server-side and supports safe idempotent publish', () => {
+  assert.match(postsAction, /requireServerUser/);
+  assert.match(postsAction, /user_id: user\.id/);
+  assert.match(postsAction, /idempotency_key/);
+  assert.match(postsAction, /MAX_CONTENT = 2000/);
+  assert.match(postsAction, /status: 'published'/);
+  assert.match(composer, /Simpan draft/);
+  assert.match(composer, /Bagikan postingan/);
+  assert.match(composer, /localStorage/);
 });

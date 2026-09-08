@@ -9,7 +9,7 @@ import { CreateMenu } from './CreateMenu';
 import { BrandLogo } from './BrandLogo';
 import { NotificationCenter } from './NotificationCenter';
 
-export function Header({ onCreate }: { onCreate?: () => void }) {
+export function Header({ onCreate }: { onCreate?: (type?: 'post' | 'reel') => void }) {
   const { mobileOpen, toggleMobile } = useUIStore();
   const pathname = usePathname();
   const [searchOpen, setSearchOpen] = useState(false);
@@ -30,7 +30,7 @@ export function Header({ onCreate }: { onCreate?: () => void }) {
     </div>
 
     <div className="header-actions">
-      <CreateMenu />
+      <CreateMenu onCreateStory={onCreate} />
       <NotificationCenter />
       <ProfileHub />
     </div>

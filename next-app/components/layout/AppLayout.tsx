@@ -8,7 +8,7 @@ import { SidebarMobileDrawer } from './SidebarMobileDrawer';
 import { getHeaderEcosystemApps } from '@/lib/actions/ecosystem';
 import { useUIStore } from '@/store/ui';
 const fallbackRoutes = { suits: '/properti', marketplace: '/marketplace' };
-export function AppLayout({ children, onCreate, active = 'home' }: { children: React.ReactNode; onCreate?: () => void; active?: QuickNavKey }) {
+export function AppLayout({ children, onCreate, active = 'home' }: { children: React.ReactNode; onCreate?: (type?: 'post' | 'reel') => void; active?: QuickNavKey }) {
   const { mobileOpen } = useUIStore(); const pathname = usePathname(); const [routes, setRoutes] = useState(fallbackRoutes);
   const routeActive: QuickNavKey = pathname.startsWith('/properti') || pathname.startsWith('/dashboard/properties') || pathname.startsWith('/dashboard/inquiries') || pathname.startsWith('/admin/property-verification') ? 'suits' : pathname.startsWith('/marketplace') ? 'marketplace' : pathname.startsWith('/jobs') ? 'market' : pathname.startsWith('/chat') ? 'chat' : pathname.startsWith('/groups') ? 'groups' : active;
   useEffect(() => { void getHeaderEcosystemApps().then((result) => { if (result.ok) { const suits = result.data.find((item) => item.slug === 'suki-suits')?.route; setRoutes({ suits: suits || fallbackRoutes.suits, marketplace: fallbackRoutes.marketplace }); } }); }, []);
