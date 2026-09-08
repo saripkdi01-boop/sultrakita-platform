@@ -31,7 +31,7 @@ export default function BerandaPage() {
   }, [loadMore]);
 
   return <AppLayout active="home"><main className="beranda-shell"><div className="beranda-main">
-    <div className="beranda-feed-heading"><div><span className="eyebrow">RUANG WARGA</span><h1>Beranda</h1><p>Temukan cerita dan kabar terbaru dari Sulawesi Tenggara.</p></div><button className="beranda-filter" aria-label="Opsi beranda"><MoreHorizontal size={18}/></button></div>
+    <div className="beranda-feed-heading beranda-feed-heading-compact"><button className="beranda-filter" aria-label="Opsi beranda"><MoreHorizontal size={18}/></button></div>
     <div className="feed-toolbar" role="tablist" aria-label="Filter feed">{filters.map((item) => <button key={item.value} type="button" role="tab" aria-selected={filter === item.value} className={filter === item.value ? 'active' : ''} onClick={() => setFilter(item.value)}>{filter === item.value && <Check size={14}/>} {item.label}</button>)}</div>
     <StoriesSection/><CreatePostInput onCreate={() => setNotice('Buat postingan siap digunakan setelah Anda login.')}/>
     {notice && <div className="beranda-notice" role="status"><span>{notice}</span><button onClick={() => setNotice('')}>Tutup</button></div>}
