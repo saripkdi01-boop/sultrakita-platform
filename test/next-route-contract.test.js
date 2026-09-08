@@ -27,4 +27,6 @@ test('marketplace demo data is never used in production', () => {
   assert.match(listingsRoute, /invalid_price_range/);
   assert.match(listingsRoute, /image_url/);
   assert.doesNotMatch(listingsRoute, /select\('[^']*\bimages\b/);
+  assert.match(listingsRoute, /SUPABASE_SERVICE_ROLE_KEY/);
+  assert.doesNotMatch(listingsRoute, /NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY/);
 });

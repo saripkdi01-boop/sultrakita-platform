@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
 import { getServerSupabase } from '@/lib/supabase/server';
 
 const fallbackListings = [
@@ -6,6 +7,13 @@ const fallbackListings = [
   { id: 'demo-kuliner', title: 'Paket Ikan Bakar Sambal', description: 'Rasa lokal untuk keluarga.', price: 120000, district: 'Kendari', city: 'Kendari', condition: 'new', is_featured: false, is_demo: true, images: [], thumbnail_url: null },
   { id: 'demo-wakatobi', title: 'Paket Snorkeling Wakatobi', description: 'Jelajah laut Wakatobi bersama pemandu lokal.', price: 350000, district: 'Wakatobi', city: 'Wakatobi', condition: 'good', is_featured: false, is_demo: true, images: [], thumbnail_url: null },
 ];
+
+function getListingsClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) return null;
+  return createClient(url, key, { auth: { autoRefreshToken: false, persistSession: false } });
+}
 
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
@@ -15,7 +23,7 @@ export async function GET(request: NextRequest) {
   if ((rawMinPrice !== null && (!Number.isFinite(minPrice) || minPrice < 0)) || (rawMaxPrice !== null && (!Number.isFinite(maxPrice) || maxPrice < 0))) return NextResponse.json({ ok: false, error: 'invalid_price_filter' }, { status: 400 });
   if (rawMinPrice !== null && rawMaxPrice !== null && minPrice > maxPrice) return NextResponse.json({ ok: false, error: 'invalid_price_range' }, { status: 400 });
   try {
-    let query = (await getServerSupabase()).from('listings').select('id,title,description,price,image_url,district,city,condition,is_featured,created_at').in('status', ['published', 'active']).order('is_featured', { ascending: false }).order('created_at', { ascending: false }).limit(limit);
+    let query = (getListingsClient() || await getServerSupabase()).from('listings').select('id,title,description,price,image_url,district,city,condition,is_featured,created_at').in('status', ['published', 'active']).order('is_featured', { ascending: false }).order('created_at', { ascending: false }).limit(limit);
     if (queryText) query = query.or(`title.ilike.%${queryText}%,description.ilike.%${queryText}%`);
     if (district && district !== 'Semua distrik') query = query.eq('district', district);
     // Category labels are resolved by the marketplace UI; UUID category filters can be added here when supplied.
