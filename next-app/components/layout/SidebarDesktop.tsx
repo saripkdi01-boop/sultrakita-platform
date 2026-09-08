@@ -18,8 +18,8 @@ export function SidebarDesktop() {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [languageOpen, setLanguageOpen] = useState(false);
   const labels = getLabels(language);
-  const displayName = profile?.full_name || user?.email || 'Wan Shofir';
-  const headline = profile?.headline || 'Seller terverifikasi · Kendari';
+  const displayName = profile?.full_name || user?.email || 'Pengguna SultraKita';
+  const headline = profile?.headline || 'Warga SultraKita · Sulawesi Tenggara';
   const initials = displayName.split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase();
   const translatedLabel = (label: string) => label === 'Pengaturan' ? labels.settings : label === 'Pusat Privasi' ? labels.privacy : label === 'Bahasa' ? labels.language : label === 'Mode gelap' ? (theme === 'dark' ? labels.lightMode : labels.darkMode) : label;
   const preferenceClick = (label: string) => (event: MouseEvent<HTMLAnchorElement>) => { if (label === 'Mode gelap' || label === 'Bahasa') { event.preventDefault(); if (label === 'Mode gelap') toggleTheme(); else setLanguageOpen((open) => !open); } };

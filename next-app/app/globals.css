@@ -219,3 +219,11 @@ html,body{max-width:100%;overflow-x:hidden}.platform-shell{min-width:0;width:100
 .marketplace-avatar{display:grid;place-items:center;width:38px;height:38px;overflow:hidden;border-radius:50%;background:linear-gradient(145deg,#e7f3ef,#9ed9c9);color:var(--suki-forest);font-size:11px;font-weight:800;transition:box-shadow .18s ease}
 @media (max-width:700px){.profile-marketplace-shortcuts{gap:3px}.profile-marketplace-shortcuts a{font-size:8px}.marketplace-avatar{width:36px;height:36px}}
 .marketplace-profile-avatar-large img{width:100%;height:100%;display:block;border-radius:inherit;object-fit:cover}
+
+.profile-form-message{margin:0;font-size:11px;line-height:1.5}.profile-form-message.error{color:#b42318}.profile-form-message.success{color:#18794e}
+.setting-form button:disabled{cursor:wait;opacity:.65}
+
+.profile-avatar-editor{display:flex;align-items:center;gap:13px;padding:12px;border:1px solid var(--suki-line);border-radius:13px;background:var(--suki-sand)}
+.profile-avatar-preview{display:grid;place-items:center;width:58px;height:58px;flex:none;overflow:hidden;border-radius:50%;background:linear-gradient(145deg,#e7f3ef,#9ed9c9);color:var(--suki-forest);font-weight:800}
+.profile-avatar-preview img{width:100%;height:100%;display:block;object-fit:cover}
+.profile-avatar-editor>div:nth-child(2){display:grid;gap:4px}.profile-avatar-editor strong{font-size:11px}.profile-avatar-editor small{color:var(--muted);font-size:9px}.profile-upload-button{display:inline-flex;width:max-content;align-items:center;padding:6px 9px;border-radius:8px;background:var(--suki-forest);color:#fff;font-size:10px;font-weight:700;cursor:pointer}.profile-upload-button input{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}.profile-upload-button:focus-within{outline:2px solid var(--suki-teal);outline-offset:2px}

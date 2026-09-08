@@ -11,6 +11,7 @@ import { PrivacyCheckupWizard } from '@/components/security/PrivacyCheckupWizard
 import { ProfileVisibilitySettings } from '@/components/security/ProfileVisibilitySettings';
 import { SellerAnalyticsCard } from '@/components/analytics/SellerAnalyticsCard';
 import { useSessionProfile } from '@/hooks/useSessionProfile';
+import { supabase } from '@/lib/supabase/client';
 
 const categories: { id: SettingTab; label: string; description: string; icon: typeof UserRound }[] = [
   { id: 'account', label: 'Akun dan profil', description: 'Nama, kontak, bio, dan identitas lokal', icon: UserRound },
@@ -25,12 +26,38 @@ const categories: { id: SettingTab; label: string; description: string; icon: ty
 ];
 const interests = ['Marketplace', 'Kuliner', 'Wisata', 'UMKM', 'Motor', 'Properti', 'Fashion', 'Hobi'];
 
+function prepareAvatar(file: File): Promise<File> {
+  return new Promise((resolve, reject) => {
+    const sourceUrl = URL.createObjectURL(file);
+    const image = new Image();
+    image.onload = () => {
+      URL.revokeObjectURL(sourceUrl);
+      const size = Math.min(image.naturalWidth, image.naturalHeight);
+      const sx = (image.naturalWidth - size) / 2;
+      const sy = (image.naturalHeight - size) / 2;
+      const canvas = document.createElement('canvas');
+      canvas.width = 512; canvas.height = 512;
+      const context = canvas.getContext('2d');
+      if (!context) { reject(new Error('Canvas tidak tersedia.')); return; }
+      context.imageSmoothingEnabled = true; context.imageSmoothingQuality = 'high';
+      context.drawImage(image, sx, sy, size, size, 0, 0, 512, 512);
+      canvas.toBlob((blob) => {
+        if (!blob) { reject(new Error('Foto tidak dapat diproses.')); return; }
+        resolve(new File([blob], 'avatar.jpg', { type: 'image/jpeg', lastModified: Date.now() }));
+      }, 'image/jpeg', 0.88);
+    };
+    image.onerror = () => { URL.revokeObjectURL(sourceUrl); reject(new Error('Foto tidak dapat dibaca.')); };
+    image.src = sourceUrl;
+  });
+}
+
 export function ProfileHub() {
-  const { profile, menuOpen, setupOpen, settingsOpen, activeTab, toggleMenu, openSetup, openSettings, closeOverlays } = useProfileStore();
+  const { profile, menuOpen, setupOpen, settingsOpen, activeTab, toggleMenu, openSetup, openSettings, closeOverlays, setProfile } = useProfileStore();
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const { user } = useSessionProfile();
+  const { user, profile: sessionProfile } = useSessionProfile();
   useEffect(() => { const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') closeOverlays(); }; document.addEventListener('keydown', onKey); return () => document.removeEventListener('keydown', onKey); }, [closeOverlays]);
   useEffect(() => { document.documentElement.classList.toggle('dark', profile.dark_mode); document.documentElement.classList.toggle('reduce-motion', profile.reduce_motion); }, [profile.dark_mode, profile.reduce_motion]);
+  useEffect(() => { if (sessionProfile) setProfile({ full_name: sessionProfile.full_name || user?.email || 'Pengguna SultraKita', avatar_url: sessionProfile.avatar_url || '', role: sessionProfile.role, email: user?.email || '' }); }, [sessionProfile, setProfile, user?.email]);
   return <>
     <div className="profile-hub-anchor"><button ref={triggerRef} className="profile-pill profile-hub-trigger" onClick={toggleMenu} aria-expanded={menuOpen} aria-controls="profile-menu" aria-label="Buka menu profil"><span className="avatar">{profile.avatar_url ? <img src={profile.avatar_url} alt="Profil"/> : profile.full_name.slice(0, 2).toUpperCase()}</span><span className="profile-name">{profile.full_name.split(' ')[0]}</span></button>{menuOpen && <ProfileMenu onClose={closeOverlays} onSetup={openSetup} onSettings={openSettings}/>}</div>
     {setupOpen && <ProfileSetup onClose={closeOverlays}/>} {settingsOpen && <SettingsPanel onClose={closeOverlays} activeTab={activeTab} userId={user?.id}/>}
@@ -45,5 +72,57 @@ function SettingsPanel({ onClose, activeTab, userId }: { onClose: () => void; ac
 
 function PrivacySettingsContent() { const [checkup, setCheckup] = useState(false); return <>{checkup && <PrivacyCheckupWizard onClose={() => setCheckup(false)} onSaved={() => setCheckup(false)}/>}<div className="setting-form"><button className="primary-btn" onClick={() => setCheckup(true)}>Mulai Privacy Checkup</button><ProfileVisibilitySettings/></div></> }
 function ActivityLogContent() { return <ActivityLogs/> }
-function SettingContent({ tab, userId }: { tab: SettingTab; userId?: string }) { const { profile, setProfile } = useProfileStore(); if (tab === 'account') return <div className="setting-form"><label>Nama lengkap<input value={profile.full_name} onChange={e => setProfile({ full_name: e.target.value })}/></label><label>Username<input value={profile.username} onChange={e => setProfile({ username: e.target.value })}/></label><label>Email<input value={profile.email} onChange={e => setProfile({ email: e.target.value })} placeholder="Belum ditambahkan"/></label><label>Bio<textarea value={profile.bio} onChange={e => setProfile({ bio: e.target.value })}/></label><button className="primary-btn" onClick={() => window.dispatchEvent(new CustomEvent('sultra-toast', { detail: 'Perubahan profil tersimpan.' }))}>Simpan perubahan</button></div>; if (tab === 'privacy') return <PrivacySettingsContent/>; if (tab === 'security') return <ActiveSessions/>; if (tab === 'blocked') return <BlockedUsers/>; if (tab === 'activity') return <ActivityLogContent/>; if (tab === 'notifications') return <div className="setting-rows"><ToggleRow label="Notifikasi push" description="Dapatkan kabar aktivitas penting." value={profile.push_notifications} onChange={value => setProfile({ push_notifications: value })}/><ToggleRow label="Email" description="Ringkasan aktivitas melalui email." value={profile.email_notifications} onChange={value => setProfile({ email_notifications: value })}/></div>; if (tab === 'appearance') return <div className="setting-rows"><ToggleRow label="Mode gelap" description="Gunakan tampilan gelap di seluruh aplikasi." value={profile.dark_mode} onChange={value => setProfile({ dark_mode: value })}/><ToggleRow label="Kurangi animasi" description="Kurangi gerakan untuk pengalaman yang lebih nyaman." value={profile.reduce_motion} onChange={value => setProfile({ reduce_motion: value })}/><label>Autoplay Reels<select value={profile.autoplay} onChange={e => setProfile({ autoplay: e.target.value as UserProfile['autoplay'] })}><option value="always">Selalu</option><option value="wifi">Hanya Wi-Fi</option><option value="never">Nonaktif</option></select></label></div>; if (tab === 'seller') return userId ? <SellerAnalyticsCard sellerId={userId}/> : <div className="setting-empty"><Store size={28}/><h3>Mode seller</h3><p>Masuk dengan akun Supabase untuk melihat performa toko.</p><button className="primary-btn">Mulai verifikasi</button></div>; return <div className="setting-empty"><CircleHelp size={28}/><h3>Bagaimana kami dapat membantu?</h3><p>Lihat FAQ, laporkan masalah, atau kirim saran untuk SultraKita.</p><button className="soft-btn">Buka pusat bantuan</button></div> }
+function ProfileEditForm({ userId }: { userId?: string }) {
+  const { profile, setProfile } = useProfileStore();
+  const [draft, setDraft] = useState({ full_name: profile.full_name, username: profile.username, bio: profile.bio, district: profile.district, avatar_url: profile.avatar_url });
+  const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState('');
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  useEffect(() => { setDraft({ full_name: profile.full_name, username: profile.username, bio: profile.bio, district: profile.district, avatar_url: profile.avatar_url }); }, [profile.full_name, profile.username, profile.bio, profile.district, profile.avatar_url]);
+  useEffect(() => () => { if (previewUrl) URL.revokeObjectURL(previewUrl); }, [previewUrl]);
+  async function uploadAvatar(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    setMessage(''); setError('');
+    if (!file) return;
+    if (!userId || !supabase) { setError('Profil belum terhubung ke akun Supabase.'); return; }
+    if (!file.type.startsWith('image/')) { setError('Pilih file gambar JPG, PNG, WebP, atau GIF.'); return; }
+    if (file.size > 5 * 1024 * 1024) { setError('Ukuran foto maksimal 5 MB.'); return; }
+    let processedFile: File;
+    try { processedFile = await prepareAvatar(file); } catch { setError('Foto tidak dapat diproses. Coba pilih foto lain.'); return; }
+    const nextPreviewUrl = URL.createObjectURL(processedFile);
+    setPreviewUrl((current) => { if (current) URL.revokeObjectURL(current); return nextPreviewUrl; });
+    const objectPath = `${userId}/${crypto.randomUUID()}.jpg`;
+    setUploading(true);
+    const { error: uploadError } = await supabase.storage.from('avatars').upload(objectPath, processedFile, { cacheControl: '3600', contentType: 'image/jpeg', upsert: false });
+    if (uploadError) { setUploading(false); setError('Foto gagal diunggah. Pastikan bucket avatars dan izin storage sudah tersedia.'); return; }
+    const { data: publicData } = supabase.storage.from('avatars').getPublicUrl(objectPath);
+    const avatarUrl = publicData.publicUrl;
+    const { error: profileError } = await supabase.from('profiles').update({ avatar_url: avatarUrl }).eq('id', userId);
+    setUploading(false);
+    if (profileError) { setError('Foto berhasil diunggah tetapi profil gagal diperbarui. Tekan simpan lagi.'); return; }
+    setDraft(current => ({ ...current, avatar_url: avatarUrl }));
+    setProfile({ avatar_url: avatarUrl });
+    setMessage('Foto profil berhasil diunggah ke Supabase Storage.');
+  }
+  async function save(event: FormEvent) {
+    event.preventDefault(); setMessage(''); setError('');
+    const fullName = draft.full_name.trim(); const username = draft.username.trim().toLowerCase().replace(/\s+/g, '_');
+    if (!userId || !supabase) { setError('Profil belum terhubung ke akun Supabase.'); return; }
+    if (!fullName) { setError('Nama lengkap wajib diisi.'); return; }
+    setSaving(true);
+    const { data, error: updateError } = await supabase.from('profiles').update({ full_name: fullName, display_name: fullName, username: username || null, bio: draft.bio.trim() || null, district: draft.district.trim() || null, avatar_url: draft.avatar_url.trim() || null }).eq('id', userId).select('full_name,username,bio,district,avatar_url').single();
+    setSaving(false);
+    if (updateError) { setError(updateError.code === '23505' ? 'Username tersebut sudah digunakan.' : 'Profil gagal disimpan. Periksa koneksi dan izin akun.'); return; }
+    setProfile({ full_name: data.full_name || fullName, username: data.username || '', bio: data.bio || '', district: data.district || '', avatar_url: data.avatar_url || '' });
+    setMessage('Profil berhasil disimpan ke Supabase.');
+  }
+  return <form className="setting-form" onSubmit={save}>
+    <div className="profile-avatar-editor"><div className="profile-avatar-preview">{(previewUrl || draft.avatar_url) ? <img src={previewUrl || draft.avatar_url} alt="Pratinjau foto profil" /> : profile.full_name.slice(0, 2).toUpperCase()}</div><div><strong>Foto profil</strong><small>Foto dipotong persegi dan di-resize ke 512×512 px sebelum upload.</small><label className="profile-upload-button"><input type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={uploadAvatar} disabled={uploading || saving} />{uploading ? 'Mengunggah...' : 'Unggah foto'}</label></div></div>
+    <label>Nama lengkap<input value={draft.full_name} onChange={e => setDraft({ ...draft, full_name: e.target.value })} required /></label><label>Username<input value={draft.username} onChange={e => setDraft({ ...draft, username: e.target.value.replace(/\s/g, '_') })} placeholder="contoh: maya_kendari" /></label><label>Email<input value={profile.email} readOnly placeholder="Belum ditambahkan" /></label><label>Bio<textarea value={draft.bio} onChange={e => setDraft({ ...draft, bio: e.target.value })} rows={3} placeholder="Ceritakan sedikit tentang dirimu" /></label><label>Distrik<input value={draft.district} onChange={e => setDraft({ ...draft, district: e.target.value })} placeholder="Contoh: Kendari" /></label><label>URL foto profil<input type="url" value={draft.avatar_url} onChange={e => setDraft({ ...draft, avatar_url: e.target.value })} placeholder="https://..." /></label>{error && <p className="profile-form-message error" role="alert">{error}</p>}{message && <p className="profile-form-message success" role="status">{message}</p>}<button className="primary-btn" type="submit" disabled={saving || uploading}>{saving ? 'Menyimpan...' : 'Simpan perubahan'}</button>
+  </form>
+}
+function SettingContent({ tab, userId }: { tab: SettingTab; userId?: string }) { const { profile, setProfile } = useProfileStore(); if (tab === 'account') return <ProfileEditForm userId={userId}/>; if (tab === 'privacy') return <PrivacySettingsContent/>; if (tab === 'security') return <ActiveSessions/>; if (tab === 'blocked') return <BlockedUsers/>; if (tab === 'activity') return <ActivityLogContent/>; if (tab === 'notifications') return <div className="setting-rows"><ToggleRow label="Notifikasi push" description="Dapatkan kabar aktivitas penting." value={profile.push_notifications} onChange={value => setProfile({ push_notifications: value })}/><ToggleRow label="Email" description="Ringkasan aktivitas melalui email." value={profile.email_notifications} onChange={value => setProfile({ email_notifications: value })}/></div>; if (tab === 'appearance') return <div className="setting-rows"><ToggleRow label="Mode gelap" description="Gunakan tampilan gelap di seluruh aplikasi." value={profile.dark_mode} onChange={value => setProfile({ dark_mode: value })}/><ToggleRow label="Kurangi animasi" description="Kurangi gerakan untuk pengalaman yang lebih nyaman." value={profile.reduce_motion} onChange={value => setProfile({ reduce_motion: value })}/><label>Autoplay Reels<select value={profile.autoplay} onChange={e => setProfile({ autoplay: e.target.value as UserProfile['autoplay'] })}><option value="always">Selalu</option><option value="wifi">Hanya Wi-Fi</option><option value="never">Nonaktif</option></select></label></div>; if (tab === 'seller') return userId ? <SellerAnalyticsCard sellerId={userId}/> : <div className="setting-empty"><Store size={28}/><h3>Mode seller</h3><p>Masuk dengan akun Supabase untuk melihat performa toko.</p><button className="primary-btn">Mulai verifikasi</button></div>; return <div className="setting-empty"><CircleHelp size={28}/><h3>Bagaimana kami dapat membantu?</h3><p>Lihat FAQ, laporkan masalah, atau kirim saran untuk SultraKita.</p><button className="soft-btn">Buka pusat bantuan</button></div> }
 function ToggleRow({ label, description, value, onChange }: { label: string; description: string; value: boolean; onChange: (value: boolean) => void }) { return <div className="setting-row"><div><b>{label}</b><small>{description}</small></div><button type="button" className={`toggle ${value ? 'on' : ''}`} aria-pressed={value} onClick={() => onChange(!value)}><i/></button></div> }
