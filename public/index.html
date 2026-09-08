@@ -70,7 +70,10 @@ img{display:block}
 .icon-btn{width:40px;height:40px;border-radius:50%;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;position:relative;transition:transform .15s,background .2s;color:var(--text)}
 .icon-btn:hover{background:var(--hover);transform:scale(1.05)}
 .badge{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;border-radius:9px;background:var(--red);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px;border:2px solid var(--card)}
-.me-av{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid var(--primary);cursor:pointer}
+.profile-trigger{width:40px;height:40px;padding:0;border:0;background:transparent;border-radius:50%;cursor:pointer;line-height:0}
+.me-av{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid var(--primary);display:block;transition:transform .15s,box-shadow .2s}
+.profile-trigger:hover .me-av,.profile-trigger:focus-visible .me-av{transform:scale(1.05);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 22%,transparent)}
+.profile-trigger:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
 
 /* ---------- DROPDOWNS ---------- */
 .drop{position:fixed;top:66px;right:12px;width:360px;max-width:calc(100vw - 24px);background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-lg);z-index:120;overflow:hidden;animation:pop .18s ease}
@@ -348,7 +351,7 @@ main{padding-top:60px;min-height:100vh}
       <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 22a2.5 2.5 0 0 0 2.5-2.5h-5A2.5 2.5 0 0 0 12 22zm7-6v-5a7 7 0 0 0-5-6.7V4a2 2 0 1 0-4 0v.3A7 7 0 0 0 5 11v5l-2 2v1h18v-1l-2-2z"/></svg>
       <span class="badge" id="notifBadge">3</span>
     </button>
-    <img class="me-av" id="meBtn" alt="Profil" />
+    <button class="profile-trigger" id="meBtn" type="button" aria-label="Buka profil"><img class="me-av" id="meAvatar" alt="Profil" /></button>
   </div>
 </header>
 
@@ -356,7 +359,7 @@ main{padding-top:60px;min-height:100vh}
 <div id="sidebarBackdrop" aria-hidden="true"></div>
 <aside id="sidebarDrawer" aria-label="Navigasi SultraKita" aria-hidden="true">
   <div class="drawer-head"><strong>Menu SultraKita</strong><button class="drawer-close" id="sidebarClose" aria-label="Tutup menu">×</button></div>
-  <div class="drawer-profile"><img id="drawerAv" alt="Profil La Ode Rizky"><div><strong>La Ode Rizky</strong><small>Seller terverifikasi · Kendari</small></div><span class="status">● Aktif</span></div>
+  <button class="drawer-profile" id="drawerProfileTrigger" type="button" aria-label="Buka profil"><img id="drawerAv" alt="Profil"><div><strong id="drawerProfileName">Warga SultraKita</strong><small id="drawerProfileMeta">Akun lokal · Sulawesi Tenggara</small></div><span class="status">● Aktif</span></button>
   <div class="drawer-section-title"><span>Pintasan Anda</span><span>2</span></div>
   <div class="drawer-shortcuts">
     <button class="drawer-shortcut" data-act="view" data-view="market"><span>🛍️</span><b>Promo Belanja<small>Penawaran lokal</small></b></button>
@@ -394,7 +397,7 @@ main{padding-top:60px;min-height:100vh}
     <aside class="side left">
       <div class="card profile-mini">
         <img id="sideAv" alt="Profil" />
-        <div class="nm"><b>La Ode Rizky</b><p>Kendari, Sulawesi Tenggara</p></div>
+        <div class="nm"><b id="profileCardName">Warga SultraKita</b><p id="profileCardLocation">Sulawesi Tenggara</p></div>
       </div>
       <button class="menu-item" data-act="view" data-view="market"><span class="menu-ic" style="background:rgba(13,148,136,.15)">🛍️</span> SUKI Marketplace</button>
       <button class="menu-item property-launch" data-act="property"><span class="menu-ic" style="background:rgba(13,148,136,.15)">⌂</span> SUKI Suits Property</button>
@@ -413,7 +416,7 @@ main{padding-top:60px;min-height:100vh}
       <div class="card composer">
         <div class="comp-top">
           <img id="compAv" alt="Profil" />
-          <button class="comp-input" data-act="open" data-modal="postModal">Apa yang kamu pikirkan, Rizky?</button>
+          <button class="comp-input" data-act="open" data-modal="postModal">Apa yang kamu pikirkan?</button>
         </div>
         <div class="comp-actions">
           <button class="comp-act" data-act="open" data-modal="postModal"><span style="color:#ef4444">🎥</span> Video Langsung</button>
@@ -497,9 +500,9 @@ main{padding-top:60px;min-height:100vh}
     <div class="modal-body">
       <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px">
         <img id="pmAv" style="width:44px;height:44px;border-radius:50%;object-fit:cover" alt="" />
-        <div><b>La Ode Rizky</b><p style="font-size:12px;color:var(--muted)">🌐 Publik · Kendari</p></div>
+        <div><b id="composerName">Warga SultraKita</b><p id="composerMeta" style="font-size:12px;color:var(--muted)">🌐 Publik · Sulawesi Tenggara</p></div>
       </div>
-      <textarea id="postText" rows="4" placeholder="Apa yang kamu pikirkan, Rizky?"></textarea>
+      <textarea id="postText" rows="4" placeholder="Apa yang kamu pikirkan?"></textarea>
       <label>Foto (opsional)</label>
       <div class="photo-pick" id="postPhotos"></div>
       <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:18px" data-act="submit-post">Posting</button>
@@ -580,7 +583,7 @@ const CATS = ['Semua','Properti','Kendaraan','Elektronik','Jasa','Kuliner','Fash
 const DISTS = ['Semua distrik','Kendari','Poasia','Baruga','Mandonga','Kambu','Wua-Wua','Kendari Barat','Kadia'];
 const rp = n => 'Rp ' + Number(n).toLocaleString('id-ID');
 let dataSource = 'demo';
-
+const profile = { id:null, name:'Warga SultraKita', role:'buyer', district:'Sulawesi Tenggara', avatar_url:IMG.me, bio:'', is_verified:false };
 let POSTS = [
  {id:1,author:'Wa Ode Sari',avatar:IMG.sari,time:'2 jam · 🌐',text:'Akhir pekan di Wakatobi, airnya sejernih kaca 😍 Siapa mau ikut trip bulan depan? #SultraKita #Wakatobi',image:IMG.pantai,likes:214,shares:18,comments:[{n:'La Ode Ahmad',a:IMG.laode,t:'MasyaAllah, indahnya! 😍'},{n:'Rina Andriani',a:IMG.rina,t:'Ajak-ajak next trip ya!'}]},
  {id:2,author:'La Ode Ahmad',avatar:IMG.laode,time:'5 jam · 🌐',text:'Festival Lulo tahun ini luar biasa ramai! Budaya Sulawesi Tenggara harus terus hidup di generasi muda. 🎉',image:IMG.lulo,likes:542,shares:96,comments:[{n:'Wa Ode Sari',a:IMG.sari,t:'Bangga jadi warga Sultra ❤️'}]},
@@ -643,7 +646,21 @@ const state = {
 
 /* ================= HELPERS ================= */
 const $ = s => document.querySelector(s);
-const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const esc = s => String(s).replace(/[&<>\"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));
+const tokenKey = 'sultra-account-token';
+function profileLabel(){ return profile.name || 'Warga SultraKita'; }
+function profileMeta(){ return [profile.is_verified ? 'Seller terverifikasi' : (profile.role === 'seller' ? 'Seller lokal' : 'Warga SultraKita'), profile.district || 'Sulawesi Tenggara'].join(' · '); }
+function applyProfile(){
+  const name = profileLabel(), meta = profileMeta(), location = profile.district || 'Sulawesi Tenggara';
+  ['meAvatar','sideAv','compAv','pmAv','drawerAv'].forEach(id => { const el=document.getElementById(id); if(el){ el.src=profile.avatar_url || IMG.me; el.alt='Profil '+name; } });
+  [['drawerProfileName',name],['profileCardName',name],['composerName',name],['drawerProfileMeta',meta],['profileCardLocation',location],['composerMeta','🌐 Publik · '+location]].forEach(([id,value])=>{const el=document.getElementById(id);if(el)el.textContent=value;});
+  const postText=document.getElementById('postText'); if(postText)postText.placeholder='Apa yang kamu pikirkan, '+name.split(' ')[0]+'?';
+}
+async function loadCurrentProfile(){
+  const token=localStorage.getItem(tokenKey); if(!token){ applyProfile(); return; }
+  try{ const response=await fetch('/api/me',{headers:{accept:'application/json',authorization:'Bearer '+token}}); if(!response.ok) throw new Error('profile unavailable'); const payload=await response.json(); Object.assign(profile,payload.data||{}); applyProfile(); }
+  catch(error){ localStorage.removeItem(tokenKey); applyProfile(); console.info('[profile] guest fallback aktif:',error.message); }
+}
 function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),2600); }
 function iniAv(name){ const hues=[160,200,20,280,340,45]; let h=0; for(const c of name) h=(h*31+c.charCodeAt(0))%hues.length; const ini=name.split(' ').map(w=>w[0]).slice(0,2).join(''); return '<span class="ini-av" style="background:hsl('+hues[h]+',60%,45%)">'+ini+'</span>'; }
 
@@ -859,7 +876,7 @@ document.addEventListener('click', e=>{
   else if(act==='submit-post'){
     const txt = $('#postText').value.trim();
     if(!txt){ toast('✍️ Tulis sesuatu dulu ya'); return; }
-    POSTS.unshift({id:Date.now(),author:'La Ode Rizky',avatar:IMG.me,time:'Baru saja · 🌐',text:txt,image:state.postPhoto,likes:0,shares:0,comments:[]});
+    POSTS.unshift({id:Date.now(),author:profileLabel(),avatar:profile.avatar_url||IMG.me,time:'Baru saja · 🌐',text:txt,image:state.postPhoto,likes:0,shares:0,comments:[]});
     $('#postText').value=''; state.postPhoto=null; buildPickers();
     $('#postModal').classList.add('hidden'); renderFeed(); switchView('home');
     toast('✅ Postingan berhasil dibagikan!');
@@ -867,7 +884,7 @@ document.addEventListener('click', e=>{
   else if(act==='submit-sell'){
     const t = $('#sellTitle').value.trim(), pr = +$('#sellPrice').value;
     if(!t||!pr){ toast('⚠️ Lengkapi judul & harga iklan'); return; }
-    PRODUCTS.unshift({id:Date.now(),title:t,price:pr,cat:$('#sellCat').value,dist:$('#sellDist').value,img:state.sellPhoto,seller:'La Ode Rizky (Anda)',sAv:IMG.me,rate:5.0,desc:$('#sellDesc').value||'Tanpa deskripsi.',time:'baru saja'});
+    PRODUCTS.unshift({id:Date.now(),title:t,price:pr,cat:$('#sellCat').value,dist:$('#sellDist').value,img:state.sellPhoto,seller:profileLabel()+' (Anda)',sAv:profile.avatar_url||IMG.me,rate:5.0,desc:$('#sellDesc').value||'Tanpa deskripsi.',time:'baru saja'});
     ['sellTitle','sellPrice','sellDesc'].forEach(i=>$('#'+i).value='');
     $('#sellModal').classList.add('hidden'); renderProducts(); switchView('market');
     toast('🚀 Iklan Anda tayang di SUKI Marketplace!');
@@ -879,7 +896,7 @@ function sendComment(id){
   const inp = document.querySelector('.c-input[data-id="'+id+'"]');
   const v = inp.value.trim(); if(!v) return;
   const p = POSTS.find(x=>x.id===id);
-  p.comments.push({n:'La Ode Rizky',a:IMG.me,t:v});
+  p.comments.push({n:profileLabel(),a:profile.avatar_url||IMG.me,t:v});
   state.openComments.add(id);
   renderFeed();
   const ni = document.querySelector('.c-input[data-id="'+id+'"]'); if(ni) ni.focus();
@@ -901,7 +918,9 @@ $('#distSel').addEventListener('change', e=>{ state.mDist=e.target.value; render
 $('#sortSel').addEventListener('change', e=>{ state.mSort=e.target.value; renderProducts(); });
 $('#notifBtn').addEventListener('click', ()=>{ $('#notifDrop').classList.toggle('hidden'); $('#msgDrop').classList.add('hidden'); $('#notifBadge').style.display='none'; });
 $('#msgBtn').addEventListener('click', ()=>{ $('#msgDrop').classList.toggle('hidden'); $('#notifDrop').classList.add('hidden'); $('#msgBadge').style.display='none'; });
-$('#meBtn').addEventListener('click', ()=>toast('👤 Profil La Ode Rizky · Seller terverifikasi ★5.0'));
+function openProfile(){ location.assign('/account.html?next=/'); }
+$('#meBtn').addEventListener('click', openProfile);
+$('#drawerProfileTrigger')?.addEventListener('click', ()=>{ setSidebar(false); openProfile(); });
 $('#darkBtn').addEventListener('click', ()=>{
   document.body.classList.toggle('dark');
   const d = document.body.classList.contains('dark');
@@ -911,7 +930,7 @@ $('#darkBtn').addEventListener('click', ()=>{
 
 /* ================= INIT ================= */
 (async function init(){
-  ['meBtn','sideAv','compAv','pmAv','drawerAv'].forEach(id=>{ const el=document.getElementById(id); if(el) el.src=IMG.me; });
+  await loadCurrentProfile();
   $('#distSel').innerHTML = DISTS.map(d=>'<option>'+d+'</option>').join('');
   $('#sellDist').innerHTML = DISTS.slice(1).map(d=>'<option>'+d+'</option>').join('');
   $('#sellCat').innerHTML = CATS.slice(1).map(c=>'<option>'+c+'</option>').join('');

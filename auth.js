@@ -5,7 +5,13 @@ const { query, run } = require('./database');
 const { normalizeRole } = require('./rbac');
 
 const hashToken = token => crypto.createHash('sha256').update(token).digest('hex');
-const cookieToken = header => String(header || '').split(';').map(part => part.trim()).find(part => part.startsWith('sultra_admin_session='))?.slice('sultra_admin_session='.length) || '';
+const cookieToken = header => String(header || '').split(';').map(part => part.trim()).map(part => part.split('=').map(value => value.trim())).find(([name]) => name === 'sultra_session' || name === 'sultra_admin_session')?.[1] || '';
+const getSessionToken = req => {
+  const authorization = String(req.get('authorization') || '');
+  const match = authorization.match(/^Bearer\s+([A-Za-z0-9_-]{40,})$/i);
+  const token = match?.[1] || cookieToken(req.get('cookie'));
+  return /^[A-Za-z0-9_-]{40,}$/.test(token) ? token : '';
+};
 const userSelect = `SELECT u.id, u.name, u.phone, u.email, s.created_at AS session_created_at, s.expires_at AS session_expires_at, COALESCE(ara.role, u.role) AS role, u.role AS legacy_role,
                           u.district, u.phone_verified, u.email_verified, u.verification_status
                    FROM sessions s JOIN users u ON u.id = s.user_id
@@ -18,10 +24,8 @@ const legacyUserSelect = `SELECT u.id, u.name, u.phone, u.email, s.created_at AS
 
 async function authenticate(req, _res, next) {
   try {
-    const header = req.get('authorization') || '';
-    const match = header.match(/^Bearer\s+([A-Za-z0-9_-]{40,})$/);
-    const token = match?.[1] || cookieToken(req.get('cookie'));
-    if (!token || !/^[A-Za-z0-9_-]{40,}$/.test(token)) return next();
+    const token = getSessionToken(req);
+    if (!token) return next();
 
     const params = [hashToken(token), Date.now()];
     let users;
@@ -64,4 +68,4 @@ async function revokeToken(token) {
   await run('DELETE FROM sessions WHERE token_hash = ?', [hashToken(token)]);
 }
 
-module.exports = { authenticate, requireAuth, requireRole, hashToken, revokeToken };
+module.exports = { authenticate, requireAuth, requireRole, hashToken, revokeToken, getSessionToken };

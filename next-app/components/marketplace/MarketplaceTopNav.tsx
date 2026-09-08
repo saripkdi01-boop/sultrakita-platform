@@ -3,7 +3,7 @@
 import { Bell, Home, Menu, PlaySquare, Store, Users } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useProfileStore } from '@/store/profile';
+import { useSessionProfile } from '@/hooks/useSessionProfile';
 
 const items = [
   { label: 'Beranda', href: '/beranda', Icon: Home },
@@ -15,8 +15,9 @@ const items = [
 
 export function MarketplaceTopNav({ onMenu }: { onMenu?: () => void }) {
   const pathname = usePathname();
-  const profile = useProfileStore((state) => state.profile);
-  const initials = profile.full_name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'SU';
+  const { user, profile } = useSessionProfile();
+  const displayName = profile?.full_name || user?.email?.split('@')[0] || 'Warga SultraKita';
+  const initials = displayName.split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase();
   return (
     <nav className="marketplace-topnav" aria-label="Navigasi marketplace">
       <div className="marketplace-topnav-inner">
@@ -28,7 +29,7 @@ export function MarketplaceTopNav({ onMenu }: { onMenu?: () => void }) {
             return <Link key={label} href={href} className={`marketplace-topnav-link ${active ? 'active' : ''}`} aria-label={label} aria-current={active ? 'page' : undefined}><Icon size={20} /><span>{label}</span></Link>;
           })}
         </div>
-        <Link href="/marketplace/profile" className="marketplace-profile-chip" aria-label={`Profil Marketplace ${profile.full_name}`}><span className="marketplace-avatar">{profile.avatar_url ? <img src={profile.avatar_url} alt="" /> : initials}</span><span className="marketplace-profile-name">Profil</span></Link>
+        <Link href="/marketplace/profile" className="marketplace-profile-chip" aria-label={`Profil Marketplace ${displayName}`}><span className="marketplace-avatar">{profile?.avatar_url ? <img src={profile.avatar_url} alt="" /> : initials}</span><span className="marketplace-profile-name">{displayName}</span></Link>
       </div>
     </nav>
   );
