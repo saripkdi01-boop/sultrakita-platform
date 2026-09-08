@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
   if ((rawMinPrice !== null && (!Number.isFinite(minPrice) || minPrice < 0)) || (rawMaxPrice !== null && (!Number.isFinite(maxPrice) || maxPrice < 0))) return NextResponse.json({ ok: false, error: 'invalid_price_filter' }, { status: 400 });
   if (rawMinPrice !== null && rawMaxPrice !== null && minPrice > maxPrice) return NextResponse.json({ ok: false, error: 'invalid_price_range' }, { status: 400 });
   try {
-    let query = (getListingsClient() || await getServerSupabase()).from('listings').select('id,title,description,price,image_url,district,city,condition,is_featured,is_demo,created_at').in('status', ['published', 'active']).or('is_demo.is.null,is_demo.eq.false').order('is_featured', { ascending: false }).order('created_at', { ascending: false }).limit(limit);
+    let query = (getListingsClient() || await getServerSupabase()).from('listings').select('id,title,description,price,image_url,district,city,condition,is_featured,is_demo,provenance,created_at').in('status', ['published', 'active']).or('is_demo.is.null,is_demo.eq.false').order('is_featured', { ascending: false }).order('created_at', { ascending: false }).limit(limit);
     if (queryText) query = query.or(`title.ilike.%${queryText}%,description.ilike.%${queryText}%`);
     if (district && district !== 'Semua distrik') query = query.eq('district', district);
     // Category labels are resolved by the marketplace UI; UUID category filters can be added here when supplied.
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     if (Number.isFinite(maxPrice) && maxPrice > 0) query = query.lte('price', maxPrice);
     const { data, error } = await query;
     if (error) throw error;
-    const items = (data || []).map((item) => ({ ...item, images: item.image_url ? [item.image_url] : [], thumbnail_url: item.image_url || null }));
+    const items = (data || []).filter((item) => item.is_demo !== true && item.provenance !== 'curated_demo' && !String(item.title || '').startsWith('DEMO-SEED-')).map((item) => ({ ...item, images: item.image_url ? [item.image_url] : [], thumbnail_url: item.image_url || null }));
     return NextResponse.json({ ok: true, data: items, filters: { q: queryText || '', district: district || '', category: category || '' } });
   } catch (error) {
     if (process.env.ALLOW_DEMO_DATA === 'true' && process.env.NODE_ENV !== 'production') return NextResponse.json({ ok: true, data: fallbackListings, source: 'demo', warning: 'Mode demo lokal aktif.' });
