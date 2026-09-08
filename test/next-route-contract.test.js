@@ -8,7 +8,7 @@ const path = require('node:path');
 const feedRoute = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'app', 'api', 'feed', 'route.ts'), 'utf8');
 const listingsRoute = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'app', 'api', 'listings', 'route.ts'), 'utf8');
 const postsAction = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'lib', 'actions', 'posts.ts'), 'utf8');
-const composer = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'components', 'beranda', 'CreatePostComposer.tsx'), 'utf8');
+const composer = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'components', 'beranda', 'CreatePostModal.tsx'), 'utf8');
 
 test('feed route selects only profile columns that exist in Supabase', () => {
   assert.match(feedRoute, /profiles\(display_name,avatar_url\)/);
@@ -42,7 +42,9 @@ test('Create Post binds identity server-side and supports safe idempotent publis
   assert.match(postsAction, /idempotency_key/);
   assert.match(postsAction, /MAX_CONTENT = 2000/);
   assert.match(postsAction, /status: 'published'/);
-  assert.match(composer, /Simpan draft/);
-  assert.match(composer, /Bagikan postingan/);
+  assert.match(composer, /Simpan Draft/);
+  assert.match(composer, /Bagikan/);
   assert.match(composer, /localStorage/);
+  assert.match(composer, /isInstagramActive/);
+  assert.match(composer, /Musik/);
 });

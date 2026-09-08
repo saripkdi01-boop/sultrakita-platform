@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Check, LoaderCircle, MoreHorizontal, RefreshCw } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { CreatePostInput } from '@/components/beranda/CreatePostInput';
-import { CreatePostComposer } from '@/components/beranda/CreatePostComposer';
+import { CreatePostModal } from '@/components/beranda/CreatePostModal';
 import { FeedPost } from '@/components/beranda/FeedPost';
 import { RightSidebar } from '@/components/beranda/RightSidebar';
 import { StoriesSection } from '@/components/beranda/StoriesSection';
@@ -45,5 +45,5 @@ export default function BerandaPage() {
     {loading && <div className="feed-loading" aria-live="polite"><LoaderCircle size={18} className="spin"/> Memuat cerita warga...</div>}
     <div ref={sentinelRef} className="feed-sentinel" aria-hidden="true" />
     {!hasNextPage && items.length > 0 && !loading && <p className="feed-end">Anda sudah melihat semua cerita terbaru.</p>}
-  </div><RightSidebar/></main><CreatePostComposer open={composerOpen} initialType={composerType} onClose={() => setComposerOpen(false)} onCreated={(message) => { setNotice(message); reload(); }}/></AppLayout>;
+  </div><RightSidebar/></main><CreatePostModal open={composerOpen} initialType={composerType} onClose={() => setComposerOpen(false)} onCreated={(message) => { setNotice(message); reload(); }}/></AppLayout>;
 }
