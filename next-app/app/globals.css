@@ -189,3 +189,333 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 
 /* Ultra-narrow shared header fit */
 @media (max-width:380px){.top-header{padding-inline:8px;gap:4px}.brand-group{gap:4px}.header-actions{gap:0}.header-actions .create-fab{display:none}.header-main{gap:2px}.header-search-toggle{min-width:40px;width:40px}}
+
+
+/* ================================================================
+   SUKI THEME CONTRACT v1
+   One semantic palette for light/dark surfaces, text, borders and states.
+   Keep component CSS on these tokens; do not hard-code page background colors.
+   ================================================================ */
+:root,
+html[data-theme='light'] {
+  color-scheme: light;
+  --theme-bg: #f7faf8;
+  --theme-surface: #ffffff;
+  --theme-surface-raised: #ffffff;
+  --theme-surface-muted: #eef5f1;
+  --theme-surface-soft: #f3f8f5;
+  --theme-text: #16352d;
+  --theme-text-strong: #0f2922;
+  --theme-text-muted: #60736d;
+  --theme-text-subtle: #84958f;
+  --theme-border: #d8e6df;
+  --theme-border-strong: #bfd3ca;
+  --theme-primary: #087f70;
+  --theme-primary-hover: #066b5f;
+  --theme-primary-soft: #e3f3ee;
+  --theme-focus: rgba(8, 127, 112, .34);
+  --theme-danger: #c2413b;
+  --theme-warning: #a16207;
+  --theme-success: #16805a;
+  --theme-overlay: rgba(12, 31, 25, .52);
+  --theme-shadow-sm: 0 1px 3px rgba(20, 55, 45, .06), 0 4px 14px rgba(20, 55, 45, .04);
+  --theme-shadow-md: 0 12px 30px rgba(20, 55, 45, .09);
+  --theme-shadow-lg: 0 24px 60px rgba(20, 55, 45, .15);
+}
+
+html[data-theme='dark'] {
+  color-scheme: dark;
+  --theme-bg: #0d1d19;
+  --theme-surface: #132a24;
+  --theme-surface-raised: #19352d;
+  --theme-surface-muted: #1c3b32;
+  --theme-surface-soft: #173229;
+  --theme-text: #e8f3ee;
+  --theme-text-strong: #f4faf7;
+  --theme-text-muted: #aec3ba;
+  --theme-text-subtle: #89a59a;
+  --theme-border: #2d5045;
+  --theme-border-strong: #41695a;
+  --theme-primary: #61d1c0;
+  --theme-primary-hover: #82dfd0;
+  --theme-primary-soft: #1d4b40;
+  --theme-focus: rgba(97, 209, 192, .42);
+  --theme-danger: #ff8e87;
+  --theme-warning: #f1c56e;
+  --theme-success: #65d2a4;
+  --theme-overlay: rgba(2, 10, 8, .72);
+  --theme-shadow-sm: 0 1px 3px rgba(0, 0, 0, .24), 0 4px 14px rgba(0, 0, 0, .12);
+  --theme-shadow-md: 0 14px 34px rgba(0, 0, 0, .25);
+  --theme-shadow-lg: 0 26px 70px rgba(0, 0, 0, .38);
+}
+
+html,
+body {
+  background: var(--theme-bg);
+  color: var(--theme-text);
+  transition: background-color 180ms ease, color 180ms ease;
+}
+
+body,
+button,
+input,
+textarea,
+select {
+  color: var(--theme-text);
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 3px solid var(--theme-focus);
+  outline-offset: 2px;
+}
+
+.top-header,
+.desktop-sidebar,
+.header-search,
+.search-card,
+.property-card,
+.map-card,
+.collapse-toggle,
+.drawer-preference-card,
+.profile-hub,
+.marketplace-card,
+.section-card,
+.card,
+.composer {
+  background: var(--theme-surface);
+  border-color: var(--theme-border);
+  color: var(--theme-text);
+  box-shadow: var(--theme-shadow-sm);
+}
+
+.top-header {
+  background: color-mix(in srgb, var(--theme-surface) 92%, transparent);
+  border-bottom-color: var(--theme-border);
+}
+
+.desktop-sidebar {
+  background: var(--theme-surface);
+  border-right-color: var(--theme-border);
+}
+
+.brand,
+.profile-pill,
+.header-icon,
+.mobile-menu,
+.menu-item,
+.property-body h3,
+.section-heading h2,
+.search-field input,
+.search-field select,
+.search-field > div,
+.search-card,
+.map-card,
+.property-card {
+  color: var(--theme-text);
+}
+
+.brand small,
+.brand-accent,
+.text-link,
+.eyebrow,
+.price-row strong,
+.trust-row,
+.menu-item.active,
+.header-icon:hover {
+  color: var(--theme-primary);
+}
+
+.header-search,
+.search-field > div,
+.search-field input,
+.search-field select,
+.quick-filters button,
+.map-cta,
+.segment,
+.drawer-preference-card,
+.drawer-language-panel {
+  background: var(--theme-surface-muted);
+  border-color: var(--theme-border);
+  color: var(--theme-text);
+}
+
+.header-search input,
+.search-field input,
+.search-field select {
+  background: transparent;
+  color: var(--theme-text);
+}
+
+.header-search input::placeholder,
+.search-field input::placeholder,
+textarea::placeholder {
+  color: var(--theme-text-subtle);
+}
+
+.top-nav a,
+.menu-item,
+.profile-mini small,
+.menu-title,
+.search-field span,
+.quick-filters,
+.price-row span,
+.location,
+.property-specs,
+.map-sync,
+.side-login,
+.muted,
+.text-muted {
+  color: var(--theme-text-muted);
+}
+
+.top-nav a:hover,
+.top-nav a.active,
+.menu-item:hover,
+.menu-item.active,
+.header-icon:hover,
+.quick-filters button:hover,
+.map-cta:hover,
+.segment:not(.active):hover {
+  background: var(--theme-primary-soft);
+  color: var(--theme-primary);
+}
+
+.search-card,
+.property-card,
+.map-card,
+.section-card,
+.profile-mini,
+.side-login,
+.property-specs,
+.trust-row,
+.search-field > div,
+.search-field input,
+.search-field select {
+  border-color: var(--theme-border);
+}
+
+.search-card,
+.property-card,
+.map-card {
+  box-shadow: var(--theme-shadow-sm);
+}
+
+.property-card:hover,
+.search-card:focus-within,
+.map-card:focus-within {
+  box-shadow: var(--theme-shadow-md);
+}
+
+.avatar {
+  background: var(--theme-primary-soft);
+  color: var(--theme-primary);
+}
+
+.primary-btn,
+.segment.active {
+  background: var(--theme-primary);
+  color: #fff;
+}
+
+.primary-btn:hover {
+  background: var(--theme-primary-hover);
+}
+
+.map-cta {
+  color: var(--theme-primary);
+}
+
+.listing-status,
+.heart-btn {
+  background: color-mix(in srgb, var(--theme-surface) 92%, transparent);
+  color: var(--theme-text);
+  border-color: var(--theme-border);
+}
+
+.property-specs,
+.trust-row {
+  border-top-color: var(--theme-border);
+}
+
+.property-specs b,
+.theme-switch {
+  color: var(--theme-text-strong);
+}
+
+.mobile-drawer,
+.mobile-drawer-layer .drawer-head,
+.mobile-drawer-layer .drawer-profile,
+.mobile-drawer-layer .drawer-preference-card {
+  background: var(--theme-surface);
+  color: var(--theme-text);
+  border-color: var(--theme-border);
+}
+
+.drawer-overlay,
+.modal-overlay,
+.dialog-overlay {
+  background: var(--theme-overlay);
+}
+
+input,
+textarea,
+select {
+  accent-color: var(--theme-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html,
+  body {
+    transition: none;
+  }
+}
+
+
+/* Compatibility bridge: legacy .dark selectors must resolve to the same contract. */
+html[data-theme='dark'] body,
+html[data-theme='dark'] {
+  background: var(--theme-bg);
+  color: var(--theme-text);
+}
+
+html[data-theme='dark'] .top-header,
+html[data-theme='dark'] .desktop-sidebar,
+html[data-theme='dark'] .header-search,
+html[data-theme='dark'] .search-card,
+html[data-theme='dark'] .property-card,
+html[data-theme='dark'] .map-card {
+  background: var(--theme-surface);
+  border-color: var(--theme-border);
+  color: var(--theme-text);
+}
+
+html[data-theme='dark'] .header-search input,
+html[data-theme='dark'] .search-field input,
+html[data-theme='dark'] .search-field select,
+html[data-theme='dark'] .quick-filters button {
+  background: var(--theme-surface-muted);
+  color: var(--theme-text);
+  border-color: var(--theme-border);
+}
+
+html[data-theme='dark'] .menu-item,
+html[data-theme='dark'] .profile-mini strong,
+html[data-theme='dark'] .property-body h3,
+html[data-theme='dark'] .property-specs b {
+  color: var(--theme-text);
+}
+
+html[data-theme='dark'] .menu-item:hover,
+html[data-theme='dark'] .menu-item.active {
+  background: var(--theme-primary-soft);
+  color: var(--theme-primary);
+}
+
+html[data-theme='dark'] .property-specs,
+html[data-theme='dark'] .trust-row {
+  border-color: var(--theme-border);
+}
