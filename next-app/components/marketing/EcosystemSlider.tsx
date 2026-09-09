@@ -61,24 +61,24 @@ export function EcosystemSlider({ appSlug, banners: initialBanners = [] }: Props
   function move(direction: number) { if (banners.length) selectSlide((active + direction + banners.length) % banners.length); }
   function togglePlaying() { setPlaying((value) => !value); if (banners[active]) void recordEcosystemBannerEvent({ bannerId: banners[active].id, appSlug, eventType: 'banner_pause' }); }
 
-  if (!loaded) return <section aria-label={`${appLabels[appSlug]} sedang memuat banner`} className="mb-6 min-h-[23rem] animate-pulse rounded-[2rem] bg-slate-200 sm:min-h-[25rem]" />;
+  if (!loaded) return <section aria-label={`${appLabels[appSlug]} sedang memuat banner`} className="mb-5 min-h-[15rem] animate-pulse rounded-2xl bg-slate-200 sm:min-h-[18rem]" />;
   if (!banners.length) return null;
 
   return (
-    <section className="relative isolate mb-6 overflow-hidden rounded-[2rem] bg-slate-950 shadow-xl" aria-label={`Promosi ${appLabels[appSlug]}`} aria-roledescription="carousel" onMouseEnter={() => setPlaying(false)} onMouseLeave={() => setPlaying(true)} onFocusCapture={() => setPlaying(false)}>
-      <div className="relative min-h-[23rem] overflow-hidden sm:min-h-[25rem]">
+    <section className="relative isolate mb-5 overflow-hidden rounded-2xl bg-slate-950 shadow-lg" aria-label={`Promosi ${appLabels[appSlug]}`} aria-roledescription="carousel" onMouseEnter={() => setPlaying(false)} onMouseLeave={() => setPlaying(true)} onFocusCapture={() => setPlaying(false)}>
+      <div className="relative min-h-[15rem] overflow-hidden sm:min-h-[18rem]">
         {banners.map((banner, index) => <div key={banner.id} role="group" aria-roledescription="slide" aria-label={`${index + 1} dari ${banners.length}: ${banner.title}`} aria-hidden={index !== active} className={`absolute inset-0 transition-opacity duration-500 motion-reduce:transition-none ${index === active ? 'opacity-100' : 'pointer-events-none opacity-0'}`}>
           <Image src={banner.image_url} alt={banner.title} fill priority={index === 0} sizes="(max-width: 768px) calc(100vw - 28px), 1200px" className="object-cover" />
           <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/55 to-slate-950/15" />
-          <div className="relative z-10 flex min-h-[23rem] max-w-2xl flex-col justify-center p-6 text-white sm:min-h-[25rem] sm:p-10">
-            <span className={`mb-4 inline-flex w-fit rounded-full px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[.16em] ${tone.badge}`}>{banner.eyebrow}</span>
-            <h2 className="max-w-xl text-3xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl">{banner.title}</h2>
-            {banner.description && <p className="mt-4 max-w-lg text-sm leading-6 text-white/80 sm:text-base">{banner.description}</p>}
-            <Link href={banner.cta_href} onClick={() => void recordEcosystemBannerEvent({ bannerId: banner.id, appSlug, eventType: 'banner_cta_click' })} className={`mt-6 inline-flex min-h-11 w-fit items-center gap-2 rounded-xl px-5 text-sm font-extrabold transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white motion-reduce:transition-none ${tone.button}`}>{banner.cta_label}<ArrowRight size={16} /></Link>
+          <div className="relative z-10 flex min-h-[15rem] max-w-2xl flex-col justify-center p-5 text-white sm:min-h-[18rem] sm:p-7">
+            <span className={`mb-2 inline-flex w-fit rounded-full px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[.14em] ${tone.badge}`}>{banner.eyebrow}</span>
+            <h2 className="max-w-xl text-2xl font-extrabold leading-[1.08] tracking-tight sm:text-4xl">{banner.title}</h2>
+            {banner.description && <p className="mt-2 max-w-lg text-xs leading-5 text-white/80 sm:text-sm">{banner.description}</p>}
+            <Link href={banner.cta_href} onClick={() => void recordEcosystemBannerEvent({ bannerId: banner.id, appSlug, eventType: 'banner_cta_click' })} className={`mt-4 inline-flex min-h-10 w-fit items-center gap-2 rounded-lg px-4 text-xs font-extrabold transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white motion-reduce:transition-none ${tone.button}`}>{banner.cta_label}<ArrowRight size={14} /></Link>
           </div>
         </div>)}
       </div>
-      <div className="absolute bottom-4 left-6 right-6 z-20 flex items-center justify-between gap-3 sm:left-10 sm:right-10">
+      <div className="absolute bottom-3 left-5 right-5 z-20 flex items-center justify-between gap-3 sm:left-7 sm:right-7">
         <div className="flex items-center gap-2" role="group" aria-label="Pilih slide">{banners.map((banner, index) => <button key={banner.id} type="button" onClick={() => selectSlide(index)} aria-label={`Tampilkan slide ${index + 1}`} aria-current={index === active} className={`h-2 rounded-full transition-all motion-reduce:transition-none ${index === active ? `w-8 ${tone.dot}` : 'w-2 bg-white/60 hover:bg-white'}`} />)}</div>
         <div className="flex items-center gap-2"><button type="button" onClick={() => move(-1)} aria-label="Slide sebelumnya" className="grid h-9 w-9 place-items-center rounded-full bg-white/15 text-white backdrop-blur transition hover:bg-white/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"><ArrowLeft size={16} /></button><button type="button" onClick={() => move(1)} aria-label="Slide berikutnya" className="grid h-9 w-9 place-items-center rounded-full bg-white/15 text-white backdrop-blur transition hover:bg-white/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"><ArrowRight size={16} /></button><button type="button" onClick={togglePlaying} aria-label={playing ? 'Jeda rotasi banner' : 'Mulai rotasi banner'} className="grid h-9 w-9 place-items-center rounded-full bg-white/15 text-white backdrop-blur transition hover:bg-white/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white">{playing ? <Pause size={15} /> : <Play size={15} />}</button></div>
       </div>

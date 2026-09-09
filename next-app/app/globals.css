@@ -186,3 +186,6 @@ html,body{max-width:100%;overflow-x:hidden}.platform-shell{min-width:0;width:100
 .marketplace-filter-button{align-items:center;justify-content:center}
 button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid rgba(161,98,7,.42);outline-offset:2px}
 @media (max-width:700px){.marketplace-filter-button{display:flex}.marketplace-districts{overflow-x:auto;scrollbar-width:none}.marketplace-districts::-webkit-scrollbar{display:none}}
+
+/* Ultra-narrow shared header fit */
+@media (max-width:380px){.top-header{padding-inline:8px;gap:4px}.brand-group{gap:4px}.header-actions{gap:0}.header-actions .create-fab{display:none}.header-main{gap:2px}.header-search-toggle{min-width:40px;width:40px}}

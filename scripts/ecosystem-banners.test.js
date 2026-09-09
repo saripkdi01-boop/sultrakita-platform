@@ -38,9 +38,10 @@ test('migration limits apps, schedules public visibility, and protects writes wi
   assert.match(migration, /ecosystem_banner_events/);
 });
 
-test('server action has five-banner limit and fallback', () => {
+test('server action has five-banner limit and no static banner fallback', () => {
   assert.match(actions, /limit\(5\)/);
-  assert.match(actions, /fallbackBanners/);
+  assert.doesNotMatch(actions, /fallbackBanners/);
+  assert.match(actions, /banners: \[\] as EcosystemBanner\[\]/);
   assert.match(actions, /requireAdmin/);
 });
 
