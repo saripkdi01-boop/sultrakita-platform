@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { ArrowUp, Image as ImageIcon, MapPin, Menu, Smile, Tag, Users, Video, X } from 'lucide-react';
 import { createPost } from '@/lib/actions/posts';
+import { useSessionProfile } from '@/hooks/useSessionProfile';
 import { MediaActionIcon } from './MediaActionIcon';
 import { TagToolRow } from './TagToolRow';
 
@@ -20,6 +21,7 @@ const MAX_CONTENT = 2000;
 const draftKey = 'suki-create-post-draft';
 
 export function CreatePostModal({ open, initialType = 'post', onClose, onCreated }: CreatePostModalProps) {
+  const { user, profile } = useSessionProfile();
   const [textContent, setTextContent] = useState('');
   const [charCount, setCharCount] = useState(0);
   const [privacy, setPrivacy] = useState<Privacy>('public');
@@ -29,6 +31,9 @@ export function CreatePostModal({ open, initialType = 'post', onClose, onCreated
   const [postType, setPostType] = useState<PostType>(initialType);
   const [notice, setNotice] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const displayName = profile?.full_name || user?.email || 'Pengguna SultraKita';
+  const avatarUrl = profile?.avatar_url;
+  const initials = displayName.split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase();
 
   useEffect(() => {
     if (!open) return;
@@ -103,8 +108,8 @@ export function CreatePostModal({ open, initialType = 'post', onClose, onCreated
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
         <div className="px-4 pt-4">
           <div className="flex items-center gap-3">
-            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-teal-700 text-base font-bold text-white">WS</span>
-            <div className="min-w-0 flex-1"><p className="truncate text-base font-bold">Wan Shofir</p><p className="text-xs text-slate-500">Posting sebagai Anda</p></div>
+            <span className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-full bg-teal-700 text-base font-bold text-white">{avatarUrl ? <img src={avatarUrl} alt={displayName} className="h-full w-full object-cover" /> : initials}</span>
+            <div className="min-w-0 flex-1"><p className="truncate text-base font-bold">{displayName}</p><p className="text-xs text-slate-500">Posting sebagai Anda</p></div>
             <select value={privacy} onChange={(event) => setPrivacy(event.target.value as Privacy)} className="max-w-[120px] rounded-full border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100" aria-label="Privasi postingan"><option value="public">Publik ▾</option><option value="followers">Pengikut ▾</option></select>
           </div>
 
