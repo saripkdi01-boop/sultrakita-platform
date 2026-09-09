@@ -1,5 +1,6 @@
 'use client';
-import { useEffect, useState } from 'react';
+
+import { useCallback, useEffect, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase/client';
 
@@ -10,25 +11,45 @@ export function useSessionProfile() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [notificationCount, setNotificationCount] = useState(0);
 
-  useEffect(() => {
-    let active = true;
-    const client = supabase;
-    if (!client) return () => { active = false; };
-    async function hydrate(nextUser: User | null) {
-      if (!active) return;
-      if (!client) return;
-      setUser(nextUser);
-      if (!nextUser) { setProfile(null); setNotificationCount(0); return; }
-      const [{ data: nextProfile }, { count }] = await Promise.all([
-        client.from('profiles').select('id,full_name,avatar_url,role,headline').eq('id', nextUser.id).maybeSingle(),
-        client.from('notifications').select('id', { count: 'exact', head: true }).eq('user_id', nextUser.id).eq('is_read', false),
-      ]);
-      if (active) { setProfile(nextProfile as Profile | null); setNotificationCount(count || 0); }
+  const hydrate = useCallback(async (nextUser: User | null) => {
+    setUser(nextUser);
+    if (!nextUser || !supabase) {
+      setProfile(null);
+      setNotificationCount(0);
+      return;
     }
-    client.auth.getSession().then(({ data }) => hydrate(data.session?.user ?? null));
-    const { data: listener } = client.auth.onAuthStateChange((_event, session) => { void hydrate(session?.user ?? null); });
-    return () => { active = false; listener.subscription.unsubscribe(); };
+    const [{ data: nextProfile }, { count }] = await Promise.all([
+      supabase.from('profiles').select('id,full_name,avatar_url,role,headline').eq('id', nextUser.id).maybeSingle(),
+      supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('user_id', nextUser.id).eq('is_read', false),
+    ]);
+    setProfile(nextProfile as Profile | null);
+    setNotificationCount(count || 0);
   }, []);
 
-  return { user, profile, notificationCount };
+  const refresh = useCallback(async () => {
+    if (!supabase) return;
+    const { data } = await supabase.auth.getSession();
+    await hydrate(data.session?.user ?? null);
+  }, [hydrate]);
+
+  useEffect(() => {
+    if (!supabase) return;
+    const client = supabase;
+    let active = true;
+    const load = async () => {
+      const { data } = await client.auth.getSession();
+      if (active) await hydrate(data.session?.user ?? null);
+    };
+    void load();
+    const { data: listener } = client.auth.onAuthStateChange((_event, session) => { void hydrate(session?.user ?? null); });
+    const onProfileUpdated = () => { void refresh(); };
+    window.addEventListener('sultra-profile-updated', onProfileUpdated);
+    return () => {
+      active = false;
+      listener.subscription.unsubscribe();
+      window.removeEventListener('sultra-profile-updated', onProfileUpdated);
+    };
+  }, [hydrate, refresh]);
+
+  return { user, profile, notificationCount, refresh };
 }

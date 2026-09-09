@@ -13,7 +13,7 @@ const collapsedByDefault = new Set(['Bantuan dan Dukungan', 'Pengaturan dan Priv
 
 export function SidebarDesktop() {
   const { collapsed, toggleCollapsed } = useUIStore();
-  const { user, profile } = useSessionProfile();
+  const { user, profile, refresh } = useSessionProfile();
   const { theme, toggleTheme, language, setLanguage } = usePreferences();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [languageOpen, setLanguageOpen] = useState(false);
@@ -26,7 +26,7 @@ export function SidebarDesktop() {
   return <aside className={`desktop-sidebar ${collapsed ? 'collapsed' : ''}`}>
     <div className="sidebar-inner">
       <div className="profile-mini">{profile?.avatar_url ? <img className="avatar large" src={profile.avatar_url} alt={displayName} /> : <span className="avatar large">{initials}</span>}<div><strong>{displayName}</strong><small>{headline}</small></div><span className="profile-status"><Check size={12} /></span></div>
-      {!collapsed && <div className="profile-actions"><button aria-label="Segarkan profil"><RefreshCw size={14} /></button><span>{labels.active} di Sultra</span></div>}
+      {!collapsed && <div className="profile-actions"><button aria-label="Segarkan profil" onClick={() => { void refresh(); }}><RefreshCw size={14} /></button><span>{labels.active} di Sultra</span></div>}
       {menuSections.map((section) => { const isExpandable = collapsedByDefault.has(section.title); const isOpen = expanded[section.title] ?? !isExpandable; return <div className="menu-section" key={section.title}>{isExpandable ? <button className="menu-title menu-title-button" onClick={() => setExpanded((current) => ({ ...current, [section.title]: !isOpen }))}><span>{section.title}</span>{!collapsed && <ChevronDown className={isOpen ? 'rotate-180' : ''} size={14} />}</button> : <span className="menu-title">{section.title}</span>}{(!isExpandable || isOpen) && section.items.map((item) => <MenuItem key={item.label} item={item} label={translatedLabel(item.label)} onClick={preferenceClick(item.label)} />)}</div>; })}
       {!collapsed && languageOpen && <div className="sidebar-language-panel"><label><Languages size={14} /> {labels.chooseLanguage}</label><select value={language} onChange={(event) => setLanguage(event.target.value as typeof language)} aria-label={labels.chooseLanguage}>{LANGUAGES.map(([code, name]) => <option key={code} value={code}>{name}</option>)}</select></div>}
       {!collapsed && <div className="sidebar-preference-row"><button onClick={toggleTheme} aria-label={theme === 'dark' ? labels.lightMode : labels.darkMode}><span className="preference-icon">{theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}</span><span>{theme === 'dark' ? labels.lightMode : labels.darkMode}</span><i className={`theme-switch ${theme}`} /></button><button onClick={() => setLanguageOpen((open) => !open)} aria-label={labels.language}><Languages size={14} /><span>{labels.language}</span><b>{language.toUpperCase()}</b></button></div>}
