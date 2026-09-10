@@ -519,3 +519,266 @@ html[data-theme='dark'] .property-specs,
 html[data-theme='dark'] .trust-row {
   border-color: var(--theme-border);
 }
+
+
+/* Profile setup overflow hardening v1.
+   Keep the profile workflow intact while making every surface viewport-safe. */
+.profile-hub-anchor,
+.profile-hub-anchor * {
+  min-width: 0;
+}
+
+.profile-menu-panel {
+  width: min(310px, calc(100vw - 20px));
+  max-width: calc(100vw - 20px);
+  overflow: hidden;
+}
+
+.profile-overlay {
+  overflow: hidden;
+  overscroll-behavior: contain;
+  padding: clamp(10px, 3vw, 24px);
+}
+
+.profile-dialog {
+  width: min(650px, calc(100vw - 20px));
+  max-width: 100%;
+  max-height: min(92dvh, 900px);
+  min-width: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  overflow-wrap: anywhere;
+}
+
+.profile-dialog > header,
+.profile-dialog > footer,
+.setup-content,
+.settings-detail,
+.settings-nav {
+  min-width: 0;
+}
+
+.profile-dialog > header {
+  gap: 14px;
+}
+
+.profile-dialog > header > div {
+  min-width: 0;
+}
+
+.profile-dialog > header h2,
+.profile-dialog > header small,
+.setup-content,
+.settings-detail,
+.setting-empty,
+.muted-copy {
+  overflow-wrap: anywhere;
+}
+
+.setup-content,
+.settings-detail {
+  overflow: hidden;
+}
+
+.setup-content input,
+.setup-content select,
+.setup-content textarea,
+.setting-form input,
+.setting-form textarea,
+.setting-detail select {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.profile-avatar-editor {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.profile-avatar-editor > div:last-child {
+  min-width: 0;
+}
+
+.profile-avatar-editor small,
+.profile-form-message,
+.profile-upload-button {
+  overflow-wrap: anywhere;
+}
+
+.profile-avatar-editor img,
+.profile-avatar-preview {
+  max-width: 100%;
+}
+
+.profile-dialog footer {
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.profile-dialog footer > div {
+  min-width: 0;
+  max-width: 100%;
+  flex-wrap: wrap;
+}
+
+.profile-dialog footer button,
+.profile-dialog footer a {
+  max-width: 100%;
+  white-space: normal;
+}
+
+.interest-grid,
+.role-grid {
+  min-width: 0;
+}
+
+.interest-grid button,
+.role-grid button {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.settings-layout {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.settings-nav button,
+.setting-row {
+  min-width: 0;
+}
+
+.settings-nav button span,
+.setting-row > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.setting-row small {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 780px) {
+  .profile-menu-panel {
+    top: max(62px, env(safe-area-inset-top));
+    left: max(10px, env(safe-area-inset-left));
+    right: max(10px, env(safe-area-inset-right));
+    width: auto;
+    max-width: none;
+  }
+
+  .profile-overlay {
+    align-items: flex-end;
+    justify-items: stretch;
+    padding: 0;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .profile-dialog,
+  .settings-dialog {
+    width: 100%;
+    max-width: 100%;
+    max-height: calc(100dvh - env(safe-area-inset-top));
+    border-radius: 20px 20px 0 0;
+  }
+
+  .profile-dialog > header {
+    padding: 16px;
+  }
+
+  .setup-content,
+  .settings-detail {
+    padding: 16px;
+  }
+
+  .profile-dialog footer {
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  }
+
+  .profile-dialog footer > div {
+    width: 100%;
+  }
+
+  .profile-dialog footer > div button,
+  .profile-dialog footer > div a {
+    flex: 1 1 0;
+  }
+
+  .settings-layout {
+    display: block;
+    min-height: 0;
+  }
+
+  .settings-nav.mobile-hidden,
+  .settings-detail.mobile-hidden {
+    display: none;
+  }
+
+  .settings-detail {
+    width: 100%;
+  }
+
+  .setting-row {
+    align-items: flex-start;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 420px) {
+  .profile-dialog > header h2 {
+    font-size: 19px;
+  }
+
+  .profile-avatar-editor {
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .profile-avatar-preview {
+    width: 48px;
+    height: 48px;
+    flex: 0 0 48px;
+  }
+
+  .setup-content,
+  .settings-detail {
+    padding: 14px;
+  }
+
+  .interest-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .role-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 340px) {
+  .profile-dialog > header {
+    gap: 8px;
+    padding-inline: 12px;
+  }
+
+  .profile-dialog > header h2 {
+    font-size: 17px;
+  }
+
+  .setup-content,
+  .settings-detail {
+    padding-inline: 12px;
+  }
+
+  .profile-dialog footer {
+    padding-inline: 12px;
+  }
+
+  .profile-dialog footer > div button,
+  .profile-dialog footer > div a {
+    flex-basis: 100%;
+  }
+}

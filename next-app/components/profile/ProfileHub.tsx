@@ -1,6 +1,7 @@
 'use client';
 
-import { FormEvent, useEffect, useRef, useState } from 'react';
+import { FormEvent, ReactNode, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Activity, Bell, Bookmark, ChevronLeft, ChevronRight, CircleHelp, Clock3, LogOut, MessageCircle, Palette, Shield, Star, Store, UserRound, UsersRound, X } from 'lucide-react';
 import Link from 'next/link';
 import { SettingTab, useProfileStore, UserProfile, UserRole } from '@/store/profile';
@@ -63,8 +64,14 @@ export function ProfileHub() {
   useEffect(() => { if (sessionProfile) setProfile({ full_name: sessionProfile.full_name || user?.email || 'Pengguna SultraKita', avatar_url: sessionProfile.avatar_url || '', role: sessionProfile.role, email: user?.email || '' }); }, [sessionProfile, setProfile, user?.email]);
   return <>
     <div className="profile-hub-anchor"><button ref={triggerRef} className="profile-pill profile-hub-trigger" onClick={toggleMenu} aria-expanded={menuOpen} aria-controls="profile-menu" aria-label={`Buka menu profil ${displayName}`}><span className="avatar">{avatarUrl ? <img src={avatarUrl} alt={displayName}/> : initials}</span><span className="profile-name">{displayName.split(/\s+/)[0]}</span></button>{menuOpen && <ProfileMenu onClose={closeOverlays} onSetup={openSetup} onSettings={openSettings}/>}</div>
-    {setupOpen && <ProfileSetup onClose={closeOverlays}/>} {settingsOpen && <SettingsPanel onClose={closeOverlays} activeTab={activeTab} userId={user?.id}/>}
+    {(setupOpen || settingsOpen) && <ProfileOverlayPortal>{setupOpen ? <ProfileSetup onClose={closeOverlays}/> : <SettingsPanel onClose={closeOverlays} activeTab={activeTab} userId={user?.id}/>}</ProfileOverlayPortal>}
   </>;
+}
+
+function ProfileOverlayPortal({ children }: { children: ReactNode }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  return mounted ? createPortal(children, document.body) : null;
 }
 
 function ProfileMenu({ onClose, onSetup, onSettings }: { onClose: () => void; onSetup: () => void; onSettings: (tab?: SettingTab) => void }) { const { profile } = useProfileStore(); return <div id="profile-menu" className="profile-menu-panel shadow-float border border-line" role="menu"><div className="profile-menu-head"><div className="avatar large">{profile.avatar_url ? <img src={profile.avatar_url} alt=""/> : profile.full_name.slice(0, 2).toUpperCase()}</div><div><strong>{profile.full_name}</strong><small>{profile.email || 'Lengkapi profilmu'}</small><span>{profile.role === 'seller' ? 'Seller' : 'Buyer'} · {profile.city}</span></div></div><Link className="profile-marketplace-link" href="/marketplace/profile" onClick={onClose}><Store size={17}/> Profil Marketplace <ChevronRight size={15}/></Link><div className="profile-marketplace-shortcuts" aria-label="Shortcut Marketplace"><Link href="/marketplace/profile#saved" onClick={onClose} aria-label="Item tersimpan"><Bookmark size={16}/><span>Tersimpan</span></Link><Link href="/chat" onClick={onClose} aria-label="Kotak masuk"><MessageCircle size={16}/><span>Pesan</span></Link><Link href="/marketplace/profile#reviews" onClick={onClose} aria-label="Ulasan"><Star size={16}/><span>Ulasan</span></Link><Link href="/marketplace/profile#recent" onClick={onClose} aria-label="Baru saja dilihat"><Clock3 size={16}/><span>Riwayat</span></Link></div><button role="menuitem" onClick={onSetup}><UserRound size={17}/> Setup profil <ChevronRight size={15}/></button><button role="menuitem" onClick={() => onSettings('account')}><UserRound size={17}/> Account Center <ChevronRight size={15}/></button><button role="menuitem" onClick={() => onSettings('privacy')}><Shield size={17}/> Privasi <ChevronRight size={15}/></button><button role="menuitem" onClick={() => onSettings('notifications')}><Bell size={17}/> Notifikasi <ChevronRight size={15}/></button><button role="menuitem" onClick={() => onSettings('security')}><Shield size={17}/> Keamanan <ChevronRight size={15}/></button><button role="menuitem" onClick={() => onSettings('blocked')}><UsersRound size={17}/> Blokir & Batasi <ChevronRight size={15}/></button><button role="menuitem" onClick={() => onSettings('appearance')}><Palette size={17}/> Preferensi tampilan <ChevronRight size={15}/></button><button role="menuitem" onClick={() => onSettings('seller')}><Store size={17}/> Pengaturan seller <ChevronRight size={15}/></button><button role="menuitem" onClick={() => onSettings('help')}><CircleHelp size={17}/> Bantuan & feedback <ChevronRight size={15}/></button><div className="profile-menu-separator"/><button className="danger-menu" role="menuitem" onClick={async () => { onClose(); if (supabase) await supabase.auth.signOut(); window.location.href = '/login'; }}><LogOut size={17}/> Keluar</button></div> }
