@@ -20,7 +20,7 @@ export function useSessionProfile() {
     }
     const [{ data: nextProfile }, { count }] = await Promise.all([
       supabase.from('profiles').select('id,full_name,avatar_url,role,headline').eq('id', nextUser.id).maybeSingle(),
-      supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('user_id', nextUser.id).eq('is_read', false),
+      supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('profile_id', nextUser.id).eq('is_read', false),
     ]);
     setProfile(nextProfile as Profile | null);
     setNotificationCount(count || 0);
