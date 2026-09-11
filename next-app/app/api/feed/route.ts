@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const supabase = await getServerSupabase();
-    let query = supabase.from('posts').select('id,content,media_urls,type,privacy,location,created_at,user_id,profiles(display_name,username,avatar_url)').eq('status', 'published').order('created_at', { ascending: false }).order('id', { ascending: false }).limit(limit + 1);
+    let query = supabase.from('posts').select('id,content,media_urls,type,privacy,location,mood,tagged_user_ids,created_at,user_id,profiles(display_name,username,avatar_url)').eq('status', 'published').order('created_at', { ascending: false }).order('id', { ascending: false }).limit(limit + 1);
     if (filter === 'property') query = query.eq('type', 'property');
     if (filter === 'video') query = query.eq('type', 'reel');
     if (filter === 'following') {
