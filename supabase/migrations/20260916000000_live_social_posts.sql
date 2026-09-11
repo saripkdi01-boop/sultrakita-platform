@@ -20,7 +20,8 @@ create unique index if not exists posts_user_idempotency_key_idx
   where idempotency_key is not null;
 
 -- Public posts are readable by everyone; follower-only posts are readable by the author
--- or users who follow the author. Drafts and archived posts never enter the public feed.
+-- until the follower graph migration is present in this production database. Drafts and
+-- archived posts never enter the public feed.
 drop policy if exists posts_public_read on public.posts;
 create policy posts_public_read on public.posts for select to anon, authenticated
 using (
@@ -28,11 +29,6 @@ using (
   and (
     privacy = 'public'
     or auth.uid() = user_id
-    or exists (
-      select 1 from public.follows
-      where follows.follower_id = auth.uid()
-        and follows.following_id = posts.user_id
-    )
   )
 );
 
