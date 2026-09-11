@@ -14,6 +14,10 @@ const tagToolRow = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'compo
 
 test('feed route selects only profile columns that exist in Supabase', () => {
   assert.match(feedRoute, /profiles\(display_name,avatar_url\)/);
+  assert.match(feedRoute, /eq\('status', 'published'\)/);
+  assert.match(postsAction, /privacy/);
+  assert.match(composer, /Publikasikan sekarang/);
+  assert.match(composer, /post-location/);
   assert.doesNotMatch(feedRoute, /profiles\([^)]*\bname\b/);
 });
 

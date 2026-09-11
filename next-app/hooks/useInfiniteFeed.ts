@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { BerandaPostData } from '@/components/beranda/FeedPost';
 
 export type FeedFilter = 'recommended' | 'following' | 'latest' | 'property' | 'video';
-type ApiPost = { id: string; content: string; media_urls?: string[]; type: string; location?: string; created_at: string; user_id: string; profiles?: { display_name?: string; name?: string } | null };
+type ApiPost = { id: string; content: string; media_urls?: string[]; type: string; privacy?: 'public' | 'followers'; location?: string; created_at: string; user_id: string; profiles?: { display_name?: string; name?: string; avatar_url?: string } | null };
 type FeedResponse = { data: ApiPost[]; pageInfo: { endCursor: string | null; hasNextPage: boolean }; error?: string };
 
 const relativeTime = (iso: string) => {
@@ -13,7 +13,7 @@ const relativeTime = (iso: string) => {
 };
 const mapPost = (post: ApiPost): BerandaPostData => {
   const name = post.profiles?.display_name || post.profiles?.name || 'Warga Sultra';
-  return { id: post.id, author: name, initials: name.split(' ').map((word) => word[0]).join('').slice(0, 2).toUpperCase(), time: relativeTime(post.created_at), location: post.location, content: post.content, mediaUrl: post.media_urls?.[0], mediaType: post.type === 'reel' ? 'video' : 'image', likes: 0, comments: 0 };
+  return { id: post.id, author: name, initials: name.split(' ').map((word) => word[0]).join('').slice(0, 2).toUpperCase(), avatarUrl: post.profiles?.avatar_url, time: relativeTime(post.created_at), location: post.location, privacy: post.privacy, content: post.content, mediaUrl: post.media_urls?.[0], mediaType: post.type === 'reel' ? 'video' : 'image', likes: 0, comments: 0 };
 };
 
 export function useInfiniteFeed(initialFilter: FeedFilter = 'recommended') {
