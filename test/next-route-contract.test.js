@@ -13,6 +13,9 @@ const uploadAction = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'act
 const groupsPage = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'app', 'groups', 'page.tsx'), 'utf8');
 const groupsAction = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'lib', 'actions', 'groups.ts'), 'utf8');
 const groupsMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20260912060000_suki_communities.sql'), 'utf8');
+const appLayout = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'components', 'layout', 'AppLayout.tsx'), 'utf8');
+const createMenu = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'components', 'layout', 'CreateMenu.tsx'), 'utf8');
+const berandaPage = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'app', 'beranda', 'page.tsx'), 'utf8');
 
 test('feed route selects only profile columns that exist in Supabase', () => {
   assert.match(feedRoute, /profiles\(display_name,username,avatar_url\)/);
@@ -103,4 +106,11 @@ test('Groups is a real authenticated community surface, not demo content', () =>
   assert.match(groupsMigration, /alter table public\.groups enable row level security/);
   assert.match(groupsMigration, /group_posts_member_insert/);
   assert.doesNotMatch(groupsPage, /125 rb|48 rb|SUKI Foodies|UMKM Sultra Naik Kelas/);
+});
+
+test('Groups quick navigation and publish entry are functional across shells', () => {
+  assert.match(appLayout, /key === 'groups'.*window\.location\.href = '\/groups'/);
+  assert.match(createMenu, /window\.location\.href = `\/beranda\?compose=\$\{type\}`/);
+  assert.match(berandaPage, /URLSearchParams\(window\.location\.search\)/);
+  assert.match(berandaPage, /get\('compose'\)/);
 });

@@ -40,7 +40,7 @@ export function CreateMenu({ onCreateStory }: CreateMenuProps) {
   ];
 
   function close() { setOpen(false); }
-  function handleCreate(type: 'post' | 'reel') { close(); onCreateStory?.(type); }
+  function handleCreate(type: 'post' | 'reel') { close(); if (onCreateStory) onCreateStory(type); else window.location.href = `/beranda?compose=${type}`; }
 
   return <>
     <button type="button" role="button" className="create-fab" onClick={() => setOpen(true)} aria-label="Tambah konten baru" aria-haspopup="dialog" aria-expanded={open} title="Tambah"><span className="create-fab-surface"><Plus className="create-fab-icon" strokeWidth={2.5} aria-hidden="true" /></span></button>
