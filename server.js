@@ -20,6 +20,7 @@ const { createSettingsRouter } = require('./api/settings');
 const { CATEGORIES, REGIONS, ALL_DISTRICTS } = require('./shared/taxonomy');
 const v2Api = require('./api/v2');
 const { router: promoApi } = require('./api/promo');
+const { router: referralApi } = require('./api/referral');
 const taskAutomationApi = require('./api/task-automation');
 
 dotenv.config();
@@ -67,9 +68,11 @@ app.get(['/admin', '/admin/', '/admin/login', '/admin/dashboard'], sendAdminShel
 
 const sendSettingsShell = (_req, res) => res.sendFile(path.join(__dirname, 'public', 'settings.html'));
 const sendPromoShell = (_req, res) => res.sendFile(path.join(__dirname, 'public', 'promo', 'index.html'));
+const sendReferralShell = (_req, res) => res.sendFile(path.join(__dirname, 'public', 'referral', 'index.html'));
 app.get('/dev/mcp-playground.html', (req, res) => { const expected = String(process.env.MCP_PLAYGROUND_BASIC_AUTH || ''); if (!expected) return res.status(404).send('Not found'); if (req.get('authorization') !== `Basic ${expected}`) { res.setHeader('WWW-Authenticate', 'Basic realm="SultraKita MCP Playground"'); return res.status(401).send('Authentication required'); } return res.sendFile(path.join(__dirname, 'public', 'dev', 'mcp-playground.html')); });
 app.get(['/settings.html','/settings','/settings/account','/settings/preferences','/settings/notifications','/settings/privacy','/settings/privacy/checkup','/settings/security','/settings/devices','/settings/time','/settings/promotions','/settings/link-history','/settings/activity','/settings/orders','/settings/payments','/settings/data','/settings/data/export'], sendSettingsShell);
 app.get(['/promo', '/promo/'], sendPromoShell);
+app.get(['/ajak-teman', '/ajak-teman/'], sendReferralShell);
 app.use(express.static(path.join(__dirname, 'public'), { setHeaders: (res, filePath) => { if (filePath.includes(`${path.sep}public${path.sep}admin${path.sep}`) && filePath.endsWith('.html')) { res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate'); res.setHeader('Pragma', 'no-cache'); return; } if (filePath.endsWith('sw.js') || filePath.endsWith('index.html')) return; if (/\.(?:js|css|woff2?|png|jpe?g|webp|avif|svg|ico|webmanifest)$/.test(filePath)) res.setHeader('Cache-Control', 'public, max-age=31536000, immutable'); } }));
 app.use('/api', rateLimit());
 // Section 4 adapter is additive; existing /api/admin endpoints remain untouched for backward compatibility.
@@ -80,6 +83,7 @@ app.use('/api/settings', createSettingsRouter());
 app.use('/api/v2', v2Api);
 app.use('/api/automation', taskAutomationApi);
 app.use('/api/v2/promo', promoApi);
+app.use('/api/referral', referralApi);
 
 // Additive MVP endpoint for the vanilla runtime's listing assistant. It degrades
 // gracefully when Gemini is not configured, while keeping the API contract stable.
