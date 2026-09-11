@@ -1,13 +1,20 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 
 export default function AjakTemanPage() {
   const [friends, setFriends] = useState(5);
+  const [referralCode, setReferralCode] = useState('SULTRA-LAUNCH');
   const points = Math.max(0, Math.min(1000, friends || 0)) * 100;
   const rupiah = points * 100;
-  const referralLink = useMemo(() => `${typeof window === 'undefined' ? 'https://sultrakita-platform.vercel.app' : window.location.origin}/?ref=SULTRA-LAUNCH`, []);
+  const referralLink = useMemo(() => `${typeof window === 'undefined' ? 'https://sultrakita-platform.vercel.app' : window.location.origin}/?ref=${referralCode}`, [referralCode]);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search); const incoming = params.get('ref');
+    if (incoming) { localStorage.setItem('sultra-referral-code', incoming.toUpperCase()); void fetch('/api/referral', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'visit', referral_code: incoming, source_channel: document.referrer ? 'social' : 'direct' }) }); }
+    const stored = localStorage.getItem('sultra-referral-code'); if (stored) setReferralCode(stored);
+    void fetch('/api/referral?action=summary', { credentials: 'include' }).then(response => response.ok ? response.json() : null).then(payload => { if (payload?.data?.referral_code) { setReferralCode(payload.data.referral_code); localStorage.setItem('sultra-referral-code', payload.data.referral_code); } }).catch(() => undefined);
+  }, []);
   async function share() {
     const payload = { title: 'Ajak Teman, Tumbuh Bersama', text: 'Gabung SultraKita dan tumbuh bersama warga Sulawesi Tenggara.', url: referralLink };
     if (navigator.share) await navigator.share(payload); else { await navigator.clipboard?.writeText(referralLink); alert('Link referral disalin.'); }
