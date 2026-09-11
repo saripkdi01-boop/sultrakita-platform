@@ -9,8 +9,7 @@ const feedRoute = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'app', 
 const listingsRoute = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'app', 'api', 'listings', 'route.ts'), 'utf8');
 const postsAction = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'lib', 'actions', 'posts.ts'), 'utf8');
 const composer = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'components', 'beranda', 'CreatePostModal.tsx'), 'utf8');
-const mediaActionIcon = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'components', 'beranda', 'MediaActionIcon.tsx'), 'utf8');
-const tagToolRow = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'components', 'beranda', 'TagToolRow.tsx'), 'utf8');
+const uploadAction = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'actions', 'upload.ts'), 'utf8');
 
 test('feed route selects only profile columns that exist in Supabase', () => {
   assert.match(feedRoute, /profiles\(display_name,avatar_url\)/);
@@ -46,34 +45,30 @@ test('Create Post binds identity server-side and supports safe idempotent publis
   assert.match(postsAction, /requireServerUser/);
   assert.match(postsAction, /user_id: user\.id/);
   assert.match(postsAction, /idempotency_key/);
-  assert.match(postsAction, /MAX_CONTENT = 2000/);
+  assert.match(postsAction, /mediaUrls/);
   assert.match(postsAction, /status: 'published'/);
+  assert.match(postsAction, /profiles/);
   assert.match(composer, /Simpan Draft/);
-  assert.match(composer, /Bagikan/);
+  assert.match(composer, /Publikasikan sekarang/);
+  assert.match(composer, /Mempublikasikan/);
   assert.match(composer, /localStorage/);
-  assert.match(composer, /isInstagramActive/);
-  assert.match(composer, /Musik/);
+  assert.match(composer, /type="file"/);
+  assert.match(composer, /signed URL/);
 });
 
-test('MediaActionIcon exposes reusable active and default variants', () => {
-  assert.match(mediaActionIcon, /icon: ReactNode/);
-  assert.match(mediaActionIcon, /label: string/);
-  assert.match(mediaActionIcon, /onClick: \(\) => void/);
-  assert.match(mediaActionIcon, /'default' \| 'active'/);
-  assert.match(mediaActionIcon, /min-w-\[88px\]/);
-  assert.match(mediaActionIcon, /h-\[72px\]/);
-  assert.match(mediaActionIcon, /ring-2 ring-teal-200/);
-  assert.match(composer, /MediaActionIcon/);
+test('Create Post media upload is authenticated and bounded', () => {
+  assert.match(uploadAction, /requireServerUser/);
+  assert.match(uploadAction, /MAX_IMAGE_BYTES/);
+  assert.match(uploadAction, /MAX_VIDEO_BYTES/);
+  assert.match(uploadAction, /content-length-range/);
+  assert.match(uploadAction, /eq', '\$Content-Type'/);
+  assert.doesNotMatch(uploadAction, /NEXT_PUBLIC_R2_ACCESS/);
 });
 
-test('TagToolRow manages selected metadata chips and supports controlled state', () => {
-  assert.match(tagToolRow, /id: string/);
-  assert.match(tagToolRow, /icon: ReactNode/);
-  assert.match(tagToolRow, /selectedTags\?: string\[\]/);
-  assert.match(tagToolRow, /onSelectedTagsChange\?/);
-  assert.match(tagToolRow, /aria-pressed/);
-  assert.match(tagToolRow, /Metadata terpilih/);
-  assert.match(tagToolRow, /overflow-x-auto/);
-  assert.match(composer, /TagToolRow/);
-  assert.match(composer, /selectedTags/);
+test('Create Post wiring preserves the requested content type', () => {
+  const page = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'app', 'beranda', 'page.tsx'), 'utf8');
+  const input = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'components', 'beranda', 'CreatePostInput.tsx'), 'utf8');
+  assert.match(input, /onCreate\?\.\('reel'\)/);
+  assert.match(page, /CreatePostInput onCreate=\{openComposer\}/);
+  assert.match(composer, /postType === 'reel'/);
 });
