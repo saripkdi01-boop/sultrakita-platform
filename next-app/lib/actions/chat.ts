@@ -101,3 +101,21 @@ export async function setPresence(isOnline: boolean) {
   const { error } = await supabase.from('user_presence').upsert({ user_id: user.id, is_online: isOnline, last_seen: now, updated_at: now });
   return error ? { ok: false as const, error: friendly(error) } : { ok: true as const };
 }
+
+
+function escapeLikePattern(value: string) { return value.replace(/[\\%_]/g, (character) => `\\${character}`); }
+
+export async function searchChatMessages(conversationId: string, query: string, limit = 25) {
+  try {
+    const normalized = query.trim().slice(0, 120);
+    if (!conversationId || normalized.length < 2) return { ok: true as const, data: [] };
+    const safeLimit = Math.min(Math.max(limit, 1), 50);
+    const { supabase, user } = await requireServerUser();
+    const { data: member } = await supabase.from('conversation_participants').select('id').eq('conversation_id', conversationId).eq('user_id', user.id).maybeSingle();
+    if (!member) return { ok: false as const, error: 'Kamu bukan anggota percakapan ini.', data: [] };
+    const pattern = `%${escapeLikePattern(normalized)}%`;
+    const { data, error } = await supabase.from('messages').select('id,conversation_id,sender_id,content,message_type,media_url,reply_to_message_id,edited,deleted,is_read,created_at').eq('conversation_id', conversationId).eq('deleted', false).ilike('content', pattern).order('created_at', { ascending: false }).limit(safeLimit);
+    if (error) throw error;
+    return { ok: true as const, data: (data || []).reverse() };
+  } catch (error) { return { ok: false as const, error: friendly(error), data: [] }; }
+}
