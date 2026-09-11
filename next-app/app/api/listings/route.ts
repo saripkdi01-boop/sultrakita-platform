@@ -23,7 +23,8 @@ export async function GET(request: NextRequest) {
   if ((rawMinPrice !== null && (!Number.isFinite(minPrice) || minPrice < 0)) || (rawMaxPrice !== null && (!Number.isFinite(maxPrice) || maxPrice < 0))) return NextResponse.json({ ok: false, error: 'invalid_price_filter' }, { status: 400 });
   if (rawMinPrice !== null && rawMaxPrice !== null && minPrice > maxPrice) return NextResponse.json({ ok: false, error: 'invalid_price_range' }, { status: 400 });
   try {
-    let query = (getListingsClient() || await getServerSupabase()).from('listings').select('id,title,description,price,image_url,district,city,condition,is_featured,is_demo,provenance,created_at').in('status', ['published', 'active']).or('is_demo.is.null,is_demo.eq.false').order('is_featured', { ascending: false }).order('created_at', { ascending: false }).limit(limit);
+    const client = getListingsClient() || await getServerSupabase();
+    let query = client.from('listings').select('id,title,description,price,image_url,district,city,condition,is_featured,is_demo,provenance,created_at,seller_id').in('status', ['published', 'active']).or('is_demo.is.null,is_demo.eq.false').order('is_featured', { ascending: false }).order('created_at', { ascending: false }).limit(limit);
     if (queryText) query = query.or(`title.ilike.%${queryText}%,description.ilike.%${queryText}%`);
     if (district && district !== 'Semua distrik') query = query.eq('district', district);
     // Category labels are resolved by the marketplace UI; UUID category filters can be added here when supplied.
@@ -31,7 +32,15 @@ export async function GET(request: NextRequest) {
     if (Number.isFinite(maxPrice) && maxPrice > 0) query = query.lte('price', maxPrice);
     const { data, error } = await query;
     if (error) throw error;
-    const items = (data || []).filter((item) => item.is_demo !== true && item.provenance !== 'curated_demo' && !String(item.title || '').startsWith('DEMO-SEED-')).map((item) => ({ ...item, images: item.image_url ? [item.image_url] : [], thumbnail_url: item.image_url || null }));
+    const visibleItems = (data || []).filter((item) => item.is_demo !== true && item.provenance !== 'curated_demo' && !String(item.title || '').startsWith('DEMO-SEED-'));
+    const sellerIds = Array.from(new Set(visibleItems.map((item) => item.seller_id).filter((id): id is number => Number.isFinite(Number(id))).map(Number)));
+    const sellerMap = new Map<number, { name: string; verification_status: string; rating_average: number; rating_count: number; avatar_url: string | null }>();
+    if (sellerIds.length) {
+      const { data: sellers, error: sellerError } = await client.from('users').select('id,name,verification_status,rating_average,rating_count,avatar_url').in('id', sellerIds);
+      if (sellerError) throw sellerError;
+      for (const seller of sellers || []) sellerMap.set(Number(seller.id), { name: String(seller.name || 'Penjual lokal'), verification_status: String(seller.verification_status || 'unverified'), rating_average: Number(seller.rating_average || 0), rating_count: Number(seller.rating_count || 0), avatar_url: seller.avatar_url || null });
+    }
+    const items = visibleItems.map((item) => ({ ...item, images: item.image_url ? [item.image_url] : [], thumbnail_url: item.image_url || null, seller: item.seller_id ? sellerMap.get(Number(item.seller_id)) || null : null }));
     return NextResponse.json({ ok: true, data: items, filters: { q: queryText || '', district: district || '', category: category || '' } });
   } catch (error) {
     if (process.env.ALLOW_DEMO_DATA === 'true' && process.env.NODE_ENV !== 'production') return NextResponse.json({ ok: true, data: fallbackListings, source: 'demo', warning: 'Mode demo lokal aktif.' });
