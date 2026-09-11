@@ -55,15 +55,17 @@ function prepareAvatar(file: File): Promise<File> {
 export function ProfileHub() {
   const { profile, menuOpen, setupOpen, settingsOpen, activeTab, toggleMenu, openSetup, openSettings, closeOverlays, setProfile } = useProfileStore();
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const { user, profile: sessionProfile } = useSessionProfile();
   const displayName = getProfileNickname(user, sessionProfile);
   const avatarUrl = sessionProfile?.avatar_url || profile.avatar_url;
   const initials = displayName.split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase();
   useEffect(() => { const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') closeOverlays(); }; document.addEventListener('keydown', onKey); return () => document.removeEventListener('keydown', onKey); }, [closeOverlays]);
+  useEffect(() => { if (!menuOpen) return; const onPointerDown = (event: PointerEvent) => { const target = event.target as Node; if (!menuRef.current?.contains(target) && !triggerRef.current?.contains(target)) closeOverlays(); }; document.addEventListener('pointerdown', onPointerDown); return () => document.removeEventListener('pointerdown', onPointerDown); }, [closeOverlays, menuOpen]);
   useEffect(() => { document.documentElement.classList.toggle('dark', profile.dark_mode); document.documentElement.classList.toggle('reduce-motion', profile.reduce_motion); }, [profile.dark_mode, profile.reduce_motion]);
   useEffect(() => { if (sessionProfile) setProfile({ full_name: sessionProfile.full_name || '', username: sessionProfile.username || '', avatar_url: sessionProfile.avatar_url || '', role: (sessionProfile.role as UserRole) || 'buyer', email: user?.email || '', bio: sessionProfile.bio || '', city: '', district: sessionProfile.district || '' }); }, [sessionProfile, setProfile, user?.email]);
   return <>
-    <div className="profile-hub-anchor"><button ref={triggerRef} className="profile-pill profile-hub-trigger" onClick={toggleMenu} aria-expanded={menuOpen} aria-controls="profile-menu" aria-label={`Buka menu profil ${displayName}`}><span className="avatar">{avatarUrl ? <img src={avatarUrl} alt={displayName}/> : initials}</span><span className="profile-name">{displayName.split(/\s+/)[0]}</span></button>{menuOpen && <ProfileMenu onClose={closeOverlays} onSetup={openSetup} onSettings={openSettings} displayName={displayName} avatarUrl={avatarUrl} role={sessionProfile?.role || profile.role} city={sessionProfile?.district || ''}/>}</div>
+    <div className="profile-hub-anchor"><button ref={triggerRef} className="profile-pill profile-hub-trigger" onClick={toggleMenu} aria-expanded={menuOpen} aria-controls="profile-menu" aria-haspopup="menu" aria-label={`${menuOpen ? 'Tutup' : 'Buka'} menu profil ${displayName}`}><span className="avatar">{avatarUrl ? <img src={avatarUrl} alt={displayName}/> : initials}</span><span className="profile-name">{displayName.split(/\s+/)[0]}</span></button>{menuOpen && <div ref={menuRef}><ProfileMenu onClose={closeOverlays} onSetup={openSetup} onSettings={openSettings} displayName={displayName} avatarUrl={avatarUrl} role={sessionProfile?.role || profile.role} city={sessionProfile?.district || ''}/></div>}</div>
     {(setupOpen || settingsOpen) && <ProfileOverlayPortal>{setupOpen ? <ProfileSetup onClose={closeOverlays} userId={user?.id}/> : <SettingsPanel onClose={closeOverlays} activeTab={activeTab} userId={user?.id}/>}</ProfileOverlayPortal>}
   </>;
 }
