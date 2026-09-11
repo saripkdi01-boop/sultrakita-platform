@@ -12,7 +12,7 @@ export type UserProfile = {
 };
 
 export const defaultProfile: UserProfile = {
-  full_name: 'Pengguna SultraKita', username: 'warga_sultra', avatar_url: '', email: '', phone: '', bio: '', city: 'Kendari', district: 'Kendari', role: 'buyer', language: 'Bahasa Indonesia', interests: ['Marketplace'], profile_visibility: 'public', online_status_visible: true, autoplay: 'wifi', reduce_motion: false, dark_mode: false, email_notifications: true, push_notifications: true,
+  full_name: '', username: '', avatar_url: '', email: '', phone: '', bio: '', city: '', district: '', role: 'buyer', language: 'Bahasa Indonesia', interests: [], profile_visibility: 'public', online_status_visible: true, autoplay: 'wifi', reduce_motion: false, dark_mode: false, email_notifications: true, push_notifications: true,
 };
 
 type ProfileState = { profile: UserProfile; menuOpen: boolean; setupOpen: boolean; settingsOpen: boolean; activeTab: SettingTab; setProfile: (profile: Partial<UserProfile>) => void; toggleMenu: () => void; openSetup: () => void; openSettings: (tab?: SettingTab) => void; closeOverlays: () => void; setActiveTab: (tab: SettingTab) => void };

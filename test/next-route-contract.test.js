@@ -12,7 +12,7 @@ const composer = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'compone
 const uploadAction = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'actions', 'upload.ts'), 'utf8');
 
 test('feed route selects only profile columns that exist in Supabase', () => {
-  assert.match(feedRoute, /profiles\(display_name,avatar_url\)/);
+  assert.match(feedRoute, /profiles\(display_name,username,avatar_url\)/);
   assert.match(feedRoute, /eq\('status', 'published'\)/);
   assert.match(postsAction, /privacy/);
   assert.match(composer, /Publikasikan sekarang/);
@@ -71,4 +71,18 @@ test('Create Post wiring preserves the requested content type', () => {
   assert.match(input, /onCreate\?\.\('reel'\)/);
   assert.match(page, /CreatePostInput onCreate=\{openComposer\}/);
   assert.match(composer, /postType === 'reel'/);
+});
+
+
+test('profile identity uses authenticated nickname and live profile columns', () => {
+  const sessionHook = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'hooks', 'useSessionProfile.ts'), 'utf8');
+  const profileHub = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'components', 'profile', 'ProfileHub.tsx'), 'utf8');
+  const stories = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'components', 'beranda', 'StoriesSection.tsx'), 'utf8');
+  assert.match(sessionHook, /getProfileNickname/);
+  assert.match(sessionHook, /username.*display_name/);
+  assert.match(sessionHook, /recipient_id/);
+  assert.doesNotMatch(sessionHook, /headline|city/);
+  assert.match(profileHub, /Nama panggilan \/ username/);
+  assert.match(profileHub, /supabase\.from\('profiles'\)\.update/);
+  assert.doesNotMatch(stories, /Aulia|UMKM Sultra|Cerita Kendari|Wakatobi/);
 });

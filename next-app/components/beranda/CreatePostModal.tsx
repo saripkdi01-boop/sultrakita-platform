@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ArrowUp, Globe2, Image as ImageIcon, MapPin, Music2, Users, Video, X } from 'lucide-react';
 import { createPost } from '@/lib/actions/posts';
 import { createR2Upload } from '@/actions/upload';
-import { useSessionProfile } from '@/hooks/useSessionProfile';
+import { getProfileNickname, useSessionProfile } from '@/hooks/useSessionProfile';
 
 type Privacy = 'public' | 'followers';
 type PostType = 'post' | 'reel';
@@ -17,7 +17,7 @@ export function CreatePostModal({ open, initialType = 'post', onClose, onCreated
   const [textContent, setTextContent] = useState(''); const [privacy, setPrivacy] = useState<Privacy>('public'); const [location, setLocation] = useState(''); const [postType, setPostType] = useState<PostType>(initialType); const [notice, setNotice] = useState(''); const [isSaving, setIsSaving] = useState(false); const [isUploading, setIsUploading] = useState(false); const [draftRestored, setDraftRestored] = useState(false); const [media, setMedia] = useState<UploadedMedia[]>([]); const [idempotencyKey, setIdempotencyKey] = useState('');
   const fileRef = useRef<HTMLInputElement>(null); const busyRef = useRef(false);
   busyRef.current = isSaving || isUploading;
-  const displayName = profile?.full_name || user?.email || 'Pengguna SultraKita'; const avatarUrl = profile?.avatar_url; const initials = displayName.split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase(); const trimmedContent = textContent.trim(); const canPublish = (trimmedContent.length >= 2 || media.length > 0) && !isSaving && !isUploading; const remaining = MAX_CONTENT - textContent.length;
+  const displayName = getProfileNickname(user, profile); const avatarUrl = profile?.avatar_url; const initials = displayName.split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase(); const trimmedContent = textContent.trim(); const canPublish = (trimmedContent.length >= 2 || media.length > 0) && !isSaving && !isUploading; const remaining = MAX_CONTENT - textContent.length;
 
   useEffect(() => {
     if (!open) return;

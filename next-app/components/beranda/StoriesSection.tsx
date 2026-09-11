@@ -1,3 +1,3 @@
-import { Plus, Play } from 'lucide-react';
-const stories = [{ name: 'Cerita Kendari', initials: 'CK' }, { name: 'Ayu Rahma', initials: 'AR' }, { name: 'Wakatobi', initials: 'WK', video: true }, { name: 'UMKM Sultra', initials: 'US' }, { name: 'Fajar', initials: 'FK' }];
-export function StoriesSection() { return <section className="beranda-stories" aria-label="Cerita warga"><div className="story-create"><div className="story-avatar"><Plus size={20}/></div><span>Buat cerita</span></div>{stories.map(story => <button key={story.name} className="story-item"><div className="story-ring"><div className="story-avatar">{story.initials}</div>{story.video && <span className="story-play"><Play size={10} fill="currentColor"/></span>}</div><span>{story.name}</span></button>)}</section>; }
+import { Plus } from 'lucide-react';
+
+export function StoriesSection() { return <section className="beranda-stories" aria-label="Cerita warga"><div className="story-create"><div className="story-avatar"><Plus size={20}/></div><span>Buat cerita</span></div><div className="story-empty">Belum ada cerita warga yang tersedia.</div></section>; }
