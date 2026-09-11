@@ -20,6 +20,7 @@ const { createSettingsRouter } = require('./api/settings');
 const { CATEGORIES, REGIONS, ALL_DISTRICTS } = require('./shared/taxonomy');
 const v2Api = require('./api/v2');
 const { router: promoApi } = require('./api/promo');
+const taskAutomationApi = require('./api/task-automation');
 
 dotenv.config();
 const app = express();
@@ -58,6 +59,7 @@ app.get('/kategori/:category/:district', async (req, res, next) => { try { const
 app.get('/cari', async (req, res, next) => { try { const q = String(req.query.q || '').trim().slice(0, 100); const listings = q ? await query("SELECT id, title, description, price, district FROM listings WHERE status = 'active' AND (to_tsvector('simple', coalesce(title, '') || ' ' || coalesce(description, '')) @@ plainto_tsquery('simple', ?) OR title ILIKE ?) ORDER BY created_at DESC LIMIT 24", [q, '%' + q + '%']) : []; return res.type('html').send(collectionPage({ title: 'Cari ' + (q || 'listing') + ' | SultraKita', description: 'Hasil pencarian listing marketplace lokal SultraKita.', canonical: SITE_URL + '/cari?q=' + encodeURIComponent(q), heading: q ? 'Hasil pencarian: ' + q : 'Cari listing lokal', intro: 'Temukan barang dan jasa dari warga Sulawesi Tenggara.', listings })); } catch (error) { return next(error); } });
 app.get('/sitemap.xml', async (_req, res, next) => { try { const listings = await query("SELECT id, title, updated_at FROM listings WHERE status = 'active' ORDER BY updated_at DESC LIMIT 5000"); const categories = await query('SELECT slug FROM categories ORDER BY id'); const sellers = await query("SELECT id, name FROM users WHERE role IN ('seller', 'admin', 'super_admin') ORDER BY id LIMIT 5000"); const urls = [SITE_URL + '/', ...categories.map(row => SITE_URL + '/kategori/' + row.slug), ...listings.map(row => SITE_URL + '/listing/' + slugify(row.title) + '-' + row.id), ...sellers.map(row => SITE_URL + '/seller/' + slugify(row.name) + '-' + row.id)]; const xml = '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + urls.map(url => '<url><loc>' + escapeXml(url) + '</loc></url>').join('') + '</urlset>'; return res.type('application/xml').send(xml); } catch (error) { return next(error); } });
 app.get('/robots.txt', (_req, res) => res.type('text/plain').send('User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /admin\nSitemap: ' + SITE_URL + '/sitemap.xml\n'));
+app.get(['/automation', '/automation.html'], (_req, res) => res.sendFile(path.join(__dirname, 'public', 'automation.html')));
 
 // Canonical admin shell alias. Existing /admin.html remains available for backward compatibility.
 const sendAdminShell = (_req, res) => { res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate'); res.setHeader('Pragma', 'no-cache'); return res.sendFile(path.join(__dirname, 'public', 'admin', 'index.html')); };
@@ -76,6 +78,7 @@ app.use('/api/webhooks', createWhatsAppWebhookRouter({ query, run }));
 app.use('/api/account', createAccountSettingsRouter());
 app.use('/api/settings', createSettingsRouter());
 app.use('/api/v2', v2Api);
+app.use('/api/automation', taskAutomationApi);
 app.use('/api/v2/promo', promoApi);
 
 // Additive MVP endpoint for the vanilla runtime's listing assistant. It degrades
