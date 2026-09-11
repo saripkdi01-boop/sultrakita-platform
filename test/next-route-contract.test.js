@@ -10,6 +10,9 @@ const listingsRoute = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'ap
 const postsAction = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'lib', 'actions', 'posts.ts'), 'utf8');
 const composer = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'components', 'beranda', 'CreatePostModal.tsx'), 'utf8');
 const uploadAction = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'actions', 'upload.ts'), 'utf8');
+const groupsPage = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'app', 'groups', 'page.tsx'), 'utf8');
+const groupsAction = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'lib', 'actions', 'groups.ts'), 'utf8');
+const groupsMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20260912060000_suki_communities.sql'), 'utf8');
 
 test('feed route selects only profile columns that exist in Supabase', () => {
   assert.match(feedRoute, /profiles\(display_name,username,avatar_url\)/);
@@ -85,4 +88,19 @@ test('profile identity uses authenticated nickname and live profile columns', ()
   assert.match(profileHub, /Nama panggilan \/ username/);
   assert.match(profileHub, /supabase\.from\('profiles'\)\.update/);
   assert.doesNotMatch(stories, /Aulia|UMKM Sultra|Cerita Kendari|Wakatobi/);
+});
+
+test('Groups is a real authenticated community surface, not demo content', () => {
+  assert.match(groupsPage, /createGroup/);
+  assert.match(groupsPage, /joinGroup/);
+  assert.match(groupsPage, /createGroupPost/);
+  assert.match(groupsPage, /Cari komunitas berdasarkan nama/);
+  assert.match(groupsPage, /Buat komunitas baru/);
+  assert.match(groupsAction, /requireServerUser/);
+  assert.match(groupsAction, /create_suki_group/);
+  assert.match(groupsAction, /group_posts/);
+  assert.match(groupsMigration, /create table if not exists public\.groups/);
+  assert.match(groupsMigration, /alter table public\.groups enable row level security/);
+  assert.match(groupsMigration, /group_posts_member_insert/);
+  assert.doesNotMatch(groupsPage, /125 rb|48 rb|SUKI Foodies|UMKM Sultra Naik Kelas/);
 });
