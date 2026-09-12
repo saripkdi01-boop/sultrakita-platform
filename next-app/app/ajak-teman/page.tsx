@@ -31,7 +31,8 @@ export default function AjakTemanPage() {
   const nextLevel = levels.find((item) => item.min > qualified);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search); const incoming = params.get('ref');
+    const params = new URLSearchParams(window.location.search); const incoming = params.get('ref'); const requestedTab = params.get('tab');
+    if (requestedTab && ['overview', 'analytics', 'leaderboard', 'redeem', 'rules'].includes(requestedTab)) setTab(requestedTab as Tab);
     if (incoming) { localStorage.setItem('sultra-referral-code', incoming.toUpperCase()); const source = params.get('src') || (document.referrer ? 'social' : 'direct'); void fetch('/api/referral', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'visit', referral_code: incoming, source_channel: source.slice(0, 30) }) }); }
     const stored = localStorage.getItem('sultra-referral-code'); if (stored) setSummary(current => ({ ...current, referral_code: stored }));
     void fetch('/api/referral?action=summary', { credentials: 'include' }).then(response => response.ok ? response.json() : null).then(payload => { if (payload?.data) { setSummary(payload.data); localStorage.setItem('sultra-referral-code', payload.data.referral_code || referralCode); } }).catch(() => undefined);

@@ -12,7 +12,9 @@ test('launch referral campaign contract is present', () => {
   const authMigration = fs.readFileSync(path.join(root, 'database/migrations/027_referral_auth_accounts.sql'), 'utf8');
   const atomicMigration = fs.readFileSync(path.join(root, 'database/migrations/028_referral_atomic_operations.sql'), 'utf8');
   const payoutMigration = fs.readFileSync(path.join(root, 'database/migrations/029_referral_payout_workflow.sql'), 'utf8');
+  const notificationMigration = fs.readFileSync(path.join(root, 'database/migrations/030_referral_payout_notifications.sql'), 'utf8');
   const payoutPage = fs.readFileSync(path.join(root, 'next-app/app/admin/affiliate-rewards/page.tsx'), 'utf8');
+  const notificationCenter = fs.readFileSync(path.join(root, 'next-app/components/layout/NotificationCenter.tsx'), 'utf8');
   assert.match(migration, /CREATE TABLE IF NOT EXISTS referral_profiles/);
   assert.match(migration, /CREATE TABLE IF NOT EXISTS point_redemptions/);
   assert.match(server, /app\.use\('\/api\/referral', referralApi\)/);
@@ -40,4 +42,11 @@ test('launch referral campaign contract is present', () => {
   assert.match(payoutPage, /paid/);
   assert.match(payoutPage, /rejected/);
   assert.match(payoutPage, /TWO-PERSON PAY/);
+  assert.match(notificationMigration, /ALTER COLUMN user_id DROP NOT NULL/);
+  assert.match(notificationMigration, /payout_status/);
+  assert.match(notificationMigration, /jsonb_build_object\('status', p_to_status\)/);
+  assert.match(notificationMigration, /profile_id, type, title, body, link, data, is_read/);
+  assert.match(notificationMigration, /transition_referral_payout/);
+  assert.match(notificationCenter, /from\('notifications'\)/);
+  assert.match(notificationCenter, /postgres_changes/);
 });
