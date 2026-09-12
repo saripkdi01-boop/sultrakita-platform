@@ -16,9 +16,9 @@ function freshness(value?: string) { if (!value) return 'Waktu pembaruan belum t
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
   const property: any = await getPublicPropertyById(id).catch(() => null);
-  if (!property) return { title: 'Properti tidak ditemukan | SUKI Properti' };
+  if (!property) return { title: 'Properti tidak ditemukan | SUKI Suits' };
   const place = [property.subdistrict_name, property.regency_name || property.city].filter(Boolean).join(', ');
-  const title = `${property.title} - Jual/Sewa di ${place || 'Sulawesi Tenggara'} | SUKI Properti`;
+  const title = `${property.title} - Jual/Sewa di ${place || 'Sulawesi Tenggara'} | SUKI Suits`;
   const description = `${property.description || 'Listing properti pilihan Sulawesi Tenggara.'} Harga ${rupiah(Number(property.price))}${formatPriceType(property.price_type)}. Sertifikat ${property.certificate_type || 'belum dicantumkan'}.`.slice(0, 160);
   const image = Array.isArray(property.images) ? property.images[0] : undefined;
   return { title, description, openGraph: { title, description, type: 'website', ...(image ? { images: [{ url: image, alt: property.title }] } : {}) } };

@@ -11,7 +11,7 @@ import {
   Handshake,
   HelpCircle,
   History,
-  Home,
+  Building2,
   Link2,
   LockKeyhole,
   Megaphone,
@@ -41,7 +41,7 @@ export const menuSections: { title: string; items: MenuItemConfig[] }[] = [
     title: 'Pintasan Anda',
     items: [
       { label: 'SUKI Marketplace', route: '/marketplace', icon: ShoppingBag },
-      { label: 'SUKI Properti', route: '/properti', icon: Home },
+      { label: 'SUKI Suits', route: '/properti', icon: Building2 },
     ],
   },
   {
@@ -52,7 +52,7 @@ export const menuSections: { title: string; items: MenuItemConfig[] }[] = [
       { label: 'Kenangan', route: '/beranda#memories', icon: History },
       { label: 'SUKI Marketplace', route: '/marketplace', icon: Store },
       { label: 'Grup', route: '/groups', icon: Users },
-      { label: 'Properti Saya', route: '/dashboard/properties', icon: Home },
+      { label: 'Properti Saya', route: '/dashboard/properties', icon: Building2 },
       { label: 'Pesan Properti', route: '/dashboard/inquiries', icon: MessageCircle },
     ],
   },
@@ -86,7 +86,7 @@ export const menuSections: { title: string; items: MenuItemConfig[] }[] = [
       { label: 'SUKI Campaign Hub', route: '/campaigns', icon: Megaphone, badge: 'LIVE', interactive: 'campaign' },
       { label: 'SUKI Events', route: '/groups', icon: CalendarDays },
       { label: 'SUKI Jobs', route: '/jobs', icon: BriefcaseBusiness, badge: 'NEW' },
-      { label: 'SUKI Properti', route: '/properti', icon: Home },
+      { label: 'SUKI Suits', route: '/properti', icon: Building2 },
     ],
   },
   {
