@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import PropertyCard from '@/components/property/PropertyCard';
 import PropertyFilter, { type PropertyFilterValues } from '@/components/property/PropertyFilter';
+import EcosystemSlider from '@/components/marketing/EcosystemSlider';
 import { getProperties, getUserFavoriteProperties, togglePropertyFavorite } from '@/lib/actions/property';
 
 const categories = [{ key: undefined, label: 'Semua', Icon: Building2, color: 'bg-sultra-teal' }, { key: 'rumah_second', label: 'Rumah second', Icon: Home, color: 'bg-blue-500' }, { key: 'rumah_mewah', label: 'Rumah mewah', Icon: Home, color: 'bg-amber-600' }, { key: 'rumah_subsidi', label: 'Rumah subsidi', Icon: Landmark, color: 'bg-green-600' }, { key: 'kos_kosan', label: 'Kos-kosan', Icon: Bed, color: 'bg-purple-500' }, { key: 'kontrakan', label: 'Kontrakan', Icon: Home, color: 'bg-cyan-600' }, { key: 'tanah_kavling', label: 'Tanah kavling', Icon: Map, color: 'bg-lime-600' }, { key: 'tanah_kosong', label: 'Tanah / lahan', Icon: Map, color: 'bg-emerald-700' }, { key: 'ruko', label: 'Ruko', Icon: Store, color: 'bg-orange-600' }, { key: 'gudang', label: 'Gudang', Icon: Warehouse, color: 'bg-slate-600' }, { key: 'kantor', label: 'Kantor', Icon: BriefcaseBusiness, color: 'bg-indigo-600' }, { key: 'ruang_usaha', label: 'Ruang usaha', Icon: Store, color: 'bg-rose-600' }, { key: 'properti_lelang', label: 'Properti lelang', Icon: Gavel, color: 'bg-red-600' }, { key: 'takeover_kpr', label: 'Takeover KPR', Icon: Landmark, color: 'bg-orange-500' }, { key: 'properti_developer', label: 'Developer', Icon: Building2, color: 'bg-teal-700' }, { key: 'apartemen', label: 'Apartemen', Icon: Building2, color: 'bg-violet-600' }, { key: 'villa_resort', label: 'Villa / resort', Icon: Home, color: 'bg-pink-600' }] as const;
@@ -54,6 +55,7 @@ export default function PropertiPage() {
   function submitSearch(event: React.FormEvent<HTMLFormElement>) { event.preventDefault(); void load(); }
 
   return <AppLayout><main className="platform-shell mx-auto max-w-[1440px] px-3 pb-24 pt-3 sm:px-5 lg:px-8 lg:pt-5">
+    <EcosystemSlider appSlug="suits" />
     <section className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_10px_40px_-24px_rgba(15,23,42,.35)] dark:border-slate-700 dark:bg-slate-900">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_88%_0%,rgba(20,184,166,.12),transparent_32%),linear-gradient(115deg,rgba(15,118,110,.06),transparent_55%)]" />
       <div className="relative px-4 py-4 sm:px-6 sm:py-5">

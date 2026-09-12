@@ -8,6 +8,7 @@ import { CreatePostModal } from '@/components/beranda/CreatePostModal';
 import { FeedPost } from '@/components/beranda/FeedPost';
 import { RightSidebar } from '@/components/beranda/RightSidebar';
 import { StoriesSection } from '@/components/beranda/StoriesSection';
+import EcosystemSlider from '@/components/marketing/EcosystemSlider';
 import { useInfiniteFeed, type FeedFilter } from '@/hooks/useInfiniteFeed';
 import { setPostLike } from '@/lib/feed-interactions';
 
@@ -29,7 +30,7 @@ export default function BerandaPage() {
       <div className="beranda-main">
         <div className="beranda-feed-heading beranda-feed-heading-compact"><div><p className="beranda-eyebrow">Ruang warga Sulawesi Tenggara</p><h1 id="beranda-title">Beranda</h1></div><button type="button" className="beranda-filter" aria-label="Opsi beranda"><MoreHorizontal size={18}/></button></div>
         <div className="feed-toolbar" role="tablist" aria-label="Filter feed">{filters.map((item) => <button key={item.value} type="button" role="tab" aria-selected={filter === item.value} className={filter === item.value ? 'active' : ''} onClick={() => setFilter(item.value)}>{filter === item.value && <Check size={14} aria-hidden="true"/>}{item.label}</button>)}</div>
-        <StoriesSection/><CreatePostInput onCreate={openComposer}/>
+        <StoriesSection/><EcosystemSlider appSlug="marketplace"/><CreatePostInput onCreate={openComposer}/>
         {notice && <div className="beranda-notice" role="status"><span>{notice}</span><button type="button" onClick={() => setNotice('')}>Tutup</button></div>}
         {error && <div className="feed-state feed-error" role="alert"><span>{error}</span><button type="button" onClick={reload}><RefreshCw size={15}/> Coba lagi</button></div>}
         {!error && !loading && items.length === 0 && <div className="feed-state"><strong>Belum ada cerita di sini.</strong><span>Coba filter lain atau bagikan cerita pertama Anda.</span></div>}

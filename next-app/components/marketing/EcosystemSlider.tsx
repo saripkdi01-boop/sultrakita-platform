@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, ArrowRight, Pause, Play } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { getActiveEcosystemBanners, recordEcosystemBannerEvent, type BannerAppSlug, type EcosystemBanner, type BannerEventType } from '@/lib/actions/ecosystem-banners';
+import { supabase } from '@/lib/supabase/client';
 
 type Props = { appSlug: BannerAppSlug; banners?: EcosystemBanner[] };
 const toneClasses: Record<BannerAppSlug, { badge: string; button: string; dot: string }> = {
@@ -31,6 +32,23 @@ export function EcosystemSlider({ appSlug, banners: initialBanners = [] }: Props
     });
     return () => { cancelled = true; };
   }, [appSlug, initialBanners.length]);
+
+  useEffect(() => {
+    if (!supabase) return;
+    const client = supabase;
+    const refresh = async () => {
+      const result = await getActiveEcosystemBanners(appSlug);
+      if (result.ok) {
+        setBanners(result.banners);
+        setActive((current) => Math.min(current, Math.max(result.banners.length - 1, 0)));
+        setLoaded(true);
+      }
+    };
+    const channel = client.channel(`ecosystem-banners:${appSlug}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'ecosystem_banners', filter: `app_slug=eq.${appSlug}` }, () => { void refresh(); })
+      .subscribe();
+    return () => { void client.removeChannel(channel); };
+  }, [appSlug]);
 
   useEffect(() => {
     const media = window.matchMedia('(prefers-reduced-motion: reduce)');
