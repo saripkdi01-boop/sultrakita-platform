@@ -894,3 +894,52 @@ html[data-theme='dark'] .beranda-create-post{background:var(--theme-surface)}htm
 @media (max-width:900px){.beranda-shell{max-width:680px;padding:14px 14px 72px}.beranda-post-list{gap:8px}.beranda-shell .beranda-right-sidebar{display:none}}
 @media (max-width:560px){.beranda-shell{padding-inline:10px}.beranda-feed-heading h1{font-size:22px}.beranda-feed-post{border-radius:13px}.beranda-feed-post header{padding-inline:11px}.beranda-feed-post .feed-copy{padding-inline:11px;font-size:12px;line-height:1.5}.feed-meta{padding-inline:11px}.feed-actions{margin-inline:7px}.feed-actions button,.feed-actions a{min-height:38px;font-size:0;gap:0}.feed-actions button svg,.feed-actions a svg{width:17px;height:17px}.feed-actions button span,.feed-actions a span{display:none}.feed-actions .feed-action-whatsapp{display:flex}.feed-toolbar{margin-inline:-2px}.feed-toolbar button{min-height:32px;padding-inline:9px}.beranda-create-post{padding:11px}.feed-media{max-height:360px}.feed-video{aspect-ratio:4/5}}
 @media (prefers-reduced-motion:reduce){.beranda-post-list{scroll-behavior:auto}.feed-actions button,.feed-actions a{transition:none}}
+
+/* Theme compatibility layer: legacy Tailwind utilities inherit the semantic contract. */
+html[data-theme='dark'] .bg-white,
+html[data-theme='dark'] .bg-slate-50,
+html[data-theme='dark'] .bg-gray-50,
+html[data-theme='dark'] .bg-gray-100 { background-color: var(--theme-surface) !important; }
+html[data-theme='dark'] .bg-gray-200,
+html[data-theme='dark'] .bg-slate-100 { background-color: var(--theme-surface-muted) !important; }
+html[data-theme='dark'] .text-black,
+html[data-theme='dark'] .text-gray-900,
+html[data-theme='dark'] .text-gray-800,
+html[data-theme='dark'] .text-slate-900 { color: var(--theme-text-strong) !important; }
+html[data-theme='dark'] .text-gray-700,
+html[data-theme='dark'] .text-gray-600,
+html[data-theme='dark'] .text-slate-600 { color: var(--theme-text-muted) !important; }
+html[data-theme='dark'] .text-gray-500,
+html[data-theme='dark'] .text-gray-400,
+html[data-theme='dark'] .text-slate-500 { color: var(--theme-text-subtle) !important; }
+html[data-theme='dark'] .border-gray-100,
+html[data-theme='dark'] .border-gray-200,
+html[data-theme='dark'] .border-gray-300,
+html[data-theme='dark'] .border-slate-200 { border-color: var(--theme-border) !important; }
+html[data-theme='dark'] input,
+html[data-theme='dark'] textarea,
+html[data-theme='dark'] select { background-color: var(--theme-surface-muted); border-color: var(--theme-border); color: var(--theme-text); }
+html[data-theme='dark'] input::placeholder,
+html[data-theme='dark'] textarea::placeholder { color: var(--theme-text-subtle); }
+html[data-theme='dark'] .prose { color: var(--theme-text); }
+html[data-theme='dark'] .prose :where(strong,h1,h2,h3,h4) { color: var(--theme-text-strong); }
+html[data-theme='dark'] .prose :where(a) { color: var(--theme-primary); }
+html[data-theme='dark'] .shadow,
+html[data-theme='dark'] .shadow-sm,
+html[data-theme='dark'] .shadow-md,
+html[data-theme='dark'] .shadow-lg { --tw-shadow-color: rgba(0,0,0,.28); }
+html[data-theme='dark'] .hover\:bg-gray-50:hover,
+html[data-theme='dark'] .hover\:bg-gray-100:hover { background-color: var(--theme-primary-soft) !important; }
+html[data-theme='dark'] .ring-gray-200 { --tw-ring-color: var(--theme-border); }
+html[data-theme='dark'] .divide-gray-200 > :not([hidden]) ~ :not([hidden]) { border-color: var(--theme-border); }
+
+/* Keep native UI and page transitions visually stable while the preference hydrates. */
+html { background: var(--theme-bg); color-scheme: light; }
+html[data-theme='dark'] { color-scheme: dark; }
+body { min-height: 100dvh; text-rendering: optimizeLegibility; }
+@media (prefers-reduced-motion: no-preference) {
+  :where(button, a, input, textarea, select) { transition-property: color, background-color, border-color, box-shadow, opacity, transform; transition-duration: 160ms; transition-timing-function: cubic-bezier(.23,1,.32,1); }
+}
+@media (forced-colors: active) {
+  :where(button, a, input, textarea, select):focus-visible { outline: 2px solid CanvasText; }
+}
