@@ -12,6 +12,8 @@ test('launch referral campaign contract is present', () => {
   const authMigration = fs.readFileSync(path.join(root, 'database/migrations/027_referral_auth_accounts.sql'), 'utf8');
   const atomicMigration = fs.readFileSync(path.join(root, 'database/migrations/028_referral_atomic_operations.sql'), 'utf8');
   const ledgerMigration = fs.readFileSync(path.join(root, 'database/migrations/031_referral_reward_ledger.sql'), 'utf8');
+  const correctiveMigration = fs.readFileSync(path.join(root, 'database/migrations/032_referral_redemption_status_qualification.sql'), 'utf8');
+  const payoutCorrectiveMigration = fs.readFileSync(path.join(root, 'database/migrations/033_referral_payout_id_qualification.sql'), 'utf8');
   const payoutMigration = fs.readFileSync(path.join(root, 'database/migrations/029_referral_payout_workflow.sql'), 'utf8');
   const notificationMigration = fs.readFileSync(path.join(root, 'database/migrations/030_referral_payout_notifications.sql'), 'utf8');
   const payoutPage = fs.readFileSync(path.join(root, 'next-app/app/admin/affiliate-rewards/page.tsx'), 'utf8');
@@ -36,6 +38,10 @@ test('launch referral campaign contract is present', () => {
   assert.match(ledgerMigration, /ON CONFLICT \(event_key\) DO NOTHING/);
   assert.match(ledgerMigration, /qualified-award:/);
   assert.doesNotMatch(nextApi, /increment_referral_account_points/);
+  assert.match(correctiveMigration, /r\.status = 'pending'/);
+  assert.match(correctiveMigration, /CREATE OR REPLACE FUNCTION public\.create_referral_redemption/);
+  assert.match(payoutCorrectiveMigration, /r\.id = p_redemption_id/);
+  assert.match(payoutCorrectiveMigration, /CREATE OR REPLACE FUNCTION public\.transition_referral_payout/);
   assert.match(payoutMigration, /referral_redemption_audit_logs/);
   assert.match(payoutMigration, /transition_referral_payout/);
   assert.match(payoutMigration, /second operator required/);
