@@ -6,7 +6,8 @@ import { cookies } from 'next/headers';
 export type VisibilityLevel = 'public' | 'followers' | 'private';
 export type VisibilitySettings = Record<string, VisibilityLevel>;
 
-const defaults: VisibilitySettings = { full_name: 'public', username: 'public', bio: 'public', phone: 'followers', email: 'private', location: 'public', interests: 'public', online_status: 'followers' };
+export const defaultVisibilitySettings: VisibilitySettings = { full_name: 'public', username: 'public', bio: 'public', phone: 'followers', email: 'private', location: 'public', interests: 'public', online_status: 'followers', avatar: 'public' };
+const defaults = defaultVisibilitySettings;
 
 async function getClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;

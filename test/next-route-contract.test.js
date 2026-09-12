@@ -18,7 +18,8 @@ const createMenu = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'compo
 const berandaPage = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'app', 'beranda', 'page.tsx'), 'utf8');
 
 test('feed route selects only profile columns that exist in Supabase', () => {
-  assert.match(feedRoute, /profiles\(display_name,username,avatar_url\)/);
+  assert.match(feedRoute, /profiles\(display_name,username,avatar_url,visibility_settings\)/);
+  assert.match(feedRoute, /visibility_settings\?\.avatar !== 'public'/);
   assert.match(feedRoute, /eq\('status', 'published'\)/);
   assert.match(postsAction, /privacy/);
   assert.match(composer, /Publikasikan sekarang/);

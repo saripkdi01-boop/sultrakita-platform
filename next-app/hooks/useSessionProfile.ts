@@ -13,6 +13,7 @@ export type SessionProfile = {
   role: 'buyer' | 'seller' | 'admin' | 'warga' | 'creator' | 'community' | null;
   bio: string | null;
   district: string | null;
+  visibility_settings?: Record<string, 'public' | 'followers' | 'private'> | null;
 };
 
 function cleanNickname(value: unknown) {
@@ -38,7 +39,7 @@ export function useSessionProfile() {
     setUser(nextUser);
     if (!nextUser || !supabase) { setProfile(null); setNotificationCount(0); return; }
     const [{ data: nextProfile }, { count }] = await Promise.all([
-      supabase.from('profiles').select('id,full_name,display_name,username,avatar_url,role,bio,district').eq('id', nextUser.id).maybeSingle(),
+      supabase.from('profiles').select('id,full_name,display_name,username,avatar_url,role,bio,district,visibility_settings').eq('id', nextUser.id).maybeSingle(),
       supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('recipient_id', nextUser.id).is('read_at', null),
     ]);
     setProfile(nextProfile as SessionProfile | null);

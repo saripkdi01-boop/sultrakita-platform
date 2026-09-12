@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const supabase = await getServerSupabase();
-    let query = supabase.from('posts').select('id,content,media_urls,type,privacy,location,mood,tagged_user_ids,created_at,user_id,profiles(display_name,username,avatar_url)').eq('status', 'published').order('created_at', { ascending: false }).order('id', { ascending: false }).limit(limit + 1);
+    let query = supabase.from('posts').select('id,content,media_urls,type,privacy,location,mood,tagged_user_ids,created_at,user_id,profiles(display_name,username,avatar_url,visibility_settings)').eq('status', 'published').order('created_at', { ascending: false }).order('id', { ascending: false }).limit(limit + 1);
     if (filter === 'property') query = query.eq('type', 'property');
     if (filter === 'video') query = query.eq('type', 'reel');
     if (filter === 'following') {
@@ -57,7 +57,14 @@ export async function GET(request: NextRequest) {
     if (hasNextPage) rows.pop();
     const last = rows.at(-1);
     const endCursor = hasNextPage && last ? encodeCursor({ v: 1, filter, createdAt: String(last.created_at), id: String(last.id) }) : null;
-    return NextResponse.json({ data: rows, pageInfo: { endCursor, hasNextPage }, rankingVersion: 'baseline-v1', filter }, { headers: { 'Cache-Control': 'private, no-store', Vary: 'Cookie' } });
+    const safeRows = rows.map((row) => {
+      const profile = row.profiles as { visibility_settings?: { avatar?: string } } | null;
+      if (profile && profile.visibility_settings?.avatar !== 'public') {
+        row.profiles = { ...(row.profiles as Record<string, unknown>), avatar_url: null };
+      }
+      return row;
+    });
+    return NextResponse.json({ data: safeRows, pageInfo: { endCursor, hasNextPage }, rankingVersion: 'baseline-v1', filter }, { headers: { 'Cache-Control': 'private, no-store', Vary: 'Cookie' } });
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : 'feed_unavailable' }, { status: 500 });
   }

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { BerandaPostData } from '@/components/beranda/FeedPost';
 
 export type FeedFilter = 'recommended' | 'following' | 'latest' | 'property' | 'video';
-type ApiPost = { id: string; content: string; media_urls?: string[]; type: string; privacy?: 'public' | 'followers'; location?: string; mood?: string | null; tagged_user_ids?: string[]; created_at: string; user_id: string; likes_count?: number; comments_count?: number; liked?: boolean; profiles?: { display_name?: string; username?: string; name?: string; avatar_url?: string } | null };
+type ApiPost = { id: string; content: string; media_urls?: string[]; type: string; privacy?: 'public' | 'followers'; location?: string; mood?: string | null; tagged_user_ids?: string[]; created_at: string; user_id: string; likes_count?: number; comments_count?: number; liked?: boolean; profiles?: { display_name?: string; username?: string; name?: string; avatar_url?: string | null; visibility_settings?: { avatar?: 'public' | 'followers' | 'private' } } | null };
 type FeedResponse = { data: ApiPost[]; pageInfo: { endCursor: string | null; hasNextPage: boolean }; error?: string };
 
 const relativeTime = (iso: string) => {

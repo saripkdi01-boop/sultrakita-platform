@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Bookmark, Check, Globe2, Heart, MessageCircle, MoreHorizontal, Send, Share2, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-export type BerandaPostData = { id: string; author: string; authorUsername?: string; initials: string; avatarUrl?: string; time: string; location?: string; privacy?: 'public' | 'followers'; mood?: string | null; taggedCount?: number; content: string; mediaUrl?: string; mediaUrls?: string[]; mediaType?: 'image' | 'video'; likes: number; comments: number; liked?: boolean };
+export type BerandaPostData = { id: string; author: string; authorUsername?: string; initials: string; avatarUrl?: string | null; time: string; location?: string; privacy?: 'public' | 'followers'; mood?: string | null; taggedCount?: number; content: string; mediaUrl?: string; mediaUrls?: string[]; mediaType?: 'image' | 'video'; likes: number; comments: number; liked?: boolean };
 type Props = { post: BerandaPostData; onLike?: (id: string, liked: boolean) => void; onComment?: (id: string) => void; onNotice?: (message: string) => void };
 
 function MediaGallery({ post }: { post: BerandaPostData }) {

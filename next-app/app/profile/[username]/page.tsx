@@ -12,6 +12,7 @@ type PublicProfile = {
   bio: string | null;
   district: string | null;
   role: string | null;
+  visibility_settings?: { avatar?: 'public' | 'followers' | 'private' } | null;
 };
 
 function initials(profile: PublicProfile) {
@@ -51,7 +52,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
     const supabase = await getServerSupabase();
     const { data, error } = await supabase
       .from('profiles')
-      .select('display_name,full_name,username,avatar_url,bio,district,role')
+      .select('display_name,full_name,username,avatar_url,bio,district,role,visibility_settings')
       .eq('username', normalizedUsername)
       .maybeSingle();
     if (error || !data) notFound();
@@ -62,7 +63,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
 
   if (!profile) notFound();
   const name = publicName(profile);
-  const avatar = profile.avatar_url?.trim() || null;
+  const avatar = profile.visibility_settings?.avatar === 'public' ? profile.avatar_url?.trim() || null : null;
 
   return (
     <AppLayout active="home">
