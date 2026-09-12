@@ -27,9 +27,25 @@ function referralError(error: unknown) {
 export async function GET(request: NextRequest) {
   const action = request.nextUrl.searchParams.get('action') || 'campaign';
   if (action === 'campaign') return json(campaign);
-  const user = await currentUser(); if (!user) return bad('Sesi login diperlukan.', 401);
   try {
-    const db = adminClient(); const code = codeFor(user.id);
+    const db = adminClient();
+    if (action === 'leaderboard') {
+      const { data: events, error: eventsError } = await db.from('referral_account_events').select('referrer_id').eq('event_type', 'qualified').limit(5000);
+      if (eventsError) throw eventsError;
+      const counts = new Map<string, number>(); (events || []).forEach(event => counts.set(event.referrer_id, (counts.get(event.referrer_id) || 0) + 1));
+      const ids = Array.from(counts.keys()); if (!ids.length) return json([]);
+      const { data: accounts, error: accountsError } = await db.from('referral_accounts').select('auth_user_id,total_points').in('auth_user_id', ids);
+      if (accountsError) throw accountsError;
+      const rows = (accounts || []).map(account => ({ id: account.auth_user_id, qualified_referrals: counts.get(account.auth_user_id) || 0, total_points: account.total_points || 0 })).sort((a, b) => b.qualified_referrals - a.qualified_referrals || b.total_points - a.total_points).slice(0, 50);
+      return json(rows.map((row, index) => ({ rank: index + 1, name: `Affiliator ${createHash('sha256').update(row.id).digest('hex').slice(0, 4).toUpperCase()}`, qualified_referrals: row.qualified_referrals, total_points: row.total_points })));
+    }
+    const user = await currentUser(); if (!user) return bad('Sesi login diperlukan.', 401);
+    const code = codeFor(user.id);
+    if (action === 'redemptions') {
+      const { data, error } = await db.from('referral_account_redemptions').select('id,points,rupiah_amount,status,created_at').eq('auth_user_id', user.id).order('id', { ascending: false }).limit(20);
+      if (error) throw error;
+      return json(data || []);
+    }
     const { error: accountError } = await db.from('referral_accounts').upsert({ auth_user_id: user.id, referral_code: code }, { onConflict: 'auth_user_id', ignoreDuplicates: true });
     if (accountError) throw accountError;
     const [{ data: account, error: accountReadError }, { count, error: countError }, { data: activity, error: activityError }] = await Promise.all([
