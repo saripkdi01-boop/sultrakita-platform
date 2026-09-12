@@ -21,6 +21,12 @@ function referralError(error: unknown) {
   if (message.includes('pending redemption already exists')) return bad('Masih ada pengajuan yang sedang diverifikasi.', 409);
   if (message.includes('insufficient referral balance')) return bad('Saldo poin belum mencukupi.', 409);
   if (message.includes('referral account not found')) return bad('Akun referral belum siap.', 409);
+  if (message.includes('payout operator authorization required')) return bad('Akses operator payout diperlukan.', 403);
+  if (message.includes('second operator required')) return bad('Pembayaran membutuhkan operator kedua.', 409);
+  if (message.includes('rejection reason required')) return bad('Alasan penolakan wajib diisi.', 422);
+  if (message.includes('payment reference required')) return bad('Referensi pembayaran wajib diisi.', 422);
+  if (message.includes('terminal payout status')) return bad('Payout sudah berada pada status final.', 409);
+  if (message.includes('payout not found')) return bad('Payout tidak ditemukan.', 404);
   return bad('Campaign belum dapat diproses.', 503);
 }
 
@@ -29,6 +35,14 @@ export async function GET(request: NextRequest) {
   if (action === 'campaign') return json(campaign);
   try {
     const db = adminClient();
+    if (action === 'payout_queue') {
+      const user = await currentUser(); if (!user) return bad('Sesi login diperlukan.', 401);
+      const status = request.nextUrl.searchParams.get('status') || 'pending';
+      const sessionDb = await getServerSupabase();
+      const { data, error } = await sessionDb.rpc('list_referral_payouts', { p_status: status });
+      if (error) throw error;
+      return json(data || []);
+    }
     if (action === 'leaderboard') {
       const { data: events, error: eventsError } = await db.from('referral_account_events').select('referrer_id').eq('event_type', 'qualified').limit(5000);
       if (eventsError) throw eventsError;
@@ -82,6 +96,23 @@ export async function POST(request: NextRequest) {
       return json({ tracked: true });
     }
     const user = await currentUser(); if (!user) return bad('Sesi login diperlukan.', 401);
+    if (action === 'payout_transition') {
+      const redemptionId = Number(body.redemption_id);
+      const toStatus = String(body.to_status || '').trim();
+      const note = String(body.note || '').trim().slice(0, 500);
+      const paymentReference = String(body.payment_reference || '').trim().slice(0, 160);
+      if (!Number.isSafeInteger(redemptionId) || redemptionId <= 0) return bad('ID payout belum valid.');
+      if (!['approved', 'paid', 'rejected'].includes(toStatus)) return bad('Status payout belum valid.');
+      const sessionDb = await getServerSupabase();
+      const { data, error } = await sessionDb.rpc('transition_referral_payout', {
+        p_redemption_id: redemptionId,
+        p_to_status: toStatus,
+        p_note: note || null,
+        p_payment_reference: paymentReference || null,
+      });
+      if (error) throw error;
+      return json(data?.[0] || {});
+    }
     if (campaignClosed()) return bad('Campaign referral telah berakhir.', 410);
     const code = String(body.referral_code || '').trim().toUpperCase();
     if (action === 'claim') {
