@@ -17,9 +17,28 @@ const filters: Array<{ value: FeedFilter; label: string }> = [
 
 export default function BerandaPage() {
   const { filter, setFilter, items, loading, error, hasNextPage, loadMore, reload } = useInfiniteFeed();
-  const [notice, setNotice] = useState(''); const [composerOpen, setComposerOpen] = useState(false); const [composerType, setComposerType] = useState<'post' | 'reel'>('post'); const sentinelRef = useRef<HTMLDivElement>(null);
+  const [notice, setNotice] = useState('');
+  const [composerOpen, setComposerOpen] = useState(false);
+  const [composerType, setComposerType] = useState<'post' | 'reel'>('post');
+  const sentinelRef = useRef<HTMLDivElement>(null);
   function openComposer(type: 'post' | 'reel' = 'post') { setComposerType(type); setComposerOpen(true); }
   useEffect(() => { const compose = new URLSearchParams(window.location.search).get('compose'); if (compose === 'post' || compose === 'reel') openComposer(compose); }, []);
   useEffect(() => { const node = sentinelRef.current; if (!node) return; const observer = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) loadMore(); }, { rootMargin: '480px' }); observer.observe(node); return () => observer.disconnect(); }, [loadMore]);
-  return <AppLayout active="home" onCreate={openComposer}><main className="beranda-shell"><div className="beranda-main"><div className="beranda-feed-heading beranda-feed-heading-compact"><button className="beranda-filter" aria-label="Opsi beranda"><MoreHorizontal size={18}/></button></div><div className="feed-toolbar" role="tablist" aria-label="Filter feed">{filters.map((item) => <button key={item.value} type="button" role="tab" aria-selected={filter === item.value} className={filter === item.value ? 'active' : ''} onClick={() => setFilter(item.value)}>{filter === item.value && <Check size={14}/>} {item.label}</button>)}</div><StoriesSection/><CreatePostInput onCreate={openComposer}/>{notice && <div className="beranda-notice" role="status"><span>{notice}</span><button onClick={() => setNotice('')}>Tutup</button></div>}{error && <div className="feed-state feed-error" role="alert"><span>{error}</span><button type="button" onClick={reload}><RefreshCw size={15}/> Coba lagi</button></div>}{!error && !loading && items.length === 0 && <div className="feed-state"><strong>Belum ada cerita di sini.</strong><span>Coba filter lain atau bagikan cerita pertama Anda.</span></div>}{items.map((post) => <FeedPost key={post.id} post={post} onLike={(id, liked) => { void setPostLike(id, liked).then(() => setNotice(liked ? 'Suka dicatat.' : 'Suka dibatalkan.')).catch((caught: unknown) => setNotice(caught instanceof Error && caught.message === 'authentication_required' ? 'Silakan login untuk menyukai postingan.' : 'Interaksi belum dapat disimpan.')); }} onComment={() => setNotice('Kolom komentar akan tersedia setelah Anda login.')}/>)}{loading && <div className="feed-loading" aria-live="polite"><LoaderCircle size={18} className="spin"/> Memuat cerita warga...</div>}<div ref={sentinelRef} className="feed-sentinel" aria-hidden="true" />{!hasNextPage && items.length > 0 && !loading && <p className="feed-end">Anda sudah melihat semua cerita terbaru.</p>}</div><RightSidebar/></main><CreatePostModal open={composerOpen} initialType={composerType} onClose={() => setComposerOpen(false)} onCreated={(message) => { setNotice(message); reload(); }}/></AppLayout>;
+  return <AppLayout active="home" onCreate={openComposer}>
+    <main className="beranda-shell" aria-labelledby="beranda-title">
+      <div className="beranda-main">
+        <div className="beranda-feed-heading beranda-feed-heading-compact"><div><p className="beranda-eyebrow">Ruang warga Sulawesi Tenggara</p><h1 id="beranda-title">Beranda</h1></div><button type="button" className="beranda-filter" aria-label="Opsi beranda"><MoreHorizontal size={18}/></button></div>
+        <div className="feed-toolbar" role="tablist" aria-label="Filter feed">{filters.map((item) => <button key={item.value} type="button" role="tab" aria-selected={filter === item.value} className={filter === item.value ? 'active' : ''} onClick={() => setFilter(item.value)}>{filter === item.value && <Check size={14} aria-hidden="true"/>}{item.label}</button>)}</div>
+        <StoriesSection/><CreatePostInput onCreate={openComposer}/>
+        {notice && <div className="beranda-notice" role="status"><span>{notice}</span><button type="button" onClick={() => setNotice('')}>Tutup</button></div>}
+        {error && <div className="feed-state feed-error" role="alert"><span>{error}</span><button type="button" onClick={reload}><RefreshCw size={15}/> Coba lagi</button></div>}
+        {!error && !loading && items.length === 0 && <div className="feed-state"><strong>Belum ada cerita di sini.</strong><span>Coba filter lain atau bagikan cerita pertama Anda.</span></div>}
+        <div className="beranda-post-list">{items.map((post) => <FeedPost key={post.id} post={post} onLike={(id, liked) => { void setPostLike(id, liked).then(() => setNotice(liked ? 'Suka dicatat.' : 'Suka dibatalkan.')).catch((caught: unknown) => setNotice(caught instanceof Error && caught.message === 'authentication_required' ? 'Silakan login untuk menyukai postingan.' : 'Interaksi belum dapat disimpan.')); }} onComment={() => setNotice('Komentar akan tersedia setelah endpoint komentar aktif.')}/>)}</div>
+        {loading && <div className="feed-loading" aria-live="polite"><LoaderCircle size={18} className="spin"/> Memuat cerita warga...</div>}
+        <div ref={sentinelRef} className="feed-sentinel" aria-hidden="true" />{!hasNextPage && items.length > 0 && !loading && <p className="feed-end">Anda sudah melihat semua cerita terbaru.</p>}
+      </div>
+      <RightSidebar/>
+    </main>
+    <CreatePostModal open={composerOpen} initialType={composerType} onClose={() => setComposerOpen(false)} onCreated={(message) => { setNotice(message); reload(); }}/>
+  </AppLayout>;
 }
