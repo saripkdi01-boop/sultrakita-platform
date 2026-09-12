@@ -10,6 +10,7 @@ test('launch referral campaign contract is present', () => {
   const page = fs.readFileSync(path.join(root, 'public/referral/index.html'), 'utf8');
   const nextApi = fs.readFileSync(path.join(root, 'next-app/app/api/referral/route.ts'), 'utf8');
   const authMigration = fs.readFileSync(path.join(root, 'database/migrations/027_referral_auth_accounts.sql'), 'utf8');
+  const atomicMigration = fs.readFileSync(path.join(root, 'database/migrations/028_referral_atomic_operations.sql'), 'utf8');
   assert.match(migration, /CREATE TABLE IF NOT EXISTS referral_profiles/);
   assert.match(migration, /CREATE TABLE IF NOT EXISTS point_redemptions/);
   assert.match(server, /app\.use\('\/api\/referral', referralApi\)/);
@@ -17,6 +18,11 @@ test('launch referral campaign contract is present', () => {
   assert.match(page, /Ajak Teman, Tumbuh Bersama/);
   assert.match(page, /navigator\.share/);
   assert.match(nextApi, /action === 'qualified'/);
-  assert.match(nextApi, /referral_account_redemptions/);
+  assert.match(nextApi, /increment_referral_account_points/);
+  assert.match(nextApi, /create_referral_redemption/);
+  assert.match(nextApi, /campaignClosed/);
   assert.match(authMigration, /REFERENCES auth\.users\(id\)/);
+  assert.match(authMigration, /to_regclass\('auth\.users'\)/);
+  assert.match(atomicMigration, /CREATE UNIQUE INDEX IF NOT EXISTS referral_account_one_pending_redemption_idx/);
+  assert.match(atomicMigration, /REVOKE ALL ON FUNCTION/);
 });
