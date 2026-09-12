@@ -14,6 +14,7 @@ test('launch referral campaign contract is present', () => {
   const ledgerMigration = fs.readFileSync(path.join(root, 'database/migrations/031_referral_reward_ledger.sql'), 'utf8');
   const correctiveMigration = fs.readFileSync(path.join(root, 'database/migrations/032_referral_redemption_status_qualification.sql'), 'utf8');
   const payoutCorrectiveMigration = fs.readFileSync(path.join(root, 'database/migrations/033_referral_payout_id_qualification.sql'), 'utf8');
+  const antifraudMigration = fs.readFileSync(path.join(root, 'database/migrations/034_referral_antifraud_controls.sql'), 'utf8');
   const payoutMigration = fs.readFileSync(path.join(root, 'database/migrations/029_referral_payout_workflow.sql'), 'utf8');
   const notificationMigration = fs.readFileSync(path.join(root, 'database/migrations/030_referral_payout_notifications.sql'), 'utf8');
   const payoutPage = fs.readFileSync(path.join(root, 'next-app/app/admin/affiliate-rewards/page.tsx'), 'utf8');
@@ -42,6 +43,14 @@ test('launch referral campaign contract is present', () => {
   assert.match(correctiveMigration, /CREATE OR REPLACE FUNCTION public\.create_referral_redemption/);
   assert.match(payoutCorrectiveMigration, /r\.id = p_redemption_id/);
   assert.match(payoutCorrectiveMigration, /CREATE OR REPLACE FUNCTION public\.transition_referral_payout/);
+  assert.match(antifraudMigration, /CREATE TABLE IF NOT EXISTS public\.referral_risk_flags/);
+  assert.match(antifraudMigration, /risk_type TEXT NOT NULL CHECK/);
+  assert.match(antifraudMigration, /CREATE OR REPLACE FUNCTION public\.claim_referral/);
+  assert.match(antifraudMigration, /shared_fingerprint/);
+  assert.match(antifraudMigration, /velocity_limit/);
+  assert.match(antifraudMigration, /referral risk review required/);
+  assert.match(nextApi, /action === 'risk_queue'/);
+  assert.match(nextApi, /rpc\('claim_referral'/);
   assert.match(payoutMigration, /referral_redemption_audit_logs/);
   assert.match(payoutMigration, /transition_referral_payout/);
   assert.match(payoutMigration, /second operator required/);

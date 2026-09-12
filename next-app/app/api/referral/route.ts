@@ -16,6 +16,14 @@ function json(data: unknown, status = 200) { return NextResponse.json({ ok: true
 function bad(error: string, status = 400) { return NextResponse.json({ ok: false, error }, { status }); }
 async function currentUser() { try { const client = await getServerSupabase(); const { data: { user } } = await client.auth.getUser(); return user; } catch { return null; } }
 function campaignClosed() { return new Date(`${campaign.endDate}T23:59:59.999Z`).getTime() < Date.now(); }
+function fingerprint(value: string) {
+  return createHash('sha256').update(`${process.env.REFERRAL_FINGERPRINT_SALT || 'suki-referral-fingerprint-v1'}:${value}`).digest('hex');
+}
+function requestMetadata(request: NextRequest) {
+  const forwarded = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || '';
+  const userAgent = request.headers.get('user-agent') || '';
+  return { ip_hash: forwarded ? fingerprint(forwarded) : null, ua_hash: userAgent ? fingerprint(userAgent) : null };
+}
 function referralError(error: unknown) {
   const message = error instanceof Error ? error.message : '';
   if (message.includes('pending redemption already exists')) return bad('Masih ada pengajuan yang sedang diverifikasi.', 409);
@@ -27,6 +35,10 @@ function referralError(error: unknown) {
   if (message.includes('payment reference required')) return bad('Referensi pembayaran wajib diisi.', 422);
   if (message.includes('terminal payout status')) return bad('Payout sudah berada pada status final.', 409);
   if (message.includes('payout not found')) return bad('Payout tidak ditemukan.', 404);
+  if (message.includes('self referral is not eligible')) return bad('Referral tidak dapat menggunakan kode sendiri.', 422);
+  if (message.includes('referral code not found')) return bad('Kode referral tidak ditemukan.', 404);
+  if (message.includes('account already referred')) return bad('Akun ini sudah memiliki referral.', 409);
+  if (message.includes('referral risk review required')) return bad('Referral menunggu pemeriksaan keamanan.', 409);
   return bad('Campaign belum dapat diproses.', 503);
 }
 
@@ -40,6 +52,13 @@ export async function GET(request: NextRequest) {
       const status = request.nextUrl.searchParams.get('status') || 'pending';
       const sessionDb = await getServerSupabase();
       const { data, error } = await sessionDb.rpc('list_referral_payouts', { p_status: status });
+      if (error) throw error;
+      return json(data || []);
+    }
+    if (action === 'risk_queue') {
+      const user = await currentUser(); if (!user) return bad('Sesi login diperlukan.', 401);
+      const sessionDb = await getServerSupabase();
+      const { data, error } = await sessionDb.rpc('list_referral_risk_flags', { p_limit: 50 });
       if (error) throw error;
       return json(data || []);
     }
@@ -117,23 +136,10 @@ export async function POST(request: NextRequest) {
     const code = String(body.referral_code || '').trim().toUpperCase();
     if (action === 'claim') {
       if (!/^SULTRA-[A-F0-9]{8}$/.test(code)) return bad('Kode referral belum valid.');
-      const { data: owner, error: ownerError } = await db.from('referral_accounts').select('auth_user_id').eq('referral_code', code).maybeSingle();
-      if (ownerError) throw ownerError;
-      if (!owner || owner.auth_user_id === user.id) return bad('Referral tidak dapat diklaim.', 422);
-      const selfCode = codeFor(user.id);
-      const { data: existing, error: existingError } = await db.from('referral_accounts').select('referred_by').eq('auth_user_id', user.id).maybeSingle();
-      if (existingError) throw existingError;
-      if (existing?.referred_by && existing.referred_by !== owner.auth_user_id) return bad('Akun ini sudah memiliki referral.', 409);
-      if (existing?.referred_by === owner.auth_user_id) return json({ claimed: true, duplicate: true });
-      const { error: accountError } = await db.from('referral_accounts').upsert({ auth_user_id: user.id, referral_code: selfCode }, { onConflict: 'auth_user_id', ignoreDuplicates: true });
-      if (accountError) throw accountError;
-      const { data: claimed, error: claimError } = await db.from('referral_accounts').update({ referred_by: owner.auth_user_id, updated_at: new Date().toISOString() }).eq('auth_user_id', user.id).is('referred_by', null).select('referred_by').maybeSingle();
-      if (claimError) throw claimError;
-      if (!claimed) return bad('Referral sudah diproses oleh sesi lain.', 409);
       const eventKey = createHash('sha256').update(`signup:${user.id}:${code}`).digest('hex');
-      const { error: eventError } = await db.from('referral_account_events').upsert({ referrer_id: owner.auth_user_id, referred_user_id: user.id, referral_code: code, event_type: 'signup', source_channel: String(body.source_channel || 'direct').slice(0, 30), event_key: eventKey }, { onConflict: 'event_key', ignoreDuplicates: true });
-      if (eventError) throw eventError;
-      return json({ claimed: true });
+      const { data, error } = await db.rpc('claim_referral', { p_referred_user_id: user.id, p_referral_code: code, p_source_channel: String(body.source_channel || 'direct').slice(0, 30), p_event_key: eventKey, p_metadata: requestMetadata(request) });
+      if (error) throw error;
+      return json(data?.[0] || { claimed: true, duplicate: false, risk_flagged: false });
     }
     if (action === 'qualified') {
       const referredId = String(body.referred_user_id || user.id); if (referredId !== user.id) return bad('Identitas referral tidak sesuai sesi.', 403);
