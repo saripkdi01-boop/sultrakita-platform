@@ -22,3 +22,16 @@ export async function requireServerUser() {
   if (error || !user) throw new Error('Sesi login diperlukan.');
   return { supabase, user };
 }
+
+export async function requireAdminUser() {
+  const { supabase, user } = await requireServerUser();
+  const { data: profile, error } = await supabase
+    .from('profiles')
+    .select('role,display_name,full_name,avatar_url')
+    .eq('id', user.id)
+    .maybeSingle();
+  if (error || !profile || !['admin', 'super_admin'].includes(profile.role)) {
+    throw new Error('Akses admin diperlukan.');
+  }
+  return { supabase, user, profile };
+}

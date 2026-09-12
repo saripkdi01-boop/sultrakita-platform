@@ -56,7 +56,7 @@ export async function middleware(request: NextRequest) {
   if (user && (url.pathname === '/login' || url.pathname === '/signup')) return NextResponse.redirect(new URL('/dashboard', request.url));
   if (user && !publicRoute && (url.pathname.startsWith('/admin') || url.pathname.startsWith('/seller'))) {
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle();
-    if (url.pathname.startsWith('/admin') && profile?.role !== 'admin') return NextResponse.redirect(new URL('/dashboard?error=unauthorized', request.url));
+    if (url.pathname.startsWith('/admin') && !['admin', 'super_admin'].includes(profile?.role || '')) return NextResponse.redirect(new URL('/dashboard?error=unauthorized', request.url));
     if (url.pathname.startsWith('/seller') && profile?.role !== 'seller' && profile?.role !== 'admin') return NextResponse.redirect(new URL('/dashboard?error=unauthorized', request.url));
   }
   return response;

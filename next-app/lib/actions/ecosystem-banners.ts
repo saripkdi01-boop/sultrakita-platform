@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { getServerSupabase, requireServerUser } from '@/lib/supabase/server';
+import { getServerSupabase, requireAdminUser } from '@/lib/supabase/server';
 
 const BANNER_APPS = ['marketplace', 'jobs', 'suits'] as const;
 export type BannerAppSlug = (typeof BANNER_APPS)[number];
@@ -27,10 +27,7 @@ export async function getActiveEcosystemBanners(appSlug: BannerAppSlug) {
 }
 
 async function requireAdmin() {
-  const { supabase, user } = await requireServerUser();
-  const { data: profile, error } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle();
-  if (error) throw error;
-  if (profile?.role !== 'admin') throw new Error('Akses admin diperlukan.');
+  const { supabase } = await requireAdminUser();
   return supabase;
 }
 
