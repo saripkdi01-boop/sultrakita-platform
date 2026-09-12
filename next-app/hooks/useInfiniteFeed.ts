@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { BerandaPostData } from '@/components/beranda/FeedPost';
 
 export type FeedFilter = 'recommended' | 'following' | 'latest' | 'property' | 'video';
-type ApiPost = { id: string; content: string; media_urls?: string[]; type: string; privacy?: 'public' | 'followers'; location?: string; mood?: string | null; tagged_user_ids?: string[]; created_at: string; user_id: string; profiles?: { display_name?: string; username?: string; name?: string; avatar_url?: string } | null };
+type ApiPost = { id: string; content: string; media_urls?: string[]; type: string; privacy?: 'public' | 'followers'; location?: string; mood?: string | null; tagged_user_ids?: string[]; created_at: string; user_id: string; likes_count?: number; comments_count?: number; liked?: boolean; profiles?: { display_name?: string; username?: string; name?: string; avatar_url?: string } | null };
 type FeedResponse = { data: ApiPost[]; pageInfo: { endCursor: string | null; hasNextPage: boolean }; error?: string };
 
 const relativeTime = (iso: string) => {
@@ -13,7 +13,7 @@ const relativeTime = (iso: string) => {
 };
 const mapPost = (post: ApiPost): BerandaPostData => {
   const name = post.profiles?.username || post.profiles?.display_name || post.profiles?.name || 'Pengguna';
-  return { id: post.id, author: name, initials: name.split(' ').map((word) => word[0]).join('').slice(0, 2).toUpperCase(), avatarUrl: post.profiles?.avatar_url, time: relativeTime(post.created_at), location: post.location, mood: post.mood, taggedCount: post.tagged_user_ids?.length || 0, privacy: post.privacy, content: post.content, mediaUrl: post.media_urls?.[0], mediaType: post.type === 'reel' ? 'video' : 'image', likes: 0, comments: 0 };
+  return { id: post.id, author: name, initials: name.split(' ').map((word) => word[0]).join('').slice(0, 2).toUpperCase(), avatarUrl: post.profiles?.avatar_url, time: relativeTime(post.created_at), location: post.location, mood: post.mood, taggedCount: post.tagged_user_ids?.length || 0, privacy: post.privacy, content: post.content, mediaUrl: post.media_urls?.[0], mediaType: post.type === 'reel' ? 'video' : 'image', likes: Number(post.likes_count || 0), comments: Number(post.comments_count || 0), liked: Boolean(post.liked) };
 };
 
 export function useInfiniteFeed(initialFilter: FeedFilter = 'recommended') {
