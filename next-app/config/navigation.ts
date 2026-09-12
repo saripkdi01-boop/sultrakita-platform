@@ -14,6 +14,7 @@ import {
   Home,
   Link2,
   LockKeyhole,
+  Megaphone,
   MessageCircle,
   Palette,
   Shield,
@@ -31,6 +32,7 @@ export type MenuItemConfig = {
   icon: LucideIcon;
   badge?: string;
   active?: boolean;
+  interactive?: 'campaign';
   requiredRole?: 'seller' | 'admin';
 };
 
@@ -81,6 +83,7 @@ export const menuSections: { title: string; items: MenuItemConfig[] }[] = [
     title: 'EKOSISTEM SUKI',
     items: [
       { label: 'SUKI Chat', route: '/chat', icon: MessageCircle },
+      { label: 'SUKI Campaign Hub', route: '/campaigns', icon: Megaphone, badge: 'LIVE', interactive: 'campaign' },
       { label: 'SUKI Events', route: '/groups', icon: CalendarDays },
       { label: 'SUKI Jobs', route: '/jobs', icon: BriefcaseBusiness, badge: 'NEW' },
       { label: 'SUKI Properti', route: '/properti', icon: Home },
