@@ -46,6 +46,14 @@ export async function GET(request: NextRequest) {
       if (error) throw error;
       return json(data || []);
     }
+    if (action === 'analytics') {
+      const { data: events, error } = await db.from('referral_account_events').select('event_type,source_channel,created_at').eq('referrer_id', user.id).order('id', { ascending: false }).limit(1000);
+      if (error) throw error;
+      const rows = events || [];
+      const byChannel = new Map<string, { visits: number; signups: number; qualified: number }>();
+      rows.forEach((event) => { const channel = String(event.source_channel || 'direct'); const current = byChannel.get(channel) || { visits: 0, signups: 0, qualified: 0 }; if (event.event_type === 'link_visit') current.visits += 1; if (event.event_type === 'signup') current.signups += 1; if (event.event_type === 'qualified') current.qualified += 1; byChannel.set(channel, current); });
+      return json({ totals: { visits: rows.filter((event) => event.event_type === 'link_visit').length, signups: rows.filter((event) => event.event_type === 'signup').length, qualified: rows.filter((event) => event.event_type === 'qualified').length }, channels: Array.from(byChannel.entries()).map(([channel, values]) => ({ channel, ...values })).sort((a, b) => b.qualified - a.qualified || b.signups - a.signups).slice(0, 12) });
+    }
     const { error: accountError } = await db.from('referral_accounts').upsert({ auth_user_id: user.id, referral_code: code }, { onConflict: 'auth_user_id', ignoreDuplicates: true });
     if (accountError) throw accountError;
     const [{ data: account, error: accountReadError }, { count, error: countError }, { data: activity, error: activityError }] = await Promise.all([
