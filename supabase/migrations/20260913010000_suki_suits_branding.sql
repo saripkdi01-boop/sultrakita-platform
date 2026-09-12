@@ -27,6 +27,16 @@ on conflict (slug) do update set
   position = excluded.position,
   updated_at = now();
 
+-- Normalize the canonical property app explicitly by slug as a guard for
+-- databases that already contain a partially populated registry row.
+update public.suki_ecosystem_apps
+set name = 'SUKI Suits',
+    short_name = 'Suits',
+    route = '/properti',
+    icon = 'building-2',
+    updated_at = now()
+where slug = 'suki-suits';
+
 alter table public.suki_ecosystem_apps enable row level security;
 drop policy if exists suki_ecosystem_apps_public_read on public.suki_ecosystem_apps;
 create policy suki_ecosystem_apps_public_read
