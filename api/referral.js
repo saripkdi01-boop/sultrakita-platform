@@ -29,6 +29,18 @@ router.get('/summary', requireAuth, async (req, res, next) => {
     ok(res, { campaign, referral_code: profile.referral_code, total_points: Number(points?.total_points || 0), lifetime_points: Number(points?.lifetime_points || 0), qualified_referrals: Number(referrals?.total || 0), recent_activity: events });
   } catch (error) { if (['42P01','42P07'].includes(error.code)) return ok(res, { campaign, referral_code: codeFor(userId(req)), total_points: 0, lifetime_points: 0, qualified_referrals: 0, recent_activity: [], setup_pending: true }); next(error); }
 });
+router.get('/leaderboard', async (_req, res, next) => {
+  try {
+    const rows = await query("SELECT u.id, CONCAT('Affiliator ', substring(md5(u.id::text) from 1 for 4)) AS name, COUNT(*)::int AS qualified_referrals, COALESCE(up.total_points, 0)::int AS total_points FROM referral_events re JOIN users u ON u.id = re.referrer_id LEFT JOIN user_points up ON up.user_id = u.id WHERE re.event_type = 'qualified' GROUP BY u.id, up.total_points ORDER BY qualified_referrals DESC, total_points DESC, u.id ASC LIMIT 50");
+    return ok(res, rows.map((row, index) => ({ rank: index + 1, name: row.name, qualified_referrals: Number(row.qualified_referrals || 0), total_points: Number(row.total_points || 0) })));
+  } catch (error) { if (['42P01','42P07'].includes(error.code)) return ok(res, []); next(error); }
+});
+router.get('/redemptions', requireAuth, async (req, res, next) => {
+  try {
+    const rows = await query('SELECT id, points, rupiah_amount, status, created_at FROM point_redemptions WHERE user_id = ? ORDER BY id DESC LIMIT 20', [userId(req)]);
+    return ok(res, rows);
+  } catch (error) { if (['42P01','42P07'].includes(error.code)) return ok(res, []); next(error); }
+});
 router.post('/visit', async (req, res, next) => {
   try {
     const code = clean(req.body?.referral_code, 40).toUpperCase(); const source = clean(req.body?.source_channel || 'direct', 30).toLowerCase();
