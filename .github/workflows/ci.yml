@@ -33,6 +33,17 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Prepare Supabase-compatible roles for migration tests
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
+          DO $$
+          BEGIN
+            IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'anon') THEN CREATE ROLE anon NOLOGIN; END IF;
+            IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'authenticated') THEN CREATE ROLE authenticated NOLOGIN; END IF;
+            IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'service_role') THEN CREATE ROLE service_role NOLOGIN; END IF;
+          END
+          $$;
+          SQL
       - run: npm run db:migrate
       - name: Verify migration idempotency
         run: npm run db:migrate
