@@ -28,7 +28,7 @@ jobs:
       CORS_ORIGINS: http://127.0.0.1:3000
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
