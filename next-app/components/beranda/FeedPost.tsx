@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { Bookmark, Check, Globe2, Heart, MessageCircle, MoreHorizontal, Send, Share2, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-export type BerandaPostData = { id: string; author: string; initials: string; avatarUrl?: string; time: string; location?: string; privacy?: 'public' | 'followers'; mood?: string | null; taggedCount?: number; content: string; mediaUrl?: string; mediaUrls?: string[]; mediaType?: 'image' | 'video'; likes: number; comments: number; liked?: boolean };
+export type BerandaPostData = { id: string; author: string; authorUsername?: string; initials: string; avatarUrl?: string; time: string; location?: string; privacy?: 'public' | 'followers'; mood?: string | null; taggedCount?: number; content: string; mediaUrl?: string; mediaUrls?: string[]; mediaType?: 'image' | 'video'; likes: number; comments: number; liked?: boolean };
 type Props = { post: BerandaPostData; onLike?: (id: string, liked: boolean) => void; onComment?: (id: string) => void; onNotice?: (message: string) => void };
 
 function MediaGallery({ post }: { post: BerandaPostData }) {
@@ -33,7 +34,7 @@ export function FeedPost({ post, onLike, onComment, onNotice }: Props) {
   async function share() { setSharing(true); const payload = { title: `Postingan ${post.author}`, text: post.content, url: window.location.href }; try { if (navigator.share) await navigator.share(payload); else { await navigator.clipboard?.writeText(`${post.content}\n${window.location.href}`); onNotice?.('Tautan postingan disalin.'); } } catch { /* user cancelled share */ } finally { setSharing(false); } }
   function toggleLike() { const next = !liked; setLiked(next); onLike?.(post.id, next); }
   return <article className="beranda-feed-post" aria-labelledby={`post-${post.id}`}>
-    <header><span className="beranda-avatar" aria-hidden="true">{post.avatarUrl ? <img src={post.avatarUrl} alt=""/> : post.initials}</span><div className="min-w-0"><strong id={`post-${post.id}`} className="block truncate">{post.author}</strong><small>{post.time}{post.location ? ` · ${post.location}` : ''}{post.mood ? ` · ${post.mood}` : ''}{post.taggedCount ? ` · ${post.taggedCount} warga ditandai` : ''} · {post.privacy === 'followers' ? <><Users size={11} aria-hidden="true"/> Pengikut</> : <><Globe2 size={11} aria-hidden="true"/> Publik</>}</small></div><button type="button" className="icon-only focus-ring" aria-label={`Opsi postingan dari ${post.author}`}><MoreHorizontal size={18} aria-hidden="true"/></button></header>
+    <header><span className="beranda-avatar" aria-hidden="true">{post.avatarUrl ? <img src={post.avatarUrl} alt=""/> : post.initials}</span><div className="min-w-0"><strong id={`post-${post.id}`} className="block truncate">{post.authorUsername ? <Link href={`/profile/${encodeURIComponent(post.authorUsername)}`} className="hover:underline focus:outline-none focus:ring-2 focus:ring-sultra-teal focus:ring-offset-2" aria-label={`Buka profil publik ${post.author}`}>{post.author}</Link> : post.author}</strong><small>{post.time}{post.location ? ` · ${post.location}` : ''}{post.mood ? ` · ${post.mood}` : ''}{post.taggedCount ? ` · ${post.taggedCount} warga ditandai` : ''} · {post.privacy === 'followers' ? <><Users size={11} aria-hidden="true"/> Pengikut</> : <><Globe2 size={11} aria-hidden="true"/> Publik</>}</small></div><button type="button" className="icon-only focus-ring" aria-label={`Opsi postingan dari ${post.author}`}><MoreHorizontal size={18} aria-hidden="true"/></button></header>
     <p className="feed-copy">{post.content}</p>
     <MediaGallery post={post}/>
     <div className="feed-meta" aria-label="Ringkasan interaksi"><span><Heart size={14} fill="currentColor" aria-hidden="true"/> {post.likes + (liked && !post.liked ? 1 : 0)} suka</span><span>{post.comments} komentar</span>{saved && <span className="feed-saved-label"><Check size={13}/> Disimpan</span>}</div>

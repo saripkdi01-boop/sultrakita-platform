@@ -13,7 +13,7 @@ const relativeTime = (iso: string) => {
 };
 const mapPost = (post: ApiPost): BerandaPostData => {
   const name = post.profiles?.username || post.profiles?.display_name || post.profiles?.name || 'Pengguna';
-  return { id: post.id, author: name, initials: name.split(' ').map((word) => word[0]).join('').slice(0, 2).toUpperCase(), avatarUrl: post.profiles?.avatar_url, time: relativeTime(post.created_at), location: post.location, mood: post.mood, taggedCount: post.tagged_user_ids?.length || 0, privacy: post.privacy, content: post.content, mediaUrl: post.media_urls?.[0], mediaUrls: post.media_urls || [], mediaType: post.type === 'reel' ? 'video' : 'image', likes: Number(post.likes_count || 0), comments: Number(post.comments_count || 0), liked: Boolean(post.liked) };
+  return { id: post.id, author: name, authorUsername: post.profiles?.username, initials: name.split(' ').map((word) => word[0]).join('').slice(0, 2).toUpperCase(), avatarUrl: post.profiles?.avatar_url, time: relativeTime(post.created_at), location: post.location, mood: post.mood, taggedCount: post.tagged_user_ids?.length || 0, privacy: post.privacy, content: post.content, mediaUrl: post.media_urls?.[0], mediaUrls: post.media_urls || [], mediaType: post.type === 'reel' ? 'video' : 'image', likes: Number(post.likes_count || 0), comments: Number(post.comments_count || 0), liked: Boolean(post.liked) };
 };
 
 export function useInfiniteFeed(initialFilter: FeedFilter = 'recommended') {
