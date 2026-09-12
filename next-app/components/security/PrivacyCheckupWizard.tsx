@@ -1,7 +1,8 @@
 'use client';
 import { useState } from 'react';
 import { Check, ChevronLeft, ChevronRight, LockKeyhole, X } from 'lucide-react';
-import { saveVisibilitySettings, type VisibilityLevel, type VisibilitySettings } from '@/lib/actions/privacy';
+import { saveVisibilitySettings } from '@/lib/actions/privacy';
+import type { VisibilityLevel, VisibilitySettings } from '@/lib/privacy-defaults';
 
 type Props = { initial?: VisibilitySettings; onClose: () => void; onSaved?: () => void };
 const fields = [{ key: 'full_name', label: 'Nama lengkap' }, { key: 'bio', label: 'Bio' }, { key: 'location', label: 'Lokasi' }, { key: 'phone', label: 'Nomor WhatsApp' }];

@@ -1,7 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { Eye, LockKeyhole, Users } from 'lucide-react';
-import { getVisibilitySettings, saveVisibilitySettings, type VisibilityLevel, type VisibilitySettings } from '@/lib/actions/privacy';
+import { getVisibilitySettings, saveVisibilitySettings } from '@/lib/actions/privacy';
+import type { VisibilityLevel, VisibilitySettings } from '@/lib/privacy-defaults';
 import { useSessionProfile } from '@/hooks/useSessionProfile';
 const fields = [{ key: 'avatar', label: 'Foto profil' }, { key: 'full_name', label: 'Nama lengkap' }, { key: 'username', label: 'Username' }, { key: 'bio', label: 'Bio' }, { key: 'phone', label: 'Nomor WhatsApp' }, { key: 'email', label: 'Email' }, { key: 'location', label: 'Lokasi' }, { key: 'interests', label: 'Minat' }, { key: 'online_status', label: 'Status online' }];
 const labels = { public: 'Publik', followers: 'Follower', private: 'Hanya saya' } as const;

@@ -2,11 +2,8 @@
 
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { defaultVisibilitySettings, type VisibilityLevel, type VisibilitySettings } from '@/lib/privacy-defaults';
 
-export type VisibilityLevel = 'public' | 'followers' | 'private';
-export type VisibilitySettings = Record<string, VisibilityLevel>;
-
-export const defaultVisibilitySettings: VisibilitySettings = { full_name: 'public', username: 'public', bio: 'public', phone: 'followers', email: 'private', location: 'public', interests: 'public', online_status: 'followers', avatar: 'public' };
 const defaults = defaultVisibilitySettings;
 
 async function getClient() {

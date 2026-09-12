@@ -11,6 +11,7 @@ test('launch referral campaign contract is present', () => {
   const nextApi = fs.readFileSync(path.join(root, 'next-app/app/api/referral/route.ts'), 'utf8');
   const authMigration = fs.readFileSync(path.join(root, 'database/migrations/027_referral_auth_accounts.sql'), 'utf8');
   const atomicMigration = fs.readFileSync(path.join(root, 'database/migrations/028_referral_atomic_operations.sql'), 'utf8');
+  const ledgerMigration = fs.readFileSync(path.join(root, 'database/migrations/031_referral_reward_ledger.sql'), 'utf8');
   const payoutMigration = fs.readFileSync(path.join(root, 'database/migrations/029_referral_payout_workflow.sql'), 'utf8');
   const notificationMigration = fs.readFileSync(path.join(root, 'database/migrations/030_referral_payout_notifications.sql'), 'utf8');
   const payoutPage = fs.readFileSync(path.join(root, 'next-app/app/admin/affiliate-rewards/page.tsx'), 'utf8');
@@ -22,13 +23,19 @@ test('launch referral campaign contract is present', () => {
   assert.match(page, /Ajak Teman, Tumbuh Bersama/);
   assert.match(page, /navigator\.share/);
   assert.match(nextApi, /action === 'qualified'/);
-  assert.match(nextApi, /increment_referral_account_points/);
+  assert.match(nextApi, /rpc\('qualify_referral'/);
   assert.match(nextApi, /create_referral_redemption/);
   assert.match(nextApi, /campaignClosed/);
   assert.match(authMigration, /REFERENCES auth\.users\(id\)/);
   assert.match(authMigration, /to_regclass\('auth\.users'\)/);
   assert.match(atomicMigration, /CREATE UNIQUE INDEX IF NOT EXISTS referral_account_one_pending_redemption_idx/);
   assert.match(atomicMigration, /REVOKE ALL ON FUNCTION/);
+  assert.match(ledgerMigration, /CREATE TABLE IF NOT EXISTS public\.referral_reward_ledger/);
+  assert.match(ledgerMigration, /idempotency_key TEXT NOT NULL UNIQUE/);
+  assert.match(ledgerMigration, /CREATE OR REPLACE FUNCTION public\.qualify_referral/);
+  assert.match(ledgerMigration, /ON CONFLICT \(event_key\) DO NOTHING/);
+  assert.match(ledgerMigration, /qualified-award:/);
+  assert.doesNotMatch(nextApi, /increment_referral_account_points/);
   assert.match(payoutMigration, /referral_redemption_audit_logs/);
   assert.match(payoutMigration, /transition_referral_payout/);
   assert.match(payoutMigration, /second operator required/);

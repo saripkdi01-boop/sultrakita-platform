@@ -137,16 +137,9 @@ export async function POST(request: NextRequest) {
     }
     if (action === 'qualified') {
       const referredId = String(body.referred_user_id || user.id); if (referredId !== user.id) return bad('Identitas referral tidak sesuai sesi.', 403);
-      const { data: referral, error: referralErrorRead } = await db.from('referral_account_events').select('id,referrer_id,referral_code').eq('referred_user_id', user.id).eq('event_type', 'signup').maybeSingle();
-      if (referralErrorRead) throw referralErrorRead;
-      if (!referral) return bad('Referral signup belum ditemukan.', 404);
-      const eventKey = createHash('sha256').update(`qualified:${user.id}:${referral.referrer_id}`).digest('hex');
-      const { error: eventError } = await db.from('referral_account_events').insert({ referrer_id: referral.referrer_id, referred_user_id: user.id, referral_code: referral.referral_code, event_type: 'qualified', source_channel: 'verified_activity', event_key: eventKey });
-      if (eventError?.code === '23505') return json({ qualified: true, points_awarded: 0, duplicate: true });
-      if (eventError) throw eventError;
-      const { error: pointsError } = await db.rpc('increment_referral_account_points', { p_referrer_id: referral.referrer_id, p_points: campaign.pointsPerQualifiedInvite });
-      if (pointsError) throw pointsError;
-      return json({ qualified: true, points_awarded: campaign.pointsPerQualifiedInvite });
+      const { data, error } = await db.rpc('qualify_referral', { p_referred_user_id: referredId, p_points: campaign.pointsPerQualifiedInvite });
+      if (error) throw error;
+      return json(data?.[0] || { qualified: true, points_awarded: 0, duplicate: true });
     }
     if (action === 'redeem') {
       const points = Number(body.points); const method = String(body.payout_method || '').trim().slice(0, 30); const account = String(body.payout_account || '').trim();
