@@ -50,6 +50,9 @@ export const useSukiChatStore = create<{
   commandOpen: boolean;
   theme: 'light' | 'dark';
   addMessage: (content: string) => void;
+  addMessageOptimistic: (content: string, clientMessageId: string) => void;
+  reconcileMessage: (clientMessageId: string, status: DeliveryStatus, serverId?: string) => void;
+  addIncomingMessage: (message: { id: string; conversationId: string; sender: 'me' | 'them'; content: string; createdAt: string; status: DeliveryStatus }) => void;
   setActiveConversation: (id: string) => void;
   setTyping: (value: boolean) => void;
   setCommandOpen: (value: boolean) => void;
@@ -67,6 +70,9 @@ export const useSukiChatStore = create<{
     window.setTimeout(() => set((state) => ({ messages: state.messages.map((message) => message.id === id ? { ...message, status: 'sent' } : message) })), 650);
     window.setTimeout(() => set((state) => ({ messages: state.messages.map((message) => message.id === id ? { ...message, status: 'read' } : message) })), 1900);
   },
+  addMessageOptimistic: (content, clientMessageId) => set((state) => ({ messages: [...state.messages, { id: clientMessageId, conversationId: state.activeConversationId, sender: 'me', content, createdAt: new Date().toISOString(), status: 'sending' }] })),
+  reconcileMessage: (clientMessageId, status, serverId) => set((state) => ({ messages: state.messages.map((message) => message.id === clientMessageId ? { ...message, id: serverId || message.id, status } : message) })),
+  addIncomingMessage: (message) => set((state) => state.messages.some((item) => item.id === message.id) ? state : { messages: [...state.messages, message] }),
   setActiveConversation: (id) => set({ activeConversationId: id, typing: false }),
   setTyping: (typing) => set({ typing }),
   setCommandOpen: (commandOpen) => set({ commandOpen }),

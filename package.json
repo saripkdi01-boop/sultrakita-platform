@@ -6,6 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
+    "realtime:start": "node realtime/server.js",
+    "realtime:dev": "node --watch realtime/server.js",
     "lint": "node scripts/lint-check.js",
     "test": "node --test test/*.test.js scripts/test-*.js",
     "build": "node scripts/build-check.js",
@@ -45,11 +47,14 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "ioredis": "^6.0.0",
     "multer": "^2.0.2",
     "pg": "^8.23.0",
-    "resend": "^6.25.0"
+    "resend": "^6.25.0",
+    "ws": "^8.21.3"
   },
   "devDependencies": {
+    "@types/ws": "^8.18.1",
     "tsx": "^4.23.13"
   }
 }
