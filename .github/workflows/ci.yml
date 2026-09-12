@@ -43,6 +43,12 @@ jobs:
             IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'service_role') THEN CREATE ROLE service_role NOLOGIN; END IF;
           END
           $$;
+          CREATE OR REPLACE FUNCTION public.handle_new_user_profile() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RETURN NEW; END $$;
+          CREATE OR REPLACE FUNCTION public.prevent_seller_publication_bypass() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RETURN NEW; END $$;
+          CREATE OR REPLACE FUNCTION public.rls_auto_enable() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RETURN NEW; END $$;
+          CREATE OR REPLACE FUNCTION public.update_property_stats() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RETURN NEW; END $$;
+          CREATE OR REPLACE FUNCTION public.is_suki_jobs_manager() RETURNS boolean LANGUAGE sql AS $$ SELECT false $$;
+          CREATE OR REPLACE FUNCTION public.set_updated_at() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RETURN NEW; END $$;
           SQL
       - run: npm run db:migrate
       - name: Verify migration idempotency
