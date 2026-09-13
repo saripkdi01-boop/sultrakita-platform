@@ -20,20 +20,29 @@ export async function startConversation(listingId: number, sellerId: string, ini
     const { data: existing, error: findError } = await supabase.from('suki_chat_conversations').select('id').eq('listing_id', listingId).eq('buyer_id', user.id).eq('seller_id', sellerId).maybeSingle();
     if (findError) throw findError;
     let conversationId = existing?.id;
+    let wonConversationCreation = false;
     if (!conversationId) {
       const { data: conversation, error } = await supabase.from('suki_chat_conversations').insert({ listing_id: listingId, buyer_id: user.id, seller_id: sellerId, created_by: user.id, last_message: content }).select('id').single();
-      if (error) throw error;
-      conversationId = conversation.id;
+      if (error && error.code !== '23505') throw error;
+      if (conversation?.id) { conversationId = conversation.id; wonConversationCreation = true; }
+      if (!conversationId) {
+        const { data: concurrent, error: concurrentError } = await supabase.from('suki_chat_conversations').select('id').eq('listing_id', listingId).eq('buyer_id', user.id).eq('seller_id', sellerId).maybeSingle();
+        if (concurrentError || !concurrent?.id) throw concurrentError || new Error('Percakapan belum dapat dibuat.');
+        conversationId = concurrent.id;
+      }
     }
     const { error: participantError } = await supabase.from('suki_chat_participants').upsert([
       { conversation_id: conversationId, user_id: user.id, role: 'member' },
       { conversation_id: conversationId, user_id: sellerId, role: 'admin' },
     ], { onConflict: 'conversation_id,user_id' });
     if (participantError) throw participantError;
-    const { error: messageError } = await supabase.from('suki_chat_messages').insert({ conversation_id: conversationId, sender_id: user.id, content });
-    if (messageError) throw messageError;
-    await supabase.from('suki_chat_conversations').update({ last_message: content, last_message_at: new Date().toISOString() }).eq('id', conversationId);
-    await sendWhatsAppNotice(supabase, listingId, sellerId, content, user.id);
+    const shouldSendInitial = wonConversationCreation || Boolean(existing?.id);
+    if (shouldSendInitial) {
+      const { error: messageError } = await supabase.from('suki_chat_messages').insert({ conversation_id: conversationId, sender_id: user.id, content });
+      if (messageError) throw messageError;
+      await supabase.from('suki_chat_conversations').update({ last_message: content, last_message_at: new Date().toISOString() }).eq('id', conversationId);
+      await sendWhatsAppNotice(supabase, listingId, sellerId, content, user.id);
+    }
     return { ok: true as const, conversationId };
   } catch (error) { return { ok: false as const, error: friendly(error) }; }
 }
@@ -78,7 +87,8 @@ export async function getChatMessages(conversationId: string, before?: string) {
   if (before) query = query.lt('created_at', before);
   const { data, error } = await query;
   if (error) return { ok: false as const, error: friendly(error), data: [] };
-  return { ok: true as const, data: (data || []).reverse() };
+  const rows = data || [];
+  return { ok: true as const, data: rows.reverse(), hasMore: rows.length === 50 };
 }
 
 export async function markChatRead(conversationId: string) {
