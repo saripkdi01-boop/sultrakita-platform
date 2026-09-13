@@ -1003,3 +1003,133 @@ body { min-height: 100dvh; text-rendering: optimizeLegibility; }
 @media(prefers-reduced-motion:reduce){.quick-nav-label{transition:none}}
 @media(max-width:780px){.quick-nav{top:62px}.chat-route-main{min-height:calc(100dvh - 106px);padding:8px 8px max(8px,env(safe-area-inset-bottom))}.chat-route-main .chat-shell{height:calc(100dvh - 122px);min-height:520px;border-radius:18px}.quick-nav-item{min-height:44px}.quick-nav-item:focus-visible{box-shadow:inset 0 0 0 2px var(--suki-teal,#0e6258)}}
 @media(max-width:480px){.chat-route-main{padding-inline:0}.chat-route-main .chat-shell{border-right:0;border-left:0;border-radius:0}}
+
+
+/* =========================================================
+   SULTRAKITA SOCIAL HOME v1
+   Mobile-first social feed visual layer. Existing routes, API
+   actions, auth boundaries, and component contracts are preserved.
+   ========================================================= */
+:root{
+  --suki-primary:#0f9d8f;
+  --suki-primary-strong:#087f73;
+  --suki-primary-soft:#e0f4ef;
+  --suki-app-bg:#f3f4f7;
+  --suki-surface:#ffffff;
+  --suki-text:#202124;
+  --suki-muted:#6b7280;
+  --suki-border:#e5e7eb;
+  --suki-alert:#e34b55;
+  --suki-radius-xl:22px;
+  --suki-radius-lg:18px;
+  --suki-social-shadow:0 4px 18px rgba(31,41,55,.07);
+}
+html[data-theme='dark']{
+  --suki-app-bg:#101827;
+  --suki-surface:#182333;
+  --suki-text:#f3f4f6;
+  --suki-muted:#aab4c2;
+  --suki-border:#2c3a4d;
+  --suki-primary-soft:#123c3a;
+  --suki-social-shadow:0 5px 22px rgba(0,0,0,.2);
+}
+body{background:var(--suki-app-bg);color:var(--suki-text)}
+.top-header{background:rgba(255,255,255,.94);border-bottom-color:var(--suki-border);box-shadow:0 1px 0 rgba(17,24,39,.03)}
+html[data-theme='dark'] .top-header{background:rgba(24,35,51,.95);border-bottom-color:var(--suki-border)}
+.header-search{background:var(--suki-app-bg);border-color:var(--suki-border)}
+.header-search input{color:var(--suki-text)}
+.brand-mark{background:var(--suki-primary);border-radius:14px;box-shadow:0 5px 12px rgba(15,157,143,.2)}
+.quick-nav{background:var(--suki-surface)!important;border-bottom-color:var(--suki-border)!important}
+.quick-nav-item{color:var(--suki-muted)!important}
+.quick-nav-item[aria-current='page']{color:var(--suki-primary)!important;font-weight:800}
+.quick-nav-item[aria-current='page'] .absolute.inset-x-3{background:var(--suki-primary)!important}
+.beranda-shell{max-width:1180px!important;grid-template-columns:minmax(0,740px) 290px!important;gap:20px!important;padding:22px 24px 72px!important}
+.beranda-main{min-width:0}
+.beranda-feed-heading{padding:4px 2px 14px!important}
+.beranda-eyebrow{color:var(--suki-primary)!important;letter-spacing:.08em!important}
+.beranda-feed-heading h1{color:var(--suki-text)!important;letter-spacing:-.04em!important}
+.beranda-home-subtitle{color:var(--suki-muted)!important}
+.feed-toolbar{border-color:var(--suki-border)!important;background:var(--suki-surface)!important;border-radius:999px!important;box-shadow:none!important}
+.feed-toolbar button{color:var(--suki-muted)!important}
+.feed-toolbar button.active{background:var(--suki-primary)!important;color:#fff!important}
+.beranda-feed-tools{background:var(--suki-surface)!important;border-color:var(--suki-border)!important;box-shadow:var(--suki-social-shadow)!important}
+.beranda-feed-tools span{color:var(--suki-primary-strong)!important}
+.beranda-feed-tools button{background:var(--suki-primary-soft)!important;color:var(--suki-primary-strong)!important}
+.beranda-quick-actions a,.beranda-quick-actions button{background:var(--suki-surface)!important;border-color:var(--suki-border)!important;color:var(--suki-text)!important}
+.beranda-quick-actions a:hover,.beranda-quick-actions button:hover{border-color:var(--suki-primary)!important;background:var(--suki-primary-soft)!important;color:var(--suki-primary-strong)!important}
+.beranda-create-post,.beranda-feed-post,.beranda-main>section[aria-label='Stories dan Reels']{background:var(--suki-surface)!important;border:1px solid var(--suki-border)!important;border-radius:var(--suki-radius-xl)!important;box-shadow:var(--suki-social-shadow)!important}
+.beranda-create-post{padding:18px!important}
+.beranda-feed-post{padding:0!important;overflow:hidden!important}
+.beranda-feed-post header{padding:18px 18px 10px!important}
+.beranda-feed-post .feed-copy{padding-inline:18px!important;color:var(--suki-text)!important}
+.beranda-feed-post .feed-meta{padding-inline:18px!important}
+.beranda-feed-post .feed-actions{padding:8px 12px 12px!important}
+.feed-actions button:hover{background:var(--suki-primary-soft)!important;color:var(--suki-primary-strong)!important}
+.beranda-main>section[aria-label='Stories dan Reels']{padding:15px 0!important}
+.beranda-main>section[aria-label='Stories dan Reels'] h2{color:var(--suki-text)!important}
+.beranda-main>section[aria-label='Stories dan Reels'] .scrollbar-hide{gap:12px!important}
+.story-card,.beranda-main>section[aria-label='Stories dan Reels'] button{border-radius:18px!important}
+.feed-state,.feed-loading,.feed-end{background:var(--suki-surface)!important;border-color:var(--suki-border)!important;color:var(--suki-muted)!important}
+.right-sidebar{border-color:var(--suki-border)!important}
+
+@media (max-width:780px){
+  body{background:var(--suki-app-bg)}
+  .top-header{height:68px;padding:0 10px;gap:8px;position:sticky;top:0}
+  .brand-group{gap:7px;min-width:0}
+  .mobile-menu{width:42px;height:42px;min-width:42px;border-radius:50%;background:var(--suki-app-bg);color:var(--suki-text)}
+  .brand-mark{width:46px;height:46px;border-radius:14px;font-size:22px}
+  .brand>span:last-child{display:none}
+  .header-main{display:contents}
+  .header-search{height:42px;flex:1;width:auto;min-width:0;padding:0 13px;border:0;border-radius:999px;background:#e7e9ee}
+  html[data-theme='dark'] .header-search{background:#243246}
+  .header-search input{font-size:12px}
+  .header-search input::placeholder{color:#747b88}
+  .header-search-toggle{display:none!important}
+  .top-nav{display:none!important}
+  .header-actions{gap:2px}
+  .header-actions>.create-menu,.header-actions>.notification-center{display:grid}
+  .header-actions .profile-hub-trigger{padding:2px!important}
+  .header-actions .profile-hub-trigger .profile-name{display:none}
+  .header-actions .profile-hub-trigger .avatar{width:38px!important;height:38px!important}
+  .header-actions .create-menu>button,.header-actions .notification-center>button{width:38px!important;height:38px!important}
+  .quick-nav{position:fixed!important;z-index:50;right:0;bottom:0;left:0;top:auto!important;padding:6px 6px calc(6px + env(safe-area-inset-bottom))!important;border-top:1px solid var(--suki-border)!important;border-bottom:0!important;box-shadow:0 -6px 22px rgba(31,41,55,.1)!important}
+  .quick-nav>div{max-width:none!important}
+  .quick-nav-item{min-height:48px!important;padding:3px 2px!important;border-radius:12px!important;font-size:10px!important}
+  .quick-nav-item svg{width:21px;height:21px}
+  .quick-nav-label{display:block!important;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9px!important}
+  .quick-nav-item[aria-current='page']{background:var(--suki-primary-soft)!important}
+  .quick-nav-item[aria-current='page'] .absolute.inset-x-3{display:none}
+  .app-frame{min-height:calc(100dvh - 68px);padding-bottom:74px}
+  .content-wrap{width:100%}
+  .beranda-shell{display:block!important;padding:12px 10px 28px!important}
+  .beranda-feed-heading{padding:2px 3px 10px!important}
+  .beranda-feed-heading h1{font-size:26px!important}
+  .beranda-home-subtitle{font-size:11px!important}
+  .feed-toolbar{margin:0 -2px 10px!important;padding:3px!important;overflow-x:auto!important;white-space:nowrap!important}
+  .feed-toolbar button{flex:none!important;padding:8px 12px!important;font-size:10px!important}
+  .beranda-feed-tools{margin-bottom:10px!important;padding:9px 10px!important}
+  .beranda-feed-tools small{font-size:9px!important}
+  .beranda-feed-tools button{font-size:9px!important}
+  .beranda-main>section[aria-label='Stories dan Reels']{margin:0 -2px 10px!important;border-radius:20px!important}
+  .beranda-main>section[aria-label='Stories dan Reels']>div:first-child{padding-inline:13px!important}
+  .beranda-main>section[aria-label='Stories dan Reels'] .scrollbar-hide{padding-inline:13px!important;gap:10px!important}
+  .beranda-main>section[aria-label='Stories dan Reels'] .scrollbar-hide>button{height:206px!important;width:124px!important}
+  .beranda-create-post{margin:0 -2px 10px!important;padding:15px!important;border-radius:20px!important}
+  .beranda-quick-actions{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:7px!important;margin-bottom:10px!important}
+  .beranda-quick-actions a,.beranda-quick-actions button{min-height:42px!important;font-size:9px!important;border-radius:12px!important}
+  .beranda-feed-post{margin:0 -2px 10px!important;border-radius:20px!important}
+  .beranda-feed-post header{padding:15px 15px 9px!important}
+  .beranda-feed-post .feed-copy{padding-inline:15px!important;font-size:14px!important;line-height:1.55!important}
+  .beranda-feed-post .feed-meta{padding-inline:15px!important}
+  .beranda-feed-post .feed-actions{padding:7px 9px 10px!important}
+  .beranda-feed-post .feed-actions button{min-height:38px!important;font-size:10px!important}
+  .right-sidebar{display:none!important}
+}
+@media (min-width:781px){
+  .quick-nav{display:none!important}
+  .beranda-shell{padding-top:28px!important}
+  .beranda-feed-heading{background:var(--suki-surface);border:1px solid var(--suki-border);border-radius:var(--suki-radius-xl);padding:20px 22px!important;box-shadow:var(--suki-social-shadow)}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important}
+}
