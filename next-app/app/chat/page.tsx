@@ -1,7 +1,7 @@
 'use client';
 
-import { SukiChatWorkspace } from '@/components/chat/SukiChatWorkspace';
+import { ChatInbox } from '@/components/chat/ChatInbox';
 
 export default function ChatPage() {
-  return <SukiChatWorkspace />;
+  return <ChatInbox />;
 }
