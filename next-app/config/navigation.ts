@@ -23,6 +23,7 @@ import {
   Store,
   UserRound,
   Users,
+  UserPlus,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -52,6 +53,7 @@ export const menuSections: { title: string; items: MenuItemConfig[] }[] = [
       { label: 'Kenangan', route: '/beranda#memories', icon: History },
       { label: 'SUKI Marketplace', route: '/marketplace', icon: Store },
       { label: 'Grup', route: '/groups', icon: Users },
+      { label: 'Ajak Teman', route: '/ajak-teman', icon: UserPlus, badge: 'NEW' },
       { label: 'Properti Saya', route: '/dashboard/properties', icon: Building2 },
       { label: 'Pesan Properti', route: '/dashboard/inquiries', icon: MessageCircle },
     ],

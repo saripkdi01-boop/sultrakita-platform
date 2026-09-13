@@ -1,0 +1,26 @@
+'use client';
+
+import * as React from 'react';
+import { Heart, Lightbulb, MessageCircle, ShieldCheck, ThumbsUp, Trash2 } from 'lucide-react';
+
+export type GroupReactionType = 'like' | 'support' | 'insight';
+export type GroupComment = { id: string; body: string; author_id: string; created_at: string; profiles?: { display_name?: string; username?: string; avatar_url?: string } | null };
+export type GroupPostWithInteractions = { id: string; body: string; post_type: string; is_pinned: boolean; created_at: string; profiles?: { display_name?: string; username?: string; avatar_url?: string } | null; comments?: GroupComment[]; reaction_counts?: Record<GroupReactionType, number>; viewer_reactions?: GroupReactionType[] };
+
+type Props = { post: GroupPostWithInteractions; onReact: (postId: string, reaction: GroupReactionType) => void; onComment: (postId: string, body: string) => void; onDeleteComment: (commentId: string) => void; busy?: boolean; canInteract?: boolean; };
+const reactionLabels: Record<GroupReactionType, string> = { like: 'Suka', support: 'Dukung', insight: 'Insight' };
+const reactionIcons = { like: Heart, support: ThumbsUp, insight: Lightbulb };
+function initials(name: string) { return name.split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase() || 'SK'; }
+function formatDate(value: string) { return new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(value)); }
+
+export function GroupPostCard({ post, onReact, onComment, onDeleteComment, busy = false, canInteract = true }: Props) {
+  const [comment, setComment] = React.useState('');
+  const author = post.profiles?.display_name || post.profiles?.username || 'Warga Sultra';
+  return <article className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+    <div className="flex items-center gap-2"><span className="grid h-9 w-9 place-items-center rounded-full bg-teal-100 text-xs font-black text-teal-800 dark:bg-teal-950 dark:text-teal-200">{initials(author)}</span><div><p className="text-xs font-extrabold text-slate-900 dark:text-white">{author}</p><p className="text-[10px] text-slate-400">{formatDate(post.created_at)} · {post.post_type}</p></div>{post.is_pinned && <span className="ml-auto inline-flex items-center gap-1 text-[10px] font-bold text-teal-700"><ShieldCheck size={13}/> Disematkan</span>}</div>
+    <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-700 dark:text-slate-200">{post.body}</p>
+    <div className="mt-3 flex flex-wrap gap-1.5 border-t border-slate-100 pt-3 dark:border-slate-800">{(Object.keys(reactionLabels) as GroupReactionType[]).map(type => { const Icon = reactionIcons[type]; const active = post.viewer_reactions?.includes(type); return <button key={type} type="button" disabled={!canInteract || busy} onClick={() => onReact(post.id, type)} className={`inline-flex min-h-9 items-center gap-1.5 rounded-lg px-2.5 text-[11px] font-bold transition ${active ? 'bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-200' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}><Icon size={14} fill={active && type === 'like' ? 'currentColor' : 'none'}/>{reactionLabels[type]} {post.reaction_counts?.[type] || 0}</button>; })}</div>
+    {post.comments?.length ? <div className="mt-3 space-y-2">{post.comments.map(item => { const itemAuthor = item.profiles?.display_name || item.profiles?.username || 'Warga Sultra'; return <div key={item.id} className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800/70"><div className="flex items-center gap-2"><span className="grid h-6 w-6 place-items-center rounded-full bg-amber-100 text-[9px] font-black text-amber-900">{initials(itemAuthor)}</span><span className="text-[11px] font-extrabold text-slate-800 dark:text-slate-100">{itemAuthor}</span><span className="text-[10px] text-slate-400">{formatDate(item.created_at)}</span><button type="button" onClick={() => onDeleteComment(item.id)} className="ml-auto rounded p-1 text-slate-400 hover:bg-white hover:text-red-600 dark:hover:bg-slate-700" aria-label="Hapus komentar"><Trash2 size={13}/></button></div><p className="mt-1 pl-8 text-xs leading-5 text-slate-600 dark:text-slate-300">{item.body}</p></div>; })}</div> : null}
+    {canInteract ? <form className="mt-3 flex gap-2" onSubmit={event => { event.preventDefault(); if (comment.trim()) { onComment(post.id, comment); setComment(''); } }}><label className="sr-only" htmlFor={`comment-${post.id}`}>Tulis komentar</label><input id={`comment-${post.id}`} value={comment} onChange={event => setComment(event.target.value.slice(0, 1000))} maxLength={1000} placeholder="Tulis komentar…" className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs outline-none focus:border-teal-600 dark:border-slate-700 dark:bg-slate-800 dark:text-white"/><button type="submit" disabled={busy || !comment.trim()} className="inline-flex min-h-10 items-center gap-1 rounded-xl bg-teal-800 px-3 text-xs font-extrabold text-white disabled:opacity-50"><MessageCircle size={14}/> Kirim</button></form> : <p className="mt-3 text-xs font-semibold text-slate-500">Gabung sebagai anggota aktif untuk berinteraksi.</p>}
+  </article>;
+}
