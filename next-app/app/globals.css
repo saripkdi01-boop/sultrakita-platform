@@ -1213,3 +1213,49 @@ html[data-theme='dark'] .campaign-share{background:linear-gradient(135deg,var(--
   .campaign-share,.campaign-rewards,.campaign-rules{gap:10px}
   .campaign-list>div{padding:13px 14px}
 }
+
+
+/* =========================================================
+   AJAK TEMAN UX UPGRADE v1
+   Mobile-first structure and conversion hierarchy.
+   ========================================================= */
+.campaign-content{max-width:1080px;width:100%;margin:0 auto}
+.campaign-heading{position:relative;padding-bottom:8px}
+.campaign-heading h2{max-width:720px}
+.campaign-heading .campaign-primary{min-height:46px;box-shadow:0 8px 18px rgba(15,157,143,.18)}
+.campaign-stats article:first-child,.campaign-stats article:nth-child(2){border-color:#bfe7df;background:linear-gradient(145deg,#fff,var(--suki-primary-soft))}
+.campaign-share{position:relative;overflow:hidden}
+.campaign-share:after{content:'↗';position:absolute;right:22px;top:12px;color:rgba(15,157,143,.18);font-size:72px;font-weight:800;line-height:1;pointer-events:none}
+.campaign-code{position:relative;z-index:1}
+.campaign-side nav button{min-height:44px}
+
+@media(max-width:900px){
+  .campaign-shell{display:block!important;min-height:0!important}
+  .campaign-side{width:100%!important;height:auto!important;display:block!important;position:sticky;top:68px;z-index:12;padding:12px 20px!important;border-right:0!important;border-bottom:1px solid var(--suki-border);box-shadow:0 5px 16px rgba(31,41,55,.06)}
+  .campaign-side h1,.campaign-side>p,.campaign-side-note{display:none!important}
+  .campaign-side>.campaign-kicker{display:block;margin:0 0 8px;font-size:9px}
+  .campaign-side nav{display:flex!important;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0!important;padding-bottom:2px}
+  .campaign-side nav::-webkit-scrollbar{display:none}
+  .campaign-side nav button{flex:0 0 auto;white-space:nowrap;padding:0 13px!important;background:var(--suki-app-bg);border:1px solid var(--suki-border);font-size:11px!important}
+  .campaign-side nav button.active{border-color:var(--suki-primary);background:var(--suki-primary-soft)}
+  .campaign-content{padding:30px 22px 76px!important}
+}
+@media(max-width:640px){
+  .campaign-side{top:62px;padding:10px 14px!important}
+  .campaign-side>.campaign-kicker{margin-left:2px}
+  .campaign-content{padding:22px 14px 86px!important}
+  .campaign-heading h2{font-size:clamp(32px,10vw,40px)!important;line-height:1.02!important}
+  .campaign-heading p,.campaign-page-heading p{font-size:12px!important;line-height:1.6!important}
+  .campaign-heading .campaign-primary{width:100%;justify-content:center;margin-top:16px;min-height:46px}
+  .campaign-onboarding,.campaign-milestones,.campaign-level-card,.campaign-toolkit,.campaign-reward-model{margin-top:16px!important}
+  .campaign-stats{margin-top:26px!important}
+  .campaign-stats article{min-height:112px!important;padding:14px!important}
+  .campaign-stats strong{font-size:20px!important}
+  .campaign-share{margin-top:18px!important;padding:18px!important}
+  .campaign-share:after{right:10px;font-size:58px}
+  .campaign-code{display:grid!important;grid-template-columns:1fr auto;gap:8px!important}
+  .campaign-code code{grid-column:1/-1;padding:4px 0;font-size:10px!important}
+  .campaign-code button{min-height:42px}
+  .campaign-steps,.campaign-rewards,.campaign-rules{margin-top:20px!important}
+  .campaign-feedback{left:14px;right:14px;transform:none;text-align:center;bottom:76px}
+}
