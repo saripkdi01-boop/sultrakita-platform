@@ -57,12 +57,20 @@ export async function getGroupFeed(groupId: string) {
 
 export async function createGroup(input: { name: string; description: string; category: string; privacy: 'public' | 'private' }) {
   try {
-    const { supabase } = await requireServerUser();
+    const { supabase, user } = await requireServerUser();
     const name = input.name.trim();
     if (name.length < 3 || name.length > 80) return { ok: false as const, error: 'Nama grup harus 3–80 karakter.' };
     if (!['umum', 'jual_beli', 'wisata', 'kuliner', 'umkm', 'hobi', 'property', 'profesi'].includes(input.category)) return { ok: false as const, error: 'Kategori komunitas tidak valid.' };
     const slug = `${slugify(name)}-${Math.random().toString(36).slice(2, 7)}`;
-    const { data, error } = await supabase.rpc('create_suki_group', { p_name: name, p_slug: slug, p_description: input.description.trim().slice(0, 500), p_category: input.category, p_privacy: input.privacy });
+    let { data, error } = await supabase.rpc('create_suki_group', { p_name: name, p_slug: slug, p_description: input.description.trim().slice(0, 500), p_category: input.category, p_privacy: input.privacy });
+    if (error && (error.code === '42883' || error.code === 'PGRST202' || /function.*create_suki_group/i.test(error.message || ''))) {
+      const created = await supabase.from('groups').insert({ owner_id: user.id, name, slug, description: input.description.trim().slice(0, 500), category: input.category, privacy: input.privacy }).select('id,owner_id,name,slug,description,category,privacy,cover_url,member_count,post_count,created_at,updated_at').single();
+      if (created.error) throw created.error;
+      const membership = await supabase.from('group_members').upsert({ group_id: created.data.id, user_id: user.id, role: 'owner', status: 'active' }, { onConflict: 'group_id,user_id' });
+      if (membership.error) throw membership.error;
+      data = created.data;
+      error = null;
+    }
     if (error) throw error;
     return { ok: true as const, data };
   } catch (error) { return { ok: false as const, error: message(error) }; }
@@ -74,10 +82,11 @@ export async function joinGroup(groupId: string) {
     const { data: group, error: groupError } = await supabase.from('groups').select('id,privacy').eq('id', groupId).maybeSingle();
     if (groupError) throw groupError;
     if (!group) return { ok: false as const, error: 'Grup tidak ditemukan.' };
-    const status = group.privacy === 'private' ? 'pending' : 'active';
+    // Controlled soft launch: membership requests are auto-approved so communities are usable immediately.
+    const status = 'active';
     const { error } = await supabase.from('group_members').upsert({ group_id: groupId, user_id: user.id, role: 'member', status }, { onConflict: 'group_id,user_id' });
     if (error) throw error;
-    return { ok: true as const, status };
+    return { ok: true as const, status, autoApproved: true as const };
   } catch (error) { return { ok: false as const, error: message(error) }; }
 }
 
