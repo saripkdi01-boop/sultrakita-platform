@@ -4,6 +4,7 @@ import { CheckCheck, Filter, MessageCircle, MoreHorizontal, Plus, Search, Settin
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { getChatInbox, setPresence } from '@/lib/actions/chat';
+import { subscribeToInbox, unsubscribeFromChat } from '@/lib/realtime/chat';
 import { ChatWindow } from './ChatWindow';
 
 type Participant = { user_id: string; last_read_at?: string | null; is_muted?: boolean; is_archived?: boolean };
@@ -39,6 +40,20 @@ export function ChatInbox({ onUnreadCountChange }: { onUnreadCountChange?: (coun
     }).catch(() => { if (active) { setError('Percakapan belum dapat dimuat.'); setLoading(false); } });
     return () => { active = false; void setPresence(false).catch(() => undefined); };
   }, []);
+
+  useEffect(() => {
+    if (!userId) return;
+    const channel = subscribeToInbox((message) => {
+      setItems((current) => {
+        const existing = current.find((item) => item.id === message.conversation_id);
+        if (!existing) return current;
+        const readAt = selected === message.conversation_id ? message.created_at : undefined;
+        const updated = { ...existing, last_message: message.content, last_message_at: message.created_at, updated_at: message.created_at, conversation_participants: existing.conversation_participants?.map((participant) => participant.user_id === userId && readAt ? { ...participant, last_read_at: readAt } : participant) };
+        return [updated, ...current.filter((item) => item.id !== message.conversation_id)];
+      });
+    });
+    return () => { void unsubscribeFromChat(channel); };
+  }, [selected, userId]);
 
   const unreadCount = useMemo(() => items.filter((item) => isUnread(item, userId)).length, [items, userId]);
   useEffect(() => { onUnreadCountChange?.(unreadCount); }, [onUnreadCountChange, unreadCount]);
