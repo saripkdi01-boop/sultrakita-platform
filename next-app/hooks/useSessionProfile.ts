@@ -12,6 +12,7 @@ export type SessionProfile = {
   avatar_url: string | null;
   role: 'buyer' | 'seller' | 'admin' | 'warga' | 'creator' | 'community' | null;
   bio: string | null;
+  city: string | null;
   district: string | null;
   visibility_settings?: Record<string, 'public' | 'followers' | 'private'> | null;
 };
@@ -38,12 +39,15 @@ export function useSessionProfile() {
   const hydrate = useCallback(async (nextUser: User | null) => {
     setUser(nextUser);
     if (!nextUser || !supabase) { setProfile(null); setNotificationCount(0); return; }
-    const [{ data: nextProfile }, { count }] = await Promise.all([
-      supabase.from('profiles').select('id,full_name,display_name,username,avatar_url,role,bio,district,visibility_settings').eq('id', nextUser.id).maybeSingle(),
-      supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('recipient_id', nextUser.id).is('read_at', null),
+    const [{ data: nextProfile }, profileNotificationQuery] = await Promise.all([
+      supabase.from('profiles').select('id,full_name,display_name,username,avatar_url,role,bio,city,district,visibility_settings').eq('id', nextUser.id).maybeSingle(),
+      supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('profile_id', nextUser.id).eq('is_read', false),
     ]);
+    const notificationQuery = profileNotificationQuery.error
+      ? await supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('recipient_id', nextUser.id).is('read_at', null)
+      : profileNotificationQuery;
     setProfile(nextProfile as SessionProfile | null);
-    setNotificationCount(count || 0);
+    setNotificationCount(notificationQuery.count || 0);
   }, []);
   const refresh = useCallback(async () => { if (!supabase) return; const { data } = await supabase.auth.getSession(); await hydrate(data.session?.user ?? null); }, [hydrate]);
   useEffect(() => {

@@ -12,7 +12,7 @@ type PublicProfile = {
   bio: string | null;
   district: string | null;
   role: string | null;
-  visibility_settings?: { avatar?: 'public' | 'followers' | 'private' } | null;
+  visibility_settings?: Partial<Record<'avatar' | 'full_name' | 'username' | 'bio' | 'phone' | 'email' | 'location' | 'interests' | 'online_status', 'public' | 'followers' | 'private'>> | null;
 };
 
 function initials(profile: PublicProfile) {
@@ -62,8 +62,13 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
   }
 
   if (!profile) notFound();
-  const name = publicName(profile);
-  const avatar = profile.visibility_settings?.avatar === 'public' ? profile.avatar_url?.trim() || null : null;
+  const visibility = profile.visibility_settings || {};
+  const isPublic = (field: keyof NonNullable<PublicProfile['visibility_settings']> | 'full_name' | 'username' | 'bio' | 'location') => visibility[field] === 'public';
+  const name = isPublic('full_name') || isPublic('username') ? publicName(profile) : 'Pengguna Sultra';
+  const publicUsername = isPublic('username') ? profile.username || normalizedUsername : null;
+  const avatar = isPublic('avatar') ? profile.avatar_url?.trim() || null : null;
+  const bio = isPublic('bio') ? profile.bio : null;
+  const location = isPublic('location') ? profile.district : null;
 
   return (
     <AppLayout active="home">
@@ -84,9 +89,9 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
             </div>
             <div className="mt-5">
               <h1 className="text-3xl font-bold text-sultra-forest dark:text-sultra-sand">{name}</h1>
-              <p className="mt-1 text-sm text-gray-500 dark:text-sultra-sand/65">@{profile.username || normalizedUsername} · {roleLabel(profile.role)}</p>
-              {profile.bio && <p className="mt-5 max-w-2xl whitespace-pre-line text-sm leading-7 text-gray-700 dark:text-sultra-sand/80">{profile.bio}</p>}
-              {profile.district && <p className="mt-4 inline-flex items-center gap-2 text-sm text-gray-600 dark:text-sultra-sand/70"><MapPin size={16} className="text-sultra-teal" aria-hidden="true" /> {profile.district}</p>}
+              <p className="mt-1 text-sm text-gray-500 dark:text-sultra-sand/65">{publicUsername ? `@${publicUsername} · ` : ''}{roleLabel(profile.role)}</p>
+              {bio && <p className="mt-5 max-w-2xl whitespace-pre-line text-sm leading-7 text-gray-700 dark:text-sultra-sand/80">{bio}</p>}
+              {location && <p className="mt-4 inline-flex items-center gap-2 text-sm text-gray-600 dark:text-sultra-sand/70"><MapPin size={16} className="text-sultra-teal" aria-hidden="true" /> {location}</p>}
             </div>
           </div>
         </section>

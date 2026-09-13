@@ -88,7 +88,8 @@ test('profile identity uses authenticated nickname and live profile columns', ()
   assert.match(sessionHook, /getProfileNickname/);
   assert.match(sessionHook, /username.*display_name/);
   assert.match(sessionHook, /recipient_id/);
-  assert.doesNotMatch(sessionHook, /headline|city/);
+  assert.match(sessionHook, /city/);
+  assert.match(sessionHook, /profile_id/);
   assert.match(profileHub, /Nama panggilan \/ username/);
   assert.match(profileHub, /supabase\.from\('profiles'\)\.update/);
   assert.doesNotMatch(stories, /Aulia|UMKM Sultra|Cerita Kendari|Wakatobi/);
