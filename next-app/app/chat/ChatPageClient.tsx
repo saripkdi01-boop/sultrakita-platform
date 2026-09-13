@@ -11,7 +11,7 @@ export default function ChatPageClient() {
   const { mobileOpen } = useUIStore();
   const [unreadCount, setUnreadCount] = useState(0);
   function navigate(key: QuickNavKey) {
-    const routes: Record<QuickNavKey, string> = { home: '/beranda', chat: '/chat', groups: '/groups', market: '/jobs', suits: '/properti', marketplace: '/marketplace' };
+    const routes: Record<QuickNavKey, string> = { home: '/beranda', chat: '/chat', campaigns: '/campaigns', groups: '/groups', market: '/jobs', suits: '/properti', marketplace: '/marketplace' };
     if (key !== 'chat') window.location.assign(routes[key]);
   }
   return <><Header /><QuickNavBar active="chat" chatCount={unreadCount} onNavigate={navigate} /><SidebarMobileDrawer open={mobileOpen} /><main className="chat-route-main"><ChatInbox onUnreadCountChange={setUnreadCount} /></main></>;

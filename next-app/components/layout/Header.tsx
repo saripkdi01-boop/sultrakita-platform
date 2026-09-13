@@ -1,6 +1,6 @@
 'use client';
 
-import { Menu, Search, X } from 'lucide-react';
+import { Menu, MessageCircle, Search, X } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { useUIStore } from '@/store/ui';
@@ -31,6 +31,7 @@ export function Header({ onCreate }: { onCreate?: (type?: 'post' | 'reel') => vo
 
     <div className="header-actions">
       <CreateMenu onCreateStory={onCreate} />
+      <a className="header-icon header-feature-link" href="/chat" aria-label="Buka SUKI Chat" title="SUKI Chat"><MessageCircle size={19} aria-hidden="true" /></a>
       <NotificationCenter />
       <ProfileHub />
     </div>
