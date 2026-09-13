@@ -1366,3 +1366,43 @@ html[data-theme='dark'] .campaign-share{background:linear-gradient(135deg,var(--
 .ecosystem-slider .ecosystem-slider-copy{min-height:11rem}
 .ecosystem-slider-dots button{border:0;padding:0}
 @media(min-width:640px){.ecosystem-slider,.ecosystem-slider .ecosystem-slider-copy{min-height:14rem}}
+
+
+/* =========================================================
+   SOCIAL FEED V2 — story rail, composer, status cards
+   ========================================================= */
+.beranda-shell{background:#f3f6f5}
+.beranda-main{max-width:700px;margin-inline:auto}
+.beranda-stories{padding:10px 0 4px}
+.beranda-stories-heading{display:flex;align-items:center;justify-content:space-between;padding:0 3px 9px}
+.beranda-stories-heading h2{margin:3px 0 0;color:#132a27;font-size:18px;letter-spacing:-.02em}
+.beranda-stories-link{min-height:32px;padding:5px 9px;border:0;background:transparent;color:#087e73;font-size:11px;font-weight:800;cursor:pointer}
+.beranda-story-rail{display:flex;gap:9px;overflow-x:auto;padding:1px 2px 8px;scrollbar-width:none}
+.beranda-story-rail::-webkit-scrollbar{display:none}
+.story-card{position:relative;display:flex;flex:0 0 112px;flex-direction:column;overflow:hidden;padding:0;border:1px solid #dce8e4;border-radius:15px;background:#fff;box-shadow:0 4px 14px rgba(20,57,49,.07);text-align:left;cursor:pointer}
+.story-card:focus-visible{outline:3px solid #0e9f91;outline-offset:2px}
+.story-card-visual{display:grid;place-items:center;height:116px;background:linear-gradient(145deg,#d8efe9,#a9dcd1 55%,#edf7f4);color:#0b7369}
+.story-create-visual{background:linear-gradient(145deg,#d6f3ee,#f1fbf8)}
+.story-avatar{display:grid;place-items:center;width:38px;height:38px;border:3px solid #fff;border-radius:50%;background:#0e9f91;color:#fff;box-shadow:0 2px 7px rgba(0,0,0,.12)}
+.story-card-label{display:block;padding:9px 10px 2px;color:#18332f;font-size:11px;font-weight:800;line-height:1.25}
+.story-card small{padding:0 10px 10px;color:#78918b;font-size:9px}
+.story-empty-mark{display:grid;place-items:center;width:38px;height:38px;border:2px dashed #4bb8a9;border-radius:50%;font-size:25px;line-height:1}
+.beranda-create-post{margin:9px 0 12px!important;padding:14px!important;border:1px solid #dce8e4!important;border-radius:17px!important;background:#fff!important;box-shadow:0 4px 16px rgba(20,57,49,.07)!important}
+.beranda-create-post .beranda-avatar{width:42px;height:42px;flex-basis:42px}
+.beranda-create-post button.flex-1{background:#f0f4f3;color:#6f8580;font-size:13px}
+.beranda-feed-post{margin:0 0 12px;border:1px solid #dce8e4!important;border-radius:17px!important;background:#fff!important;box-shadow:0 4px 16px rgba(20,57,49,.065)!important}
+.beranda-feed-post header{padding:14px 15px 9px!important}
+.beranda-feed-post header .beranda-avatar{width:42px;height:42px}
+.beranda-feed-post header strong{font-size:13px}
+.beranda-feed-post header small{display:flex;align-items:center;gap:3px;color:#77908a;font-size:10px}
+.beranda-feed-post .feed-copy{padding:2px 15px 3px!important;color:#1c302d!important;font-size:14px;line-height:1.55}
+.beranda-feed-post .feed-media-gallery{margin-top:9px;border-radius:0;background:#e7efec}
+.beranda-feed-post .feed-media-count-1 .feed-gallery-item{aspect-ratio:4/3}
+.beranda-feed-post .feed-meta{padding:9px 15px 5px!important;color:#78908b;font-size:10px}
+.beranda-feed-post .feed-actions{padding:5px 9px 9px!important;border-top:1px solid #edf3f1}
+.beranda-feed-post .feed-actions button,.beranda-feed-post .feed-actions a{min-height:36px;border-radius:9px;color:#607872;font-size:10px}
+.beranda-feed-post .feed-actions button:hover,.beranda-feed-post .feed-actions a:hover{background:#eaf7f4;color:#087e73}
+.beranda-feed-post .feed-actions .liked{color:#d64770}
+.beranda-main>.ecosystem-slider{margin:18px 0 14px}
+@media(min-width:761px){.beranda-shell{background:transparent}.beranda-main{max-width:700px}.story-card{flex-basis:128px}.story-card-visual{height:132px}.beranda-create-post{padding:16px!important}.beranda-feed-post .feed-copy{font-size:15px}}
+@media(max-width:540px){.beranda-shell{padding-inline:10px!important}.beranda-feed-heading{padding-inline:3px!important}.beranda-feed-heading h1{font-size:28px}.beranda-home-subtitle{font-size:11px}.story-card{flex-basis:108px}.story-card-visual{height:112px}.beranda-feed-post .feed-actions{display:grid;grid-template-columns:repeat(4,1fr)}.beranda-feed-post .feed-actions button,.beranda-feed-post .feed-actions a{justify-content:center;padding-inline:2px}.beranda-feed-post .feed-actions span{font-size:9px}}
