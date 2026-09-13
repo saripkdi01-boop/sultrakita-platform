@@ -2,10 +2,12 @@
 
 ## Implemented in code
 
+During the controlled soft launch, new memberships are automatically approved with `status = 'active'`, including private groups. Authentication is still required, and write actions remain restricted to active members. Re-enable owner approval before a broad public launch if private-community moderation is required.
+
 - [x] Discover public and private group records through the existing authenticated Groups page.
 - [x] Create a group through `create_suki_group`; creator becomes owner and active member.
 - [x] Join public groups immediately.
-- [x] Request membership for private groups.
+- [x] Auto-approve membership for private groups during the controlled soft launch.
 - [x] Leave groups without allowing an owner to remove themselves accidentally.
 - [x] Create discussion, question, and announcement posts.
 - [x] Add comments with a 1–1,000 character limit.
