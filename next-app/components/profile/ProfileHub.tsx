@@ -28,31 +28,6 @@ export const categories: { id: SettingTab; label: string; description: string; i
 ];
 const interests = ['Marketplace', 'Kuliner', 'Wisata', 'UMKM', 'Motor', 'Properti', 'Fashion', 'Hobi'];
 
-function prepareAvatar(file: File): Promise<File> {
-  return new Promise((resolve, reject) => {
-    const sourceUrl = URL.createObjectURL(file);
-    const image = new Image();
-    image.onload = () => {
-      URL.revokeObjectURL(sourceUrl);
-      const size = Math.min(image.naturalWidth, image.naturalHeight);
-      const sx = (image.naturalWidth - size) / 2;
-      const sy = (image.naturalHeight - size) / 2;
-      const canvas = document.createElement('canvas');
-      canvas.width = 512; canvas.height = 512;
-      const context = canvas.getContext('2d');
-      if (!context) { reject(new Error('Canvas tidak tersedia.')); return; }
-      context.imageSmoothingEnabled = true; context.imageSmoothingQuality = 'high';
-      context.drawImage(image, sx, sy, size, size, 0, 0, 512, 512);
-      canvas.toBlob((blob) => {
-        if (!blob) { reject(new Error('Foto tidak dapat diproses.')); return; }
-        resolve(new File([blob], 'avatar.jpg', { type: 'image/jpeg', lastModified: Date.now() }));
-      }, 'image/jpeg', 0.88);
-    };
-    image.onerror = () => { URL.revokeObjectURL(sourceUrl); reject(new Error('Foto tidak dapat dibaca.')); };
-    image.src = sourceUrl;
-  });
-}
-
 export function ProfileHub() {
   const { profile, menuOpen, setupOpen, settingsOpen, activeTab, toggleMenu, openSetup, closeOverlays, setProfile } = useProfileStore();
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -105,23 +80,19 @@ function ProfileEditForm({ userId }: { userId?: string }) {
     const allowedTypes = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
     if (!allowedTypes.has(file.type)) { setError('Pilih file JPG, PNG, WebP, atau GIF.'); return; }
     if (file.size > 5 * 1024 * 1024) { setError('Ukuran foto maksimal 5 MB.'); return; }
-    let processedFile: File;
-    try { processedFile = await prepareAvatar(file); } catch { setError('Foto tidak dapat diproses. Coba pilih foto lain.'); return; }
-    const nextPreviewUrl = URL.createObjectURL(processedFile);
+    const nextPreviewUrl = URL.createObjectURL(file);
     setPreviewUrl((current) => { if (current) URL.revokeObjectURL(current); return nextPreviewUrl; });
-    const objectPath = `${userId}/${crypto.randomUUID()}.jpg`;
     setUploading(true);
-    const { error: uploadError } = await supabase.storage.from('avatars').upload(objectPath, processedFile, { cacheControl: '3600', contentType: 'image/jpeg', upsert: false });
-    if (uploadError) { setUploading(false); setError('Foto gagal diunggah. Pastikan bucket avatars dan izin storage sudah tersedia.'); return; }
-    const { data: publicData } = supabase.storage.from('avatars').getPublicUrl(objectPath);
-    const avatarUrl = publicData.publicUrl;
-    const { error: profileError } = await supabase.from('profiles').update({ avatar_url: avatarUrl }).eq('id', userId);
+    const formData = new FormData(); formData.append('avatar', file);
+    const response = await fetch('/api/profile/avatar', { method: 'POST', body: formData, credentials: 'include' });
+    const payload = await response.json().catch(() => ({}));
     setUploading(false);
-    if (profileError) { setError('Foto berhasil diunggah tetapi profil gagal diperbarui. Tekan simpan lagi.'); return; }
+    if (!response.ok || !payload.ok) { setError(payload.error || 'Foto gagal diproses. Periksa environment R2 dan coba lagi.'); return; }
+    const avatarUrl = String(payload.data?.avatar_url || '');
     setDraft(current => ({ ...current, avatar_url: avatarUrl }));
     setProfile({ avatar_url: avatarUrl });
     window.dispatchEvent(new CustomEvent('sultra-profile-updated'));
-    setMessage('Foto profil tersimpan di Supabase Storage dan siap tampil di feed publik.');
+    setMessage(`Foto profil tersimpan sebagai ${payload.data?.width || 512}×${payload.data?.height || 512} px.`);
   }
   async function save(event: FormEvent) {
     event.preventDefault(); setMessage(''); setError('');
