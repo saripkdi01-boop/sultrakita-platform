@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Check, Compass, LoaderCircle, MoreHorizontal, RefreshCw, Sparkles } from 'lucide-react';
+import { Compass, LoaderCircle, MoreHorizontal, RefreshCw, Sparkles } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { CreatePostInput } from '@/components/beranda/CreatePostInput';
 import { CreatePostModal } from '@/components/beranda/CreatePostModal';
@@ -9,16 +9,11 @@ import { FeedPost } from '@/components/beranda/FeedPost';
 import { RightSidebar } from '@/components/beranda/RightSidebar';
 import { StoriesSection } from '@/components/beranda/StoriesSection';
 import EcosystemSlider from '@/components/marketing/EcosystemSlider';
-import { useInfiniteFeed, type FeedFilter } from '@/hooks/useInfiniteFeed';
+import { useInfiniteFeed } from '@/hooks/useInfiniteFeed';
 import { setPostLike } from '@/lib/feed-interactions';
 
-const filters: Array<{ value: FeedFilter; label: string }> = [
-  { value: 'recommended', label: 'Rekomendasi' }, { value: 'following', label: 'Mengikuti' }, { value: 'latest', label: 'Terbaru' }, { value: 'property', label: 'Properti' }, { value: 'video', label: 'Video' },
-];
-const filterDescriptions: Record<FeedFilter, string> = { recommended: 'Pilihan paling relevan untukmu', following: 'Cerita dari warga yang kamu ikuti', latest: 'Kabar terbaru dari komunitas', property: 'Peluang properti dan tempat tinggal', video: 'Reels dan cerita dalam video' };
-
 export default function BerandaPage() {
-  const { filter, setFilter, items, loading, error, hasNextPage, loadMore, reload } = useInfiniteFeed();
+  const { items, loading, error, hasNextPage, loadMore, reload } = useInfiniteFeed();
   const [notice, setNotice] = useState('');
   const [composerOpen, setComposerOpen] = useState(false);
   const [composerType, setComposerType] = useState<'post' | 'reel'>('post');
@@ -30,8 +25,6 @@ export default function BerandaPage() {
     <main className="beranda-shell" aria-labelledby="beranda-title">
       <div className="beranda-main">
         <div className="beranda-feed-heading beranda-feed-heading-compact"><div><p className="beranda-eyebrow">Ruang warga Sulawesi Tenggara</p><h1 id="beranda-title">Beranda</h1><p className="beranda-home-subtitle">Temukan kabar, peluang, dan orang yang membuat Sultra bergerak.</p></div><button type="button" className="beranda-filter" aria-label="Opsi beranda"><MoreHorizontal size={18}/></button></div>
-        <div className="feed-toolbar" role="tablist" aria-label="Filter feed">{filters.map((item) => <button key={item.value} type="button" role="tab" aria-selected={filter === item.value} className={filter === item.value ? 'active' : ''} onClick={() => setFilter(item.value)}>{filter === item.value && <Check size={14} aria-hidden="true"/>}{item.label}</button>)}</div>
-        <div className="beranda-feed-tools"><div><span><Sparkles size={13}/> {filterDescriptions[filter]}</span><small>{items.length ? `${items.length} cerita dimuat` : 'Jelajahi cerita warga'}</small></div><button type="button" onClick={reload} disabled={loading} aria-label="Muat ulang feed"><RefreshCw size={15} className={loading ? 'spin' : ''}/> Segarkan</button></div>
         <StoriesSection/><EcosystemSlider appSlug="marketplace"/><CreatePostInput onCreate={openComposer}/>
         <div className="beranda-quick-actions" aria-label="Akses cepat Beranda"><a href="/groups"><Compass size={16}/><span>Komunitas</span></a><a href="/properti"><span className="quick-action-icon">SK</span><span>Properti</span></a><a href="/jobs"><span className="quick-action-icon">JOB</span><span>Peluang kerja</span></a><button type="button" onClick={() => openComposer('post')}><Sparkles size={16}/><span>Bagikan kabar</span></button></div>
         {notice && <div className="beranda-notice" role="status"><span>{notice}</span><button type="button" onClick={() => setNotice('')}>Tutup</button></div>}

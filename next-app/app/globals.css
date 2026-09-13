@@ -1357,3 +1357,12 @@ html[data-theme='dark'] .campaign-share{background:linear-gradient(135deg,var(--
 .visibility-preview p{margin:3px 0 0}
 .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 @media(max-width:760px){.settings-page-hero-actions{gap:8px}.settings-page-identity{width:100%}.visibility-row{grid-template-columns:30px minmax(0,1fr);gap:8px}.visibility-row select{grid-column:2;min-height:42px}.settings-sync-note{font-size:10px}}
+
+
+/* Beranda story-first banner composition */
+.beranda-stories{margin-bottom:12px}
+.beranda-stories-heading{margin-bottom:8px}
+.ecosystem-slider{touch-action:pan-y;user-select:none;min-height:11rem}
+.ecosystem-slider .ecosystem-slider-copy{min-height:11rem}
+.ecosystem-slider-dots button{border:0;padding:0}
+@media(min-width:640px){.ecosystem-slider,.ecosystem-slider .ecosystem-slider-copy{min-height:14rem}}
