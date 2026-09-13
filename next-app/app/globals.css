@@ -1406,3 +1406,28 @@ html[data-theme='dark'] .campaign-share{background:linear-gradient(135deg,var(--
 .beranda-main>.ecosystem-slider{margin:18px 0 14px}
 @media(min-width:761px){.beranda-shell{background:transparent}.beranda-main{max-width:700px}.story-card{flex-basis:128px}.story-card-visual{height:132px}.beranda-create-post{padding:16px!important}.beranda-feed-post .feed-copy{font-size:15px}}
 @media(max-width:540px){.beranda-shell{padding-inline:10px!important}.beranda-feed-heading{padding-inline:3px!important}.beranda-feed-heading h1{font-size:28px}.beranda-home-subtitle{font-size:11px}.story-card{flex-basis:108px}.story-card-visual{height:112px}.beranda-feed-post .feed-actions{display:grid;grid-template-columns:repeat(4,1fr)}.beranda-feed-post .feed-actions button,.beranda-feed-post .feed-actions a{justify-content:center;padding-inline:2px}.beranda-feed-post .feed-actions span{font-size:9px}}
+
+
+/* Quick Navigation — soft 3D SUKI clay icons */
+.quick-nav{background:linear-gradient(180deg,#ffffff 0%,#f7fbfa 100%)!important}
+.quick-nav-item{isolation:isolate;gap:3px!important;color:#718984!important}
+.quick-nav-item:hover .quick-nav-icon-3d{transform:translateY(-2px) rotate(-2deg)}
+.quick-nav-item:active .quick-nav-icon-3d{transform:translateY(1px) scale(.96)}
+.quick-nav-item[aria-current='page']{color:#087e73!important}
+.quick-nav-icon-wrap{position:relative;display:grid;place-items:center;width:38px;height:35px}
+.quick-nav-icon-3d{position:relative;display:grid;place-items:center;width:31px;height:31px;border:1px solid rgba(255,255,255,.9);border-radius:11px;background:linear-gradient(145deg,#ffffff 5%,#d9f3ed 46%,#8bcfc1 100%);color:#187f74;box-shadow:inset 2px 2px 3px rgba(255,255,255,.95),inset -3px -4px 5px rgba(45,126,113,.22),0 4px 7px rgba(34,102,91,.18);transition:transform .2s ease,box-shadow .2s ease}
+.quick-nav-icon-3d::before{content:"";position:absolute;inset:3px 5px auto;border-radius:999px;height:5px;background:rgba(255,255,255,.65);filter:blur(1px);pointer-events:none}
+.quick-nav-item:not([aria-current='page']) .quick-nav-icon-3d{background:linear-gradient(145deg,#fff 5%,#edf6f3 48%,#c1dcd5 100%);color:#57736d;box-shadow:inset 2px 2px 3px rgba(255,255,255,.95),inset -2px -3px 4px rgba(75,112,105,.16),0 3px 6px rgba(34,72,64,.12)}
+.quick-nav-item[aria-current='page'] .quick-nav-icon-3d{background:linear-gradient(145deg,#eafff9 5%,#86d6c8 52%,#0c9688 100%);color:#fff;box-shadow:inset 2px 2px 4px rgba(255,255,255,.7),inset -3px -4px 5px rgba(0,91,82,.35),0 5px 9px rgba(10,126,113,.28)}
+.quick-nav-item:nth-child(2) .quick-nav-icon-3d{color:#8b5478}
+.quick-nav-item:nth-child(2)[aria-current='page'] .quick-nav-icon-3d{background:linear-gradient(145deg,#fff1fa,#e9afd1 52%,#bd6297);color:#fff}
+.quick-nav-item:nth-child(4) .quick-nav-icon-3d{color:#9a711f}
+.quick-nav-item:nth-child(4)[aria-current='page'] .quick-nav-icon-3d{background:linear-gradient(145deg,#fffce6,#f3d16b 52%,#c39a28);color:#634b0c}
+.quick-nav-item:nth-child(5) .quick-nav-icon-3d{color:#5678a4}
+.quick-nav-item:nth-child(5)[aria-current='page'] .quick-nav-icon-3d{background:linear-gradient(145deg,#eff8ff,#acd1ed 52%,#5c91c5);color:#fff}
+.quick-nav-item:nth-child(6) .quick-nav-icon-3d{color:#ad6e46}
+.quick-nav-item:nth-child(6)[aria-current='page'] .quick-nav-icon-3d{background:linear-gradient(145deg,#fff4ea,#efbb8f 52%,#c77c4a);color:#fff}
+.quick-nav-badge{z-index:2;box-shadow:0 2px 4px rgba(20,40,35,.15)}
+.quick-nav-item:focus-visible{outline:3px solid rgba(14,159,145,.42);outline-offset:-2px}
+@media(max-width:760px){.quick-nav{padding:7px 6px calc(7px + env(safe-area-inset-bottom))!important}.quick-nav-item{min-height:52px!important;padding:3px 1px!important;border-radius:14px!important}.quick-nav-icon-wrap{width:40px;height:34px}.quick-nav-icon-3d{width:30px;height:30px}.quick-nav-label{font-size:9px!important;font-weight:800;letter-spacing:-.01em}.quick-nav-item[aria-current='page']{background:linear-gradient(145deg,rgba(226,250,245,.96),rgba(195,239,231,.85))!important;box-shadow:inset 0 1px 2px rgba(255,255,255,.9),0 2px 5px rgba(22,98,87,.08)}}
+@media(prefers-reduced-motion:reduce){.quick-nav-icon-3d{transition:none}.quick-nav-item:hover .quick-nav-icon-3d,.quick-nav-item:active .quick-nav-icon-3d{transform:none}}
