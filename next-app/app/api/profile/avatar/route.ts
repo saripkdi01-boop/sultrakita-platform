@@ -34,20 +34,24 @@ async function findFocus(buffer: Buffer) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return null;
   const base = (process.env.GEMINI_API_BASE || 'https://generativelanguage.googleapis.com/v1beta').replace(/\/$/, '');
-  const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
-  const response = await fetch(`${base}/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`, {
-    method: 'POST',
-    signal: AbortSignal.timeout(7000),
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ parts: [
-        { inline_data: { mime_type: 'image/jpeg', data: buffer.toString('base64') } },
-        { text: 'Temukan subjek utama untuk foto profil. Balas HANYA JSON valid dengan koordinat relatif 0-1000: {"x":number,"y":number,"width":number,"height":number}. Jika wajah terlihat, gunakan area wajah dan bahu; jika tidak, gunakan subjek utama. Jangan sertakan markdown.' },
-      ] }],
-    }),
-  });
-  if (!response.ok) throw new Error(`Gemini HTTP ${response.status}`);
-  return parseFocus(await response.json());
+  const models = Array.from(new Set([process.env.GEMINI_MODEL || 'gemini-2.5-flash', 'gemini-2.5-flash']));
+  let lastStatus = 0;
+  for (const model of models) {
+    const response = await fetch(`${base}/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`, {
+      method: 'POST',
+      signal: AbortSignal.timeout(7000),
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [
+          { inline_data: { mime_type: 'image/jpeg', data: buffer.toString('base64') } },
+          { text: 'Temukan subjek utama untuk foto profil. Balas HANYA JSON valid dengan koordinat relatif 0-1000: {"x":number,"y":number,"width":number,"height":number}. Jika wajah terlihat, gunakan area wajah dan bahu; jika tidak, gunakan subjek utama. Jangan sertakan markdown.' },
+        ] }],
+      }),
+    });
+    if (response.ok) return parseFocus(await response.json());
+    lastStatus = response.status;
+  }
+  throw new Error(`Gemini HTTP ${lastStatus}`);
 }
 
 function getR2Config() {
@@ -89,7 +93,9 @@ export async function POST(request: Request) {
     const { output, focusSource } = await processAvatar(input);
     const config = getR2Config();
     if (!config) return jsonError('Storage avatar belum terhubung. Pastikan R2_ENDPOINT/R2_BUCKET/R2_ACCESS_KEY_ID/R2_SECRET_ACCESS_KEY/R2_PUBLIC_BASE_URL tersedia di environment Production.', 503);
-    const client = new S3Client({ region: process.env.R2_REGION || 'auto', endpoint: config.endpoint, forcePathStyle: true, credentials: { accessKeyId: process.env.R2_ACCESS_KEY_ID!, secretAccessKey: config.secret } });
+    const configuredRegion = String(process.env.R2_REGION || 'auto').trim();
+    const region = /^[a-z0-9-]+$/i.test(configuredRegion) ? configuredRegion : 'auto';
+    const client = new S3Client({ region, endpoint: config.endpoint, forcePathStyle: true, credentials: { accessKeyId: process.env.R2_ACCESS_KEY_ID!, secretAccessKey: config.secret } });
     const objectPath = `avatars/${user.id}/${randomUUID()}.jpg`;
     await client.send(new PutObjectCommand({ Bucket: config.bucket, Key: objectPath, Body: output, ContentType: 'image/jpeg', CacheControl: 'public, max-age=31536000, immutable' }));
     const avatarUrl = `${config.publicBase}/${objectPath}`;
