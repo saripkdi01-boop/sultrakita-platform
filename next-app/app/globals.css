@@ -1133,3 +1133,83 @@ html[data-theme='dark'] .top-header{background:rgba(24,35,51,.95);border-bottom-
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important}
 }
+
+
+/* =========================================================
+   AJAK TEMAN — HOMEPAGE THEME ALIGNMENT
+   Preserve campaign/referral logic; align palette, type, surfaces,
+   radius, elevation, and responsive rhythm with SUKI social home.
+   ========================================================= */
+.campaign-hub{
+  min-height:100vh;
+  background:var(--suki-app-bg);
+  color:var(--suki-text);
+  font-family:'Plus Jakarta Sans',sans-serif;
+}
+.campaign-top{
+  height:68px;
+  padding:0 28px;
+  background:rgba(255,255,255,.94);
+  border-bottom:1px solid var(--suki-border);
+  box-shadow:0 1px 0 rgba(31,41,55,.03);
+}
+.campaign-brand{color:var(--suki-text);font-size:20px;letter-spacing:-.035em}
+.campaign-brand span,.campaign-kicker,.campaign-eyebrow{color:var(--suki-primary)}
+.campaign-top-links a{color:var(--suki-muted)}
+.campaign-top-links a:hover{color:var(--suki-primary-strong)}
+.campaign-shell{grid-template-columns:260px minmax(0,1fr);min-height:calc(100vh - 68px)}
+.campaign-side{border-right:1px solid var(--suki-border);padding:38px 20px 28px;background:var(--suki-surface)}
+.campaign-side h1{color:var(--suki-text);font-size:25px}
+.campaign-side h1 em,.campaign-heading h2 em{color:var(--suki-primary);font-style:normal}
+.campaign-side p,.campaign-heading p,.campaign-page-heading p{color:var(--suki-muted)}
+.campaign-side nav{margin:38px -6px 0}
+.campaign-side nav button{color:var(--suki-muted);border-radius:12px}
+.campaign-side nav button:hover,.campaign-side nav button.active{background:var(--suki-primary-soft);color:var(--suki-primary-strong)}
+.campaign-side-note{border:1px solid #bfe7df;background:var(--suki-primary-soft);border-radius:var(--suki-radius-lg)}
+.campaign-side-note b{color:var(--suki-primary-strong)}
+.campaign-side-note span{color:var(--suki-muted)}
+.campaign-content{padding:46px clamp(22px,5vw,76px)}
+.campaign-heading h2,.campaign-page-heading h2{color:var(--suki-text);font-weight:800}
+.campaign-heading p,.campaign-page-heading p{font-size:13px;line-height:1.7}
+.campaign-primary,.campaign-code button{background:var(--suki-primary);color:#fff;border-radius:12px}
+.campaign-primary:hover,.campaign-code button:hover{background:var(--suki-primary-strong)}
+.campaign-stats article{background:var(--suki-surface);border:1px solid var(--suki-border);border-radius:var(--suki-radius-lg);box-shadow:var(--suki-social-shadow)}
+.campaign-stats span,.campaign-stats small{color:var(--suki-muted)}
+.campaign-stats strong{color:var(--suki-text)}
+.campaign-stats article:first-child strong,.campaign-stats article:nth-child(2) strong{color:var(--suki-primary-strong)}
+.campaign-share{border:1px solid #bfe7df;background:linear-gradient(135deg,var(--suki-primary-soft),var(--suki-surface));border-radius:var(--suki-radius-lg)}
+.campaign-share h3,.campaign-section-title h3{color:var(--suki-text)}
+.campaign-share p,.campaign-note{color:var(--suki-muted)}
+.campaign-code{background:var(--suki-surface);border-color:var(--suki-border)}
+.campaign-code code{color:var(--suki-primary-strong)}
+.campaign-steps article{border-top-color:var(--suki-border)}
+.campaign-steps b,.campaign-rewards article>b,.campaign-rules article>b{color:var(--suki-primary-strong)}
+.campaign-steps span{color:var(--suki-muted)}
+.campaign-list>div,.campaign-rewards article,.campaign-rules article,.campaign-form{background:var(--suki-surface);border:1px solid var(--suki-border);border-radius:var(--suki-radius-lg);box-shadow:var(--suki-social-shadow)}
+.campaign-list small,.campaign-rewards p,.campaign-rules p,.campaign-form p,.campaign-form small{color:var(--suki-muted)}
+.campaign-list strong{color:var(--suki-primary-strong)}
+.campaign-empty{border-color:var(--suki-border);color:var(--suki-muted)}
+.campaign-badge{color:var(--suki-primary-strong);background:var(--suki-primary-soft)}
+.campaign-note{border-left-color:var(--suki-primary);background:var(--suki-primary-soft)}
+.campaign-rewards article>b{background:var(--suki-primary-soft)}
+.campaign-form label{color:var(--suki-muted)}
+.campaign-form input,.campaign-form select{border-color:var(--suki-border);background:var(--suki-surface);color:var(--suki-text)}
+.campaign-form input:focus,.campaign-form select:focus{border-color:var(--suki-primary);outline:2px solid rgba(15,157,143,.18);outline-offset:1px}
+.campaign-feedback{background:var(--suki-text);color:#fff;box-shadow:var(--suki-social-shadow)}
+
+html[data-theme='dark'] .campaign-hub{background:var(--suki-app-bg);color:var(--suki-text)}
+html[data-theme='dark'] .campaign-top,html[data-theme='dark'] .campaign-side{background:var(--suki-surface);border-color:var(--suki-border)}
+html[data-theme='dark'] .campaign-brand,html[data-theme='dark'] .campaign-side h1,html[data-theme='dark'] .campaign-heading h2,html[data-theme='dark'] .campaign-page-heading h2,html[data-theme='dark'] .campaign-section-title h3{color:var(--suki-text)}
+html[data-theme='dark'] .campaign-stats article,html[data-theme='dark'] .campaign-list>div,html[data-theme='dark'] .campaign-rewards article,html[data-theme='dark'] .campaign-rules article,html[data-theme='dark'] .campaign-form{background:var(--suki-surface);border-color:var(--suki-border)}
+html[data-theme='dark'] .campaign-share{background:linear-gradient(135deg,var(--suki-primary-soft),var(--suki-surface));border-color:var(--suki-border)}
+
+@media(max-width:900px){.campaign-side{padding:30px 20px}}
+@media(max-width:640px){
+  .campaign-top{height:62px;padding:0 14px}
+  .campaign-content{padding:22px 14px 66px}
+  .campaign-heading h2{font-size:42px}
+  .campaign-page-heading h2{font-size:35px}
+  .campaign-stats{gap:10px}
+  .campaign-share,.campaign-rewards,.campaign-rules{gap:10px}
+  .campaign-list>div{padding:13px 14px}
+}
