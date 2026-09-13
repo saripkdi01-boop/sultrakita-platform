@@ -152,7 +152,10 @@ export async function deleteGroupComment(groupId: string, commentId: string) {
     const { supabase, user } = await requireServerUser();
     const membership = await requireActiveGroupMember(supabase, groupId, user.id);
     if (!validUuid(commentId)) return { ok: false as const, error: 'Komentar tidak valid.' };
-    const { error } = await supabase.from('group_post_comments').delete().eq('id', commentId).eq('group_id', groupId).or(`author_id.eq.${user.id},group_id.eq.${groupId}`);
+    // Keep authorization in the database policy: authors and active owners/moderators
+    // may delete, while the query must never broaden the target to every comment in
+    // the group. The scoped predicates also make cross-group comment IDs harmless.
+    const { error } = await supabase.from('group_post_comments').delete().eq('id', commentId).eq('group_id', groupId);
     if (error) throw error;
     return { ok: true as const, moderator: ['owner', 'moderator'].includes(membership.role) };
   } catch (error) { return { ok: false as const, error: message(error) }; }
