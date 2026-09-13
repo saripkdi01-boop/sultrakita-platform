@@ -41,8 +41,11 @@ export const menuSections: { title: string; items: MenuItemConfig[] }[] = [
   {
     title: 'Pintasan Anda',
     items: [
+      { label: 'Beranda', route: '/beranda', icon: Globe2 },
       { label: 'SUKI Marketplace', route: '/marketplace', icon: ShoppingBag },
       { label: 'SUKI Suits', route: '/properti', icon: Building2 },
+      { label: 'SUKI Chat', route: '/chat', icon: MessageCircle },
+      { label: 'Grup', route: '/groups', icon: Users },
     ],
   },
   {
@@ -51,8 +54,6 @@ export const menuSections: { title: string; items: MenuItemConfig[] }[] = [
       { label: 'SUKI AI', route: '/chat', icon: Sparkles },
       { label: 'Tersimpan', route: '/marketplace/profile#saved', icon: Bookmark, badge: '4' },
       { label: 'Kenangan', route: '/beranda#memories', icon: History },
-      { label: 'SUKI Marketplace', route: '/marketplace', icon: Store },
-      { label: 'Grup', route: '/groups', icon: Users },
       { label: 'Ajak Teman', route: '/ajak-teman', icon: UserPlus, badge: 'NEW' },
       { label: 'Properti Saya', route: '/dashboard/properties', icon: Building2 },
       { label: 'Pesan Properti', route: '/dashboard/inquiries', icon: MessageCircle },
