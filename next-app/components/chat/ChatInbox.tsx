@@ -14,7 +14,7 @@ function initials(name: string) { return name.split(/\s+/).map((part) => part[0]
 function timeLabel(value?: string) { if (!value) return ''; return new Intl.DateTimeFormat('id-ID', { hour: '2-digit', minute: '2-digit' }).format(new Date(value)); }
 function isUnread(item: Conversation, userId: string) { const participant = item.conversation_participants?.find((row) => row.user_id === userId); return Boolean(item.last_message_at && (!participant?.last_read_at || new Date(item.last_message_at) > new Date(participant.last_read_at))); }
 
-export function ChatInbox() {
+export function ChatInbox({ onUnreadCountChange }: { onUnreadCountChange?: (count: number) => void }) {
   const [userId, setUserId] = useState('');
   const [items, setItems] = useState<Conversation[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
@@ -41,6 +41,7 @@ export function ChatInbox() {
   }, []);
 
   const unreadCount = useMemo(() => items.filter((item) => isUnread(item, userId)).length, [items, userId]);
+  useEffect(() => { onUnreadCountChange?.(unreadCount); }, [onUnreadCountChange, unreadCount]);
   const filteredItems = useMemo(() => items.filter((item) => {
     const name = item.name || (item.type === 'group' ? 'Grup Sultra' : 'Percakapan pribadi');
     const matchesQuery = `${name} ${item.last_message || ''}`.toLowerCase().includes(query.trim().toLowerCase());
