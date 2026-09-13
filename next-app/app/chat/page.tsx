@@ -1,18 +1,14 @@
-'use client';
+import { redirect } from 'next/navigation';
+import { getServerSupabase } from '@/lib/supabase/server';
+import ChatPageClient from './ChatPageClient';
 
-import { ChatInbox } from '@/components/chat/ChatInbox';
-import { Header } from '@/components/layout/Header';
-import { QuickNavBar, type QuickNavKey } from '@/components/layout/QuickNavBar';
-import { SidebarMobileDrawer } from '@/components/layout/SidebarMobileDrawer';
-import { useUIStore } from '@/store/ui';
-import { useState } from 'react';
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
-export default function ChatPage() {
-  const { mobileOpen } = useUIStore();
-  const [unreadCount, setUnreadCount] = useState(0);
-  function navigate(key: QuickNavKey) {
-    const routes: Record<QuickNavKey, string> = { home: '/beranda', chat: '/chat', groups: '/groups', market: '/jobs', suits: '/properti', marketplace: '/marketplace' };
-    if (key !== 'chat') window.location.assign(routes[key]);
-  }
-  return <><Header /><QuickNavBar active="chat" chatCount={unreadCount} onNavigate={navigate} /><SidebarMobileDrawer open={mobileOpen} /><main className="chat-route-main"><ChatInbox onUnreadCountChange={setUnreadCount} /></main></>;
+export default async function ChatPage() {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) redirect('/login?redirect=%2Fchat');
+  const supabase = await getServerSupabase();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/login?redirect=%2Fchat');
+  return <ChatPageClient />;
 }
