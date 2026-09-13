@@ -6,7 +6,7 @@ import { getChatMessages, markChatRead, searchChatMessages, sendMessage, setMess
 import { subscribeToChat, unsubscribeFromChat } from '@/lib/realtime/chat';
 
 type Message = { id: string; conversation_id: string; sender_id: string; content: string | null; message_type?: string; media_url?: string | null; reply_to_message_id?: string | null; edited?: boolean; deleted?: boolean; is_read?: boolean; created_at: string };
-type Props = { conversationId: string; currentUserId: string; initialMessages?: Message[]; conversationName?: string; conversationAvatar?: string | null; onBack?: () => void };
+type Props = { conversationId: string; currentUserId: string; initialMessages?: Message[]; conversationName?: string; conversationAvatar?: string | null; onBack?: () => void; onConversationRead?: (conversationId: string) => void };
 
 function messageTime(value: string) { return new Intl.DateTimeFormat('id-ID', { hour: '2-digit', minute: '2-digit' }).format(new Date(value)); }
 function initials(name: string) { return name.split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase(); }
@@ -18,7 +18,7 @@ function highlightText(content: string, query: string) {
   return parts.map((part, index) => part.toLowerCase() === normalized.toLowerCase() ? <mark key={`${part}-${index}`}>{part}</mark> : part);
 }
 
-export function ChatWindow({ conversationId, currentUserId, initialMessages = [], conversationName = 'Percakapan pribadi', conversationAvatar, onBack }: Props) {
+export function ChatWindow({ conversationId, currentUserId, initialMessages = [], conversationName = 'Percakapan pribadi', conversationAvatar, onBack, onConversationRead }: Props) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [text, setText] = useState('');
   const [replyTo, setReplyTo] = useState<Message | null>(null);
@@ -39,7 +39,7 @@ export function ChatWindow({ conversationId, currentUserId, initialMessages = []
   const endRef = useRef<HTMLDivElement>(null);
   const typingTimer = useRef<number | null>(null);
 
-  useEffect(() => { let active = true; setSearchOpen(false); setSearchQuery(''); setSearchResults([]); setSearchError(''); setActiveSearchId(null); setHasMore(false); getChatMessages(conversationId).then((result) => { if (active && result.ok) { setMessages(result.data as Message[]); setHasMore(Boolean(result.hasMore)); } }); void markChatRead(conversationId); return () => { active = false; }; }, [conversationId]);
+  useEffect(() => { let active = true; setSearchOpen(false); setSearchQuery(''); setSearchResults([]); setSearchError(''); setActiveSearchId(null); setHasMore(false); getChatMessages(conversationId).then((result) => { if (active && result.ok) { setMessages(result.data as Message[]); setHasMore(Boolean(result.hasMore)); } }); void markChatRead(conversationId).then((result) => { if (active && result.ok) onConversationRead?.(conversationId); }); return () => { active = false; }; }, [conversationId, onConversationRead]);
   useEffect(() => { const channel = subscribeToChat(conversationId, { onMessage: (message) => { setMessages((current) => current.some((item) => item.id === message.id) ? current : [...current, message as Message]); void markChatRead(conversationId); }, onTyping: (row) => { if (row.user_id === currentUserId) return; setTypingUsers((current) => row.is_typing ? Array.from(new Set([...current, row.user_id])) : current.filter((id) => id !== row.user_id)); } }); return () => { void unsubscribeFromChat(channel); }; }, [conversationId, currentUserId]);
   useEffect(() => () => { if (typingTimer.current) window.clearTimeout(typingTimer.current); void setTyping(conversationId, false); }, [conversationId]);
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, typingUsers]);

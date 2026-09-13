@@ -1,7 +1,7 @@
 'use client';
 
 import { CheckCheck, Filter, MessageCircle, MoreHorizontal, Plus, Search, Settings2, Users, X } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { getChatInbox, setPresence } from '@/lib/actions/chat';
 import { ChatWindow } from './ChatWindow';
@@ -49,6 +49,9 @@ export function ChatInbox({ onUnreadCountChange }: { onUnreadCountChange?: (coun
     return matchesQuery && matchesFilter;
   }), [items, query, filter, userId]);
   const selectedConversation = items.find((item) => item.id === selected);
+  const handleConversationRead = useCallback((conversationId: string) => {
+    setItems((current) => current.map((item) => item.id === conversationId ? { ...item, conversation_participants: item.conversation_participants?.map((participant) => participant.user_id === userId ? { ...participant, last_read_at: item.last_message_at || new Date().toISOString() } : participant) } : item));
+  }, [userId]);
 
   return <section className="chat-shell">
     <aside className={`chat-inbox ${selected ? 'chat-inbox-hidden-mobile' : ''}`}>
@@ -66,6 +69,6 @@ export function ChatInbox({ onUnreadCountChange }: { onUnreadCountChange?: (coun
         }) : <div className="chat-list-empty"><Filter size={30} /><p>{query ? 'Percakapan tidak ditemukan' : filter === 'unread' ? 'Semua pesan sudah dibaca' : filter === 'groups' ? 'Belum ada grup' : 'Belum ada percakapan'}</p><small>{query ? 'Coba kata kunci lain.' : 'Hubungi seller dari Marketplace untuk memulai.'}</small></div>}
       </div>
     </aside>
-    <div className={`chat-stage ${selected ? 'chat-stage-active-mobile' : ''}`}>{selected && userId ? <ChatWindow conversationId={selected} currentUserId={userId} conversationName={selectedConversation?.name || (selectedConversation?.type === 'group' ? 'Grup Sultra' : 'Percakapan pribadi')} conversationAvatar={selectedConversation?.avatar_url} onBack={() => setSelected(null)} /> : <div className="chat-stage-empty"><span className="chat-empty-orb"><MessageCircle size={30} /></span><h2>Pilih percakapan</h2><p>Pesan baru dengan seller dan warga akan muncul secara realtime.</p></div>}</div>
+    <div className={`chat-stage ${selected ? 'chat-stage-active-mobile' : ''}`}>{selected && userId ? <ChatWindow conversationId={selected} currentUserId={userId} conversationName={selectedConversation?.name || (selectedConversation?.type === 'group' ? 'Grup Sultra' : 'Percakapan pribadi')} conversationAvatar={selectedConversation?.avatar_url} onBack={() => setSelected(null)} onConversationRead={handleConversationRead} /> : <div className="chat-stage-empty"><span className="chat-empty-orb"><MessageCircle size={30} /></span><h2>Pilih percakapan</h2><p>Pesan baru dengan seller dan warga akan muncul secara realtime.</p></div>}</div>
   </section>;
 }
