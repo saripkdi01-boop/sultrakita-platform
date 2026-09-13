@@ -11,7 +11,7 @@ export function BrandLogo() {
   return (
     <Link className="brand-lockup" href={isSuits ? '/properti' : '/'} aria-label={`${brandName} — by SULTRAKITA`}>
       <span className="brand-symbol" aria-hidden="true">
-        {isSuits ? <Building2 size={23} strokeWidth={2.2} /> : <img src="/suki-logo-mark.png" alt="" />}
+        {isSuits ? <Building2 size={23} strokeWidth={2.2} /> : <img src="/suki-logo-mark.svg" alt="" width={40} height={40} />}
       </span>
       <span className="brand-wordmark">
         <strong>{brandName}</strong>

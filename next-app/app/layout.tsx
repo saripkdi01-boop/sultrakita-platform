@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://sultrakita-platform.vercel.app'),
   title: 'SUKI Apps - Ekosistem Digital Sulawesi Tenggara (SultraKita)',
   description: 'SUKI Apps adalah ekosistem digital Sulawesi Tenggara untuk menemukan properti, peluang kerja, marketplace, komunitas, dan layanan warga.',
-  icons: { icon: '/icon.png', shortcut: '/icon.png', apple: '/icon.png' },
+  icons: { icon: '/icon.svg', shortcut: '/icon.svg', apple: '/suki-logo-mark.svg' },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
