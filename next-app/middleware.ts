@@ -53,6 +53,11 @@ export async function middleware(request: NextRequest) {
     },
   );
   const { data: { user } } = await supabase.auth.getUser();
+  if (!user && url.pathname.startsWith('/admin')) {
+    const login = new URL('/login', request.url);
+    login.searchParams.set('redirect', '/admin/dashboard');
+    return NextResponse.redirect(login);
+  }
   if (!user && !publicRoute) { const redirect = url.clone(); redirect.pathname = '/login'; redirect.searchParams.set('redirect', url.pathname); return NextResponse.redirect(redirect); }
   if (user && (url.pathname === '/login' || url.pathname === '/signup')) return NextResponse.redirect(new URL('/dashboard', request.url));
   if (user && !publicRoute && (url.pathname.startsWith('/admin') || url.pathname.startsWith('/seller'))) {
