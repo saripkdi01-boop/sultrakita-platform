@@ -25,12 +25,12 @@ export function Header({ onCreate }: { onCreate?: (type?: 'post' | 'reel') => vo
         <Search size={17} aria-hidden="true" />
         <input autoFocus={searchOpen} aria-label="Cari di SUKI Platforms" placeholder="Cari produk, lokasi, atau warga" />
       </div>
-      <button className="header-search-toggle" type="button" onClick={() => setSearchOpen((value) => !value)} aria-label={searchOpen ? 'Tutup pencarian' : 'Buka pencarian'} aria-expanded={searchOpen}><Search size={19} aria-hidden="true" /></button>
       <nav className="top-nav" aria-label="Navigasi utama"><a className={pathname === '/' || pathname === '/beranda' ? 'active' : ''} href="/beranda" aria-current={pathname === '/' || pathname === '/beranda' ? 'page' : undefined}>Beranda</a><a href="/properti/create">Pasang iklan</a><a href="/help-center">Panduan</a></nav>
     </div>
 
     <div className="header-actions">
       <CreateMenu onCreateStory={onCreate} />
+      <button className="header-search-toggle" type="button" onClick={() => setSearchOpen((value) => !value)} aria-label={searchOpen ? 'Tutup pencarian' : 'Buka pencarian'} aria-expanded={searchOpen}><Search size={19} aria-hidden="true" /></button>
       <a className="header-icon header-feature-link" href="/chat" aria-label="Buka SUKI Chat" title="SUKI Chat"><MessageCircle size={19} aria-hidden="true" /></a>
       <NotificationCenter />
       <ProfileHub />
