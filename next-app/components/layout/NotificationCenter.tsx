@@ -22,7 +22,7 @@ function formatTime(value: string) {
 }
 function present(row: NotificationRow): NotificationItem {
   const title = typeof row.title === 'string' && row.title.trim() ? row.title : 'Aktivitas baru';
-  const kind = (row.type || 'activity').toLowerCase() as NotificationKind;
+  const kind = (typeof row.type === 'string' ? row.type : 'activity').toLowerCase() as NotificationKind;
   const visual = kind === 'social'
     ? { Icon: Heart, tone: 'notification-tone-coral' }
     : kind === 'marketplace'
@@ -49,12 +49,18 @@ export function NotificationCenter() {
 
   async function load(userIdOverride?: string) {
     if (!supabase) { setUserId(null); setNotifications([]); return; }
-    const { data: auth } = await supabase.auth.getUser();
-    const id = userIdOverride || auth.user?.id || null;
-    setUserId(id);
-    if (!id) { setNotifications([]); return; }
-    const { data, error } = await supabase.from('notifications').select('id,type,title,body,link,is_read,created_at').eq('profile_id', id).order('created_at', { ascending: false }).limit(30);
-    if (!error) setNotifications(((data || []) as NotificationRow[]).map(present));
+    try {
+      const { data: auth } = await supabase.auth.getUser();
+      const id = userIdOverride || auth.user?.id || null;
+      setUserId(id);
+      if (!id) { setNotifications([]); return; }
+      const { data, error } = await supabase.from('notifications').select('id,type,title,body,link,is_read,created_at').eq('profile_id', id).order('created_at', { ascending: false }).limit(30);
+      if (!error) setNotifications(((data || []) as NotificationRow[]).map(present));
+      else setNotifications([]);
+    } catch {
+      setUserId(null);
+      setNotifications([]);
+    }
   }
 
   useEffect(() => {
