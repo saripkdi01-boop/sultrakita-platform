@@ -21,6 +21,7 @@ function formatTime(value: string) {
   return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
 }
 function present(row: NotificationRow): NotificationItem {
+  const title = typeof row.title === 'string' && row.title.trim() ? row.title : 'Aktivitas baru';
   const kind = (row.type || 'activity').toLowerCase() as NotificationKind;
   const visual = kind === 'social'
     ? { Icon: Heart, tone: 'notification-tone-coral' }
@@ -28,10 +29,10 @@ function present(row: NotificationRow): NotificationItem {
       ? { Icon: ShoppingBag, tone: 'notification-tone-gold' }
       : kind === 'property'
         ? { Icon: BellRing, tone: 'notification-tone-teal' }
-        : kind === 'system' || row.title.toLowerCase().includes('profil')
+        : kind === 'system' || title.toLowerCase().includes('profil')
           ? { Icon: UserPlus, tone: 'notification-tone-purple' }
           : { Icon: MessageCircle, tone: 'notification-tone-teal' };
-  return { ...row, kind, time: formatTime(row.created_at), href: row.link?.startsWith('/') ? row.link : '/beranda', unread: !row.is_read, ...visual };
+  return { ...row, title, kind, time: formatTime(row.created_at), href: row.link?.startsWith('/') ? row.link : '/beranda', unread: !row.is_read, ...visual };
 }
 
 export function NotificationCenter() {
