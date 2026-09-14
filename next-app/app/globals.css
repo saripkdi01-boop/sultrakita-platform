@@ -1761,3 +1761,9 @@ html[data-theme='dark'] .story-card-visual {
 @media (min-width: 1101px) {
   .quick-nav-item-campaigns { display: inline-flex !important; }
 }
+
+@media (max-width: 780px) {
+  /* Keep the mobile tab bar to one ergonomic row; these destinations remain in the sidebar. */
+  .quick-nav-item-campaigns,
+  .quick-nav-item-suits { display: none !important; }
+}
