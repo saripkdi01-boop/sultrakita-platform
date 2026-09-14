@@ -1,5 +1,4 @@
 'use client';
-
 import { Menu, MessageCircle, Search, X } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
@@ -8,32 +7,7 @@ import { ProfileHub } from '@/components/profile/ProfileHub';
 import { CreateMenu } from './CreateMenu';
 import { BrandLogo } from './BrandLogo';
 import { NotificationCenter } from './NotificationCenter';
-
 export function Header({ onCreate }: { onCreate?: (type?: 'post' | 'reel') => void }) {
-  const { mobileOpen, toggleMobile } = useUIStore();
-  const pathname = usePathname();
-  const [searchOpen, setSearchOpen] = useState(false);
-
-  return <header className="top-header">
-    <div className="brand-group">
-      <button className="mobile-menu topbar-menu" onClick={toggleMobile} aria-expanded={mobileOpen} aria-controls="suki-sidebar-drawer" aria-label={mobileOpen ? 'Tutup menu utama' : 'Buka menu utama'}>{mobileOpen ? <X size={21} /> : <Menu size={21} />}</button>
-      <BrandLogo />
-    </div>
-
-    <div className="header-main">
-      <div className={`header-search ${searchOpen ? 'header-search-open' : ''}`}>
-        <Search size={17} aria-hidden="true" />
-        <input autoFocus={searchOpen} aria-label="Cari di SUKI Platforms" placeholder="Cari produk, lokasi, atau warga" />
-      </div>
-      <nav className="top-nav" aria-label="Navigasi utama"><a className={pathname === '/' || pathname === '/beranda' ? 'active' : ''} href="/beranda" aria-current={pathname === '/' || pathname === '/beranda' ? 'page' : undefined}>Beranda</a><a href="/properti/create">Pasang iklan</a><a href="/help-center">Panduan</a></nav>
-    </div>
-
-    <div className="header-actions">
-      <CreateMenu onCreateStory={onCreate} />
-      <button className="header-search-toggle" type="button" onClick={() => setSearchOpen((value) => !value)} aria-label={searchOpen ? 'Tutup pencarian' : 'Buka pencarian'} aria-expanded={searchOpen}><Search size={19} aria-hidden="true" /></button>
-      <a className="header-icon header-feature-link" href="/chat" aria-label="Buka SUKI Chat" title="SUKI Chat"><MessageCircle size={19} aria-hidden="true" /></a>
-      <NotificationCenter />
-      <ProfileHub />
-    </div>
-  </header>;
+  const { mobileOpen, toggleMobile } = useUIStore(); const pathname = usePathname(); const [searchOpen, setSearchOpen] = useState(false);
+  return <header className="top-header"><div className="brand-group"><button className="mobile-menu topbar-menu" onClick={toggleMobile} aria-expanded={mobileOpen} aria-controls="suki-sidebar-drawer" aria-label={mobileOpen ? 'Tutup menu utama' : 'Buka menu utama'}>{mobileOpen ? <X size={21} /> : <Menu size={21} />}</button><BrandLogo /></div><div className="header-main"><div className={`header-search ${searchOpen ? 'header-search-open' : ''}`}><Search size={17} aria-hidden="true" /><input autoFocus={searchOpen} aria-label="Cari di SUKI Platforms" placeholder="Cari produk, lokasi, atau warga" /></div><nav className="top-nav" aria-label="Navigasi utama"><a className={pathname === '/' || pathname === '/beranda' ? 'active' : ''} href="/beranda" aria-current={pathname === '/' || pathname === '/beranda' ? 'page' : undefined}>Beranda</a><a href="/properti/create">Pasang iklan</a><a href="/help-center">Panduan</a></nav></div><div className="header-actions"><CreateMenu onCreateStory={onCreate} /><button className="header-search-toggle" type="button" onClick={() => setSearchOpen(value => !value)} aria-label={searchOpen ? 'Tutup pencarian' : 'Buka pencarian'} aria-expanded={searchOpen}><Search size={19} aria-hidden="true" /></button><a className="header-icon header-chat-trigger" href="/chat" aria-label="Buka SUKI Chat" title="SUKI Chat"><MessageCircle size={19} aria-hidden="true" /></a><NotificationCenter /><ProfileHub /></div></header>;
 }
