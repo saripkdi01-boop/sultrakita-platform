@@ -1857,3 +1857,109 @@ html[data-theme='dark'] .beranda-feed-post .feed-actions{border-top-color:var(--
 html[data-theme='dark'] .beranda-feed-post .feed-actions button,html[data-theme='dark'] .beranda-feed-post .feed-actions a{color:#b7c5c8!important}
 html[data-theme='dark'] .beranda-feed-post .feed-actions button:hover,html[data-theme='dark'] .beranda-feed-post .feed-actions a:hover{background:#123c3a!important;color:#9cebe0!important}
 @media(max-width:760px){html[data-theme='dark'] .quick-nav-item[aria-current='page']{background:linear-gradient(145deg,#1d5d54,#123c3a)!important;box-shadow:inset 0 1px 2px rgba(174,255,241,.14),0 2px 7px rgba(0,0,0,.28)!important}}
+
+
+/* TsukiApps Fresh Feed Redesign — UI-only layer, September 2026. */
+:root {
+  --tsuki-bg: #edf5f2;
+  --tsuki-card: #ffffff;
+  --tsuki-ink: #162b26;
+  --tsuki-muted: #71827d;
+  --tsuki-line: #dbe9e4;
+  --tsuki-primary: #0d9488;
+  --tsuki-primary-soft: #e2f5f0;
+  --tsuki-shadow: 0 14px 36px rgba(21, 68, 59, .08);
+}
+
+.beranda-shell {
+  background: radial-gradient(circle at 18% 0%, rgba(13,148,136,.09), transparent 31rem), var(--tsuki-bg) !important;
+  padding-top: 28px !important;
+  padding-bottom: 72px !important;
+}
+.beranda-main { max-width: 720px !important; }
+.beranda-feed-heading {
+  position: relative; overflow: hidden; min-height: 142px; padding: 25px 27px !important;
+  border: 1px solid #cce9e1 !important; border-radius: 24px !important;
+  background: linear-gradient(125deg, #dff5ef 0%, #fff 62%, #fff6df 100%) !important;
+  box-shadow: var(--tsuki-shadow) !important;
+}
+.beranda-feed-heading::after { content: ''; position: absolute; width: 180px; height: 180px; right: -56px; top: -68px; border-radius: 50%; background: rgba(13,148,136,.1); }
+.beranda-feed-heading h1 { position: relative; z-index: 1; color: var(--tsuki-ink) !important; font-size: clamp(2rem, 4vw, 3rem) !important; letter-spacing: -.06em; }
+.beranda-eyebrow { color: var(--tsuki-primary) !important; font-size: 10px !important; font-weight: 900 !important; letter-spacing: .14em; text-transform: uppercase; }
+.beranda-home-subtitle { color: var(--tsuki-muted) !important; max-width: 440px; }
+.beranda-filter { position: relative; z-index: 2; border-radius: 12px !important; background: rgba(255,255,255,.75) !important; }
+.beranda-stories { margin-top: 18px; padding: 17px 17px 13px; border: 1px solid var(--tsuki-line); border-radius: 20px; background: var(--tsuki-card); box-shadow: var(--tsuki-shadow); }
+.beranda-stories-heading { margin-bottom: 12px !important; }
+.beranda-stories-heading h2 { color: var(--tsuki-ink) !important; font-size: 17px !important; letter-spacing: -.03em; }
+.beranda-stories-kicker { color: var(--tsuki-primary) !important; font-size: 9px !important; font-weight: 900; letter-spacing: .12em; }
+.beranda-stories-link { color: var(--tsuki-primary) !important; font-weight: 800; }
+.beranda-story-rail { gap: 11px !important; }
+.story-card { flex-basis: 128px !important; border-radius: 18px !important; border-color: var(--tsuki-line) !important; box-shadow: 0 7px 18px rgba(26,78,67,.09) !important; transition: transform .2s ease, box-shadow .2s ease !important; }
+.story-card:hover { transform: translateY(-4px) !important; box-shadow: 0 16px 28px rgba(26,78,67,.14) !important; }
+.story-card-visual { height: 136px !important; background: linear-gradient(145deg, #d8f1eb, #a8dcd0 54%, #f8fbef) !important; }
+.story-create-visual { background: linear-gradient(145deg, #d6f4ee, #fff0d3) !important; }
+.story-card-label { color: var(--tsuki-ink) !important; }
+.story-card small { color: var(--tsuki-muted) !important; }
+.beranda-create-post { margin-top: 18px !important; padding: 18px !important; border: 1px solid var(--tsuki-line) !important; border-radius: 20px !important; background: var(--tsuki-card) !important; box-shadow: var(--tsuki-shadow) !important; }
+.beranda-create-post button.flex-1 { background: #f1f7f5 !important; border: 1px solid transparent; color: var(--tsuki-muted) !important; }
+.beranda-create-post button.flex-1:hover { background: var(--tsuki-primary-soft) !important; }
+.beranda-create-post .border-t { border-color: var(--tsuki-line) !important; }
+.beranda-feed-post { margin-bottom: 18px !important; border: 1px solid var(--tsuki-line) !important; border-radius: 20px !important; background: var(--tsuki-card) !important; box-shadow: var(--tsuki-shadow) !important; overflow: hidden; }
+.beranda-feed-post header { padding: 18px 19px 11px !important; }
+.beranda-feed-post header .beranda-avatar { width: 46px; height: 46px; box-shadow: 0 0 0 4px var(--tsuki-primary-soft); }
+.beranda-feed-post header strong { color: var(--tsuki-ink); font-size: 14px; }
+.beranda-feed-post header small { color: var(--tsuki-muted) !important; }
+.beranda-feed-post .feed-copy { padding: 3px 19px 12px !important; color: var(--tsuki-ink) !important; font-size: 15px; line-height: 1.65; }
+.beranda-feed-post .feed-media-gallery { margin-top: 5px; background: #e6f0ed; }
+.beranda-feed-post .feed-meta { padding: 11px 19px 6px !important; color: var(--tsuki-muted) !important; }
+.beranda-feed-post .feed-actions { padding: 6px 12px 12px !important; margin: 0 !important; border-top: 1px solid var(--tsuki-line) !important; }
+.beranda-feed-post .feed-actions button, .beranda-feed-post .feed-actions a { min-height: 38px; border-radius: 11px; color: var(--tsuki-muted) !important; font-size: 11px; transition: background .18s ease, color .18s ease, transform .18s ease; }
+.beranda-feed-post .feed-actions button:hover, .beranda-feed-post .feed-actions a:hover { background: var(--tsuki-primary-soft) !important; color: var(--tsuki-primary) !important; transform: translateY(-1px); }
+.beranda-quick-actions { gap: 9px !important; margin-top: 16px !important; }
+.beranda-quick-actions a, .beranda-quick-actions button { min-height: 48px !important; padding: 9px 13px !important; border: 1px solid var(--tsuki-line) !important; border-radius: 14px !important; background: rgba(255,255,255,.78) !important; box-shadow: 0 5px 14px rgba(24,68,59,.05); color: var(--tsuki-ink) !important; font-weight: 800; }
+.beranda-quick-actions a:hover, .beranda-quick-actions button:hover { border-color: var(--tsuki-primary) !important; background: var(--tsuki-primary-soft) !important; color: var(--tsuki-primary) !important; }
+
+/* Sidebar becomes a calm, structured quick-navigation panel; links and icons remain unchanged. */
+.desktop-sidebar { background: rgba(255,255,255,.72) !important; border-right: 1px solid var(--tsuki-line) !important; box-shadow: 8px 0 28px rgba(21,68,59,.04) !important; backdrop-filter: blur(14px); }
+.sidebar-inner { padding: 20px 15px !important; }
+.sidebar-brand-row { padding: 0 7px 18px !important; }
+.sidebar-brand { gap: 10px !important; }
+.sidebar-brand img { width: 38px !important; height: 38px !important; border-radius: 13px; box-shadow: 0 7px 15px rgba(13,148,136,.2); }
+.profile-mini-link { margin-bottom: 7px !important; padding: 12px !important; border: 1px solid var(--tsuki-line) !important; border-radius: 16px !important; background: linear-gradient(135deg, #e5f7f2, #fff) !important; }
+.profile-actions { padding: 0 9px 13px !important; }
+.menu-section { margin-top: 13px !important; }
+.menu-title { padding: 7px 9px !important; color: var(--tsuki-muted) !important; font-size: 9px !important; letter-spacing: .13em; text-transform: uppercase; }
+.menu-item { min-height: 44px !important; padding: 7px 10px !important; border-radius: 12px !important; color: var(--tsuki-ink) !important; font-size: 12px !important; transition: transform .18s ease, background .18s ease !important; }
+.menu-item:hover, .menu-item.active { background: var(--tsuki-primary-soft) !important; color: var(--tsuki-primary) !important; transform: translateX(3px); }
+.sidebar-campaign-link { border-radius: 14px !important; }
+.collapse-toggle { border-radius: 50% !important; box-shadow: 0 6px 16px rgba(21,68,59,.14); }
+
+/* Quick navbar mirrors the reference: airy pill, explicit labels, familiar icons. */
+.quick-nav { margin: 10px auto 0 !important; width: min(calc(100% - 32px), 1080px) !important; border: 1px solid var(--tsuki-line) !important; border-radius: 17px !important; background: rgba(255,255,255,.9) !important; box-shadow: var(--tsuki-shadow) !important; backdrop-filter: blur(14px); }
+.quick-nav-item { min-height: 50px !important; border-radius: 12px !important; color: var(--tsuki-muted) !important; }
+.quick-nav-item:hover, .quick-nav-item[aria-current='page'], .quick-nav-item.is-active { background: var(--tsuki-primary-soft) !important; color: var(--tsuki-primary) !important; }
+.quick-nav-item.is-active::after { background: var(--tsuki-primary) !important; }
+
+@media (min-width: 1101px) { .app-frame { background: var(--tsuki-bg); } }
+@media (max-width: 780px) {
+  .beranda-shell { padding: 14px 10px 92px !important; }
+  .beranda-feed-heading { min-height: 128px; padding: 20px !important; border-radius: 20px !important; }
+  .beranda-feed-heading h1 { font-size: 2.15rem !important; }
+  .beranda-stories { margin-top: 13px; padding: 14px 12px 10px; border-radius: 17px; }
+  .story-card { flex-basis: 112px !important; }
+  .story-card-visual { height: 118px !important; }
+  .beranda-create-post { margin-top: 13px !important; padding: 14px !important; border-radius: 17px !important; }
+  .beranda-feed-post { border-radius: 17px !important; }
+  .beranda-feed-post .feed-actions { grid-template-columns: repeat(5, 1fr) !important; }
+  .beranda-feed-post .feed-actions button, .beranda-feed-post .feed-actions a { padding-inline: 2px !important; font-size: 9px; }
+  .beranda-quick-actions { grid-template-columns: repeat(2, 1fr) !important; }
+  .quick-nav { width: 100% !important; margin: 0 !important; border-radius: 0 !important; border-left: 0 !important; border-right: 0 !important; }
+}
+@media (prefers-reduced-motion: reduce) { .story-card, .menu-item, .beranda-feed-post .feed-actions button, .beranda-feed-post .feed-actions a { transition: none !important; } }
+html[data-theme='dark'] .beranda-shell { --tsuki-bg: #101b22; --tsuki-card: #182832; --tsuki-ink: #e7f2ef; --tsuki-muted: #a7bcb9; --tsuki-line: #2c454d; background: radial-gradient(circle at 18% 0%, rgba(13,148,136,.18), transparent 31rem), var(--tsuki-bg) !important; }
+html[data-theme='dark'] .beranda-feed-heading { background: linear-gradient(125deg, #18483f, #182832 64%, #3c3322) !important; border-color: #2a6258 !important; }
+html[data-theme='dark'] .beranda-feed-heading h1, html[data-theme='dark'] .beranda-stories-heading h2, html[data-theme='dark'] .beranda-feed-post .feed-copy { color: var(--tsuki-ink) !important; }
+html[data-theme='dark'] .beranda-create-post, html[data-theme='dark'] .beranda-feed-post, html[data-theme='dark'] .beranda-stories, html[data-theme='dark'] .beranda-quick-actions a, html[data-theme='dark'] .beranda-quick-actions button { background: var(--tsuki-card) !important; border-color: var(--tsuki-line) !important; }
+html[data-theme='dark'] .beranda-create-post button.flex-1 { background: #213943 !important; color: var(--tsuki-muted) !important; }
+html[data-theme='dark'] .desktop-sidebar, html[data-theme='dark'] .quick-nav { background: #14242d !important; border-color: var(--tsuki-line) !important; }
+html[data-theme='dark'] .profile-mini-link { background: linear-gradient(135deg, #1a4a44, #182832) !important; }
