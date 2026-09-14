@@ -1446,3 +1446,177 @@ html[data-theme='dark'] .campaign-share{background:linear-gradient(135deg,var(--
 .quick-nav{background:var(--theme-surface,var(--suki-surface))!important;border-color:var(--theme-border,var(--suki-border))!important;color:var(--theme-text,var(--suki-text))}.quick-nav-item{color:var(--theme-text-muted,var(--suki-muted))!important}.quick-nav-item:hover{background:var(--theme-primary-soft,var(--suki-primary-soft))!important;color:var(--theme-primary,var(--suki-primary))!important}.quick-nav-item[aria-current='page']{background:var(--theme-primary-soft,var(--suki-primary-soft))!important;color:var(--theme-primary,var(--suki-primary))!important}.quick-nav-item[aria-current='page'] .absolute.inset-x-3{background:var(--theme-primary,var(--suki-primary))!important}.beranda-feed-heading,.beranda-create-post,.beranda-feed-post,.beranda-main>section[aria-label='Stories dan Reels'],.feed-state,.feed-loading,.feed-end,.beranda-quick-actions a,.beranda-quick-actions button{background:var(--theme-surface,var(--suki-surface))!important;border-color:var(--theme-border,var(--suki-border))!important;color:var(--theme-text,var(--suki-text))!important}.beranda-feed-heading h1,.beranda-main>section[aria-label='Stories dan Reels'] h2,.beranda-feed-post .feed-copy{color:var(--theme-text-strong,var(--suki-text))!important}.beranda-home-subtitle,.beranda-feed-post .feed-meta,.feed-state,.feed-loading,.feed-end{color:var(--theme-text-muted,var(--suki-muted))!important}.beranda-quick-actions a:hover,.beranda-quick-actions button:hover{background:var(--theme-primary-soft,var(--suki-primary-soft))!important;border-color:var(--theme-primary,var(--suki-primary))!important;color:var(--theme-primary,var(--suki-primary))!important}.header-feature-link{color:var(--theme-text,var(--suki-text))!important}.header-feature-link:hover{background:var(--theme-primary-soft,var(--suki-primary-soft))!important;color:var(--theme-primary,var(--suki-primary))!important}
 html[data-theme='dark'] .quick-nav-icon-3d{border-color:color-mix(in srgb,var(--theme-border) 85%,transparent);background:linear-gradient(145deg,var(--theme-surface-muted),var(--theme-surface));color:var(--theme-primary);box-shadow:inset 2px 2px 3px rgba(255,255,255,.08),inset -3px -4px 5px rgba(0,0,0,.22),0 3px 6px rgba(0,0,0,.24)}
 html[data-theme='dark'] .quick-nav-item-campaigns .quick-nav-icon-3d{color:var(--theme-accent,#f4d35e)}
+
+
+/* Beranda navigation and social surfaces polish — September 2026 */
+.quick-nav {
+  position: sticky !important;
+  top: 76px !important;
+  z-index: 18 !important;
+  width: min(100% - 32px, 1080px);
+  margin: 10px auto 0;
+  padding: 6px 8px !important;
+  border: 1px solid var(--theme-border, var(--suki-border)) !important;
+  border-radius: 16px;
+  background: var(--theme-surface, var(--suki-surface)) !important;
+  box-shadow: var(--theme-shadow-sm, 0 4px 14px rgba(20, 55, 45, .06));
+}
+.quick-nav > div {
+  max-width: none !important;
+  gap: 4px;
+}
+.quick-nav-item {
+  min-height: 48px !important;
+  border-radius: 11px !important;
+  padding: 5px 8px !important;
+  gap: 3px !important;
+}
+.quick-nav-icon-wrap {
+  width: 32px;
+  height: 30px;
+}
+.quick-nav-icon-3d {
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+}
+.quick-nav-label {
+  font-size: 10px !important;
+  font-weight: 700;
+  letter-spacing: -.01em;
+}
+
+/* Chat remains available on its dedicated route, but is not part of compact
+   tablet/mobile navigation where it competes with the primary destinations. */
+@media (max-width: 1100px) {
+  .header-feature-link,
+  .quick-nav-item-chat {
+    display: none !important;
+  }
+}
+
+/* Desktop: keep the quick nav useful without making it a second oversized bar. */
+@media (min-width: 1101px) {
+  .quick-nav {
+    display: flex !important;
+    top: 76px !important;
+  }
+  .quick-nav-item {
+    min-height: 44px !important;
+  }
+  .quick-nav-icon-wrap {
+    display: none;
+  }
+  .quick-nav-label {
+    display: block !important;
+    font-size: 11px !important;
+  }
+}
+
+/* Tablet/mobile: the rail is full-width, touch-friendly, and theme-aware. */
+@media (max-width: 1100px) {
+  .quick-nav {
+    width: 100%;
+    margin: 0;
+    border-width: 0 0 1px !important;
+    border-radius: 0;
+    box-shadow: 0 3px 14px rgba(18, 33, 31, .07);
+  }
+  .quick-nav > div {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .quick-nav > div::-webkit-scrollbar {
+    display: none;
+  }
+  .quick-nav-item {
+    flex: 1 0 76px;
+  }
+}
+@media (max-width: 780px) {
+  .quick-nav {
+    top: 66px !important;
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom)) !important;
+  }
+  .quick-nav-item {
+    min-height: 50px !important;
+    flex-basis: 72px;
+  }
+}
+
+/* One visual rhythm for stories, composer, and feed cards. */
+.beranda-stories,
+.beranda-create-post,
+.beranda-feed-post {
+  width: 100%;
+  max-width: 700px;
+}
+.beranda-stories {
+  margin-bottom: 14px;
+}
+.beranda-story-rail {
+  gap: 10px;
+  padding-inline: 2px;
+}
+.story-card {
+  flex-basis: 124px;
+  border-radius: 16px;
+  border-color: var(--theme-border, #d8e6df);
+  background: var(--theme-surface, #fff);
+  box-shadow: var(--theme-shadow-sm, 0 4px 14px rgba(20, 57, 49, .07));
+}
+.story-card-visual {
+  height: 128px;
+  background: linear-gradient(145deg, var(--theme-primary-soft, #e3f3ee), var(--theme-surface-muted, #eef5f1));
+}
+.story-card-label {
+  color: var(--theme-text-strong, #0f2922);
+}
+.story-card small {
+  color: var(--theme-text-muted, #60736d);
+}
+.beranda-feed-post {
+  border-radius: 18px !important;
+}
+.beranda-feed-post header .beranda-avatar,
+.beranda-create-post .beranda-avatar,
+.beranda-avatar {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  aspect-ratio: 1;
+  border-radius: 50% !important;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+}
+.beranda-avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+@media (max-width: 540px) {
+  .story-card {
+    flex-basis: 112px;
+  }
+  .story-card-visual {
+    height: 116px;
+  }
+  .beranda-feed-post header .beranda-avatar,
+  .beranda-create-post .beranda-avatar,
+  .beranda-avatar {
+    width: 42px;
+    height: 42px;
+    flex-basis: 42px;
+  }
+}
+
+html[data-theme='dark'] .quick-nav,
+html[data-theme='dark'] .story-card {
+  box-shadow: var(--theme-shadow-sm);
+}
+html[data-theme='dark'] .story-card-visual {
+  background: linear-gradient(145deg, var(--theme-primary-soft), var(--theme-surface-muted));
+}
