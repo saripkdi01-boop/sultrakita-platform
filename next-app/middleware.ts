@@ -30,6 +30,7 @@ function isPublicRoute(pathname: string) {
 export async function middleware(request: NextRequest) {
   const url = request.nextUrl;
   const publicRoute = isPublicRoute(url.pathname);
+  if (url.pathname === '/admin') return NextResponse.redirect(new URL('/admin/dashboard', request.url), 308);
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
     return publicRoute ? NextResponse.next() : NextResponse.redirect(new URL('/login', request.url));
   }
@@ -52,7 +53,7 @@ export async function middleware(request: NextRequest) {
     },
   );
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user && !publicRoute) { const redirect = url.clone(); redirect.pathname = '/login'; redirect.searchParams.set('redirect', url.pathname === '/admin' ? '/admin/dashboard' : url.pathname); return NextResponse.redirect(redirect); }
+  if (!user && !publicRoute) { const redirect = url.clone(); redirect.pathname = '/login'; redirect.searchParams.set('redirect', url.pathname); return NextResponse.redirect(redirect); }
   if (user && (url.pathname === '/login' || url.pathname === '/signup')) return NextResponse.redirect(new URL('/dashboard', request.url));
   if (user && !publicRoute && (url.pathname.startsWith('/admin') || url.pathname.startsWith('/seller'))) {
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle();
