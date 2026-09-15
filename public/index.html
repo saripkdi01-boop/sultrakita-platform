@@ -312,6 +312,25 @@ main{padding-top:60px;min-height:100vh}
   .prod-grid{grid-template-columns:repeat(2,1fr)}
   .mkt-head h1{font-size:20px}
 }
+/* ---------- BERANDA FEED SPACING ----------
+   Keep feed surfaces visually connected on compact screens. The feed owns
+   vertical rhythm so cards do not accumulate child and sibling margins. */
+#view-home .col.feed{min-width:0}
+#view-home #feed{display:flex;flex-direction:column;gap:12px}
+#view-home #feed .post{margin-bottom:0}
+#view-home .stories{margin-bottom:8px}
+#view-home .composer{margin-bottom:0}
+@media(max-width:768px){
+  #view-home .layout3{padding-top:12px;padding-bottom:12px}
+  #view-home .composer{padding:12px}
+  #view-home .comp-actions{margin-top:8px;padding-top:6px}
+  #view-home #feed{gap:12px}
+  #view-home #feed .post-head{padding:12px 14px 8px}
+  #view-home #feed .post-text{padding:0 14px 10px}
+  #view-home #feed .post-stats{padding:8px 14px}
+  #view-home #feed .post-actions{margin-inline:14px;padding-block:2px}
+  main{padding-bottom:64px}
+}
 </style>
 </head>
 <body>
