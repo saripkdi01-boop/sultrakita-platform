@@ -42,6 +42,12 @@ body.dark{
   --bg:#0b1220; --card:#111b2e; --text:#eaf2ff; --muted:#b6c5da; --border:#354765;
   --hover:rgba(255,255,255,.08); --shadow:0 1px 2px rgba(0,0,0,.5); --shadow-lg:0 12px 32px rgba(0,0,0,.6);
 }
+/* The preload script sets html[data-theme] before body exists. Keep the
+   homepage's legacy tokens synchronized so the drawer is dark on first paint. */
+html[data-theme='dark']{
+  --bg:#0b1220; --card:#111b2e; --text:#eaf2ff; --muted:#b6c5da; --border:#354765;
+  --hover:rgba(255,255,255,.08); --shadow:0 1px 2px rgba(0,0,0,.5); --shadow-lg:0 12px 32px rgba(0,0,0,.6);
+}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{scroll-behavior:smooth}
 body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:15px;transition:background .3s,color .3s}
@@ -299,6 +305,28 @@ main{padding-top:60px;min-height:100vh}
 .drawer-shortcuts{display:grid;grid-template-columns:1fr 1fr;gap:8px}.drawer-shortcut{display:flex;align-items:center;gap:8px;padding:10px 8px;border:1px solid var(--border);border-radius:11px;text-align:left;background:var(--bg);font-size:11px;font-weight:700}.drawer-shortcut span{display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:rgba(13,148,136,.14);font-size:15px}.drawer-shortcut small{display:block;color:var(--muted);font-size:9px;font-weight:500;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .drawer-link{display:flex;align-items:center;gap:11px;width:100%;padding:10px 9px;border-radius:10px;text-align:left;font-size:13px;font-weight:650;transition:background .15s,color .15s}.drawer-link:hover,.drawer-link:focus-visible{background:var(--hover);color:var(--primary)}.drawer-link .drawer-icon{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:rgba(13,148,136,.12);font-size:16px;flex:none}.drawer-link .drawer-badge{margin-left:auto;border-radius:999px;padding:3px 7px;background:rgba(245,158,11,.16);color:#b45309;font-size:9px;font-weight:800}.dark .drawer-link .drawer-badge{color:#fbbf24}
 .drawer-accordion{border-top:1px solid var(--border);margin-top:8px}.drawer-accordion-trigger{display:flex;align-items:center;gap:10px;width:100%;padding:13px 9px;border:0;border-bottom:1px solid var(--border);background:transparent;text-align:left;font-size:13px;font-weight:750}.drawer-accordion-trigger span:last-child{margin-left:auto;color:var(--muted);transition:transform .2s}.drawer-accordion-trigger[aria-expanded="true"] span:last-child{transform:rotate(180deg)}.drawer-accordion-content{display:none;padding:4px 0 6px}.drawer-accordion-content.open{display:block}.drawer-footer{margin-top:18px;padding-top:14px;border-top:1px solid var(--border)}
+/* Explicit sidebar foregrounds prevent inherited colors from older stylesheets
+   and browser button defaults from reducing dark-mode contrast. */
+#sidebarDrawer,
+#sidebarDrawer .drawer-head,
+#sidebarDrawer .drawer-profile,
+#sidebarDrawer .drawer-section-title,
+#sidebarDrawer .drawer-shortcut,
+#sidebarDrawer .drawer-link,
+#sidebarDrawer .drawer-accordion-trigger{color:var(--text)}
+#sidebarDrawer .drawer-section-title,
+#sidebarDrawer .drawer-profile small,
+#sidebarDrawer .drawer-shortcut small,
+#sidebarDrawer .drawer-accordion-trigger span:last-child{color:var(--muted)}
+#sidebarDrawer .drawer-shortcut{background:var(--bg);border-color:var(--border)}
+#sidebarDrawer .drawer-link:hover,
+#sidebarDrawer .drawer-link:focus-visible,
+#sidebarDrawer .drawer-shortcut:hover,
+#sidebarDrawer .drawer-shortcut:focus-visible{background:var(--hover);color:var(--primary)}
+#sidebarDrawer .drawer-close{color:var(--text);background:var(--bg);border:1px solid var(--border)}
+#sidebarDrawer .drawer-link .drawer-icon,
+#sidebarDrawer .drawer-shortcut span{background:var(--theme-primary-soft);color:var(--theme-primary)}
+html[data-theme='dark'] #sidebarDrawer .drawer-link .drawer-badge{color:#fbbf24;background:rgba(245,158,11,.2)}
 @media(max-width:900px){#sidebarMenuBtn{display:flex}.tb-left{gap:7px}.searchbox{max-width:180px}}
 @media(min-width:901px){#sidebarDrawer,#sidebarBackdrop{display:none!important}}
 /* responsive */

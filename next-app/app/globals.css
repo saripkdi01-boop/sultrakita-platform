@@ -1884,7 +1884,46 @@ html[data-theme='dark'] .beranda-create-post, html[data-theme='dark'] .beranda-f
 html[data-theme='dark'] .beranda-create-post button.flex-1 { background: #213943 !important; color: var(--tsuki-muted) !important; }
 html[data-theme='dark'] .desktop-sidebar, html[data-theme='dark'] .quick-nav { background: #14242d !important; border-color: var(--tsuki-line) !important; }
 html[data-theme='dark'] .profile-mini-link { background: linear-gradient(135deg, #1a4a44, #182832) !important; }
-
+/* Final sidebar contrast guard: the legacy Fresh Feed layer above uses
+   !important light tokens, so dark mode must be defined after that layer. */
+html[data-theme='dark'] .desktop-sidebar,
+html[data-theme='dark'] .mobile-drawer {
+  background: var(--theme-surface) !important;
+  border-color: var(--theme-border) !important;
+  color: var(--theme-text) !important;
+}
+html[data-theme='dark'] .desktop-sidebar .menu-title,
+html[data-theme='dark'] .mobile-drawer .menu-title {
+  color: var(--theme-text-muted) !important;
+}
+html[data-theme='dark'] .desktop-sidebar .menu-item,
+html[data-theme='dark'] .mobile-drawer .menu-item,
+html[data-theme='dark'] .desktop-sidebar .profile-mini-link,
+html[data-theme='dark'] .mobile-drawer .drawer-profile {
+  color: var(--theme-text) !important;
+  border-color: var(--theme-border) !important;
+  background: var(--theme-surface) !important;
+}
+html[data-theme='dark'] .desktop-sidebar .menu-item:hover,
+html[data-theme='dark'] .desktop-sidebar .menu-item.active,
+html[data-theme='dark'] .mobile-drawer .menu-item:hover,
+html[data-theme='dark'] .mobile-drawer .menu-item.active {
+  background: var(--theme-primary-soft) !important;
+  color: var(--theme-primary) !important;
+}
+html[data-theme='dark'] .desktop-sidebar .profile-mini-link small,
+html[data-theme='dark'] .mobile-drawer .drawer-profile small,
+html[data-theme='dark'] .mobile-drawer .drawer-tools {
+  color: var(--theme-text-muted) !important;
+}
+html[data-theme='dark'] .mobile-drawer .drawer-preference-card,
+html[data-theme='dark'] .mobile-drawer .drawer-language-panel,
+html[data-theme='dark'] .mobile-drawer .side-login,
+html[data-theme='dark'] .mobile-drawer .side-logout {
+  background: var(--theme-surface-muted) !important;
+  border-color: var(--theme-border) !important;
+  color: var(--theme-text) !important;
+}
 /* Mobile bottom quick nav: keep the five most relevant destinations visible. */
 @media (max-width: 780px) {
   .quick-nav-inner { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; }
