@@ -2080,3 +2080,59 @@ html[data-theme='dark'] .beranda-create-post button.flex-1 { background: var(--t
   .marketplace-page .marketplace-card-badge { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { .marketplace-page .marketplace-card, .marketplace-page .marketplace-card-image img { transition: none; } }
+
+
+/* SUKI Marketplace v4 — compact, consistent responsive grid */
+.marketplace-page { box-sizing: border-box; overflow-x: clip; }
+.marketplace-page .marketplace-content,
+.marketplace-page .marketplace-subnav,
+.marketplace-page .marketplace-recommendations,
+.marketplace-page .marketplace-deals { width: min(1240px, calc(100% - 32px)); margin-inline: auto; }
+.marketplace-page .marketplace-content { gap: 22px; }
+.marketplace-page .marketplace-card-grid { gap: 14px; }
+.marketplace-page .marketplace-card-image { aspect-ratio: 1.12 / 1; }
+.marketplace-page .marketplace-card-body { padding: 12px 13px 11px; }
+.marketplace-page .marketplace-card-price { font-size: 16px; line-height: 1.15; }
+.marketplace-page .marketplace-card h2 { display: -webkit-box; min-height: 0; max-height: 2.7em; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; margin: 5px 0 0; font-size: 13px; line-height: 1.35; }
+.marketplace-page .marketplace-card-meta { margin-top: 7px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.marketplace-page .seller-trust-row { margin-top: 10px; padding-top: 9px; }
+.marketplace-page .marketplace-card-actions { margin-top: 9px; gap: 8px; }
+.marketplace-page .marketplace-card-primary { min-height: 32px; }
+@media (min-width: 1200px) {
+  .marketplace-page .marketplace-card-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+}
+@media (min-width: 701px) and (max-width: 1199px) {
+  .marketplace-page .marketplace-content,
+  .marketplace-page .marketplace-subnav,
+  .marketplace-page .marketplace-recommendations,
+  .marketplace-page .marketplace-deals { width: min(100% - 28px, 1080px); }
+  .marketplace-page .marketplace-card-grid { gap: 12px; }
+}
+@media (max-width: 700px) {
+  .marketplace-page { padding-bottom: 76px !important; }
+  .marketplace-page .marketplace-content,
+  .marketplace-page .marketplace-subnav,
+  .marketplace-page .marketplace-recommendations,
+  .marketplace-page .marketplace-deals { width: calc(100% - 20px); margin-inline: 10px; }
+  .marketplace-page .marketplace-content { gap: 14px; padding: 14px 0 0; }
+  .marketplace-page .marketplace-card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .marketplace-page .marketplace-card { border-radius: 11px; }
+  .marketplace-page .marketplace-card-image { aspect-ratio: 1 / 1; }
+  .marketplace-page .marketplace-card-body { padding: 9px 9px 9px; }
+  .marketplace-page .marketplace-card-price { font-size: 13px; }
+  .marketplace-page .marketplace-card h2 { margin-top: 4px; font-size: 11px; line-height: 1.3; }
+  .marketplace-page .marketplace-card-meta { margin-top: 6px; font-size: 8px; }
+  .marketplace-page .seller-trust-row { display: none; }
+  .marketplace-page .marketplace-card-actions { margin-top: 8px; gap: 5px; }
+  .marketplace-page .marketplace-card-primary { min-height: 29px; border-radius: 7px; font-size: 8px; }
+  .marketplace-page .marketplace-card-secondary { font-size: 8px; }
+  .marketplace-page .marketplace-save { top: 7px; right: 7px; width: 28px; height: 28px; }
+}
+@media (max-width: 390px) {
+  .marketplace-page .marketplace-content,
+  .marketplace-page .marketplace-subnav,
+  .marketplace-page .marketplace-recommendations,
+  .marketplace-page .marketplace-deals { width: calc(100% - 16px); margin-inline: 8px; }
+  .marketplace-page .marketplace-card-grid { gap: 7px; }
+  .marketplace-page .marketplace-card-body { padding-inline: 8px; }
+}
