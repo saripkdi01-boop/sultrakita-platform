@@ -73,9 +73,8 @@ export function MarketplaceCard({ item, saved, onSave, onQuickView, compared, on
         <div className="seller-trust-copy"><strong>{item.seller?.name || 'Penjual lokal'}</strong><span>{verified ? <><ShieldCheck size={12} aria-hidden="true" /> Terverifikasi</> : 'Profil belum terverifikasi'}</span></div>
         {ratingCount > 0 ? <div className="seller-rating" aria-label={`Rating ${rating.toFixed(1)} dari 5 dari ${ratingCount} ulasan`}><Star size={13} fill="currentColor" aria-hidden="true" /><b>{rating.toFixed(1)}</b><small>({ratingCount})</small></div> : <small className="seller-rating-empty">Belum ada ulasan</small>}
       </div>
-      <div className={`marketplace-trust ${verified ? 'is-verified' : ''}`}>{verified ? <><ShieldCheck size={13} aria-hidden="true" /> Identitas seller disetujui</> : <><ShieldCheck size={13} aria-hidden="true" /> Trust data belum tersedia</>}</div>
       <div className="marketplace-card-actions">
-        <button type="button" className="marketplace-card-primary" onClick={() => onQuickView(item)}>Lihat cepat</button>
+        <button type="button" className="marketplace-card-primary" onClick={() => onQuickView(item)}>Lihat detail</button>
         <button type="button" className={`marketplace-card-secondary ${compared ? 'active' : ''}`} onClick={() => onCompare(item)} aria-pressed={compared}>{compared ? 'Dipilih' : 'Bandingkan'}</button>
       </div>
     </div>
