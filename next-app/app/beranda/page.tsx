@@ -1,13 +1,12 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Compass, LoaderCircle, MoreHorizontal, RefreshCw, Sparkles } from 'lucide-react';
+import { Compass, LoaderCircle, RefreshCw, Sparkles } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { CreatePostInput } from '@/components/beranda/CreatePostInput';
 import { CreatePostModal } from '@/components/beranda/CreatePostModal';
 import { FeedPost } from '@/components/beranda/FeedPost';
 import { RightSidebar } from '@/components/beranda/RightSidebar';
-import { StoriesSection } from '@/components/beranda/StoriesSection';
 import EcosystemSlider from '@/components/marketing/EcosystemSlider';
 import { useInfiniteFeed } from '@/hooks/useInfiniteFeed';
 import { setPostLike } from '@/lib/feed-interactions';
@@ -23,10 +22,9 @@ export default function BerandaPage() {
   useEffect(() => { const compose = new URLSearchParams(window.location.search).get('compose'); if (compose === 'post' || compose === 'reel') openComposer(compose); }, []);
   useEffect(() => { const node = sentinelRef.current; if (!node) return; const observer = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) loadMore(); }, { rootMargin: '480px' }); observer.observe(node); return () => observer.disconnect(); }, [loadMore]);
   return <AppLayout active="home" onCreate={openComposer}>
-    <main className="beranda-shell" aria-labelledby="beranda-title">
+    <main className="beranda-shell">
       <div className="beranda-main">
-        <div className="beranda-feed-heading beranda-feed-heading-compact"><div><p className="beranda-eyebrow">Ruang warga Sulawesi Tenggara</p><h1 id="beranda-title">Beranda</h1><p className="beranda-home-subtitle">Temukan kabar, peluang, dan orang yang membuat Sultra bergerak.</p></div><button type="button" className="beranda-filter" aria-label="Opsi beranda"><MoreHorizontal size={18}/></button></div>
-        <StoriesSection onCreate={() => openComposer('post')}/><CreatePostInput onCreate={openComposer}/>
+        <CreatePostInput onCreate={openComposer}/>
         {notice && <div className="beranda-notice" role="status"><span>{notice}</span><button type="button" onClick={() => setNotice('')}>Tutup</button></div>}
         {error && <div className="feed-state feed-error" role="alert"><span>{error}</span><button type="button" onClick={reload}><RefreshCw size={15}/> Coba lagi</button></div>}
         {!error && !loading && items.length === 0 && <div className="feed-state"><strong>Belum ada cerita di sini.</strong><span>Coba filter lain atau bagikan cerita pertama Anda.</span></div>}
