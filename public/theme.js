@@ -2,6 +2,7 @@
 (function () {
   const applyTheme = dark => {
     document.body.classList.toggle('dark', dark);
+    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
     document.documentElement.classList.toggle('theme-dark-preload', dark);
     localStorage.setItem('sultra-dark', String(dark));
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#10231f' : '#0d5c4b');

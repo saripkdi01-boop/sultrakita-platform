@@ -5,7 +5,9 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>SultraKita — SUKI Marketplace | Ruang Warga Sulawesi Tenggara</title>
+<script>!function(){try{var s=localStorage.getItem('sultra-dark'),d=s==='true'||(s===null&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=d?'dark':'light';document.documentElement.classList.toggle('theme-dark-preload',d)}catch(e){document.documentElement.dataset.theme='light'}}();</script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/plus-jakarta-sans@5.0.8/index.css" />
+<link rel="stylesheet" href="/design-tokens.css" />
 <link rel="stylesheet" href="/sultrakita-mvp.css" />
 <link rel="stylesheet" href="/suki-marketplace-v2.css?v=20260911" />
 <style>
@@ -916,7 +918,7 @@ const sidebarDrawer=$('#sidebarDrawer'),sidebarBackdrop=$('#sidebarBackdrop');
 function setSidebar(open){if(!sidebarDrawer)return;sidebarDrawer.classList.toggle('open',open);sidebarBackdrop.classList.toggle('open',open);sidebarDrawer.setAttribute('aria-hidden',String(!open));sidebarBackdrop.setAttribute('aria-hidden',String(!open));document.body.style.overflow=open?'hidden':'';if(open)$('#sidebarClose')?.focus()}
 $('#sidebarMenuBtn')?.addEventListener('click',()=>setSidebar(true));$('#sidebarClose')?.addEventListener('click',()=>setSidebar(false));sidebarBackdrop?.addEventListener('click',()=>setSidebar(false));
 document.querySelectorAll('.drawer-accordion-trigger').forEach(trigger=>trigger.addEventListener('click',()=>{const open=trigger.getAttribute('aria-expanded')==='true';trigger.setAttribute('aria-expanded',String(!open));trigger.nextElementSibling?.classList.toggle('open',!open)}));
-document.addEventListener('click',e=>{const action=e.target.closest('#sidebarDrawer [data-act]');if(!action)return;if(action.dataset.act==='theme'){document.body.classList.toggle('dark');toast(document.body.classList.contains('dark')?'🌙 Mode gelap aktif':'☀️ Mode terang aktif')}if(['view','property'].includes(action.dataset.act))setSidebar(false)});
+ document.addEventListener('click',e=>{const action=e.target.closest('#sidebarDrawer [data-act]');if(!action)return;if(action.dataset.act==='theme'){document.body.classList.toggle('dark');document.documentElement.dataset.theme=document.body.classList.contains('dark')?'dark':'light';localStorage.setItem('sultra-dark',String(document.body.classList.contains('dark')));toast(document.body.classList.contains('dark')?'🌙 Mode gelap aktif':'☀️ Mode terang aktif')}if(['view','property'].includes(action.dataset.act))setSidebar(false)});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sidebarDrawer?.classList.contains('open'))setSidebar(false)});
 $('#mktSearch').addEventListener('input', e=>{ state.mQ=e.target.value; renderProducts(); });
 $('#distSel').addEventListener('change', e=>{ state.mDist=e.target.value; renderProducts(); });
@@ -929,6 +931,8 @@ $('#drawerProfileTrigger')?.addEventListener('click', ()=>{ setSidebar(false); o
 $('#darkBtn').addEventListener('click', ()=>{
   document.body.classList.toggle('dark');
   const d = document.body.classList.contains('dark');
+  document.documentElement.dataset.theme = d ? 'dark' : 'light';
+  localStorage.setItem('sultra-dark', String(d));
   $('#darkIco').innerHTML = d ? '<circle cx="12" cy="12" r="5"/><g stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="23"/><line x1="4.2" y1="4.2" x2="6.3" y2="6.3"/><line x1="17.7" y1="17.7" x2="19.8" y2="19.8"/><line x1="1" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="23" y2="12"/><line x1="4.2" y1="19.8" x2="6.3" y2="17.7"/><line x1="17.7" y1="6.3" x2="19.8" y2="4.2"/></g>' : '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>';
   toast(d?'🌙 Mode gelap aktif':'☀️ Mode terang aktif');
 });

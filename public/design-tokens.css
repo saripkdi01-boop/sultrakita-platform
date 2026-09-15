@@ -15,3 +15,39 @@
   --sk-v3-radius: 28px;
 }
 html[data-theme='light'] { --sk-v3-glass: rgba(255, 255, 255, 0.84); }
+
+/* Semantic theme bridge: legacy pages may still use body.dark, while modern
+   layers use html[data-theme]. Keep both paths on the same readable palette. */
+:root,
+html[data-theme='light'] {
+  color-scheme: light;
+  --sk-bg: #f7faf8;
+  --sk-surface: #ffffff;
+  --sk-surface-muted: #eef5f1;
+  --sk-text: #16352d;
+  --sk-text-strong: #0f2922;
+  --sk-muted: #60736d;
+  --sk-border: #d8e6df;
+  --sk-primary: #087f70;
+  --sk-primary-soft: #e3f3ee;
+  --sk-focus: rgba(8, 127, 112, .38);
+}
+
+html[data-theme='dark'],
+body.dark {
+  color-scheme: dark;
+  --sk-bg: #0d1d19;
+  --sk-surface: #132a24;
+  --sk-surface-muted: #1c3b32;
+  --sk-text: #e8f3ee;
+  --sk-text-strong: #f4faf7;
+  --sk-muted: #aec3ba;
+  --sk-border: #2d5045;
+  --sk-primary: #61d1c0;
+  --sk-primary-soft: #1d4b40;
+  --sk-focus: rgba(97, 209, 192, .48);
+}
+
+html, body { background-color: var(--sk-bg); color: var(--sk-text); }
+:where(button, a, input, textarea, select):focus-visible { outline: 3px solid var(--sk-focus); outline-offset: 2px; }
+:where(input, textarea, select)::placeholder { color: var(--sk-muted); opacity: 1; }
