@@ -19,7 +19,7 @@ jobs:
       OTP_DEV_MODE: 'false'
       SEED_DEMO: 'false'
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v5
         with:
           node-version: 22
