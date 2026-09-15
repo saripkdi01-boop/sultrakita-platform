@@ -59,3 +59,24 @@ jobs:
       - run: npm run build
       - name: API smoke test
         run: npm run smoke:api
+
+  visual-regression:
+    runs-on: ubuntu-latest
+    needs: verify
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: next-app/package-lock.json
+      - name: Install Next app dependencies
+        working-directory: next-app
+        run: npm ci
+      - name: Install Playwright Chromium
+        working-directory: next-app
+        run: npx playwright install --with-deps chromium
+      - name: Run light/dark visual regression
+        working-directory: next-app
+        run: npm run test:visual

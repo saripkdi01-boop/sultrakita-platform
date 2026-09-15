@@ -8,6 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "e2e": "playwright test",
+    "test:visual": "playwright test e2e/theme-visual.spec.ts",
+    "test:visual:update": "playwright test e2e/theme-visual.spec.ts --update-snapshots",
     "e2e:ui": "playwright test --ui",
     "e2e:install": "playwright install chromium"
   },

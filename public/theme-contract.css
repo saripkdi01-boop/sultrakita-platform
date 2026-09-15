@@ -16,18 +16,18 @@
 }
 html[data-theme='dark'], body.dark {
   color-scheme: dark;
-  --theme-bg: #0c1714;
-  --theme-surface: #14251f;
-  --theme-surface-raised: #1b342b;
-  --theme-surface-muted: #203d32;
-  --theme-text: #e8f4ef;
-  --theme-text-strong: #fbfffd;
-  --theme-text-muted: #b4c9c0;
-  --theme-text-subtle: #91aaa0;
-  --theme-border: #345649;
-  --theme-primary: #71dec9;
-  --theme-primary-soft: #1d5144;
-  --theme-focus: rgba(113, 222, 201, .56);
+  --theme-bg: #0b1220;
+  --theme-surface: #111b2e;
+  --theme-surface-raised: #172640;
+  --theme-surface-muted: #203451;
+  --theme-text: #eaf2ff;
+  --theme-text-strong: #f8fbff;
+  --theme-text-muted: #b6c5da;
+  --theme-text-subtle: #91a5c2;
+  --theme-border: #354765;
+  --theme-primary: #8ec5ff;
+  --theme-primary-soft: #1d3558;
+  --theme-focus: rgba(142, 197, 255, .62);
 }
 html, body { background: var(--theme-bg); color: var(--theme-text); }
 body, body * { border-color: var(--theme-border); }
@@ -64,8 +64,8 @@ body, body * { border-color: var(--theme-border); }
 :where(.theme-indicator span, .theme-switch, .theme-toggle) { color: var(--theme-primary); }
 :where(button, a, input, textarea, select):focus-visible { outline: 3px solid var(--theme-focus) !important; outline-offset: 2px; }
 html[data-theme='dark'] .theme-indicator span, html[data-theme='dark'] .theme-switch { border-color: var(--theme-primary); }
-html[data-theme='dark'] .legal-topbar { background: rgba(20, 37, 31, .94) !important; }
-html[data-theme='dark'] .legal-hero { background: linear-gradient(135deg, #123f34, #1b2e28) !important; }
+html[data-theme='dark'] .legal-topbar { background: rgba(17, 27, 46, .94) !important; }
+html[data-theme='dark'] .legal-hero { background: linear-gradient(135deg, #172f53, #111b2e) !important; }
 html[data-theme='dark'] .legal-content h2, html[data-theme='dark'] .legal-content h3 { color: var(--theme-text-strong) !important; }
 html[data-theme='dark'] .legal-callout { background: var(--theme-primary-soft) !important; border-left-color: var(--theme-primary); }
 html[data-theme='dark'] .promo-body, html[data-theme='dark'] .referral-body { background: var(--theme-bg) !important; }

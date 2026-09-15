@@ -36,16 +36,16 @@ html[data-theme='light'] {
 html[data-theme='dark'],
 body.dark {
   color-scheme: dark;
-  --sk-bg: #0d1d19;
-  --sk-surface: #132a24;
-  --sk-surface-muted: #1c3b32;
-  --sk-text: #e8f3ee;
-  --sk-text-strong: #f4faf7;
-  --sk-muted: #aec3ba;
-  --sk-border: #2d5045;
-  --sk-primary: #61d1c0;
-  --sk-primary-soft: #1d4b40;
-  --sk-focus: rgba(97, 209, 192, .48);
+  --sk-bg: #0b1220;
+  --sk-surface: #111b2e;
+  --sk-surface-muted: #203451;
+  --sk-text: #eaf2ff;
+  --sk-text-strong: #f8fbff;
+  --sk-muted: #b6c5da;
+  --sk-border: #354765;
+  --sk-primary: #8ec5ff;
+  --sk-primary-soft: #1d3558;
+  --sk-focus: rgba(142, 197, 255, .62);
 }
 
 html, body { background-color: var(--sk-bg); color: var(--sk-text); }
