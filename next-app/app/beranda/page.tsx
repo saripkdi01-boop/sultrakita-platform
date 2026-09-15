@@ -11,6 +11,7 @@ import { StoriesSection } from '@/components/beranda/StoriesSection';
 import EcosystemSlider from '@/components/marketing/EcosystemSlider';
 import { useInfiniteFeed } from '@/hooks/useInfiniteFeed';
 import { setPostLike } from '@/lib/feed-interactions';
+import { SultraKitaUiUpgrade } from '@/components/beranda/SultraKitaUiUpgrade';
 
 export default function BerandaPage() {
   const { items, loading, error, hasNextPage, loadMore, reload } = useInfiniteFeed();
@@ -30,6 +31,7 @@ export default function BerandaPage() {
         {error && <div className="feed-state feed-error" role="alert"><span>{error}</span><button type="button" onClick={reload}><RefreshCw size={15}/> Coba lagi</button></div>}
         {!error && !loading && items.length === 0 && <div className="feed-state"><strong>Belum ada cerita di sini.</strong><span>Coba filter lain atau bagikan cerita pertama Anda.</span></div>}
         <div className="beranda-post-list">{items.map((post) => <FeedPost key={post.id} post={post} onNotice={setNotice} onLike={(id, liked) => { void setPostLike(id, liked).then(() => setNotice(liked ? 'Suka dicatat.' : 'Suka dibatalkan.')).catch((caught: unknown) => setNotice(caught instanceof Error && caught.message === 'authentication_required' ? 'Silakan login untuk menyukai postingan.' : 'Interaksi belum dapat disimpan.')); }} onComment={() => setNotice('Komentar akan hadir pada pembaruan berikutnya. Gunakan Bagikan untuk mengundang percakapan warga.')}/>)}</div>
+        <SultraKitaUiUpgrade />
         <EcosystemSlider appSlug="marketplace"/>
         <div className="beranda-quick-actions" aria-label="Akses cepat Beranda"><a href="/groups"><Compass size={16}/><span>Komunitas</span></a><a href="/properti"><span className="quick-action-icon">SK</span><span>Properti</span></a><a href="/jobs"><span className="quick-action-icon">JOB</span><span>Peluang kerja</span></a><button type="button" onClick={() => openComposer('post')}><Sparkles size={16}/><span>Bagikan kabar</span></button></div>
         {loading && <div className="feed-loading" aria-live="polite"><LoaderCircle size={18} className="spin"/> Memuat cerita warga...</div>}
