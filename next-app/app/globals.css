@@ -2136,3 +2136,41 @@ html[data-theme='dark'] .beranda-create-post button.flex-1 { background: var(--t
   .marketplace-page .marketplace-card-grid { gap: 7px; }
   .marketplace-page .marketplace-card-body { padding-inline: 8px; }
 }
+
+
+/* SUKI Marketplace v5 — space-less search and filters */
+.marketplace-page .marketplace-subnav,
+.marketplace-page .marketplace-results,
+.marketplace-page .marketplace-category-browser { box-shadow: none; }
+.marketplace-page .marketplace-subnav { padding-bottom: 0; }
+.marketplace-page .marketplace-search { height: 40px; border: 0; border-radius: 10px; box-shadow: none; background: var(--theme-bg, #f4f7f5); }
+.marketplace-page .marketplace-search:focus-within { box-shadow: 0 0 0 2px color-mix(in srgb, var(--theme-primary, #087f70) 18%, transparent); }
+.marketplace-page .marketplace-tabs { margin-top: 2px; border: 0; }
+.marketplace-page .marketplace-tab { border: 0; }
+.marketplace-page .marketplace-filter-row { gap: 5px !important; margin: 6px 0 8px !important; padding: 0 !important; border: 0 !important; }
+.marketplace-page .marketplace-districts { gap: 4px !important; }
+.marketplace-page .marketplace-districts button { border: 0 !important; border-radius: 7px; padding: 5px 8px !important; }
+.marketplace-page .marketplace-filter-button { min-height: 30px !important; border: 0 !important; border-radius: 7px; box-shadow: none; }
+.marketplace-page .marketplace-sort { min-height: 30px; border: 0 !important; border-radius: 7px; box-shadow: none; background: var(--theme-bg, #f4f7f5); }
+.marketplace-page .marketplace-filter-panel { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: end; gap: 6px; margin: 4px 0 8px; padding: 8px; border: 0; border-radius: 9px; background: var(--theme-bg, #f4f7f5); }
+.marketplace-page .marketplace-filter-panel label { display: grid; gap: 3px; color: var(--theme-text-muted, #66736f); font-size: 9px; font-weight: 700; }
+.marketplace-page .marketplace-filter-panel input,
+.marketplace-page .marketplace-filter-panel select { min-width: 0; height: 30px; border: 0; border-radius: 6px; background: var(--theme-surface, #fff); padding: 0 7px; color: var(--theme-text-strong, #173f3b); font-size: 10px; }
+.marketplace-page .marketplace-filter-panel > button { height: 30px; border: 0; border-radius: 6px; padding: 0 8px; background: transparent; color: var(--theme-primary, #087f70); font-size: 9px; font-weight: 800; }
+.marketplace-page .marketplace-filter-panel .marketplace-save-search { background: var(--theme-primary-soft, #e5f4ef); }
+@media (max-width: 700px) {
+  .marketplace-page .marketplace-subnav { padding-inline: 10px; }
+  .marketplace-page .marketplace-search { height: 38px; }
+  .marketplace-page .marketplace-tabs { margin-top: 0; }
+  .marketplace-page .marketplace-filter-row { margin: 4px 0 6px !important; }
+  .marketplace-page .marketplace-districts { min-width: 0; }
+  .marketplace-page .marketplace-filter-panel { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-inline: 0; padding: 6px; }
+  .marketplace-page .marketplace-filter-panel label:last-of-type { grid-column: 1 / -1; }
+  .marketplace-page .marketplace-filter-panel > button { min-width: 0; }
+}
+@media (max-width: 390px) {
+  .marketplace-page .marketplace-subnav { padding-inline: 8px; }
+  .marketplace-page .marketplace-filter-panel { gap: 4px; }
+  .marketplace-page .marketplace-filter-panel input,
+  .marketplace-page .marketplace-filter-panel select { font-size: 9px; }
+}
