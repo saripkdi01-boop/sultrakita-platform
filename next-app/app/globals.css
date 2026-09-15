@@ -1963,3 +1963,18 @@ html[data-theme='dark'] .beranda-create-post, html[data-theme='dark'] .beranda-f
 html[data-theme='dark'] .beranda-create-post button.flex-1 { background: #213943 !important; color: var(--tsuki-muted) !important; }
 html[data-theme='dark'] .desktop-sidebar, html[data-theme='dark'] .quick-nav { background: #14242d !important; border-color: var(--tsuki-line) !important; }
 html[data-theme='dark'] .profile-mini-link { background: linear-gradient(135deg, #1a4a44, #182832) !important; }
+
+/* Mobile bottom quick nav: keep the five most relevant destinations visible. */
+@media (max-width: 780px) {
+  .quick-nav-inner { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; }
+  .quick-nav-item-campaigns,
+  .quick-nav-item-market,
+  .quick-nav-item-chat,
+  .quick-nav-mobile-action { display: none !important; }
+  .quick-nav-item-home { order: 1; display: inline-flex !important; }
+  .quick-nav-item-groups { order: 2; display: inline-flex !important; }
+  .quick-nav-item-suits { order: 3; display: inline-flex !important; }
+  .quick-nav-item-marketplace { order: 4; display: inline-flex !important; }
+  .quick-nav-item-referral { order: 5; display: inline-flex !important; }
+  .quick-nav-item-referral .quick-nav-icon-3d { background: linear-gradient(145deg, #fff5d9 5%, #f5d38c 52%, #d99b3f 100%); color: #9a641a; }
+}
