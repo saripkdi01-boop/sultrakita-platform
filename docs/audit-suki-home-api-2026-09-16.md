@@ -32,3 +32,12 @@ Perubahan telah dibuat pada commit `884071a` dengan pesan `perf: compact Suki ho
 ## Catatan
 
 Nilai latency merupakan sampel jaringan pada waktu audit, bukan pengukuran Core Web Vitals dari browser nyata. Pengukuran LCP, INP, dan CLS berbasis perangkat nyata dapat menjadi tahap terpisah setelah deployment selesai, tetapi tidak termasuk dalam perubahan tahap ini.
+
+
+## Pengecekan Database Akhir
+
+Supabase project `sultrakita-platform` berstatus `ACTIVE_HEALTHY`, menggunakan PostgreSQL 17.6.1. Query metadata read-only mengonfirmasi indeks feed `posts_feed_idx` untuk posting published berdasarkan `created_at/id`, serta indeks discovery pada tabel listings untuk status, district, category, harga, dan waktu.
+
+Audit log 24 jam menemukan **710 error PostgreSQL SQLSTATE 42703** dan 2 error SQLSTATE 42P17. Error 42703 bukan query lambat, melainkan query profile yang meminta kolom `profiles.city`; kolom tersebut tidak tersedia pada schema aktif. Referensi invalid ini diperbaiki pada `ProfileHub.tsx` dan `useSessionProfile.ts` dengan tidak lagi mengirim atau memilih kolom `city`. Nilai kota tetap dapat dipakai sementara di state UI, tetapi tidak lagi diklaim tersimpan di database.
+
+Setelah perbaikan, build dan lint kembali berhasil. Smoke test tiga putaran menghasilkan response HTTP 200 pada `/api/health`, `/api/feed?limit=10`, dan `/api/listings?limit=8`. Pada putaran terakhir, waktunya masing-masing sekitar **0,62 s**, **0,40 s**, dan **0,52 s**. Tidak ada indikasi query lambat pada endpoint beranda dari pengukuran ini. Perubahan schema-query ini perlu dideploy agar error 42703 berhenti pada log production.

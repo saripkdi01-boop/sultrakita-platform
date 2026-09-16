@@ -41,7 +41,7 @@ export function useSessionProfile() {
     if (!nextUser || !supabase) { setProfile(null); setNotificationCount(0); return; }
     try {
       const [{ data: nextProfile }, profileNotificationQuery] = await Promise.all([
-        supabase.from('profiles').select('id,full_name,display_name,username,avatar_url,role,bio,city,district,visibility_settings').eq('id', nextUser.id).maybeSingle(),
+        supabase.from('profiles').select('id,full_name,display_name,username,avatar_url,role,bio,district,visibility_settings').eq('id', nextUser.id).maybeSingle(),
         supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('profile_id', nextUser.id).eq('is_read', false),
       ]);
       const notificationQuery = profileNotificationQuery.error
