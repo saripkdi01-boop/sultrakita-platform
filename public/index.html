@@ -11,6 +11,8 @@
 <link rel="stylesheet" href="/theme-contract.css" />
 <link rel="stylesheet" href="/sultrakita-mvp.css" />
 <link rel="stylesheet" href="/suki-marketplace-v2.css?v=20260911" />
+<link rel="stylesheet" href="/legal.css?v=mvp-terms-1" />
+<link rel="stylesheet" href="/policy-consent.css?v=mvp-1" />
 <style>
 /* ============================================================
    ANALISA CODEBASE ASLI (sultrakita-platform.vercel.app / github.com/saripkdi01-boop/sultrakita-platform)
@@ -425,12 +427,14 @@ html[data-theme='dark'] #sidebarDrawer .drawer-link .drawer-badge{color:#fbbf24;
   <a class="drawer-link" href="/automation"><span class="drawer-icon">✦</span>Automation Hub</a>
   <button class="drawer-link" data-act="view" data-view="groups"><span class="drawer-icon">👥</span>Grup</button>
   <a class="drawer-link" href="/ajak-teman"><span class="drawer-icon">🤝</span>Ajak Teman<span class="drawer-badge">NEW</span></a>
-  <div class="drawer-accordion"><button class="drawer-accordion-trigger" aria-expanded="false"><span>🛡️</span>Bantuan dan Dukungan<span>⌄</span></button><div class="drawer-accordion-content"><button class="drawer-link" data-act="toast" data-msg="Pusat Perlindungan Penipuan segera hadir"><span class="drawer-icon">🛡️</span>Pusat Perlindungan Penipuan</button><button class="drawer-link" data-act="toast" data-msg="Dukungan SultraKita segera hadir"><span class="drawer-icon">?</span>Dukungan</button><button class="drawer-link" data-act="toast" data-msg="Laporkan masalah melalui pusat bantuan"><span class="drawer-icon">!</span>Laporkan masalah</button><button class="drawer-link" data-act="toast" data-msg="Ketentuan dan Kebijakan tersedia di footer situs"><span class="drawer-icon">▤</span>Ketentuan dan Kebijakan</button></div></div>
+  <div class="drawer-accordion"><button class="drawer-accordion-trigger" aria-expanded="false"><span>🛡️</span>Bantuan dan Dukungan<span>⌄</span></button><div class="drawer-accordion-content"><button class="drawer-link" data-act="toast" data-msg="Pusat Perlindungan Penipuan segera hadir"><span class="drawer-icon">🛡️</span>Pusat Perlindungan Penipuan</button><button class="drawer-link" data-act="toast" data-msg="Dukungan Suki Apps segera hadir"><span class="drawer-icon">?</span>Dukungan</button><button class="drawer-link" data-act="toast" data-msg="Laporkan masalah melalui pusat bantuan"><span class="drawer-icon">!</span>Laporkan masalah</button><a class="drawer-link" href="/terms.html"><span class="drawer-icon">▤</span>Terms of Service</a><a class="drawer-link" href="/privacy.html"><span class="drawer-icon">🔒</span>Privacy Policy</a></div></div>
   <div class="drawer-accordion"><button class="drawer-accordion-trigger" aria-expanded="false"><span>⚙️</span>Pengaturan dan Privasi<span>⌄</span></button><div class="drawer-accordion-content"><button class="drawer-link" data-act="toast" data-msg="Pengaturan akun segera hadir"><span class="drawer-icon">⚙️</span>Pengaturan</button><button class="drawer-link" data-act="toast" data-msg="Pusat privasi segera hadir"><span class="drawer-icon">🔒</span>Pusat Privasi</button><button class="drawer-link" data-act="toast" data-msg="Manajemen waktu segera hadir"><span class="drawer-icon">◷</span>Manajemen waktu</button><button class="drawer-link" data-act="toast" data-msg="Bahasa: Bahasa Indonesia"><span class="drawer-icon">文</span>Bahasa</button><button class="drawer-link" data-act="theme"><span class="drawer-icon">◐</span>Mode gelap</button></div></div>
   <div class="drawer-section-title"><span>Ekosistem SUKI</span></div>
   <button class="drawer-link" data-act="view" data-view="home"><span class="drawer-icon">💬</span>SUKI Chat</button><button class="drawer-link" data-act="view" data-view="groups"><span class="drawer-icon">📅</span>SUKI Events</button><button class="drawer-link" data-act="toast" data-msg="SUKI Jobs segera hadir"><span class="drawer-icon">💼</span>SUKI Jobs<span class="drawer-badge">Segera hadir</span></button><button class="drawer-link property-launch" data-act="property"><span class="drawer-icon">🏛</span>SUKI Suits</button>
   <div class="drawer-footer"><button class="drawer-link" data-act="toast" data-msg="SultraKita Premium segera hadir"><span class="drawer-icon">♛</span>SultraKita Premium</button><button class="drawer-link" data-act="toast" data-msg="Anda telah keluar dari demo SultraKita"><span class="drawer-icon">↪</span>Keluar</button></div>
 </aside>
+
+<footer class="site-policy-footer" aria-label="Kebijakan Suki Apps"><div><strong>Suki Apps</strong><span>Ruang komunitas dan marketplace lokal yang dibangun dengan transparansi.</span></div><nav aria-label="Tautan legal"><a href="/terms.html">Terms of Service</a><a href="/privacy.html">Privacy Policy</a><a href="mailto:SultrakitaPlatform@gmail.com">Kontak privasi</a></nav><small>© 2026 Suki Apps · Versi kebijakan 1.0</small></footer>
 
 <!-- dropdown notifikasi -->
 <div class="drop hidden" id="notifDrop">
@@ -997,6 +1001,7 @@ $('#darkBtn').addEventListener('click', ()=>{
 })();
 </script>
 <script src="/sultrakita-mvp.js" defer></script>
+<script src="/policy-consent.js?v=policy-mvp-1" defer></script>
 <!-- Compatibility contract: app.js?v=universal-link-1; seller-onboarding-dialog; data-onboarding-step="4"; job-board.
      The master design owns this page runtime; API adapters remain available at /api. -->
 </body>

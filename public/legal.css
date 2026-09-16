@@ -16,3 +16,6 @@
   .skip-link { background:ButtonFace; color:ButtonText; }
   .legal-nav a[aria-current=page] { outline:2px solid Highlight; outline-offset:-2px; }
 }
+
+/* MVP policy system */
+.legal-meta-row{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px}.legal-meta-row .legal-meta{margin:0}.legal-status{display:inline-flex;align-items:center;gap:7px;padding:6px 10px;border:1px solid #b9d8c1;border-radius:999px;background:#edf8ef;color:#28704a;font-size:11px;font-weight:800;white-space:nowrap}.legal-status::before{content:"";width:7px;height:7px;border-radius:50%;background:#31a46c}.legal-callout p{margin:0}.site-policy-footer{display:grid;grid-template-columns:minmax(180px,1fr) auto auto;align-items:center;gap:18px;padding:22px clamp(18px,5vw,72px);border-top:1px solid rgba(215,227,215,.55);background:rgba(244,239,228,.92);color:#668178;font-size:11px}.site-policy-footer div{display:grid;gap:4px}.site-policy-footer strong{color:#0d5c4b;font-size:13px}.site-policy-footer nav{display:flex;flex-wrap:wrap;gap:14px}.site-policy-footer a{color:#0d5c4b;font-weight:800;text-decoration:none}.site-policy-footer a:hover{text-decoration:underline}@media(max-width:760px){.legal-meta-row{align-items:flex-start;flex-direction:column;gap:10px}.site-policy-footer{grid-template-columns:1fr;gap:10px}.site-policy-footer nav{gap:10px}}
