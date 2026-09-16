@@ -6,7 +6,7 @@ const targets = [
   { name: 'vercel', base: process.env.VERCEL_BASE_URL || 'https://sultrakita-platform.vercel.app' },
   { name: 'worker', base: process.env.WORKER_BASE_URL || 'https://sultrakita-demo.aplikasi-cerdasku.workers.dev' },
 ];
-const paths = ['/api/health', '/api/categories', '/api/listings?limit=8', '/'];
+const paths = ['/api/health', '/api/feed?limit=8', '/api/listings?limit=8', '/'];
 const securityHeaders = ['strict-transport-security', 'x-content-type-options', 'x-frame-options', 'referrer-policy', 'permissions-policy', 'content-security-policy'];
 const samples = Number(process.env.AUDIT_SAMPLES || 5);
 

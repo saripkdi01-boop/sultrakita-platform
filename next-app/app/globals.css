@@ -2174,3 +2174,30 @@ html[data-theme='dark'] .beranda-create-post button.flex-1 { background: var(--t
   .marketplace-page .marketplace-filter-panel input,
   .marketplace-page .marketplace-filter-panel select { font-size: 9px; }
 }
+
+/* Suki home compact rhythm: reduce visual dead space without changing behavior. */
+.beranda-shell { gap: 12px !important; padding-top: 10px !important; padding-bottom: 40px !important; }
+.beranda-post-list { gap: 4px !important; }
+.beranda-main > .ecosystem-slider { margin: 6px 0 4px !important; }
+.beranda-quick-actions { gap: 4px !important; margin-top: 6px !important; margin-bottom: 4px !important; }
+.beranda-quick-actions a, .beranda-quick-actions button { min-height: 42px !important; padding: 7px 10px !important; border-radius: 10px !important; }
+.beranda-create-post { margin-top: 6px !important; padding: 11px 12px !important; border-radius: 12px !important; }
+.beranda-feed-post { border-radius: 12px !important; }
+.beranda-feed-post header { padding-top: 9px !important; padding-bottom: 5px !important; }
+.beranda-feed-post .feed-copy { padding-bottom: 7px !important; }
+.beranda-feed-post .feed-media-gallery + .feed-meta { margin-top: 4px !important; }
+.feed-meta { padding-top: 5px !important; padding-bottom: 5px !important; }
+.feed-actions { padding-top: 1px !important; padding-bottom: 1px !important; }
+@media (max-width: 900px) {
+  .beranda-shell { gap: 0 !important; padding-top: 6px !important; padding-bottom: 64px !important; }
+  .beranda-post-list { gap: 3px !important; }
+  .beranda-main > .ecosystem-slider { margin: 4px 0 3px !important; }
+}
+@media (max-width: 560px) {
+  .beranda-shell { padding-inline: 6px !important; }
+  .beranda-create-post, .beranda-feed-post { border-radius: 9px !important; }
+  .beranda-create-post { margin-top: 3px !important; padding: 9px !important; }
+  .beranda-feed-post header { padding-top: 8px !important; padding-bottom: 4px !important; }
+  .beranda-feed-post .feed-copy { padding-bottom: 6px !important; }
+  .beranda-feed-post .feed-media-gallery + .feed-meta { margin-top: 2px !important; }
+}
