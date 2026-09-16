@@ -2,18 +2,38 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { BerandaPostData } from '@/components/beranda/FeedPost';
+import type { FeedFilter, FeedItem, FeedPage } from '@/lib/feed-contract';
 
-export type FeedFilter = 'recommended' | 'following' | 'latest' | 'property' | 'video';
-type ApiPost = { id: string; content: string; media_urls?: string[]; type: string; privacy?: 'public' | 'followers'; location?: string; mood?: string | null; tagged_user_ids?: string[]; created_at: string; user_id: string; likes_count?: number; comments_count?: number; liked?: boolean; profiles?: { display_name?: string; username?: string; name?: string; avatar_url?: string | null; visibility_settings?: { avatar?: 'public' | 'followers' | 'private' } } | null };
-type FeedResponse = { data: ApiPost[]; pageInfo: { endCursor: string | null; hasNextPage: boolean }; error?: string };
+export type { FeedFilter } from '@/lib/feed-contract';
+
+type FeedResponse = FeedPage & { error?: string };
 
 const relativeTime = (iso: string) => {
   const minutes = Math.max(1, Math.floor((Date.now() - new Date(iso).getTime()) / 60000));
   return minutes < 60 ? `${minutes} menit lalu` : `${Math.floor(minutes / 60)} jam lalu`;
 };
-const mapPost = (post: ApiPost): BerandaPostData => {
-  const name = post.profiles?.username || post.profiles?.display_name || post.profiles?.name || 'Pengguna';
-  return { id: post.id, author: name, authorUsername: post.profiles?.username, initials: name.split(' ').map((word) => word[0]).join('').slice(0, 2).toUpperCase(), avatarUrl: post.profiles?.avatar_url, time: relativeTime(post.created_at), location: post.location, mood: post.mood, taggedCount: post.tagged_user_ids?.length || 0, privacy: post.privacy, content: post.content, mediaUrl: post.media_urls?.[0], mediaUrls: post.media_urls || [], mediaType: post.type === 'reel' ? 'video' : 'image', likes: Number(post.likes_count || 0), comments: Number(post.comments_count || 0), liked: Boolean(post.liked) };
+
+const mapItem = (item: FeedItem): BerandaPostData => {
+  const name = item.actor.displayName || 'Pengguna';
+  return {
+    id: item.id,
+    author: name,
+    authorUsername: item.actor.username,
+    initials: name.split(' ').map((word) => word[0]).join('').slice(0, 2).toUpperCase(),
+    avatarUrl: item.actor.avatarUrl,
+    time: relativeTime(item.createdAt),
+    location: item.location || undefined,
+    mood: item.mood,
+    taggedCount: item.taggedUserCount,
+    privacy: item.visibility === 'followers' ? 'followers' : 'public',
+    content: item.content,
+    mediaUrl: item.media[0]?.url,
+    mediaUrls: item.media.map((media) => media.url),
+    mediaType: item.media[0]?.kind || 'image',
+    likes: item.engagement.likeCount ?? 0,
+    comments: item.engagement.commentCount ?? 0,
+    liked: item.viewer.liked === true,
+  };
 };
 
 export function useInfiniteFeed(initialFilter: FeedFilter = 'recommended') {
@@ -29,7 +49,8 @@ export function useInfiniteFeed(initialFilter: FeedFilter = 'recommended') {
     requestRef.current?.abort();
     const controller = new AbortController();
     requestRef.current = controller;
-    setLoading(true); setError(null);
+    setLoading(true);
+    setError(null);
     try {
       const params = new URLSearchParams({ filter, limit: '10' });
       if (nextCursor) params.set('cursor', nextCursor);
@@ -37,14 +58,17 @@ export function useInfiniteFeed(initialFilter: FeedFilter = 'recommended') {
       const payload = await response.json() as FeedResponse;
       if (!response.ok) throw new Error(payload.error || 'Feed tidak dapat dimuat.');
       setItems((current) => {
-        const source = replace ? payload.data.map(mapPost) : [...current, ...payload.data.map(mapPost)];
+        const source = replace ? payload.data.map(mapItem) : [...current, ...payload.data.map(mapItem)];
         return Array.from(new Map(source.map((item) => [item.id, item])).values());
       });
-      setCursor(payload.pageInfo.endCursor); setHasNextPage(payload.pageInfo.hasNextPage);
+      setCursor(payload.pageInfo.endCursor);
+      setHasNextPage(payload.pageInfo.hasNextPage);
     } catch (caught) {
       if (caught instanceof DOMException && caught.name === 'AbortError') return;
       setError(caught instanceof Error ? caught.message : 'Feed tidak dapat dimuat.');
-    } finally { if (!controller.signal.aborted) setLoading(false); }
+    } finally {
+      if (!controller.signal.aborted) setLoading(false);
+    }
   }, [filter]);
 
   useEffect(() => { void load(null, true); return () => requestRef.current?.abort(); }, [load]);

@@ -1,5 +1,7 @@
 let csrfToken: string | null = null;
 
+type InteractionResult = { ok: boolean; action: string; liked?: boolean; saved?: boolean; shared?: boolean; channel?: string; idempotencyKey?: string };
+
 async function getCsrfToken() {
   if (csrfToken) return csrfToken;
   const response = await fetch('/api/csrf', { credentials: 'include', cache: 'no-store' });
@@ -10,12 +12,38 @@ async function getCsrfToken() {
   return csrfToken;
 }
 
-export async function setPostLike(postId: string, liked: boolean) {
+async function interaction(body: Record<string, unknown>): Promise<InteractionResult> {
   const token = await getCsrfToken();
-  const response = liked
-    ? await fetch('/api/interactions', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token }, body: JSON.stringify({ action: 'like', postId, idempotencyKey: `${postId}:like` }) })
-    : await fetch(`/api/interactions?postId=${encodeURIComponent(postId)}`, { method: 'DELETE', credentials: 'include', headers: { 'X-CSRF-Token': token } });
-  if (response.status === 403) { csrfToken = null; }
+  const response = await fetch('/api/interactions', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token }, body: JSON.stringify(body) });
+  if (response.status === 403) csrfToken = null;
   if (!response.ok) { const payload = await response.json().catch(() => ({})) as { error?: string }; throw new Error(payload.error || 'Interaksi gagal.'); }
-  return response.json() as Promise<{ ok: boolean; liked: boolean }>;
+  return response.json() as Promise<InteractionResult>;
+}
+
+export function setPostLike(postId: string, liked: boolean) {
+  return liked ? interaction({ action: 'like', postId, idempotencyKey: `${postId}:like` }) : removePostInteraction(postId, 'like');
+}
+
+export function setPostSaved(postId: string, saved: boolean) {
+  return saved ? interaction({ action: 'save', postId, idempotencyKey: `${postId}:save` }) : removePostInteraction(postId, 'save');
+}
+
+export function recordPostShare(postId: string, channel: 'native' | 'clipboard' | 'whatsapp', idempotencyKey = `${postId}:share:${channel}`) {
+  return interaction({ action: 'share', postId, channel, idempotencyKey });
+}
+
+export async function createPostComment(postId: string, content: string, idempotencyKey = `${postId}:comment:${content.trim()}`) {
+  const token = await getCsrfToken();
+  const response = await fetch('/api/comments', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token }, body: JSON.stringify({ postId, content, idempotencyKey }) });
+  if (response.status === 403) csrfToken = null;
+  if (!response.ok) { const payload = await response.json().catch(() => ({})) as { error?: string }; throw new Error(payload.error || 'Komentar gagal.'); }
+  return response.json() as Promise<{ ok: boolean; data: unknown; idempotencyKey: string }>;
+}
+
+async function removePostInteraction(postId: string, action: 'like' | 'save') {
+  const token = await getCsrfToken();
+  const response = await fetch(`/api/interactions?postId=${encodeURIComponent(postId)}&action=${action}`, { method: 'DELETE', credentials: 'include', headers: { 'X-CSRF-Token': token } });
+  if (response.status === 403) csrfToken = null;
+  if (!response.ok) { const payload = await response.json().catch(() => ({})) as { error?: string }; throw new Error(payload.error || 'Interaksi gagal.'); }
+  return response.json() as Promise<InteractionResult>;
 }
