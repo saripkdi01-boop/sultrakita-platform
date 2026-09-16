@@ -62,13 +62,22 @@ function oneProfile(profile: RawPost['profiles']): RawProfile | null {
   return Array.isArray(profile) ? profile[0] || null : profile || null;
 }
 
-function normalizeItem(row: RawPost): FeedItem {
+function normalizeItem(row: RawPost, context: { followingIds: Set<string> } = { followingIds: new Set() }): FeedItem {
   const profile = oneProfile(row.profiles);
   const displayName = profile?.username || profile?.display_name || profile?.name || 'Pengguna';
   let avatarUrl = profile?.avatar_url || null;
   if (profile && profile.visibility_settings?.avatar !== 'public') avatarUrl = null;
   const type = row.type === 'reel' ? 'reel' : row.type === 'property' ? 'property' : 'post';
   const media: FeedMedia[] = (row.media_urls || []).filter(Boolean).map((url) => ({ url, kind: type === 'reel' ? 'video' : 'image' }));
+  const totalEngagement = (row.likes_count || 0) + (row.comments_count || 0) + (row.shares_count || 0);
+  const ageHours = Math.max(0, (Date.now() - new Date(row.created_at).getTime()) / 3_600_000);
+  const recommendation = context.followingIds.has(row.user_id)
+    ? { reason: 'following' as const }
+    : totalEngagement >= 10
+      ? { reason: 'popular' as const }
+      : ageHours <= 24
+        ? { reason: 'fresh' as const }
+        : null;
   return {
     id: row.id,
     type,
@@ -89,9 +98,9 @@ function normalizeItem(row: RawPost): FeedItem {
     viewer: {
       liked: typeof row.liked === 'boolean' ? row.liked : null,
       saved: typeof row.saved === 'boolean' ? row.saved : null,
-      followingActor: null,
+      followingActor: context.followingIds.has(row.user_id),
     },
-    recommendation: null,
+    recommendation,
   };
 }
 
@@ -134,15 +143,19 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = await getServerSupabase();
     const { data: { user } } = await supabase.auth.getUser();
+    let followingIds = new Set<string>();
+    if (user) {
+      const { data: follows, error: followError } = await supabase.from('follows').select('following_id').eq('follower_id', user.id);
+      if (followError && followError.code !== 'PGRST116') return NextResponse.json({ error: 'feed_query_failed' }, { status: 500 });
+      followingIds = new Set((follows || []).map((row) => row.following_id).filter(Boolean));
+    }
     let query = supabase.from('posts').select('id,content,media_urls,type,privacy,location,mood,tagged_user_ids,created_at,user_id,profiles(display_name,username,avatar_url,visibility_settings)').eq('status', 'published').order('created_at', { ascending: false }).order('id', { ascending: false }).limit(limit + 1);
     if (filter === 'property') query = query.eq('type', 'property');
     if (filter === 'video') query = query.eq('type', 'reel');
     if (filter === 'following') {
       if (!user) return NextResponse.json({ error: 'authentication_required' }, { status: 401 });
-      const { data: follows, error: followError } = await supabase.from('follows').select('following_id').eq('follower_id', user.id);
-      if (followError) return NextResponse.json({ error: 'feed_query_failed' }, { status: 500 });
-      const ids = (follows || []).map((row) => row.following_id).filter(Boolean);
-      if (!ids.length) return NextResponse.json({ data: [], pageInfo: { endCursor: null, hasNextPage: false }, rankingVersion: 'baseline-v1', filter, contractVersion: 'suki-feed-v1' });
+      const ids = Array.from(followingIds);
+      if (!ids.length) return NextResponse.json({ data: [], pageInfo: { endCursor: null, hasNextPage: false }, rankingVersion: 'deterministic-v1', filter, contractVersion: 'suki-feed-v1' });
       query = query.in('user_id', ids);
     }
     if (cursor) query = query.or(`created_at.lt.${cursor.createdAt},and(created_at.eq.${cursor.createdAt},id.lt.${cursor.id})`);
@@ -154,7 +167,7 @@ export async function GET(request: NextRequest) {
     const hydratedRows = await hydrateEngagement(supabase, rows, user?.id || null);
     const last = hydratedRows.at(-1);
     const endCursor = hasNextPage && last ? encodeCursor({ v: 1, filter, createdAt: last.created_at, id: last.id }) : null;
-    return NextResponse.json({ data: hydratedRows.map(normalizeItem), pageInfo: { endCursor, hasNextPage }, rankingVersion: 'baseline-v1', filter, contractVersion: 'suki-feed-v1' }, { headers: { 'Cache-Control': 'private, no-store', Vary: 'Cookie' } });
+    return NextResponse.json({ data: hydratedRows.map((row) => normalizeItem(row, { followingIds })), pageInfo: { endCursor, hasNextPage }, rankingVersion: 'deterministic-v1', filter, contractVersion: 'suki-feed-v1' }, { headers: { 'Cache-Control': 'private, no-store', Vary: 'Cookie' } });
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : 'feed_unavailable' }, { status: 500 });
   }

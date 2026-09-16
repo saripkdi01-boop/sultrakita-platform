@@ -15,11 +15,20 @@ const hook = fs.readFileSync(path.join(root, 'next-app/hooks/useInfiniteFeed.ts'
 });
 
 test('Feed Suki menormalisasi actor, media, visibility, engagement, dan viewer state', () => {
-  for (const marker of ['normalizeItem', 'actor:', 'media:', 'visibility:', 'engagement:', 'viewer:', 'recommendation:']) {
+  for (const marker of ['normalizeItem', 'actor:', 'media:', 'visibility:', 'engagement:', 'viewer:', 'recommendation']) {
     assert.match(route, new RegExp(marker));
   }
   assert.match(hook, /item\.engagement\.likeCount \?\? 0/);
   assert.match(hook, /item\.viewer\.liked === true/);
+});
+
+test('Feed Suki menggunakan recommendation reason deterministik tanpa lokasi atau kontak implisit', () => {
+  assert.match(route, /rankingVersion: 'deterministic-v1'/);
+  assert.match(route, /reason: 'following'/);
+  assert.match(route, /reason: 'popular'/);
+  assert.match(route, /reason: 'fresh'/);
+  assert.match(route, /followingActor: context\.followingIds\.has/);
+  assert.doesNotMatch(route, /navigator\.geolocation|contacts|phonebook/);
 });
 
 test('Feed Suki memakai cursor tie-breaker created_at dan id', () => {
