@@ -1,4 +1,4 @@
-const SITE_URL = (process.env.PUBLIC_SITE_URL || 'https://sultrakita-platform.vercel.app').replace(/\/$/, '');
+const SITE_URL = (process.env.PUBLIC_SITE_URL || 'https://sukiapps.web.id').replace(/\/$/, '');
 const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
 const slugify = value => String(value || '').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 const absolute = value => value && /^https?:\/\//i.test(value) ? value : value ? `${SITE_URL}/${String(value).replace(/^\//, '')}` : `${SITE_URL}/og-image.svg`;

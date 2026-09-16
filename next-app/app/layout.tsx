@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { PreferencesProvider } from '@/lib/preferences';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://sultrakita-platform.vercel.app'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://sukiapps.web.id'),
   title: 'SUKI Apps - Ekosistem Digital Sulawesi Tenggara (SultraKita)',
   description: 'SUKI Apps adalah ekosistem digital Sulawesi Tenggara untuk menemukan properti, peluang kerja, marketplace, komunitas, dan layanan warga.',
   icons: { icon: '/icon.svg', shortcut: '/icon.svg', apple: '/suki-logo-mark.svg' },

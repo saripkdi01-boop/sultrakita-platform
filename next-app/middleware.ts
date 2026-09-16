@@ -29,6 +29,11 @@ function isPublicRoute(pathname: string) {
 
 export async function middleware(request: NextRequest) {
   const url = request.nextUrl;
+  if (url.hostname === 'www.sukiapps.web.id') {
+    const canonical = url.clone();
+    canonical.hostname = 'sukiapps.web.id';
+    return NextResponse.redirect(canonical, 308);
+  }
   const publicRoute = isPublicRoute(url.pathname);
   if (url.pathname === '/admin') return NextResponse.redirect(new URL('/admin/dashboard', request.url), 308);
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {

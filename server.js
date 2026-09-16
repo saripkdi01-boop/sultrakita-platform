@@ -31,7 +31,7 @@ app.use((_req, res, next) => { res.setHeader('X-Content-Type-Options', 'nosniff'
 const PORT = Number(process.env.PORT || 3000);
 const districts = ALL_DISTRICTS;
 
-const allowedOrigins = (process.env.CORS_ORIGINS || process.env.CORS_ORIGIN || 'https://sultrakita-platform.vercel.app').split(',').map(value => value.trim()).filter(Boolean);
+const allowedOrigins = (process.env.CORS_ORIGINS || process.env.CORS_ORIGIN || 'https://sukiapps.web.id').split(',').map(value => value.trim()).filter(Boolean);
 app.use(cors({ origin: (origin, callback) => { if (!origin || allowedOrigins.includes(origin)) return callback(null, true); return callback(new Error('Origin tidak diizinkan')); }, credentials: true }));
 app.use('/api/donation/webhook/aulaa', express.raw({ type: 'application/json', limit: '256kb' }));
 app.use(express.json({ limit: '3mb', verify: (req, _res, buffer) => { req.rawBody = Buffer.from(buffer); } }));

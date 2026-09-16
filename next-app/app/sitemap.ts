@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { getServerSupabase } from '@/lib/supabase/server';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://sultrakita-platform.vercel.app';
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://sukiapps.web.id').replace(/\/$/, '');
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [

@@ -25,7 +25,7 @@ export default function AjakTemanPage() {
   const [qrChannel, setQrChannel] = useState('community');
   const [qrData, setQrData] = useState('');
   const referralCode = summary.referral_code || 'SULTRA-LAUNCH';
-  const referralLink = useMemo(() => `${typeof window === 'undefined' ? 'https://sultrakita-platform.vercel.app' : window.location.origin}/?ref=${referralCode}`, [referralCode]);
+  const referralLink = useMemo(() => `${typeof window === 'undefined' ? 'https://sukiapps.web.id' : window.location.origin}/?ref=${referralCode}`, [referralCode]);
   const qualified = summary.qualified_referrals || 0;
   const level = levels.reduce((current, item) => qualified >= item.min ? item : current, levels[0]);
   const levelProgress = level.next === level.min ? 100 : Math.min(100, Math.round(((qualified - level.min) / (level.next - level.min)) * 100));
