@@ -9,11 +9,12 @@ import { FeedPost } from '@/components/beranda/FeedPost';
 import { RightSidebar } from '@/components/beranda/RightSidebar';
 import EcosystemSlider from '@/components/marketing/EcosystemSlider';
 import { useInfiniteFeed } from '@/hooks/useInfiniteFeed';
+import type { FeedFilter } from '@/lib/feed-contract';
 import { setPostLike } from '@/lib/feed-interactions';
 import { SultraKitaUiUpgrade } from '@/components/beranda/SultraKitaUiUpgrade';
 
 export default function BerandaPage() {
-  const { items, loading, error, hasNextPage, loadMore, reload } = useInfiniteFeed();
+  const { filter, setFilter, items, loading, error, hasNextPage, loadMore, reload } = useInfiniteFeed();
   const [notice, setNotice] = useState('');
   const [composerOpen, setComposerOpen] = useState(false);
   const [composerType, setComposerType] = useState<'post' | 'reel'>('post');
@@ -25,6 +26,9 @@ export default function BerandaPage() {
     <main className="beranda-shell">
       <div className="beranda-main">
         <CreatePostInput onCreate={openComposer}/>
+        <nav className="feed-tabs" aria-label="Jenis beranda" role="tablist">
+          {([['recommended', 'Rekomendasi'], ['following', 'Mengikuti'], ['latest', 'Terbaru'], ['property', 'Properti'], ['video', 'Video']] as const).map(([value, label]) => <button key={value} type="button" role="tab" aria-selected={filter === value} className={filter === value ? 'feed-tab is-active focus-ring' : 'feed-tab focus-ring'} onClick={() => setFilter(value as FeedFilter)}>{label}</button>)}
+        </nav>
         {notice && <div className="beranda-notice" role="status"><span>{notice}</span><button type="button" onClick={() => setNotice('')}>Tutup</button></div>}
         {error && <div className="feed-state feed-error" role="alert"><span>{error}</span><button type="button" onClick={reload}><RefreshCw size={15}/> Coba lagi</button></div>}
         {!error && !loading && items.length === 0 && <div className="feed-state"><strong>Belum ada cerita di sini.</strong><span>Coba filter lain atau bagikan cerita pertama Anda.</span></div>}

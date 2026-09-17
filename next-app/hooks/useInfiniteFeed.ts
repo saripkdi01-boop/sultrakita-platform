@@ -33,6 +33,7 @@ const mapItem = (item: FeedItem): BerandaPostData => {
     likes: item.engagement.likeCount ?? 0,
     comments: item.engagement.commentCount ?? 0,
     liked: item.viewer.liked === true,
+    recommendationReason: item.recommendation?.reason === 'following' || item.recommendation?.reason === 'popular' || item.recommendation?.reason === 'fresh' ? item.recommendation.reason : null,
   };
 };
 

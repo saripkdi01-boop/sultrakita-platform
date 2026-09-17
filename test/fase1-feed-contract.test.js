@@ -7,6 +7,8 @@ const root = path.join(__dirname, '..');
 const contract = fs.readFileSync(path.join(root, 'next-app/lib/feed-contract.ts'), 'utf8');
 const route = fs.readFileSync(path.join(root, 'next-app/app/api/feed/route.ts'), 'utf8');
 const hook = fs.readFileSync(path.join(root, 'next-app/hooks/useInfiniteFeed.ts'), 'utf8');
+const page = fs.readFileSync(path.join(root, 'next-app/app/beranda/page.tsx'), 'utf8');
+const post = fs.readFileSync(path.join(root, 'next-app/components/beranda/FeedPost.tsx'), 'utf8');
 
  test('Feed Suki mendefinisikan kontrak item dan page bersama', () => {
   for (const marker of ['FeedItemType', 'FeedAuthor', 'FeedEngagement', 'FeedViewerState', 'FeedPage', "contractVersion: 'suki-feed-v1'"]) {
@@ -29,6 +31,13 @@ test('Feed Suki menggunakan recommendation reason deterministik tanpa lokasi ata
   assert.match(route, /reason: 'fresh'/);
   assert.match(route, /followingActor: context\.followingIds\.has/);
   assert.doesNotMatch(route, /navigator\.geolocation|contacts|phonebook/);
+});
+
+test('Beranda menyediakan tab feed dan label rekomendasi yang accessible', () => {
+  for (const marker of ['Jenis beranda', 'Rekomendasi', 'Mengikuti', 'Terbaru', 'Properti', 'Video', 'aria-selected']) {
+    assert.match(page, new RegExp(marker));
+  }
+  assert.match(post, /Alasan rekomendasi/);
 });
 
 test('Feed Suki memakai cursor tie-breaker created_at dan id', () => {
