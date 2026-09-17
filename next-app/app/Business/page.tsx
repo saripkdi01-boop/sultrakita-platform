@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowRight, BadgeCheck, BarChart3, Building2, ChevronDown, Handshake, Megaphone, Store, UsersRound } from 'lucide-react';
+import { ArrowRight, BadgeCheck, BarChart3, Building2, ChevronDown, Handshake, MapPin, Megaphone, Quote, Store, TrendingUp, UsersRound } from 'lucide-react';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -20,11 +20,23 @@ const steps = [
   { number: '03', title: 'Tumbuh bersama', text: 'Bangun hubungan yang lebih dekat dengan warga dan komunitas di wilayah Anda.' },
 ];
 
+const testimonials = [
+  { quote: 'Hari ini belajar bahwa langkah kecil tetap berarti. Mulai dari mendukung satu usaha lokal di sekitar kita.', name: 'Nadia Rahma', meta: 'Kendari · Cerita warga', initials: 'NR' },
+  { quote: 'Senang melihat semakin banyak anak muda Sultra yang berani berkarya dan membawa cerita daerah ke ruang yang lebih luas.', name: 'Fajar La Ode', meta: 'Baubau · Cerita warga', initials: 'FL' },
+  { quote: 'Gotong royong membersihkan pesisir kembali digelar. Terima kasih untuk semua warga yang sudah hadir.', name: 'Komunitas Pesisir', meta: 'Wakatobi · Komunitas', initials: 'KP' },
+];
+
+const caseStudies = [
+  { type: 'Marketplace', title: 'Kopi Tolaki Premium', place: 'Konawe', result: '320 terjual', text: 'Contoh bagaimana produk lokal dapat ditemukan melalui kategori belanja yang dekat dengan konteks wilayah.', tone: 'mint' },
+  { type: 'Marketplace', title: 'Tas Anyaman Wakatobi', place: 'Wakatobi', result: '86 terjual', text: 'Cerita produk dan identitas daerah bertemu dalam satu listing yang mudah dijelajahi warga.', tone: 'sand' },
+  { type: 'Property', title: 'Nirwana Residence', place: 'Anduonohu, Kendari', result: 'Hubungi via WhatsApp', text: 'SUKI Suits membantu calon pembeli menemukan ruang dan melanjutkan percakapan dengan jalur yang jelas.', tone: 'blue' },
+];
+
 export default function BusinessPage() {
   return <main className="business-shell">
     <header className="business-nav">
       <Link href="/" className="marketing-brand" aria-label="Kembali ke SUKI Apps"><span className="marketing-brand-mark">S</span><span><strong>SUKI Apps</strong><small>by SULTRAKITA</small></span></Link>
-      <nav className="business-nav-links" aria-label="Navigasi bisnis"><Link href="/#ekosistem">Ekosistem</Link><a href="#manfaat">Manfaat</a><a href="#cara-kerja">Cara kerja</a></nav>
+      <nav className="business-nav-links" aria-label="Navigasi bisnis"><Link href="/#ekosistem">Ekosistem</Link><a href="#manfaat">Manfaat</a><a href="#cara-kerja">Cara kerja</a><a href="#bukti">Bukti</a></nav>
       <Link href="/beranda" className="business-nav-link">Masuk ke aplikasi <ArrowRight size={15} /></Link>
     </header>
 
@@ -35,6 +47,10 @@ export default function BusinessPage() {
     <section className="business-steps" id="cara-kerja"><div className="business-section-heading"><p className="marketing-eyebrow">Cara kerja</p><h2>Mulai dari kebutuhan. Tumbuh dengan arah.</h2></div><div className="business-step-grid">{steps.map((step) => <article key={step.number}><span>{step.number}</span><h3>{step.title}</h3><p>{step.text}</p></article>)}</div></section>
 
     <section className="business-value-banner"><div><p className="marketing-eyebrow">Konteks lokal adalah keunggulan</p><h2>Lebih dekat dengan orang yang ingin Anda jangkau.</h2><p>SUKI Apps menghubungkan kehadiran bisnis dengan ruang yang sudah digunakan warga: marketplace, properti, pekerjaan, dan komunitas.</p></div><div className="business-value-list"><div><BadgeCheck size={18} /><span>Profil yang lebih terarah</span></div><div><BarChart3 size={18} /><span>Ruang untuk membangun kepercayaan</span></div><div><Handshake size={18} /><span>Peluang kolaborasi yang relevan</span></div></div></section>
+
+    <section className="business-proof-section" id="bukti"><div className="business-section-heading"><p className="marketing-eyebrow">Cerita yang sudah hadir</p><h2>Kepercayaan tumbuh dari cerita yang nyata.</h2><p className="business-proof-note">Kutipan dan contoh di bawah berasal dari konten serta listing yang tampil di ekosistem SUKI. Angka bukan proyeksi dan tidak menggantikan verifikasi pemilik bisnis.</p></div><div className="testimonial-grid">{testimonials.map((item) => <article className="testimonial-card" key={item.name}><Quote size={22} className="testimonial-quote-icon" /><blockquote>“{item.quote}”</blockquote><div className="testimonial-author"><span className="mini-avatar">{item.initials}</span><span><b>{item.name}</b><small>{item.meta}</small></span></div></article>)}</div></section>
+
+    <section className="business-cases-section"><div className="business-section-heading"><p className="marketing-eyebrow">Studi kasus dari ekosistem</p><h2>Dari listing menjadi langkah berikutnya.</h2></div><div className="case-study-grid">{caseStudies.map((item) => <article className={`case-study-card case-study-${item.tone}`} key={item.title}><div className="case-study-top"><span>{item.type}</span><TrendingUp size={17} /></div><h3>{item.title}</h3><p className="case-study-place"><MapPin size={13} /> {item.place}</p><p>{item.text}</p><strong>{item.result}</strong><small>terlihat pada listing yang ditampilkan</small></article>)}</div></section>
 
     <section className="business-contact" id="mulai"><div><p className="marketing-eyebrow">Mari mulai percakapan</p><h2>Punya tujuan bisnis yang ingin diwujudkan di Sultra?</h2><p>Ceritakan kebutuhan Anda. Tim SUKI akan membantu menentukan jalur yang paling relevan untuk langkah pertama.</p></div><div className="business-contact-actions"><a href="mailto:hello@sukiapps.web.id" className="marketing-button marketing-button-light">Hubungi tim SUKI <ArrowRight size={17} /></a><Link href="/beranda" className="business-back-link">Kembali ke aplikasi <ArrowRight size={15} /></Link></div></section>
 
