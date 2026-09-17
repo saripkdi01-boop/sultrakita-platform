@@ -2494,3 +2494,33 @@ html[data-theme='light'] body:has(.marketplace-page) { --local-ink: #16352d; --l
 .marketing-links a{transition:color .18s ease,transform .18s ease}.marketing-links a:hover{transform:translateY(-1px)}
 .marketing-hero{position:relative;isolation:isolate}.marketing-hero::before{content:'';position:absolute;z-index:-1;inset:0 0 auto 38%;height:520px;pointer-events:none;background:radial-gradient(circle at 65% 35%,rgba(71,155,132,.12),transparent 62%)}
 @media(max-width:560px){.marketing-nav{position:relative}.marketing-brand-mark img{width:22px;height:22px}}
+
+/* Dark mode hardening for the public marketing surface. */
+html[data-theme='dark'] .marketing-shell{background:var(--theme-bg);color:var(--theme-text)}
+html[data-theme='dark'] .marketing-nav{background:color-mix(in srgb,var(--theme-bg) 88%,transparent);border-color:var(--theme-border)}
+html[data-theme='dark'] .marketing-brand strong,html[data-theme='dark'] .marketing-section-heading h2,html[data-theme='dark'] .marketing-promise h3,html[data-theme='dark'] .product-card h3,html[data-theme='dark'] .local-proof-copy h2,html[data-theme='dark'] .marketing-final-cta h2{color:var(--theme-text-strong)}
+html[data-theme='dark'] .marketing-brand small,html[data-theme='dark'] .marketing-links a,html[data-theme='dark'] .marketing-login{color:var(--theme-text-muted)}
+html[data-theme='dark'] .marketing-links a:hover,html[data-theme='dark'] .marketing-login:hover{color:var(--theme-primary)}
+html[data-theme='dark'] .marketing-hero-lede,html[data-theme='dark'] .marketing-section-intro,html[data-theme='dark'] .promise-grid article p,html[data-theme='dark'] .product-card p,html[data-theme='dark'] .local-proof-copy>p:not(.marketing-eyebrow),html[data-theme='dark'] .marketing-final-cta>p:not(.marketing-eyebrow){color:var(--theme-text-muted)}
+html[data-theme='dark'] .marketing-eyebrow,html[data-theme='dark'] .marketing-text-link,html[data-theme='dark'] .product-link{color:var(--theme-primary)}
+html[data-theme='dark'] .marketing-button-secondary{border-color:var(--theme-border-strong);background:var(--theme-surface);color:var(--theme-text-strong)}
+html[data-theme='dark'] .marketing-button-secondary:hover{background:var(--theme-surface-raised);border-color:var(--theme-primary)}
+html[data-theme='dark'] .promise-grid article,html[data-theme='dark'] .product-card,html[data-theme='dark'] .story-list,html[data-theme='dark'] .local-proof-card{background:var(--theme-surface);border-color:var(--theme-border);box-shadow:var(--theme-shadow-sm)}
+html[data-theme='dark'] .promise-grid article:hover,html[data-theme='dark'] .product-card:hover{background:var(--theme-surface-raised);border-color:var(--theme-border-strong)}
+html[data-theme='dark'] .product-mint{background:color-mix(in srgb,var(--theme-primary-soft) 72%,var(--theme-surface))}
+html[data-theme='dark'] .product-sand{background:color-mix(in srgb,#7f5b24 22%,var(--theme-surface))}
+html[data-theme='dark'] .product-blue{background:color-mix(in srgb,#285789 24%,var(--theme-surface))}
+html[data-theme='dark'] .product-coral{background:color-mix(in srgb,#8a3f46 22%,var(--theme-surface))}
+html[data-theme='dark'] .product-icon{background:var(--theme-surface-muted);color:var(--theme-primary)}
+html[data-theme='dark'] .story{border-color:var(--theme-border)}
+html[data-theme='dark'] .story strong,html[data-theme='dark'] .story p{color:var(--theme-text)}
+html[data-theme='dark'] .local-proof-card blockquote{color:var(--theme-text-strong)}
+html[data-theme='dark'] .local-proof-card small{color:var(--theme-text-subtle)}
+html[data-theme='dark'] .marketing-footer{border-color:var(--theme-border)}
+html[data-theme='dark'] .footer-links a,html[data-theme='dark'] .footer-copy{color:var(--theme-text-muted)}
+html[data-theme='dark'] .footer-links a:hover{color:var(--theme-primary)}
+html[data-theme='dark'] .marketing-hero::before{background:radial-gradient(circle at 65% 35%,color-mix(in srgb,var(--theme-primary) 18%,transparent),transparent 62%)}
+html[data-theme='dark'] .hero-card-main,html[data-theme='dark'] .hero-card-float{border-color:rgba(255,255,255,.16);box-shadow:var(--theme-shadow-md)}
+html[data-theme='dark'] .hero-card-main{background:color-mix(in srgb,var(--theme-surface-raised) 88%,transparent)}
+html[data-theme='dark'] .hero-search{background:var(--theme-surface-muted);border-color:var(--theme-border);color:var(--theme-text-muted)}
+html[data-theme='dark'] .marketing-signal-strip{border-color:var(--theme-border)}
