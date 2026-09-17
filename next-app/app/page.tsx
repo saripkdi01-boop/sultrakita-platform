@@ -68,7 +68,7 @@ export default function HomePage() {
     <main className="marketing-shell">
       <header className="marketing-nav">
         <Link href="/" className="marketing-brand" aria-label="SUKI Apps beranda">
-          <span className="marketing-brand-mark">S</span>
+          <span className="marketing-brand-mark"><img src="/suki-logo-mark.svg" alt="" /></span>
           <span>
             <strong>SUKI Apps</strong>
             <small>by SULTRAKITA</small>
@@ -77,6 +77,7 @@ export default function HomePage() {
         <nav className="marketing-links" aria-label="Navigasi utama">
           <a href="#ekosistem">Ekosistem</a>
           <a href="#cara-kerja">Cara kerja</a>
+          <a href="#komunitas">Komunitas</a>
           <Link href="/Business">Untuk bisnis</Link>
         </nav>
         <div className="marketing-nav-actions">
@@ -138,14 +139,14 @@ export default function HomePage() {
         <Link href="/Business" className="marketing-button marketing-button-light">Masuk ke SUKI Business <ArrowRight size={17} /></Link>
       </section>
 
-      <section className="marketing-section local-proof-section">
+      <section className="marketing-section local-proof-section" id="komunitas">
         <div className="local-proof-copy"><p className="marketing-eyebrow">Dari Sultra, untuk Sultra</p><h2>Teknologi yang tetap terasa manusiawi.</h2><p>SUKI Apps tumbuh dari kebutuhan untuk membuat hal-hal yang dekat menjadi lebih mudah diakses. Setiap ruang dirancang untuk membantu warga dan pelaku usaha mengambil langkah berikutnya dengan percaya diri.</p><Link href="/help-center" className="marketing-text-link">Pelajari lebih lanjut <ArrowRight size={15} /></Link></div>
         <div className="local-proof-card"><div className="proof-quote">“</div><blockquote>Langkah kecil tetap berarti ketika kita melakukannya bersama.</blockquote><div className="proof-author"><span className="mini-avatar">NR</span><span><b>Cerita warga Sultra</b><small>Ruang Komunitas SUKI</small></span></div></div>
       </section>
 
       <section className="marketing-final-cta"><p className="marketing-eyebrow">Langkah berikutnya dimulai di sini</p><h2>Temukan ruang Anda di SUKI Apps.</h2><p>Jelajahi ekosistem digital yang dekat dengan kebutuhan dan peluang di sekitar Anda.</p><Link href="/beranda" className="marketing-button marketing-button-primary">Jelajahi SUKI Apps <ArrowRight size={17} /></Link></section>
 
-      <footer className="marketing-footer"><div className="marketing-brand footer-brand"><span className="marketing-brand-mark">S</span><span><strong>SUKI Apps</strong><small>by SULTRAKITA</small></span></div><div className="footer-links"><Link href="/beranda">Beranda aplikasi</Link><Link href="/Business">Untuk bisnis</Link><Link href="/help-center">Panduan</Link><Link href="/legal/privacy">Privasi</Link></div><span className="footer-copy">© 2026 SUKI Apps · Sulawesi Tenggara</span></footer>
+      <footer className="marketing-footer"><div className="marketing-brand footer-brand"><span className="marketing-brand-mark"><img src="/suki-logo-mark.svg" alt="" /></span><span><strong>SUKI Apps</strong><small>by SULTRAKITA</small></span></div><div className="footer-links"><Link href="/beranda">Beranda aplikasi</Link><Link href="/Business">Untuk bisnis</Link><Link href="/help-center">Panduan</Link><Link href="/legal/privacy">Privasi</Link></div><span className="footer-copy">© 2026 SUKI Apps · Sulawesi Tenggara</span></footer>
     </main>
   );
 }
