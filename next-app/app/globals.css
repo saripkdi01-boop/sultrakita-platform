@@ -2985,3 +2985,92 @@ html[data-theme="dark"] .product-coral { color:#eaa080; }
 @media(max-width:640px){.reference-container{width:min(100% - 24px,560px)}.reference-topbar{display:none}.reference-header-inner{min-height:62px;gap:10px}.reference-brand-mark{width:37px;height:37px}.reference-brand-copy strong{font-size:14px}.reference-header-actions{display:none}.reference-menu-button{margin-left:auto}.reference-hero{padding:48px 0 42px}.reference-hero h1{font-size:clamp(40px,12vw,58px);margin-top:17px}.reference-hero-copy>p:not(.reference-pill){font-size:13px}.reference-hero-actions{display:grid;grid-template-columns:1fr}.reference-primary-button,.reference-secondary-button{width:100%}.reference-trust-row{gap:9px;font-size:9px}.reference-hero-product{min-height:365px;margin-top:3px}.reference-product-window{border-radius:20px}.reference-window-top{height:48px;padding:0 11px}.reference-window-body{padding:17px}.reference-window-heading strong{font-size:20px}.reference-window-categories{grid-template-columns:repeat(2,1fr)}.reference-window-bento{grid-template-columns:1fr}.reference-mini-card-main{grid-row:auto;min-height:120px}.reference-floating-card{display:none}.reference-quick-list{grid-template-columns:1fr 1fr;gap:7px}.reference-quick-item{font-size:8px;padding:8px}.reference-quick-item span{flex-basis:24px;width:24px;height:24px}.reference-section{padding:65px 0}.reference-section-heading{display:block;margin-bottom:22px}.reference-section-heading h2,.reference-about h2,.reference-business h2,.reference-final-card h2{font-size:32px}.reference-section-heading .reference-text-link{margin-top:14px}.reference-ecosystem-grid{grid-template-columns:1fr}.reference-ecosystem-card{min-height:220px}.reference-principles{grid-template-columns:1fr}.reference-about{padding:70px 0}.reference-about-card{min-height:360px;padding:27px}.reference-about-card>strong{font-size:36px}.reference-about-map{right:15px;bottom:22px;opacity:.65}.reference-business{padding:58px 0}.reference-light-button{width:100%}.reference-final-cta{padding:50px 0}.reference-final-card{display:block;padding:30px 24px}.reference-final-card .reference-primary-button{margin-top:22px}.reference-footer{padding-top:38px}.reference-footer-main{display:block}.reference-footer-main p{margin-top:18px}.reference-footer-links{grid-template-columns:1fr 1fr;margin-top:28px}.reference-footer-bottom{display:block;line-height:1.7}.reference-footer-bottom span{display:block}.reference-footer-bottom span+span{margin-top:4px}}
 @media(max-width:380px){.reference-hero h1{font-size:38px}.reference-window-location{display:none}.reference-window-body{padding:13px}.reference-window-heading strong{font-size:18px}.reference-quick-list{grid-template-columns:1fr}.reference-about-card>strong{font-size:32px}}
 @media(prefers-reduced-motion:reduce){.reference-home *{scroll-behavior:auto!important;transition:none!important}.reference-hero-product,.reference-ecosystem-card{transform:none}}
+/* SUKI homepage theme bridge — keeps the marketing reference surface aligned with app tokens. */
+.reference-home {
+  --rh-ink: var(--theme-text-strong);
+  --rh-muted: var(--theme-text-muted);
+  --rh-subtle: var(--theme-text-subtle);
+  --rh-soft: var(--theme-surface-soft);
+  --rh-paper: var(--theme-surface);
+  --rh-raised: var(--theme-surface-raised);
+  --rh-line: var(--theme-border);
+  --rh-line-strong: var(--theme-border-strong);
+  --rh-brand: var(--theme-primary);
+  --rh-brand-dark: var(--theme-primary-hover);
+  --rh-mint: var(--theme-primary-soft);
+  --rh-sand: color-mix(in srgb, var(--theme-warning) 16%, var(--theme-surface));
+  --rh-blue: color-mix(in srgb, #5aa7c2 16%, var(--theme-surface));
+  --rh-peach: color-mix(in srgb, #df8059 14%, var(--theme-surface));
+  --rh-page: var(--theme-bg);
+  background: var(--rh-page);
+  color: var(--rh-ink);
+}
+.reference-home .reference-topbar { background: var(--rh-soft); border-color: var(--rh-line); color: var(--rh-muted); }
+.reference-home .reference-header { background: color-mix(in srgb, var(--rh-paper) 90%, transparent); border-color: color-mix(in srgb, var(--rh-line) 90%, transparent); }
+.reference-home .reference-brand-mark { background: var(--rh-brand-dark); box-shadow: var(--theme-shadow-sm); }
+.reference-home .reference-brand-copy small,
+.reference-home .reference-footer-main p,
+.reference-home .reference-footer-bottom { color: var(--rh-subtle); }
+.reference-home .reference-nav a,
+.reference-home .reference-login { color: var(--rh-muted); }
+.reference-home .reference-nav a:hover,
+.reference-home .reference-login:hover,
+.reference-home .reference-menu-button { background: var(--rh-soft); color: var(--rh-ink); }
+.reference-home .reference-hero { background: linear-gradient(180deg, var(--rh-paper) 0%, var(--rh-soft) 100%); border-color: var(--rh-line); }
+.reference-home .reference-pill,
+.reference-home .reference-secondary-button { border-color: var(--rh-line-strong); background: var(--rh-paper); color: var(--rh-ink); }
+.reference-home .reference-pill { color: var(--rh-muted); box-shadow: var(--theme-shadow-sm); }
+.reference-home .reference-secondary-button:hover { background: var(--rh-soft); border-color: var(--rh-brand); }
+.reference-home .reference-hero-copy>p:not(.reference-pill),
+.reference-home .reference-section-heading>p,
+.reference-home .reference-about>div>div>p,
+.reference-home .reference-business p,
+.reference-home .reference-final-card p { color: var(--rh-muted); }
+.reference-home .reference-trust-row,
+.reference-home .reference-card-kicker,
+.reference-home .reference-window-location,
+.reference-home .reference-mini-card small { color: var(--rh-subtle); }
+.reference-home .reference-quick-access { background: var(--rh-paper); border-color: var(--rh-line); box-shadow: var(--theme-shadow-sm); }
+.reference-home .reference-quick-heading span { color: var(--rh-muted); }
+.reference-home .reference-quick-item { background: var(--rh-soft); border-color: var(--rh-line); color: var(--rh-ink); }
+.reference-home .reference-quick-item:hover { background: var(--rh-mint); border-color: var(--rh-brand); }
+.reference-home .reference-quick-item span,
+.reference-home .reference-card-icon { background: var(--rh-mint); color: var(--rh-brand); }
+.reference-home .reference-ecosystem-card,
+.reference-home .reference-principles article { background: var(--rh-paper); border-color: var(--rh-line); box-shadow: var(--theme-shadow-sm); }
+.reference-home .reference-ecosystem-card:hover { border-color: var(--rh-brand); box-shadow: var(--theme-shadow-md); }
+.reference-home .reference-ecosystem-card p,
+.reference-home .reference-principles article p { color: var(--rh-muted); }
+.reference-home .reference-principle-number { background: var(--rh-mint); color: var(--rh-brand); }
+.reference-home .reference-about { background: var(--rh-soft); }
+.reference-home .reference-about-card { background: linear-gradient(145deg, var(--rh-brand-dark), color-mix(in srgb, var(--rh-brand) 55%, #071b18)); box-shadow: var(--theme-shadow-lg); }
+.reference-home .reference-business { background: var(--rh-brand-dark); }
+.reference-home .reference-final-cta { background: var(--rh-page); }
+.reference-home .reference-final-card { background: linear-gradient(135deg, color-mix(in srgb, var(--rh-brand) 16%, var(--rh-paper)), var(--rh-paper)); border-color: var(--rh-line); box-shadow: var(--theme-shadow-md); }
+.reference-home .reference-final-card .reference-primary-button { background: var(--rh-brand); color: var(--theme-text-strong) !important; }
+.reference-home .reference-footer { background: var(--rh-paper); border-color: var(--rh-line); }
+.reference-home .reference-footer-links a { color: var(--rh-muted); }
+.reference-home .reference-footer-links a:hover { color: var(--rh-brand); }
+.reference-home .reference-text-link,
+.reference-home .reference-footer-links b { color: var(--rh-brand); }
+.reference-home .reference-window-top,
+.reference-home .reference-window-body { background: var(--rh-paper); border-color: var(--rh-line); }
+.reference-home .reference-window-top { color: var(--rh-muted); }
+.reference-home .reference-product-window { border-color: var(--rh-line-strong); box-shadow: var(--theme-shadow-lg); }
+.reference-home .reference-window-category,
+.reference-home .reference-mini-card { background: var(--rh-soft); border-color: var(--rh-line); color: var(--rh-ink); }
+.reference-home .reference-window-category:hover { border-color: var(--rh-brand); background: var(--rh-mint); }
+.reference-home :is(.reference-hero h1 span, .reference-kicker, .reference-window-heading strong) { color: var(--rh-brand); }
+.reference-home :is(.reference-hero h1, .reference-section-heading h2, .reference-about h2, .reference-business h2, .reference-final-card h2, .reference-window-heading strong, .reference-ecosystem-card h3, .reference-principles h3) { color: var(--rh-ink); }
+.reference-home .reference-primary-button,
+.reference-home .reference-header-cta { background: var(--rh-brand); box-shadow: var(--theme-shadow-sm); }
+.reference-home .reference-primary-button:hover,
+.reference-home .reference-header-cta:hover { background: var(--rh-brand-dark); box-shadow: var(--theme-shadow-md); }
+.reference-home .reference-light-button { background: var(--theme-surface); color: var(--rh-brand-dark); }
+.reference-home :is(a, button):focus-visible { outline-color: var(--theme-focus); }
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme]) .reference-home { color-scheme: dark; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .reference-home * { transition-duration: .01ms !important; }
+}
