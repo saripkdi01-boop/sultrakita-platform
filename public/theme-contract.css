@@ -1,4 +1,9 @@
-/* SUKI global theme contract: every surface and foreground follows the active theme. */
+/* ============================================================
+   SUKI — Kontrak tema global
+   Perbaikan: mode gelap tetap hijau (bukan biru), primary
+   disatukan dengan --sk-* (#0a7d6a), kontras WCAG AA.
+   ============================================================ */
+
 :root, html[data-theme='light'] {
   color-scheme: light;
   --theme-bg: #f6f8f7;
@@ -10,25 +15,27 @@
   --theme-text-muted: #53645f;
   --theme-text-subtle: #6f817b;
   --theme-border: #d5e1dc;
-  --theme-primary: #087f70;
+  --theme-primary: #0a7d6a;
   --theme-primary-soft: #e1f2ed;
-  --theme-focus: rgba(8, 127, 112, .42);
+  --theme-focus: rgba(10, 125, 106, .42);
 }
+
 html[data-theme='dark'], body.dark {
   color-scheme: dark;
-  --theme-bg: #0b1220;
-  --theme-surface: #111b2e;
-  --theme-surface-raised: #172640;
-  --theme-surface-muted: #203451;
-  --theme-text: #eaf2ff;
-  --theme-text-strong: #f8fbff;
-  --theme-text-muted: #b6c5da;
-  --theme-text-subtle: #91a5c2;
-  --theme-border: #354765;
-  --theme-primary: #8ec5ff;
-  --theme-primary-soft: #1d3558;
-  --theme-focus: rgba(142, 197, 255, .62);
+  --theme-bg: #0a1410;
+  --theme-surface: #0f1c17;
+  --theme-surface-raised: #15281f;
+  --theme-surface-muted: #1c2e25;
+  --theme-text: #eaf5ef;
+  --theme-text-strong: #f8fcf9;
+  --theme-text-muted: #a8c4b8;
+  --theme-text-subtle: #88a098;
+  --theme-border: #2a3d34;
+  --theme-primary: #5fd9c2;
+  --theme-primary-soft: #1c3d36;
+  --theme-focus: rgba(95, 217, 194, .5);
 }
+
 html, body { background: var(--theme-bg); color: var(--theme-text); }
 body, body * { border-color: var(--theme-border); }
 :where(main, header, footer, nav, aside, section, article, form, dialog, .card, .panel, .settings-card, .modal, .modal-card, .drawer, .drop, .workspace, .result, .runs, .legal-main, .legal-content, .seller-card, .prod-card, .property-card) {
@@ -64,8 +71,8 @@ body, body * { border-color: var(--theme-border); }
 :where(.theme-indicator span, .theme-switch, .theme-toggle) { color: var(--theme-primary); }
 :where(button, a, input, textarea, select):focus-visible { outline: 3px solid var(--theme-focus) !important; outline-offset: 2px; }
 html[data-theme='dark'] .theme-indicator span, html[data-theme='dark'] .theme-switch { border-color: var(--theme-primary); }
-html[data-theme='dark'] .legal-topbar { background: rgba(17, 27, 46, .94) !important; }
-html[data-theme='dark'] .legal-hero { background: linear-gradient(135deg, #172f53, #111b2e) !important; }
+html[data-theme='dark'] .legal-topbar { background: rgba(15, 28, 23, .94) !important; }
+html[data-theme='dark'] .legal-hero { background: linear-gradient(135deg, #15281f, #0f1c17) !important; }
 html[data-theme='dark'] .legal-content h2, html[data-theme='dark'] .legal-content h3 { color: var(--theme-text-strong) !important; }
 html[data-theme='dark'] .legal-callout { background: var(--theme-primary-soft) !important; border-left-color: var(--theme-primary); }
 html[data-theme='dark'] .promo-body, html[data-theme='dark'] .referral-body { background: var(--theme-bg) !important; }

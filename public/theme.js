@@ -5,7 +5,7 @@
     document.documentElement.dataset.theme = dark ? 'dark' : 'light';
     document.documentElement.classList.toggle('theme-dark-preload', dark);
     localStorage.setItem('sultra-dark', String(dark));
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#10231f' : '#0d5c4b');
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#0f1c17' : '#f6f8f7');
     document.querySelectorAll('.theme-toggle').forEach(button => {
       button.textContent = dark ? '☀' : '◐';
       button.setAttribute('aria-label', dark ? 'Aktifkan mode terang' : 'Aktifkan mode gelap');
