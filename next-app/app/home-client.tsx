@@ -1,298 +1,282 @@
- 'use client';
+'use client';
 
 import Link from 'next/link';
 import {
   ArrowRight,
   BriefcaseBusiness,
   Building2,
+  Check,
   ChevronRight,
-  CircleCheck,
   Compass,
-  HeartHandshake,
+  MapPin,
   Menu,
-  MessageCircle,
   Search,
+  ShieldCheck,
   ShoppingBag,
   Sparkles,
+  Store,
   Users,
   X,
-  ShieldCheck,
-  MapPin,
-  Store,
-  Handshake,
 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
-import type { CSSProperties, ReactNode } from 'react';
+import { useState } from 'react';
+import type { FormEvent } from 'react';
 
-const products = [
+const ecosystem = [
   {
     icon: ShoppingBag,
-    tone: 'mint',
-    kicker: 'Marketplace',
-    title: 'Produk lokal',
-    text: 'Temukan kebutuhan sehari-hari sekaligus beri ruang lebih besar untuk usaha lokal.',
+    label: 'Marketplace',
+    title: 'Belanja lokal',
+    text: 'Temukan produk dan layanan dari pelaku usaha di Sulawesi Tenggara.',
     href: '/marketplace',
+    tone: 'mint',
   },
   {
     icon: Building2,
-    tone: 'sand',
-    kicker: 'Properti',
+    label: 'Properti',
     title: 'Ruang & properti',
-    text: 'Jelajahi rumah, ruang, dan peluang properti untuk kebutuhan berikutnya.',
+    text: 'Cari rumah, tanah, ruang usaha, dan peluang properti di sekitar Anda.',
     href: '/properti',
+    tone: 'sand',
   },
   {
     icon: BriefcaseBusiness,
-    tone: 'blue',
-    kicker: 'Peluang',
+    label: 'Peluang',
     title: 'Kerja & karier',
-    text: 'Temukan peluang kerja dan buka koneksi baru dengan talenta di sekitar Anda.',
+    text: 'Jelajahi lowongan dan peluang kolaborasi dengan talenta lokal.',
     href: '/jobs',
+    tone: 'blue',
   },
   {
     icon: Users,
-    tone: 'coral',
-    kicker: 'Komunitas',
+    label: 'Komunitas',
     title: 'Ruang warga',
-    text: 'Ikuti percakapan, berbagi cerita, dan bangun jejaring yang terasa lebih dekat.',
+    text: 'Berbagi cerita, berdiskusi, dan terhubung dengan komunitas sekitar.',
     href: '/groups',
+    tone: 'peach',
   },
 ];
 
-const actions = [
+const quickLinks = [
   { icon: ShoppingBag, label: 'Belanja lokal', href: '/marketplace' },
   { icon: Building2, label: 'Cari properti', href: '/properti' },
   { icon: BriefcaseBusiness, label: 'Cari pekerjaan', href: '/jobs' },
   { icon: Users, label: 'Gabung komunitas', href: '/groups' },
-  { icon: Store, label: 'Kembangkan bisnis', href: '/Business' },
+  { icon: Store, label: 'Untuk bisnis', href: '/Business' },
 ];
 
-const steps = [
-  ['01', 'Temukan', 'Cari produk, ruang, peluang, dan komunitas dari satu titik masuk.'],
-  ['02', 'Terhubung', 'Lanjutkan ke ruang yang tepat untuk berinteraksi dan membangun koneksi.'],
-  ['03', 'Bertumbuh', 'Hadirkan usaha, karya, peluang, atau kontribusi Anda ke ekosistem lokal.'],
+const principles = [
+  ['01', 'Dekat dengan kebutuhan', 'Mulai dari hal yang memang dicari warga setiap hari.'],
+  ['02', 'Satu ruang yang terhubung', 'Pindah dari menemukan ke berinteraksi tanpa kehilangan konteks.'],
+  ['03', 'Dibangun untuk bertumbuh', 'Ruang yang sama dapat berkembang bersama warga dan pelaku usaha.'],
 ];
-
-function Reveal({ children, className = '', delay = 0 }: { children: ReactNode; className?: string; delay?: number }) {
-  return <div className={`reveal ${className}`} style={{ '--reveal-delay': `${delay}ms` } as CSSProperties}>{children}</div>;
-}
 
 export default function HomeClient() {
-  const [announcement, setAnnouncement] = useState(true);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [search, setSearch] = useState('');
-  const [activeAction, setActiveAction] = useState(0);
-  const heroRef = useRef<HTMLElement>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [query, setQuery] = useState('');
 
-  useEffect(() => {
-    const nodes = document.querySelectorAll('.reveal');
-    const observer = new IntersectionObserver(
-      entries => entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('is-visible');
-          observer.unobserve(entry.target);
-        }
-      }),
-      { threshold: 0.12, rootMargin: '0px 0px -40px' }
-    );
-    nodes.forEach(node => observer.observe(node));
-    return () => observer.disconnect();
-  }, []);
+  function closeMenu() {
+    setMenuOpen(false);
+  }
 
-  useEffect(() => {
-    const onScroll = () => document.documentElement.style.setProperty('--scroll-y', `${window.scrollY}`);
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
-  const closeMenu = () => setMobileOpen(false);
+  function submitSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const value = query.trim();
+    window.location.href = value ? `/beranda?search=${encodeURIComponent(value)}` : '/beranda';
+  }
 
   return (
-    <main className="marketing-shell"><a className="skip-link" href="#konten-utama">Lewati ke konten utama</a>
-      {announcement && (
-        <div className="announcement" role="status">
-          <div><Sparkles size={14} aria-hidden="true" /><span><strong>SUKI Apps</strong> — satu ruang digital untuk peluang dan kebutuhan lokal Sultra.</span></div>
-          <button onClick={() => setAnnouncement(false)} aria-label="Tutup pengumuman"><X size={16} /></button>
+    <main className="reference-home">
+      <a className="skip-link" href="#main-content">Lewati ke konten utama</a>
+
+      <div className="reference-topbar">
+        <div className="reference-container reference-topbar-inner">
+          <span><Sparkles size={13} aria-hidden="true" /> Ekosistem digital Sulawesi Tenggara</span>
+          <Link href="/help-center">Pusat bantuan <ArrowRight size={13} /></Link>
         </div>
-      )}
+      </div>
 
-      <header className={`marketing-nav ${mobileOpen ? 'nav-open' : ''}`}>
-        <Link href="/" className="marketing-brand" aria-label="SUKI Apps beranda" onClick={closeMenu}>
-          <span className="marketing-brand-mark"><img src="/brand/suki-logo-mark.svg" alt="" /></span>
-          <span><strong>SUKI Apps</strong><small>by SULTRAKITA</small></span>
-        </Link>
+      <header className={`reference-header ${menuOpen ? 'is-open' : ''}`}>
+        <div className="reference-container reference-header-inner">
+          <Link href="/" className="reference-brand" aria-label="SUKI Apps beranda" onClick={closeMenu}>
+            <span className="reference-brand-mark"><img src="/brand/suki-logo-mark.svg" alt="" /></span>
+            <span className="reference-brand-copy"><strong>SUKI Apps</strong><small>by SULTRAKITA</small></span>
+          </Link>
 
-        <nav className="marketing-links" aria-label="Navigasi utama">
-          <a href="#ekosistem" onClick={closeMenu}>Ekosistem</a>
-          <a href="#cara-kerja" onClick={closeMenu}>Cara kerja</a>
-          <a href="#lokal" onClick={closeMenu}>Tentang SUKI</a>
-          <Link href="/Business" onClick={closeMenu}>Untuk bisnis</Link>
-        </nav>
+          <nav className="reference-nav" aria-label="Navigasi utama">
+            <a href="#ekosistem" onClick={closeMenu}>Ekosistem</a>
+            <a href="#cara-kerja" onClick={closeMenu}>Cara kerja</a>
+            <a href="#tentang" onClick={closeMenu}>Tentang</a>
+            <Link href="/Business" onClick={closeMenu}>Untuk bisnis</Link>
+          </nav>
 
-        <div className="marketing-nav-actions">
-          <Link href="/login" className="marketing-login">Masuk</Link>
-          <Link href="/beranda" className="marketing-nav-cta">Jelajahi SUKI <ArrowRight size={15} /></Link>
+          <div className="reference-header-actions">
+            <Link href="/login" className="reference-login">Masuk</Link>
+            <Link href="/beranda" className="reference-header-cta">Buka SUKI <ArrowRight size={15} /></Link>
+          </div>
+
+          <button className="reference-menu-button" type="button" aria-label={menuOpen ? 'Tutup menu' : 'Buka menu'} aria-expanded={menuOpen} onClick={() => setMenuOpen(value => !value)}>
+            {menuOpen ? <X size={21} /> : <Menu size={21} />}
+          </button>
         </div>
-
-        <button className="mobile-nav-toggle" aria-label={mobileOpen ? 'Tutup menu' : 'Buka menu'} aria-expanded={mobileOpen} onClick={() => setMobileOpen(value => !value)}>
-          {mobileOpen ? <X size={22} /> : <Menu size={22} />}
-        </button>
       </header>
 
-      <section id="konten-utama" className="marketing-hero" aria-labelledby="hero-title" ref={heroRef}>
-        <div className="hero-glow hero-glow-one" aria-hidden="true" />
-        <div className="hero-glow hero-glow-two" aria-hidden="true" />
-        <div className="marketing-hero-copy">
-          <Reveal>
-            <p className="marketing-eyebrow"><span className="eyebrow-dot" /> Ekosistem digital Sulawesi Tenggara</p>
-          </Reveal>
-          <Reveal delay={70}>
-            <h1 id="hero-title">Yang dekat, jadi lebih <em>mudah ditemukan.</em></h1>
-          </Reveal>
-          <Reveal delay={130}>
-            <p className="marketing-hero-lede">SUKI Apps menyatukan produk lokal, properti, peluang kerja, komunitas, dan layanan bisnis dalam satu ruang digital yang terasa dekat dengan Sultra.</p>
-          </Reveal>
-          <Reveal delay={190}>
-            <div className="marketing-hero-actions">
-              <Link href="/beranda" className="marketing-button marketing-button-primary">Mulai menjelajah <ArrowRight size={17} /></Link>
-              <Link href="/Business" className="marketing-button marketing-button-secondary">Saya punya bisnis <BriefcaseBusiness size={16} /></Link>
+      <section id="main-content" className="reference-hero">
+        <div className="reference-container reference-hero-grid">
+          <div className="reference-hero-copy">
+            <div className="reference-pill"><span className="reference-status-dot" /> Dibuat untuk Sulawesi Tenggara</div>
+            <h1>Temukan yang dekat. <span>Bangun yang berarti.</span></h1>
+            <p>SUKI Apps menghubungkan produk lokal, properti, peluang kerja, komunitas, dan bisnis dalam satu pengalaman digital yang sederhana.</p>
+
+            <div className="reference-hero-actions">
+              <Link href="/beranda" className="reference-primary-button">Mulai menjelajah <ArrowRight size={17} /></Link>
+              <Link href="/Business" className="reference-secondary-button">Saya punya bisnis <BriefcaseBusiness size={16} /></Link>
             </div>
-          </Reveal>
-          <Reveal delay={250}>
-            <div className="marketing-proof-line"><CircleCheck size={16} /> Dirancang untuk warga, pelaku usaha, dan mitra lokal</div>
-          </Reveal>
-        </div>
 
-        <Reveal className="marketing-hero-visual" delay={150}>
-          <div className="hero-orbit hero-orbit-a" aria-hidden="true" />
-          <div className="hero-orbit hero-orbit-b" aria-hidden="true" />
-          <div className="hero-node node-one"><ShoppingBag size={15} /><span>Marketplace</span></div>
-          <div className="hero-node node-two"><Users size={15} /><span>Komunitas</span></div>
-          <div className="hero-node node-three"><BriefcaseBusiness size={15} /><span>Peluang</span></div>
-          <div className="hero-visual-label"><Sparkles size={14} /> Satu ekosistem, banyak langkah</div>
-          <div className="hero-card hero-card-main">
-            <div className="hero-card-top"><span className="hero-card-icon"><Compass size={18} /></span><span>Ruang lokal</span><span className="hero-card-live"><i /> Aktif</span></div>
-            <strong>Temukan yang dekat denganmu.</strong>
-            <p>Produk, properti, peluang, dan cerita warga dalam satu ruang.</p>
-            <label className="hero-search"><Search size={15} /><input aria-label="Pratinjau pencarian SUKI" value={search} onChange={event => setSearch(event.target.value)} placeholder="Cari produk, lokasi, atau peluang" /></label>
-            {search && <span className="search-hint">Pratinjau pencarian: <b>{search}</b></span>}
+            <div className="reference-trust-row">
+              <span><Check size={14} /> Lokal-first</span>
+              <span><Check size={14} /> Mudah digunakan</span>
+              <span><Check size={14} /> Terus berkembang</span>
+            </div>
           </div>
-          <div className="hero-card hero-card-float hero-card-community"><span className="mini-avatar">SU</span><div><b>Komunitas</b><small>Ruang untuk terhubung</small></div><MessageCircle size={16} /></div>
-          <div className="hero-card hero-card-float hero-card-business"><HeartHandshake size={16} /><div><b>Untuk bisnis</b><small>Bangun eksistensi lokal</small></div></div>
-        </Reveal>
-      </section>
 
-      <section className="quick-access" aria-label="Akses cepat">
-        <div className="quick-access-label"><span>Akses cepat</span><small>Mulai dari kebutuhan Anda</small></div>
-        <div className="quick-access-list">
-          {actions.map((action, index) => {
-            const Icon = action.icon;
-            return <Link href={action.href} className={`quick-action ${activeAction === index ? 'active' : ''}`} key={action.label} onMouseEnter={() => setActiveAction(index)} onFocus={() => setActiveAction(index)}>
-              <span><Icon size={17} /></span>{action.label}<ChevronRight size={14} />
-            </Link>;
-          })}
-        </div>
-      </section>
+          <div className="reference-hero-product" aria-label="Pratinjau pengalaman SUKI Apps">
+            <div className="reference-product-window">
+              <div className="reference-window-top">
+                <div className="reference-window-brand"><span className="reference-mini-mark">S</span><strong>SUKI</strong></div>
+                <div className="reference-window-location"><MapPin size={12} /> Kendari, Sultra <ChevronRight size={12} /></div>
+                <div className="reference-window-dots"><i /><i /><i /></div>
+              </div>
 
-      <section className="marketing-section marketing-promise" id="cara-kerja">
-        <div className="section-intro-grid">
-          <Reveal>
-            <p className="marketing-eyebrow">Lebih dari sekadar marketplace</p>
-            <h2>Hal-hal lokal yang penting, dibuat lebih mudah ditemukan.</h2>
-          </Reveal>
-          <Reveal delay={100}>
-            <p className="marketing-section-intro">Dari kebutuhan sehari-hari sampai peluang baru, SUKI menyatukan beberapa ruang digital agar perjalanan Anda tidak perlu dimulai dari tempat yang berbeda-beda.</p>
-          </Reveal>
-        </div>
-        <div className="promise-grid">
-          {steps.map(([number, title, text], index) => <Reveal delay={index * 70} key={number}><article className="promise-card"><span className="promise-number">{number}</span><div><h3>{title}</h3><p>{text}</p></div><ArrowRight size={17} /></article></Reveal>)}
-        </div>
-      </section>
+              <div className="reference-window-body">
+                <div className="reference-window-heading">
+                  <div><small>RUANG LOKAL</small><strong>Temukan yang dekat.</strong></div>
+                  <span className="reference-live"><i /> Aktif</span>
+                </div>
 
-      <section className="marketing-section ecosystem-section" id="ekosistem">
-        <Reveal>
-          <div className="marketing-section-heading split-heading">
-            <div><p className="marketing-eyebrow">Ekosistem SUKI</p><h2>Satu tempat untuk banyak kemungkinan.</h2></div>
-            <Link href="/beranda" className="marketing-text-link">Buka aplikasi <ArrowRight size={15} /></Link>
+                <form className="reference-search" onSubmit={submitSearch} role="search">
+                  <Search size={17} aria-hidden="true" />
+                  <input value={query} onChange={event => setQuery(event.target.value)} placeholder="Cari produk, properti, pekerjaan..." aria-label="Cari di SUKI Apps" />
+                  <button type="submit">Cari</button>
+                </form>
+
+                <div className="reference-window-categories">
+                  <span><ShoppingBag size={14} /> Produk</span>
+                  <span><Building2 size={14} /> Properti</span>
+                  <span><BriefcaseBusiness size={14} /> Kerja</span>
+                  <span><Users size={14} /> Komunitas</span>
+                </div>
+
+                <div className="reference-window-bento">
+                  <div className="reference-mini-card reference-mini-card-main">
+                    <div><small>Pilihan lokal</small><strong>Jelajahi kebutuhanmu</strong></div>
+                    <span><Compass size={17} /></span>
+                  </div>
+                  <div className="reference-mini-card reference-mini-card-small"><small>Bisnis lokal</small><strong>Siap ditemukan</strong><Store size={16} /></div>
+                  <div className="reference-mini-card reference-mini-card-small"><small>Komunitas</small><strong>Terhubung</strong><Users size={16} /></div>
+                </div>
+              </div>
+            </div>
+            <div className="reference-floating-card reference-floating-one"><span><ShieldCheck size={16} /></span><div><strong>Lebih terpercaya</strong><small>Informasi dibuat jelas</small></div></div>
+            <div className="reference-floating-card reference-floating-two"><span><MapPin size={16} /></span><div><strong>Fokus lokal</strong><small>Mulai dari Sultra</small></div></div>
           </div>
-        </Reveal>
-        <div className="product-grid">
-          {products.map((product, index) => {
-            const Icon = product.icon;
-            return <Reveal delay={index * 65} key={product.title}><Link href={product.href} className={`product-card product-${product.tone}`}>
-              <div className="product-card-top"><span className="product-icon"><Icon size={20} /></span><span className="product-kicker">{product.kicker}</span></div>
-              <h3>{product.title}</h3><p>{product.text}</p>
-              <span className="product-link">Jelajahi <ChevronRight size={15} /></span>
-            </Link></Reveal>;
-          })}
         </div>
       </section>
 
-      <section className="discovery-panel" id="lokal">
-        <Reveal className="discovery-copy">
-          <p className="marketing-eyebrow">Dari Sultra, untuk Sultra</p>
-          <h2>Teknologi yang tetap terasa manusiawi.</h2>
-          <p>SUKI dibangun untuk membuat hal-hal yang dekat menjadi lebih mudah diakses—tanpa menghilangkan konteks, percakapan, dan hubungan yang membuat ekosistem lokal hidup.</p>
-          <div className="discovery-points">
-            <span><MapPin size={15} /> Konteks lokal</span>
-            <span><ShieldCheck size={15} /> Pengalaman yang lebih terpercaya</span>
-            <span><Handshake size={15} /> Ruang untuk kolaborasi</span>
+      <section className="reference-quick-access" aria-label="Akses cepat">
+        <div className="reference-container reference-quick-inner">
+          <div className="reference-quick-heading"><strong>Mulai dari sini</strong><span>Apa yang sedang Anda cari?</span></div>
+          <div className="reference-quick-list">
+            {quickLinks.map(item => {
+              const Icon = item.icon;
+              return <Link key={item.label} href={item.href} className="reference-quick-item"><span><Icon size={16} /></span>{item.label}<ChevronRight size={14} /></Link>;
+            })}
           </div>
-          <Link href="/help-center" className="marketing-text-link">Kenali SUKI lebih lanjut <ArrowRight size={15} /></Link>
-        </Reveal>
-        <Reveal className="discovery-visual" delay={120}>
-          <div className="discovery-map" aria-hidden="true">
-            <span className="map-ring ring-one" /><span className="map-ring ring-two" /><span className="map-ring ring-three" />
-            <span className="map-pin pin-one"><i /></span><span className="map-pin pin-two"><i /></span><span className="map-pin pin-three"><i /></span>
-            <div className="map-core"><img src="/brand/suki-logo-mark.svg" alt="" /><b>SULTRA</b><small>local ecosystem</small></div>
+        </div>
+      </section>
+
+      <section className="reference-section" id="ekosistem">
+        <div className="reference-container">
+          <div className="reference-section-heading">
+            <div><div className="reference-kicker">EKOSISTEM SUKI</div><h2>Satu tempat untuk banyak kemungkinan.</h2></div>
+            <Link href="/beranda" className="reference-text-link">Lihat semua <ArrowRight size={15} /></Link>
           </div>
-          <div className="discovery-chip chip-a"><ShoppingBag size={14} /> Produk</div>
-          <div className="discovery-chip chip-b"><Building2 size={14} /> Ruang</div>
-          <div className="discovery-chip chip-c"><Users size={14} /> Warga</div>
-        </Reveal>
-      </section>
-
-      <section className="business-banner">
-        <Reveal className="business-banner-copy">
-          <p className="marketing-eyebrow">Untuk seller, partner, dan organisasi</p>
-          <h2>Bisnis lokal punya cerita. Mari beri ruang untuk tumbuh.</h2>
-          <p>Bangun eksistensi, hadirkan penawaran, atau mulai kolaborasi di ekosistem yang memahami konteks Sulawesi Tenggara.</p>
-        </Reveal>
-        <Reveal delay={100}><Link href="/Business" className="marketing-button marketing-button-light">Masuk ke SUKI Business <ArrowRight size={17} /></Link></Reveal>
-      </section>
-
-      <section className="trust-section">
-        <Reveal>
-          <div className="trust-heading"><p className="marketing-eyebrow">Kepercayaan dibangun dari detail</p><h2>Jelas sebelum Anda melangkah.</h2><p>Pengalaman SUKI diarahkan agar informasi, tujuan, dan aksi terasa mudah dipahami sejak awal.</p></div>
-        </Reveal>
-        <div className="trust-grid">
-          {[
-            ['01', 'Jalur yang jelas', 'CTA mengarah ke ruang produk yang nyata, bukan sekadar ajakan.'],
-            ['02', 'Bahasa yang dekat', 'Copy dibuat ringkas agar konteks tetap terasa tanpa jargon berlebihan.'],
-            ['03', 'Siap berkembang', 'Struktur homepage dibuat modular agar data real dapat dihubungkan bertahap.'],
-          ].map(([n, title, text], index) => <Reveal delay={index * 70} key={n}><article><span>{n}</span><h3>{title}</h3><p>{text}</p></article></Reveal>)}
+          <div className="reference-ecosystem-grid">
+            {ecosystem.map(item => {
+              const Icon = item.icon;
+              return <Link key={item.title} href={item.href} className={`reference-ecosystem-card tone-${item.tone}`}>
+                <div className="reference-card-icon"><Icon size={20} /></div>
+                <div className="reference-card-kicker">{item.label}</div>
+                <h3>{item.title}</h3>
+                <p>{item.text}</p>
+                <span>Jelajahi <ArrowRight size={14} /></span>
+              </Link>;
+            })}
+          </div>
         </div>
       </section>
 
-      <section className="marketing-final-cta">
-        <Reveal>
-          <p className="marketing-eyebrow">Langkah berikutnya dimulai di sini</p>
-          <h2>Temukan ruang Anda di SUKI Apps.</h2>
-          <p>Jelajahi ekosistem digital yang dekat dengan kebutuhan dan peluang di sekitar Anda.</p>
-          <Link href="/beranda" className="marketing-button marketing-button-primary">Jelajahi SUKI Apps <ArrowRight size={17} /></Link>
-        </Reveal>
+      <section className="reference-section reference-process" id="cara-kerja">
+        <div className="reference-container">
+          <div className="reference-section-heading">
+            <div><div className="reference-kicker">CARA KERJA</div><h2>Sederhana dari awal sampai selesai.</h2></div>
+            <p>Jangan membuat pengguna berpikir terlalu keras. SUKI membantu mereka bergerak dari kebutuhan ke aksi dengan jalur yang jelas.</p>
+          </div>
+          <div className="reference-principles">
+            {principles.map(([number, title, text]) => <article key={number}>
+              <span className="reference-principle-number">{number}</span>
+              <div><h3>{title}</h3><p>{text}</p></div>
+              <ArrowRight size={17} />
+            </article>)}
+          </div>
+        </div>
       </section>
 
-      <footer className="marketing-footer">
-        <div className="footer-main">
-          <div className="marketing-brand footer-brand"><span className="marketing-brand-mark"><img src="/brand/suki-logo-mark.svg" alt="" /></span><span><strong>SUKI Apps</strong><small>by SULTRAKITA</small></span></div>
-          <p>Ekosistem digital yang menghubungkan kebutuhan, peluang, dan jejaring lokal Sulawesi Tenggara.</p>
+      <section className="reference-about" id="tentang">
+        <div className="reference-container reference-about-grid">
+          <div>
+            <div className="reference-kicker">DARI SULTRA, UNTUK SULTRA</div>
+            <h2>Teknologi yang tetap terasa manusiawi.</h2>
+            <p>SUKI dibuat untuk membantu hal-hal yang dekat menjadi lebih mudah ditemukan, dipahami, dan dikembangkan. Bukan hanya tempat melihat listing, tetapi ruang yang menghubungkan orang, kebutuhan, dan peluang.</p>
+            <div className="reference-about-points"><span><Check size={14} /> Konteks lokal</span><span><Check size={14} /> Pengalaman yang jelas</span><span><Check size={14} /> Ruang untuk bertumbuh</span></div>
+            <Link href="/help-center" className="reference-text-link">Kenali SUKI lebih lanjut <ArrowRight size={15} /></Link>
+          </div>
+          <div className="reference-about-card">
+            <div className="reference-about-logo"><img src="/brand/suki-logo-mark.svg" alt="" /></div>
+            <small>LOCAL DIGITAL ECOSYSTEM</small>
+            <strong>Temukan.<br />Terhubung.<br /><em>Bertumbuh.</em></strong>
+            <div className="reference-about-map"><i /><i /><i /><span><MapPin size={18} /></span></div>
+          </div>
         </div>
-        <div className="footer-links">
-          <div><b>Jelajahi</b><Link href="/beranda">Beranda aplikasi</Link><Link href="/marketplace">Marketplace</Link><Link href="/properti">Properti</Link><Link href="/jobs">Jobs</Link></div>
-          <div><b>Terhubung</b><Link href="/groups">Komunitas</Link><Link href="/Business">Untuk bisnis</Link><Link href="/help-center">Panduan</Link><Link href="/legal/privacy">Privasi</Link></div>
+      </section>
+
+      <section className="reference-business">
+        <div className="reference-container reference-business-inner">
+          <div><div className="reference-kicker">UNTUK SELLER & MITRA</div><h2>Bisnis lokal punya cerita. Beri ruang untuk tumbuh.</h2><p>Bangun eksistensi, hadirkan penawaran, dan temukan koneksi baru melalui ekosistem yang memahami konteks Sulawesi Tenggara.</p></div>
+          <Link href="/Business" className="reference-light-button">Masuk ke SUKI Business <ArrowRight size={17} /></Link>
         </div>
-        <div className="footer-bottom"><span>© 2026 SUKI Apps · Sulawesi Tenggara</span><span>Dirancang untuk tumbuh bersama ekosistem lokal.</span></div>
+      </section>
+
+      <section className="reference-final-cta">
+        <div className="reference-container">
+          <div className="reference-final-card">
+            <div><div className="reference-kicker">LANGKAH BERIKUTNYA</div><h2>Temukan ruang Anda di SUKI Apps.</h2><p>Mulai dari kebutuhan yang paling dekat dengan Anda hari ini.</p></div>
+            <Link href="/beranda" className="reference-primary-button">Buka SUKI Apps <ArrowRight size={17} /></Link>
+          </div>
+        </div>
+      </section>
+
+      <footer className="reference-footer">
+        <div className="reference-container">
+          <div className="reference-footer-main">
+            <div className="reference-brand"><span className="reference-brand-mark"><img src="/brand/suki-logo-mark.svg" alt="" /></span><span className="reference-brand-copy"><strong>SUKI Apps</strong><small>by SULTRAKITA</small></span></div>
+            <p>Ekosistem digital yang menghubungkan kebutuhan, peluang, dan jejaring lokal Sulawesi Tenggara.</p>
+          </div>
+          <div className="reference-footer-links">
+            <div><b>Jelajahi</b><Link href="/beranda">Beranda</Link><Link href="/marketplace">Marketplace</Link><Link href="/properti">Properti</Link><Link href="/jobs">Jobs</Link></div>
+            <div><b>Terhubung</b><Link href="/groups">Komunitas</Link><Link href="/Business">Untuk bisnis</Link><Link href="/help-center">Panduan</Link><Link href="/legal/privacy">Privasi</Link></div>
+          </div>
+          <div className="reference-footer-bottom"><span>© 2026 SUKI Apps · Sulawesi Tenggara</span><span>Dibangun untuk tumbuh bersama ekosistem lokal.</span></div>
+        </div>
       </footer>
     </main>
   );
