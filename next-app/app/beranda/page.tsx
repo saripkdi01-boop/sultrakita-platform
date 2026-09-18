@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Compass, LoaderCircle, RefreshCw, Sparkles } from 'lucide-react';
+import { ArrowRight, BriefcaseBusiness, Compass, Home, LoaderCircle, MapPin, RefreshCw, Search, ShoppingBag, Sparkles, UsersRound } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { CreatePostInput } from '@/components/beranda/CreatePostInput';
 import { CreatePostModal } from '@/components/beranda/CreatePostModal';
@@ -24,6 +24,24 @@ export default function BerandaPage() {
   return <AppLayout active="home" onCreate={openComposer}>
     <main className="beranda-shell">
       <div className="beranda-main">
+        <section className="beranda-discovery-hero" aria-labelledby="beranda-welcome-title">
+          <div className="beranda-hero-glow" aria-hidden="true" />
+          <div className="beranda-hero-copy">
+            <span className="beranda-eyebrow"><MapPin size={13}/> Sulawesi Tenggara, hari ini</span>
+            <h1 id="beranda-welcome-title">Temukan cerita, peluang, dan orang-orang di sekitar Anda.</h1>
+            <p>Satu ruang untuk berbagi kabar lokal, menemukan produk terbaik, dan membuka peluang baru bersama SUKI.</p>
+            <form className="beranda-discovery-search" onSubmit={(event) => { event.preventDefault(); const query = new FormData(event.currentTarget).get('q'); if (typeof query === 'string' && query.trim()) window.location.href = `/marketplace?search=${encodeURIComponent(query.trim())}`; }}>
+              <Search size={18} aria-hidden="true"/><input name="q" placeholder="Cari produk, komunitas, atau peluang…" aria-label="Cari di SUKI"/><button type="submit">Cari</button>
+            </form>
+          </div>
+          <div className="beranda-hero-orbit" aria-hidden="true"><span>Komunitas</span><span>Marketplace</span><span>Peluang</span><strong>SUKI</strong></div>
+        </section>
+        <section className="beranda-intent-grid" aria-label="Jelajahi SUKI">
+          <a href="/marketplace"><span className="intent-icon intent-market"><ShoppingBag size={18}/></span><span><strong>Belanja lokal</strong><small>Produk pilihan Sultra</small></span><ArrowRight size={16}/></a>
+          <a href="/groups"><span className="intent-icon intent-community"><UsersRound size={18}/></span><span><strong>Gabung komunitas</strong><small>Temukan warga sepemikiran</small></span><ArrowRight size={16}/></a>
+          <a href="/jobs"><span className="intent-icon intent-work"><BriefcaseBusiness size={18}/></span><span><strong>Cari peluang</strong><small>Kerja, bisnis, dan kolaborasi</small></span><ArrowRight size={16}/></a>
+          <a href="/properti"><span className="intent-icon intent-property"><Home size={18}/></span><span><strong>Jelajahi properti</strong><small>Hunian di Sulawesi Tenggara</small></span><ArrowRight size={16}/></a>
+        </section>
         <CreatePostInput onCreate={openComposer}/>
         {notice && <div className="beranda-notice" role="status"><span>{notice}</span><button type="button" onClick={() => setNotice('')}>Tutup</button></div>}
         {error && <div className="feed-state feed-error" role="alert"><span>{error}</span><button type="button" onClick={reload}><RefreshCw size={15}/> Coba lagi</button></div>}
