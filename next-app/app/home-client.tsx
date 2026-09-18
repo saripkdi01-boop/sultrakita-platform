@@ -108,7 +108,7 @@ export default function HomeClient() {
   const closeMenu = () => setMobileOpen(false);
 
   return (
-    <main className="marketing-shell">
+    <main className="marketing-shell"><a className="skip-link" href="#konten-utama">Lewati ke konten utama</a>
       {announcement && (
         <div className="announcement" role="status">
           <div><Sparkles size={14} aria-hidden="true" /><span><strong>SUKI Apps</strong> — satu ruang digital untuk peluang dan kebutuhan lokal Sultra.</span></div>
@@ -139,7 +139,7 @@ export default function HomeClient() {
         </button>
       </header>
 
-      <section className="marketing-hero" aria-labelledby="hero-title" ref={heroRef}>
+      <section id="konten-utama" className="marketing-hero" aria-labelledby="hero-title" ref={heroRef}>
         <div className="hero-glow hero-glow-one" aria-hidden="true" />
         <div className="hero-glow hero-glow-two" aria-hidden="true" />
         <div className="marketing-hero-copy">
@@ -174,7 +174,7 @@ export default function HomeClient() {
             <div className="hero-card-top"><span className="hero-card-icon"><Compass size={18} /></span><span>Ruang lokal</span><span className="hero-card-live"><i /> Aktif</span></div>
             <strong>Temukan yang dekat denganmu.</strong>
             <p>Produk, properti, peluang, dan cerita warga dalam satu ruang.</p>
-            <label className="hero-search"><Search size={15} /><input aria-label="Cari di pratinjau SUKI" value={search} onChange={event => setSearch(event.target.value)} placeholder="Cari produk, lokasi, atau peluang" /></label>
+            <label className="hero-search"><Search size={15} /><input aria-label="Pratinjau pencarian SUKI" value={search} onChange={event => setSearch(event.target.value)} placeholder="Cari produk, lokasi, atau peluang" /></label>
             {search && <span className="search-hint">Pratinjau pencarian: <b>{search}</b></span>}
           </div>
           <div className="hero-card hero-card-float hero-card-community"><span className="mini-avatar">SU</span><div><b>Komunitas</b><small>Ruang untuk terhubung</small></div><MessageCircle size={16} /></div>

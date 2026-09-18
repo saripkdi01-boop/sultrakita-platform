@@ -2838,3 +2838,136 @@ html[data-theme="dark"] .product-coral { color:#eaa080; }
   .hero-card-community { top:43%; }
   .hero-card-business { bottom:0; }
 }
+
+
+/* =========================================================
+   SUKI HOMEPAGE V2 — compact premium refinement
+   Scoped to .marketing-shell; no API/data contracts changed.
+   ========================================================= */
+.marketing-shell{
+  --content:1184px;
+  --radius-md:18px;
+  --radius-lg:22px;
+  --radius-xl:28px;
+  --focus:var(--theme-focus,rgba(8,127,112,.42));
+  background:var(--bg);
+}
+.skip-link{
+  position:fixed;left:16px;top:10px;z-index:100;
+  transform:translateY(-160%);
+  padding:10px 14px;border-radius:10px;
+  background:var(--hero);color:#fff;
+  font-size:12px;font-weight:800;text-decoration:none;
+  box-shadow:var(--shadow-md);
+  transition:transform .18s ease;
+}
+.skip-link:focus{transform:translateY(0);outline:3px solid var(--focus);outline-offset:2px}
+.marketing-shell :is(a,button,input):focus-visible{
+  outline:3px solid var(--focus);outline-offset:3px;
+}
+
+/* Tighter, more editorial navigation */
+.marketing-nav{height:70px}
+.marketing-brand-mark{
+  width:38px;height:38px;border-radius:12px;
+  box-shadow:0 7px 18px rgba(9,47,42,.12)
+}
+.marketing-links a,.marketing-login{font-size:11px}
+.marketing-nav-cta{min-height:42px;padding-inline:15px}
+
+/* Hero: stronger hierarchy, less vertical waste, more depth */
+.marketing-hero{
+  min-height:520px;
+  margin-top:20px;
+  padding:58px 60px 54px;
+  border-radius:28px;
+  grid-template-columns:1.08fr .92fr;
+}
+.marketing-hero h1{
+  font-size:clamp(42px,5.1vw,68px);
+  max-width:690px;
+  margin:15px 0 17px;
+}
+.marketing-hero-lede{max-width:545px;font-size:14px;line-height:1.7}
+.marketing-hero-actions{margin-top:25px}
+.marketing-proof-line{margin-top:16px}
+.marketing-hero-visual{min-height:380px}
+.hero-card-main{
+  width:min(350px,78%);
+  padding:18px;
+  border-radius:20px;
+}
+.hero-card-main > strong{font-size:20px;margin-top:17px}
+.hero-node{animation-duration:7.5s}
+.hero-card-community{right:4%;top:35%}
+.hero-card-business{left:4%;bottom:8%}
+
+/* Quick access becomes a compact command bar */
+.quick-access{
+  margin-top:-18px;
+  padding:10px 12px;
+  border-radius:16px;
+}
+.quick-access-label{min-width:132px}
+.quick-action{min-height:46px;padding-inline:8px;font-size:10px}
+
+/* Reduce long empty vertical gaps while preserving section rhythm */
+.marketing-section{padding-top:92px}
+.ecosystem-section{padding-top:100px}
+.promise-grid{margin-top:38px}
+.product-grid{margin-top:34px}
+.discovery-panel{margin-top:100px;min-height:500px}
+.discovery-visual{min-height:500px}
+.discovery-copy{padding:58px}
+.business-banner{margin-top:100px;padding:50px 56px}
+.trust-section{margin-top:100px}
+.marketing-final-cta{
+  margin-top:100px;
+  padding:78px 20px 88px;
+}
+
+/* Cards: premium surfaces without excessive decoration */
+.promise-card{min-height:165px;padding:22px}
+.product-card{min-height:270px;padding:22px}
+.product-card:hover{transform:translateY(-5px)}
+.trust-grid{margin-top:34px}
+.trust-grid article{padding-top:19px}
+
+/* Make the mobile menu feel like a real sheet */
+@media (max-width:760px){
+  .marketing-nav{height:64px}
+  .marketing-nav.nav-open{min-height:64px}
+  .marketing-hero{
+    width:calc(100% - 24px);
+    margin-top:10px;
+    padding:38px 21px 24px;
+    border-radius:24px;
+  }
+  .marketing-hero h1{font-size:clamp(37px,11.8vw,52px)}
+  .marketing-hero-visual{min-height:350px;margin-top:14px}
+  .quick-access{margin-top:10px}
+  .marketing-section{padding-top:70px}
+  .ecosystem-section{padding-top:76px}
+  .promise-grid{margin-top:26px}
+  .product-grid{margin-top:26px}
+  .discovery-panel{margin-top:76px;min-height:0}
+  .discovery-visual{min-height:350px}
+  .discovery-copy{padding:36px 23px}
+  .business-banner{margin-top:76px;padding:35px 23px}
+  .trust-section{margin-top:76px}
+  .marketing-final-cta{margin-top:76px;padding:64px 8px 72px}
+}
+@media (max-width:390px){
+  .marketing-hero{padding-inline:18px}
+  .marketing-hero h1{font-size:35px}
+  .hero-card-main{width:calc(100% - 14px)}
+}
+
+/* Respect reduced motion for every custom motion primitive. */
+@media (prefers-reduced-motion:reduce){
+  .marketing-shell *, .marketing-shell *::before, .marketing-shell *::after{
+    animation:none!important;
+    transition-duration:.01ms!important;
+  }
+  .skip-link{transition:none}
+}
