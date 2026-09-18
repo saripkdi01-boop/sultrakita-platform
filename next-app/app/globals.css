@@ -3074,3 +3074,50 @@ html[data-theme="dark"] .product-coral { color:#eaa080; }
 @media (prefers-reduced-motion: reduce) {
   .reference-home * { transition-duration: .01ms !important; }
 }
+/* World-class homepage controls: persistent theme switcher + bounded motion. */
+.reference-theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 0 11px;
+  border: 1px solid var(--theme-border);
+  border-radius: 999px;
+  background: var(--theme-surface);
+  color: var(--theme-text);
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease;
+}
+.reference-theme-toggle:hover { background: var(--theme-primary-soft); border-color: var(--theme-primary); color: var(--theme-primary); }
+.reference-theme-toggle:active { transform: scale(.97); }
+.reference-theme-toggle:focus-visible { outline: 3px solid var(--theme-focus); outline-offset: 3px; }
+.reference-theme-toggle-mobile { display: none; }
+.reference-moon-icon { display: block; width: 15px; height: 15px; border-radius: 50%; background: currentColor; position: relative; }
+.reference-moon-icon::after { content: ''; position: absolute; width: 13px; height: 13px; top: -3px; right: -3px; border-radius: 50%; background: var(--theme-surface); }
+.reference-home .reference-hero,
+.reference-home .reference-ecosystem-card,
+.reference-home .reference-final-card { contain: layout style; }
+.reference-home .reference-product-window { overflow: hidden; contain: layout paint; }
+@media (min-width: 981px) and (prefers-reduced-motion: no-preference) {
+  .reference-home .reference-ecosystem-card:hover { will-change: transform, box-shadow; }
+}
+@media (max-width: 980px) {
+  .reference-theme-toggle-mobile { display: inline-flex; width: 40px; height: 40px; padding: 0; }
+  .reference-theme-toggle-label { display: none; }
+}
+@media (max-width: 640px) {
+  .reference-theme-toggle-mobile { margin-left: auto; }
+  .reference-header-inner { gap: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .reference-home *, .reference-home *::before, .reference-home *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

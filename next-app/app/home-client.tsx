@@ -15,10 +15,11 @@ import {
   ShoppingBag,
   Sparkles,
   Store,
+  Sun,
   Users,
   X,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 
 const ecosystem = [
@@ -73,6 +74,20 @@ const principles = [
 export default function HomeClient() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+
+  useEffect(() => {
+    const current = document.documentElement.dataset.theme;
+    if (current === 'dark' || current === 'light') setTheme(current);
+  }, []);
+
+  function toggleTheme() {
+    const next = theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next;
+    document.documentElement.style.colorScheme = next;
+    window.localStorage.setItem('sultrakita-theme', next);
+    setTheme(next);
+  }
 
   function closeMenu() {
     setMenuOpen(false);
@@ -110,9 +125,17 @@ export default function HomeClient() {
           </nav>
 
           <div className="reference-header-actions">
+            <button className="reference-theme-toggle" type="button" onClick={toggleTheme} aria-label={`Aktifkan mode ${theme === 'dark' ? 'terang' : 'gelap'}`} aria-pressed={theme === 'dark'}>
+              {theme === 'dark' ? <Sun size={16} aria-hidden="true" /> : <span className="reference-moon-icon" aria-hidden="true" />}
+              <span className="reference-theme-toggle-label">{theme === 'dark' ? 'Terang' : 'Gelap'}</span>
+            </button>
             <Link href="/login" className="reference-login">Masuk</Link>
             <Link href="/beranda" className="reference-header-cta">Buka SUKI <ArrowRight size={15} /></Link>
           </div>
+
+          <button className="reference-theme-toggle reference-theme-toggle-mobile" type="button" onClick={toggleTheme} aria-label={`Aktifkan mode ${theme === 'dark' ? 'terang' : 'gelap'}`} aria-pressed={theme === 'dark'}>
+            {theme === 'dark' ? <Sun size={17} aria-hidden="true" /> : <span className="reference-moon-icon" aria-hidden="true" />}
+          </button>
 
           <button className="reference-menu-button" type="button" aria-label={menuOpen ? 'Tutup menu' : 'Buka menu'} aria-expanded={menuOpen} onClick={() => setMenuOpen(value => !value)}>
             {menuOpen ? <X size={21} /> : <Menu size={21} />}
