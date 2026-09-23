@@ -132,3 +132,20 @@ At the required mobile viewport of `390x844`, signup had no horizontal overflow.
 The browser opened `/`, `/marketplace`, `/beranda`, and `/groups` successfully at the mobile viewport with no observed console errors on the final inspected route. `/dashboard` redirected to `/login`, and `/chat` redirected to `/login?redirect=%2Fchat`, which is the expected unauthenticated middleware behavior. No production credentials were used, and OAuth callback execution was not attempted without a test account.
 
 The requested production visual QA remains **NOT VERIFIED — production deployment had not yet been created during this addendum**. The local browser evidence is positive for the tested public and auth states, but it does not substitute for a live Vercel verification.
+
+
+## Production deployment addendum
+
+The scoped changes were committed and pushed to `main` in commit `43d162c7012eaaafd125cc9ca5a9134457c61f0e` with message `fix(ui): finalize theme and auth visual QA`. The working tree and `origin/main` are synchronized.
+
+Vercel project `sultrakita-platform` created production deployment `dpl_4LBTAPjUJdrGzvSmLrDJMshhiykD` from the expected GitHub repository and commit. The deployment reached `READY` with no alias error. Its production aliases include `https://sukiapps.web.id`, `https://www.sukiapps.web.id`, and `https://sultrakita-platform.vercel.app`.
+
+Production browser verification used a temporary Vercel access link because the project has Vercel Authentication protection on the deployment aliases. No production user credentials were used. The temporary access link was only used for QA and expires automatically.
+
+At desktop `1280x800`, the production homepage rendered in light mode with HTTP 200, no horizontal overflow, two accessible theme controls, and no browser console errors. Switching the homepage to dark mode updated `html[data-theme]` to `dark`, persisted `sultrakita-theme=dark`, set both theme controls to `aria-pressed=true`, and retained a 1280-pixel document width. The production homepage light and dark screenshots were captured as `qa-production-home-light-desktop.png` and `qa-production-home-dark-desktop.png`.
+
+Production `/login` rendered with the persisted dark theme and exposed the accessible theme toggle, form labels, password visibility button, social login buttons, forgot-password action, and auth CTA. It had no horizontal overflow or console errors. At mobile `390x844`, production `/signup` rendered in light mode with `sultrakita-theme=light`, a 44-by-44-pixel theme control, no horizontal overflow, and no console errors. The production dark login and light signup screenshots were captured as `qa-production-login-dark-mobile.png` and `qa-production-signup-light-mobile.png`.
+
+Production `/marketplace` and `/beranda` both rendered at mobile `390x844` with no horizontal overflow and the expected page titles. Both pages emitted the same browser error from the existing Supabase Realtime connection: the `__cf_bm` cookie was rejected for an invalid domain. This is not caused by the theme/auth CSS changes and was intentionally not modified because the requested scope prohibits changing realtime implementation. It is recorded as a **P2 production integration issue** for the deployment owner to investigate separately.
+
+Production authenticated-state interaction, OAuth callback completion, password reset submission, dashboard content, chat content, and groups content remain **NOT VERIFIED — no test/staging credentials were available and no production credentials were used**. Unauthenticated dashboard and chat route behavior was verified locally: both correctly redirected to login, with the chat redirect preserving its safe path query.
