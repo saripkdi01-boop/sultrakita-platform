@@ -39,21 +39,22 @@
       </div>
 
       <div class="auth-card card-surface" data-auth-mode="login">
-        <div class="auth-card-heading"><div class="eyebrow"><span class="eyebrow-line"></span>Akun SultraKita</div><h2 id="auth-title">Selamat datang kembali.</h2><p id="auth-subtitle" class="dialog-help">Masuk untuk melanjutkan ke ruang lokalmu.</p></div>
-        <div class="auth-switch" role="tablist" aria-label="Pilih aksi akun"><button class="auth-switch-button is-active" type="button" role="tab" aria-selected="true" data-auth-tab="login">Masuk</button><button class="auth-switch-button" type="button" role="tab" aria-selected="false" data-auth-tab="register">Daftar</button></div>
-        <a class="button button-outline full google-login" href="/api/auth/google/start">Masuk / daftar dengan Google</a>
-        <div class="oauth-divider"><span>atau gunakan OTP</span></div>
+        <div class="auth-card-heading"><div class="eyebrow"><span class="eyebrow-line"></span>Akun SultraKita</div><h2 id="auth-title">Selamat datang kembali.</h2><p id="auth-subtitle" class="dialog-help">Masuk lebih cepat dengan akun yang sudah kamu punya.</p></div>
+        <div class="login-provider-list" aria-label="Pilihan metode login">
+          <a class="provider-button provider-google" href="/api/auth/google/start"><span class="provider-icon google-icon" aria-hidden="true">G</span><span>Masuk dengan Google</span><span class="provider-arrow" aria-hidden="true">→</span></a>
+          <button class="provider-button provider-facebook" id="facebook-login" type="button"><span class="provider-icon facebook-icon" aria-hidden="true">f</span><span>Masuk dengan Facebook</span><span class="provider-badge">Segera hadir</span></button>
+        </div>
+        <div class="oauth-divider"><span>atau gunakan WhatsApp</span></div>
         <form id="login-form" novalidate>
-          <fieldset class="role-fieldset"><legend>Saya ingin</legend><div class="role-choice-grid"><label class="role-choice is-selected"><input type="radio" name="account_role" value="buyer" checked><span class="role-choice-icon">🛒</span><span><strong>Membeli</strong><small>Cari barang &amp; jasa</small></span></label><label class="role-choice"><input type="radio" name="account_role" value="seller"><span class="role-choice-icon">✦</span><span><strong>Menjual</strong><small>Pasang iklan gratis</small></span></label></div></fieldset>
-          <div class="otp-channel-choice" role="radiogroup" aria-label="Pilih channel login"><span>Verifikasi via</span><label><input type="radio" name="login_channel" value="whatsapp" checked> WhatsApp</label><label><input type="radio" name="login_channel" value="email"> Email</label></div>
-          <label id="login-phone-field" class="floating-field"><span>Nomor WhatsApp</span><input id="login-phone" type="tel" inputmode="tel" placeholder="08xxxxxxxxxx" autocomplete="tel"></label>
-          <label id="login-email-field" class="floating-field" hidden><span>Email</span><input id="login-email" type="email" placeholder="nama@email.com" autocomplete="email"></label>
-          <div class="account-inline"><label class="floating-field"><span>Kode OTP</span><input id="login-code" inputmode="numeric" placeholder="6 digit" autocomplete="one-time-code" required></label><button class="button button-soft otp-button" id="login-otp" type="button">Kirim OTP WhatsApp</button></div>
-          <button class="button button-primary full auth-submit" type="submit"><span id="auth-submit-label">Masuk ke akun</span><span aria-hidden="true">→</span></button>
+          <input type="hidden" name="login_channel" value="whatsapp">
+          <input type="hidden" name="account_role" value="buyer">
+          <label id="login-phone-field" class="floating-field"><span>Nomor WhatsApp</span><input id="login-phone" type="tel" inputmode="tel" placeholder="08xxxxxxxxxx" autocomplete="tel" required></label>
+          <div class="account-inline"><label class="floating-field"><span>Kode verifikasi</span><input id="login-code" inputmode="numeric" placeholder="6 digit" autocomplete="one-time-code" required></label><button class="button button-soft otp-button" id="login-otp" type="button">Kirim kode</button></div>
+          <button class="button button-primary full auth-submit" type="submit"><span id="auth-submit-label">Masuk dengan WhatsApp</span><span aria-hidden="true">→</span></button>
           <p id="login-message" class="form-message" role="status" aria-live="polite"></p>
           <p class="account-policy-note">Dengan melanjutkan, Anda menyetujui <a href="/terms.html" target="_blank" rel="noopener">Syarat &amp; Ketentuan</a> dan memahami <a href="/privacy.html" target="_blank" rel="noopener">Kebijakan Privasi</a>.</p>
         </form>
-        <div class="auth-benefits"><span>✦ Gratis pasang iklan</span><span>✓ Komunitas lokal</span><span>⌖ Jangkauan se-Sultra</span></div>
+        <div class="auth-benefits"><span>✓ Tanpa password</span><span>✓ Login aman</span><span>⌖ Komunitas lokal</span></div>
       </div>
     </section>
 
