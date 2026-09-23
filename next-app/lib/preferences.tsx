@@ -17,6 +17,7 @@ function applyTheme(theme: ThemeMode) {
   root.classList.toggle('dark', theme === 'dark');
   document.body?.classList.toggle('dark', theme === 'dark');
   root.style.colorScheme = theme;
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#0F1714' : '#F7F8F6');
 }
 
 export function PreferencesProvider({ children }: { children: ReactNode }) {
@@ -25,12 +26,18 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    const savedTheme = window.localStorage.getItem('sultrakita-theme');
+    const storedTheme = window.localStorage.getItem('sultrakita-theme');
+    const legacyTheme = window.localStorage.getItem('sultra-dark');
+    const savedTheme = storedTheme === 'dark' || storedTheme === 'light'
+      ? storedTheme
+      : legacyTheme === 'true' ? 'dark' : legacyTheme === 'false' ? 'light' : null;
     const savedLanguage = window.localStorage.getItem('sultrakita-language');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
     const initialTheme: ThemeMode = savedTheme === 'dark' || savedTheme === 'light' ? savedTheme : prefersDark.matches ? 'dark' : 'light';
     setThemeState(initialTheme);
     applyTheme(initialTheme);
+    window.localStorage.setItem('sultrakita-theme', initialTheme);
+    window.localStorage.setItem('sultra-dark', String(initialTheme === 'dark'));
     setLanguageState(LANGUAGES.some(([code]) => code === savedLanguage) ? savedLanguage as LanguageCode : 'id');
     setHydrated(true);
 
@@ -47,7 +54,10 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     applyTheme(theme);
-    if (hydrated) window.localStorage.setItem('sultrakita-theme', theme);
+    if (hydrated) {
+      window.localStorage.setItem('sultrakita-theme', theme);
+      window.localStorage.setItem('sultra-dark', String(theme === 'dark'));
+    }
   }, [theme, hydrated]);
 
   useEffect(() => {

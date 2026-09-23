@@ -2,12 +2,13 @@
 
 import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
 import {
-  ArrowRight, Check, ChevronDown, Eye, EyeOff, Facebook, Globe2, LockKeyhole,
+  ArrowRight, Check, ChevronDown, Eye, EyeOff, Facebook, Globe2, LockKeyhole, Moon, Sun,
   Mail, ShieldCheck, Sparkles, UserRound, X, BriefcaseBusiness, House,
   ShoppingBag, UsersRound
 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
+import { usePreferences } from '@/lib/preferences';
 
 const GOOGLE_OAUTH_GATEWAY_URL = process.env.NEXT_PUBLIC_GOOGLE_OAUTH_GATEWAY_URL || '';
 const MAX_SIGNUP_AVATAR_BYTES = 5 * 1024 * 1024;
@@ -115,6 +116,7 @@ export function AuthGate({ initialMode = 'login' }: { initialMode?: Mode }) {
   const [signupAvatar, setSignupAvatar] = useState<File | null>(null);
   const [signupAvatarPreview, setSignupAvatarPreview] = useState('');
   const [remember, setRemember] = useState(true);
+  const { theme, toggleTheme } = usePreferences();
 
   const selectedLanguage = languages.find(item => item.code === language) || languages[0];
   const t = copy[language === 'en' ? 'en' : 'id'];
@@ -209,7 +211,7 @@ export function AuthGate({ initialMode = 'login' }: { initialMode?: Mode }) {
   }
 
   return (
-    <main className="min-h-[100svh] bg-[#f6faf8] text-[#163e38] selection:bg-[#bcebdc] selection:text-[#123b35]">
+    <main className="auth-shell min-h-[100svh] bg-[#f6faf8] text-[#163e38] selection:bg-[#bcebdc] selection:text-[#123b35]">
       <div className="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden="true">
         <div className="absolute -left-40 -top-40 h-[28rem] w-[28rem] rounded-full bg-[#d8f4e9] blur-3xl opacity-70" />
         <div className="absolute -bottom-48 -right-32 h-[30rem] w-[30rem] rounded-full bg-[#f3e8cb] blur-3xl opacity-60" />
@@ -218,7 +220,12 @@ export function AuthGate({ initialMode = 'login' }: { initialMode?: Mode }) {
 
       <header className="relative mx-auto flex w-full max-w-[1240px] items-center justify-between px-5 py-5 sm:px-7 lg:px-8">
         <Logo />
-        <div className="relative">
+        <div className="flex items-center gap-2">
+          <button type="button" onClick={toggleTheme} className="theme-toggle-control" aria-label={theme === 'dark' ? 'Aktifkan mode terang' : 'Aktifkan mode gelap'} aria-pressed={theme === 'dark'}>
+            {theme === 'dark' ? <Sun size={16} aria-hidden="true" /> : <Moon size={16} aria-hidden="true" />}
+            <span className="sr-only">{theme === 'dark' ? 'Mode terang' : 'Mode gelap'}</span>
+          </button>
+          <div className="relative">
           <button
             type="button" onClick={() => setLanguageOpen(value => !value)}
             className="inline-flex min-h-10 items-center gap-2 rounded-full border border-[#d9e7e2] bg-white/80 px-3.5 text-xs font-bold text-[#41645d] shadow-sm backdrop-blur transition hover:border-[#bcd5cd] hover:bg-white focus:outline-none focus:ring-4 focus:ring-[#188875]/10"
@@ -239,6 +246,7 @@ export function AuthGate({ initialMode = 'login' }: { initialMode?: Mode }) {
               ))}
             </div>
           )}
+          </div>
         </div>
       </header>
 
@@ -277,7 +285,7 @@ export function AuthGate({ initialMode = 'login' }: { initialMode?: Mode }) {
           </div>
         </section>
 
-        <section className="mx-auto w-full max-w-[470px] rounded-[26px] border border-white/90 bg-white/95 p-4 shadow-[0_24px_80px_rgba(18,70,61,.13)] backdrop-blur-xl sm:p-5 lg:p-6">
+        <section className="auth-card mx-auto w-full max-w-[470px] rounded-[26px] border border-white/90 bg-white/95 p-4 shadow-[0_24px_80px_rgba(18,70,61,.13)] backdrop-blur-xl sm:p-5 lg:p-6">
           <div className="mb-5 flex items-center justify-between lg:hidden"><Logo compact /></div>
 
           <div className="grid grid-cols-2 rounded-[15px] bg-[#eef6f2] p-1" aria-label="Mode autentikasi">

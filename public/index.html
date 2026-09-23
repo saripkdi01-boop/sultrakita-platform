@@ -5,7 +5,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>SultraKita — SUKI Marketplace | Ruang Warga Sulawesi Tenggara</title>
-<script>!function(){try{var s=localStorage.getItem('sultra-dark'),d=s==='true'||(s===null&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=d?'dark':'light';document.documentElement.classList.toggle('theme-dark-preload',d)}catch(e){document.documentElement.dataset.theme='light'}}();</script>
+<script>!function(){try{var s=localStorage.getItem('sultrakita-theme'),legacy=localStorage.getItem('sultra-dark'),d=s==='dark'||(s!=='light'&&legacy!=='false'&&(legacy==='true'||matchMedia('(prefers-color-scheme: dark)').matches));document.documentElement.dataset.theme=d?'dark':'light';document.documentElement.style.colorScheme=d?'dark':'light';document.documentElement.classList.toggle('theme-dark-preload',d)}catch(e){document.documentElement.dataset.theme='light'}}();</script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/plus-jakarta-sans@5.0.8/index.css" />
 <link rel="stylesheet" href="/design-tokens.css" />
 <link rel="stylesheet" href="/theme-contract.css" />
@@ -36,19 +36,19 @@
      posts, comments, favorites, groups, notifications) memakai SUPABASE_URL di <script>.
    ============================================================ */
 :root{
-  --bg:#f0f2f5; --card:#ffffff; --text:#1c1e21; --muted:#65676b; --border:#e4e6eb;
-  --hover:rgba(0,0,0,.05); --primary:#0d9488; --primary-d:#0f766e; --accent:#f59e0b;
+  --bg:#F7F8F6; --card:#FFFFFF; --text:#172522; --muted:#65736D; --border:#D9E1DD;
+  --hover:rgba(13,92,75,.06); --primary:#0D5C4B; --primary-d:#084638; --accent:#9A6500;
   --blue:#1877f2; --red:#ef4444; --shadow:0 1px 2px rgba(0,0,0,.1);
   --shadow-lg:0 12px 32px rgba(0,0,0,.18);
 }
 body.dark{
-  --bg:#0b1220; --card:#111b2e; --text:#eaf2ff; --muted:#b6c5da; --border:#354765;
+  --bg:#0F1714; --card:#17231F; --text:#E7EFEB; --muted:#A8B7B0; --border:#30433C;
   --hover:rgba(255,255,255,.08); --shadow:0 1px 2px rgba(0,0,0,.5); --shadow-lg:0 12px 32px rgba(0,0,0,.6);
 }
 /* The preload script sets html[data-theme] before body exists. Keep the
    homepage's legacy tokens synchronized so the drawer is dark on first paint. */
 html[data-theme='dark']{
-  --bg:#0b1220; --card:#111b2e; --text:#eaf2ff; --muted:#b6c5da; --border:#354765;
+  --bg:#0F1714; --card:#17231F; --text:#E7EFEB; --muted:#A8B7B0; --border:#30433C;
   --hover:rgba(255,255,255,.08); --shadow:0 1px 2px rgba(0,0,0,.5); --shadow-lg:0 12px 32px rgba(0,0,0,.6);
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}

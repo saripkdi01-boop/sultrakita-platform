@@ -3131,3 +3131,86 @@ html[data-theme="dark"] .product-coral { color:#eaa080; }
     scroll-behavior: auto !important;
   }
 }
+
+
+/* SultraKita semantic design system v1.0. Keep legacy utility classes working while
+   giving every surface a single light/dark source of truth. */
+:root {
+  --color-bg: #F7F8F6;
+  --color-surface: #FFFFFF;
+  --color-surface-subtle: #EEF3F0;
+  --color-surface-elevated: #FFFFFF;
+  --color-text-primary: #172522;
+  --color-text-secondary: #65736D;
+  --color-text-tertiary: #87938E;
+  --color-text-disabled: #AEB9B4;
+  --color-border: #D9E1DD;
+  --color-border-strong: #B9C8C1;
+  --color-brand: #0D5C4B;
+  --color-brand-hover: #084638;
+  --color-brand-active: #06382E;
+  --color-brand-soft: #E3F0EB;
+  --color-success: #16734F;
+  --color-warning: #9A6500;
+  --color-danger: #B4473D;
+  --color-info: #246B8F;
+  --color-focus: #1A8C70;
+  --motion-fast: 180ms;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+}
+html[data-theme='dark'] {
+  --color-bg: #0F1714;
+  --color-surface: #17231F;
+  --color-surface-subtle: #1A2923;
+  --color-surface-elevated: #1E2D27;
+  --color-text-primary: #E7EFEB;
+  --color-text-secondary: #A8B7B0;
+  --color-text-tertiary: #7F9189;
+  --color-text-disabled: #5F7169;
+  --color-border: #30433C;
+  --color-border-strong: #40574F;
+  --color-brand: #4FD1A5;
+  --color-brand-hover: #6BE0B7;
+  --color-brand-active: #8DEBC8;
+  --color-brand-soft: #183A30;
+  --color-success: #65D39E;
+  --color-warning: #E8C16D;
+  --color-danger: #F28C82;
+  --color-info: #8BC8E8;
+  --color-focus: #6BE0B7;
+}
+html, body { background: var(--color-bg); color: var(--color-text-primary); }
+body, button, input, textarea, select { transition: background-color var(--motion-fast) ease, color var(--motion-fast) ease, border-color var(--motion-fast) ease, box-shadow var(--motion-fast) ease; }
+:where(button, a, input, textarea, select):focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
+:where(input, textarea, select)::placeholder { color: var(--color-text-tertiary); opacity: 1; }
+
+.theme-toggle-control {
+  display: inline-grid;
+  min-width: 44px;
+  min-height: 44px;
+  place-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  box-shadow: 0 2px 8px rgb(23 37 34 / 6%);
+}
+.theme-toggle-control:hover { border-color: var(--color-border-strong); color: var(--color-brand); background: var(--color-surface-subtle); }
+
+.auth-shell { background: var(--color-bg) !important; color: var(--color-text-primary) !important; }
+.auth-shell .auth-card { background: color-mix(in srgb, var(--color-surface) 96%, transparent) !important; border-color: var(--color-border) !important; box-shadow: 0 18px 56px rgb(11 47 38 / 12) !important; }
+.auth-shell .auth-card h2 { color: var(--color-text-primary) !important; }
+.auth-shell .auth-card p, .auth-shell .auth-card label, .auth-shell .auth-card small { color: var(--color-text-secondary); }
+.auth-shell .auth-card input:not([type='checkbox']), .auth-shell .auth-card textarea { background: var(--color-surface-subtle) !important; border-color: var(--color-border) !important; color: var(--color-text-primary) !important; }
+.auth-shell .auth-card input:not([type='checkbox']):focus { border-color: var(--color-brand) !important; box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-focus) 16%, transparent) !important; }
+.auth-shell .auth-card [aria-label='Mode autentikasi'] { background: var(--color-surface-subtle) !important; }
+.auth-shell .auth-card [aria-current='true'] { background: var(--color-surface) !important; color: var(--color-text-primary) !important; }
+html[data-theme='dark'] .auth-shell .auth-card [role='alert'] { background: color-mix(in srgb, var(--color-danger) 14%, var(--color-surface)) !important; border-color: color-mix(in srgb, var(--color-danger) 45%, var(--color-border)) !important; color: var(--color-danger) !important; }
+html[data-theme='dark'] .auth-shell .auth-card [role='status'] { background: color-mix(in srgb, var(--color-success) 14%, var(--color-surface)) !important; border-color: color-mix(in srgb, var(--color-success) 45%, var(--color-border)) !important; color: var(--color-success) !important; }
+html[data-theme='dark'] .auth-shell > div[aria-hidden='true'] > div { opacity: .16; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}
