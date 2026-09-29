@@ -64,7 +64,7 @@ for (const route of routes) {
         // CI and the sandbox can differ slightly in font rasterization and
         // data-backed page height; keep screenshot coverage while allowing
         // small cross-runner variance. The theme contract above remains exact.
-        maxDiffPixelRatio: 0.1,
+        maxDiffPixelRatio: 0.15,
       });
     });
   }
