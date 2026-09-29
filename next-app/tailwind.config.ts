@@ -88,17 +88,107 @@ const config: Config = {
           100: withAlpha('--suki-rgb-surface-soft'),
           200: withAlpha('--suki-rgb-border'),
         },
+
+        /* ------------------------------------------------------------------
+         * Qwen spec palette — "Sultra Mature".
+         *
+         * These keys mirror the UI spec's component API so its examples
+         * (`bg-brand-500`, `bg-surface-elevated`, `text-text-primary`,
+         * `border-border-subtle`) work verbatim.
+         *
+         * They resolve to the `--qwen-*` tokens in
+         * app/styles/suki-foundation.css section 12, which hold the accents and
+         * the surface / text / border scale. Brand colours are NOT here: they
+         * come from the canonical `--suki-rgb-primary*` channels, so the whole
+         * app — old call sites and new primitives alike — follows one value.
+         *
+         * `brand`, `surface`, `accent`, `text` and `border` were all free keys
+         * — no collision with the palettes above or with Tailwind core.
+         * ------------------------------------------------------------------ */
+        brand: {
+          /* These resolve to the canonical `--suki-rgb-primary*` channels in
+             suki-foundation.css section 1 — the same tokens `sultra-*` and
+             `suki-*` already read. There is exactly one definition of the
+             brand colour in this codebase, so a rebrand or a rollback is a
+             single edit in that one block.
+
+             The spec's five-step scale (50/100/500/600/700) is preserved as a
+             public API because the spec's component examples use it, but it
+             collapses onto the contract's three real steps: 50 and 100 are the
+             soft tint, 500 is the brand, 600 and 700 are the pressed and
+             active steps. Two names pointing at one value is deliberate — it
+             keeps the spec's vocabulary working without inventing colours that
+             the contract does not have. */
+          50: withAlpha('--suki-rgb-primary-tint'),
+          100: withAlpha('--suki-rgb-primary-soft'),
+          500: withAlpha('--suki-rgb-primary'),
+          600: withAlpha('--suki-rgb-primary-hover'),
+          700: withAlpha('--suki-rgb-primary-active'),
+        },
+
+        accent: {
+          wakatobi: withAlpha('--qwen-accent-wakatobi'),
+          tolaki: withAlpha('--qwen-accent-tolaki'),
+          buton: withAlpha('--qwen-accent-buton'),
+        },
+
+        surface: {
+          base: withAlpha('--qwen-surface-base'),
+          elevated: withAlpha('--qwen-surface-elevated'),
+          sunken: withAlpha('--qwen-surface-sunken'),
+          overlay: withAlpha('--qwen-surface-overlay'),
+        },
+
+        /* Yields the spec's `text-text-primary` / `text-text-muted` forms. */
+        text: {
+          primary: withAlpha('--qwen-text-primary'),
+          secondary: withAlpha('--qwen-text-secondary'),
+          muted: withAlpha('--qwen-text-muted'),
+        },
+
+        /* Yields the spec's `border-border-subtle` form. */
+        border: {
+          subtle: withAlpha('--qwen-border-subtle'),
+          strong: withAlpha('--qwen-border-strong'),
+        },
+
+        'on-accent': 'var(--qwen-on-accent)',
       },
 
       borderRadius: {
         card: 'var(--suki-radius-lg, 20px)',
         feature: 'var(--suki-radius-xl, 26px)',
         pill: 'var(--suki-radius-pill, 999px)',
+
+        /* Spec radius scale. Namespaced rather than overriding Tailwind's core
+           `rounded-sm/md/lg`, because the spec's steps do NOT line up with the
+           core ones: spec `md` is 12px while core `rounded-md` is 6px, so
+           overriding core would silently resize every existing rounded surface
+           in the app. New components use these keys to match the spec exactly. */
+        'qwen-sm': 'var(--qwen-radius-sm)',
+        'qwen-md': 'var(--qwen-radius-md)',
+        'qwen-lg': 'var(--qwen-radius-lg)',
+        'qwen-full': 'var(--qwen-radius-full)',
       },
 
       fontFamily: {
-        sans: ['DM Sans', 'Plus Jakarta Sans', 'system-ui', 'sans-serif'],
-        display: ['Playfair Display', 'Georgia', 'serif'],
+        /* next/font self-hosts and exposes these as CSS variables in
+           app/layout.tsx. Listing the variable first means the self-hosted
+           file wins; the literal names stay as fallbacks so the stack still
+           resolves if the variable is ever missing.
+           `DM Sans` was dropped from this stack: it was declared but never
+           loaded anywhere, so it never matched and only added noise. */
+        sans: ['var(--font-body)', 'Plus Jakarta Sans', 'system-ui', '-apple-system', 'sans-serif'],
+        display: ['var(--font-display)', 'Playfair Display', 'Georgia', 'serif'],
+      },
+
+      letterSpacing: {
+        'qwen-tight': 'var(--qwen-tracking-tight)',
+        'qwen-wide': 'var(--qwen-tracking-wide)',
+      },
+
+      lineHeight: {
+        'qwen-relaxed': 'var(--qwen-leading-relaxed)',
       },
 
       boxShadow: {
@@ -106,6 +196,15 @@ const config: Config = {
         'suki-sm': 'var(--theme-shadow-sm)',
         'suki-md': 'var(--theme-shadow-md)',
         'suki-lg': 'var(--theme-shadow-lg)',
+
+        /* Spec elevation. Namespaced for the same reason as the radius keys:
+           overriding core `shadow-sm/md/lg` would retint 49 existing call
+           sites. These carry the spec's warm tint and the brand-tinted hover
+           step. */
+        'qwen-sm': 'var(--qwen-shadow-sm)',
+        'qwen-md': 'var(--qwen-shadow-md)',
+        'qwen-md-hover': 'var(--qwen-shadow-md-hover)',
+        'qwen-lg': 'var(--qwen-shadow-lg)',
       },
 
       backdropBlur: { glass: '24px' },

@@ -64,10 +64,16 @@ html[data-theme='light'] {
   --suki-rgb-border: 216 230 223;
   --suki-rgb-border-strong: 191 211 202;
 
-  /* brand + semantic states */
-  --suki-rgb-primary: 8 127 112;
-  --suki-rgb-primary-hover: 6 107 95;
-  --suki-rgb-primary-soft: 227 243 238;
+  /* brand + semantic states
+     Sultra Emerald, #15803D. This is the single source of truth for the brand
+     colour: every `brand-*`, `sultra-*` and `suki-*` utility resolves through
+     these channels, so a rebrand is one edit here and a rollback is the same
+     edit reversed. */
+  --suki-rgb-primary: 21 128 61;
+  --suki-rgb-primary-hover: 22 101 52;
+  --suki-rgb-primary-active: 20 83 45;
+  --suki-rgb-primary-soft: 220 240 227;
+  --suki-rgb-primary-tint: 240 247 244;
   --suki-rgb-gold: 212 175 55;
   --suki-rgb-danger: 194 65 59;
   --suki-rgb-warning: 161 98 7;
@@ -94,9 +100,14 @@ html[data-theme='dark'] {
   --suki-rgb-border: 45 80 69;
   --suki-rgb-border-strong: 65 105 90;
 
-  --suki-rgb-primary: 97 209 192;
-  --suki-rgb-primary-hover: 130 223 208;
-  --suki-rgb-primary-soft: 29 75 64;
+  /* The emerald scale inverts on a dark surface: the lighter steps are the
+     readable ones, so 500/600/700 climb instead of sink. Still one family,
+     still one place to edit. */
+  --suki-rgb-primary: 74 222 128;
+  --suki-rgb-primary-hover: 134 239 172;
+  --suki-rgb-primary-active: 187 247 208;
+  --suki-rgb-primary-soft: 20 58 44;
+  --suki-rgb-primary-tint: 15 41 32;
   --suki-rgb-gold: 230 182 109;
   --suki-rgb-danger: 255 142 135;
   --suki-rgb-warning: 241 197 110;
@@ -184,7 +195,7 @@ html[data-theme='dark'] {
   --color-border-strong: rgb(var(--suki-rgb-border-strong));
   --color-brand: rgb(var(--suki-rgb-primary));
   --color-brand-hover: rgb(var(--suki-rgb-primary-hover));
-  --color-brand-active: rgb(var(--suki-rgb-primary-hover));
+  --color-brand-active: rgb(var(--suki-rgb-primary-active));
   --color-brand-soft: rgb(var(--suki-rgb-primary-soft));
   --color-success: rgb(var(--suki-rgb-success));
   --color-warning: rgb(var(--suki-rgb-warning));
@@ -793,3 +804,155 @@ html[data-theme='dark'] .auth-shell > div[aria-hidden='true'] > div { opacity: .
    Meta blue needed enough contrast against the dark surface. */
 html[data-theme='dark'] .auth-shell .bg-\[\#1877f2\] { background-color: #1877f2 !important; }
 html[data-theme='dark'] .auth-shell .bg-\[\#166de0\] { background-color: #166de0 !important; }
+
+/* =============================================================================
+   12. SPEC TOKENS — accents, surfaces, text, borders
+   =============================================================================
+
+   BRAND IS NOT DEFINED HERE.
+
+   The brand colour lives in section 1 as `--suki-rgb-primary` and nowhere
+   else. Every `brand-*`, `sultra-*` and `suki-*` utility resolves through that
+   single token, so adopting a new brand is one hex edit and rolling it back is
+   the same edit reversed. An earlier revision of this file kept a second,
+   parallel emerald scale at this location; it was removed, because two sources
+   of truth for one colour is precisely the token debt this overhaul exists to
+   pay down.
+
+   What remains is genuinely new: three local accent colours, plus the
+   surface / text / border scale.
+
+   Why these are namespaced `--qwen-*` instead of reusing the spec's `--color-*`
+   names: those names already exist here with different values.
+   `--color-text-primary` is `#172522` in this app, not `#1C1917`, and 7 call
+   sites read it. Reusing the exact names would repaint those surfaces by
+   accident, so they map to distinct Tailwind keys instead.
+
+   DARK MODE IS NOT OPTIONAL HERE.
+
+   The spec defines light values only and calls dark mode future work, but dark
+   mode is already live in this app (204 `data-theme` hooks, `darkMode: 'class'`,
+   plus a CI light/dark test). A token defined only in `:root` resolves to its
+   light value in dark mode and reads as glare, so every token below has a dark
+   counterpart.
+   -------------------------------------------------------------------------- */
+
+:root,
+html[data-theme='light'] {
+  /* Accents — local character. Marine / Earth / Royal. */
+  --qwen-accent-wakatobi: 14 165 233;
+  --qwen-accent-tolaki: 217 119 6;
+  --qwen-accent-buton: 124 58 237;
+
+  /* Surfaces — warm stone base, deliberately not a cold white. */
+  --qwen-surface-base: 250 250 249;
+  --qwen-surface-elevated: 255 255 255;
+  --qwen-surface-sunken: 245 245 244;
+  --qwen-surface-overlay: 28 25 23;
+
+  /* Text */
+  --qwen-text-primary: 28 25 23;
+  --qwen-text-secondary: 87 83 78;
+  --qwen-text-muted: 168 162 158;
+
+  /* Borders */
+  --qwen-border-subtle: 231 229 228;
+  --qwen-border-strong: 214 211 209;
+
+  /* Foreground pairing that keeps AA contrast on filled accent surfaces. */
+  --qwen-on-accent: #ffffff;
+
+  /* Overlay alpha is a separate token because Tailwind needs a channel
+     triplet to compose `bg-overlay/40`; the spec's 0.4 is the default. */
+  --qwen-overlay-alpha: 0.4;
+}
+
+html[data-theme='dark'] {
+  /* Accents lifted for contrast against dark surfaces. */
+  --qwen-accent-wakatobi: 125 211 252;
+  --qwen-accent-tolaki: 252 211 77;
+  --qwen-accent-buton: 196 181 253;
+
+  /* Warm stone becomes warm charcoal — same hue family, not blue-grey. */
+  --qwen-surface-base: 28 25 23;
+  --qwen-surface-elevated: 41 37 36;
+  --qwen-surface-sunken: 20 18 17;
+  --qwen-surface-overlay: 0 0 0;
+
+  --qwen-text-primary: 245 245 244;
+  --qwen-text-secondary: 214 211 209;
+  --qwen-text-muted: 168 162 158;
+
+  --qwen-border-subtle: 68 64 60;
+  --qwen-border-strong: 87 83 78;
+
+  /* On a light emerald fill the readable foreground is dark. */
+  --qwen-on-accent: #052e16;
+
+  --qwen-overlay-alpha: 0.6;
+}
+
+/* Tinted elevation. The spec asks for coloured rather than pure-black
+   shadows, with the brand tint reserved for hover so a resting card stays
+   neutral and the lift reads as an interaction cue. */
+:root,
+html[data-theme='light'] {
+  --qwen-shadow-sm: 0 1px 2px 0 rgb(28 25 23 / 0.05);
+  --qwen-shadow-md: 0 4px 6px -1px rgb(28 25 23 / 0.05), 0 2px 4px -2px rgb(28 25 23 / 0.05);
+  --qwen-shadow-md-hover: 0 4px 6px -1px rgb(21 128 61 / 0.05), 0 2px 4px -2px rgb(28 25 23 / 0.05);
+  --qwen-shadow-lg: 0 10px 24px -4px rgb(28 25 23 / 0.08), 0 4px 8px -4px rgb(28 25 23 / 0.05);
+}
+
+html[data-theme='dark'] {
+  /* Dark elevation reads through lightness, not opacity: a black shadow on a
+     dark surface is invisible, so these deepen and the border token does the
+     separating work. */
+  --qwen-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.4);
+  --qwen-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.45), 0 2px 4px -2px rgb(0 0 0 / 0.35);
+  --qwen-shadow-md-hover: 0 4px 6px -1px rgb(74 222 128 / 0.12), 0 2px 4px -2px rgb(0 0 0 / 0.35);
+  --qwen-shadow-lg: 0 10px 24px -4px rgb(0 0 0 / 0.55), 0 4px 8px -4px rgb(0 0 0 / 0.4);
+}
+
+/* Radius, tracking and leading from the spec. `md` is the card/button
+   default, `lg` the modal/hero default. Section 2's `--suki-radius-*` is
+   untouched; these resolve to the same physical sizes. */
+:root {
+  --qwen-radius-sm: 6px;
+  --qwen-radius-md: 12px;
+  --qwen-radius-lg: 20px;
+  --qwen-radius-full: 9999px;
+
+  --qwen-tracking-tight: -0.02em;
+  --qwen-tracking-wide: 0.05em;
+  --qwen-leading-relaxed: 1.625;
+}
+
+/* =============================================================================
+   13. FONT CONTRACT
+   =============================================================================
+
+   `next/font` (app/layout.tsx) self-hosts the two faces and exposes them as
+   `--font-jakarta` / `--font-instrument`. This block turns those into the
+   `--font-body` / `--font-display` names the rest of the stylesheet already
+   reads, so no existing `var(--font-display, ...)` call site has to change.
+
+   Why here and not in `globals.css`:
+   `globals.css` defines `--font-display` inside its own `:root` as Playfair
+   Display. Two same-specificity `:root` rules resolve by stylesheet order, and
+   this file is imported *after* `globals.css` in `app/layout.tsx`, so the
+   definition below wins deterministically. Redefining it in `globals.css`
+   would have made the winner depend on where in that 3.2k-line file the rule
+   happened to sit.
+
+   The literal font names stay in the stack as fallbacks: if a variable is ever
+   undefined the declaration still resolves to something readable rather than
+   dropping to the browser default.
+
+   `Manrope` and `Clash Display` appear elsewhere in `globals.css` but are never
+   loaded and never reachable through this contract; they are left untouched
+   here because replacing them would repaint surfaces this branch does not own.
+   -------------------------------------------------------------------------- */
+:root {
+  --font-body: var(--font-jakarta), 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: var(--font-instrument), 'Instrument Serif', Georgia, serif;
+}
