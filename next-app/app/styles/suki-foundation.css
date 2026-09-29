@@ -1,0 +1,795 @@
+/* =============================================================================
+   SUKI UI/UX FOUNDATION v2
+   Additive, visual-only layer for SUKI Apps (sukiapps.web.id).
+
+   SCOPE CONTRACT
+   - Visual only. No API contract, auth flow, Supabase query, RLS policy,
+     payment, webhook, middleware, or database schema is touched here.
+   - Additive. Nothing in this file deletes or renames an existing selector.
+     Every rule either (a) supplies a token that was previously undefined or
+     conflicting, (b) bridges a legacy name onto the canonical contract, or
+     (c) hardens an interaction/state that had no styling at all.
+   - Rollback: delete this file and the single import line in app/layout.tsx.
+   - Imported AFTER globals.css so equal-specificity rules win by source order.
+     `!important` is used only where an existing globals.css rule already uses
+     `!important` on the same property.
+
+   WHY THIS FILE EXISTS (audit findings, next-app only)
+   1. Six parallel token families coexisted: --theme-* (68 defs), --color-*
+      (38), --suki-* (19), --rh-* (15), --tsuki-* (8), --marketplace-* (6).
+   2. The bare names --ink/--forest/--teal/--mint/--sand/--gold/--coral/--line
+      were re-declared 4+ times with CONFLICTING values, so `var(--teal)`
+      resolved differently depending on where it was consumed.
+   3. The Tailwind `sultra-*` palette names disagreed with their own values:
+      sultra-teal was #A16207 (amber), sultra-mint was #F5EEDB (beige),
+      sultra-coral was #B45309 (brown). 322 `dark:` utilities existed, but the
+      tokens those utilities referenced never adapted between themes.
+   4. `to-sultra-blue` was used 3x but no `sultra-blue` key existed, so those
+      gradients silently emitted no colour.
+   5. 584 `!important` declarations and duplicate blocks (.quick-nav x7,
+      .marketplace-page .marketplace-card* x5) made the cascade unpredictable.
+   6. 140 rules pinned interactive controls to 24-43px, below the 44px
+      accessible touch-target floor.
+   7. Only 7 overflow guards existed for 40 routes.
+   8. Loading/empty/error states were re-implemented ad hoc in 19/16/17 files.
+
+   BRAND IDENTITY
+   SUKI green is preserved and promoted as the single primary. Values are taken
+   1:1 from the existing "SUKI THEME CONTRACT v1" block in globals.css
+   (--theme-primary #087f70 light / #61d1c0 dark). No new brand colour is
+   introduced and no existing brand value is replaced.
+   ============================================================================= */
+
+/* -----------------------------------------------------------------------------
+   1. CANONICAL CHANNEL TOKENS
+   Space-separated RGB channels, so Tailwind can compose alpha with
+   rgb(var(--x) / <alpha-value>) and so one definition serves both themes.
+   -------------------------------------------------------------------------- */
+:root,
+html[data-theme='light'] {
+  /* surfaces */
+  --suki-rgb-bg: 247 250 248;
+  --suki-rgb-surface: 255 255 255;
+  --suki-rgb-surface-raised: 255 255 255;
+  --suki-rgb-surface-muted: 238 245 241;
+  --suki-rgb-surface-soft: 243 248 245;
+
+  /* text */
+  --suki-rgb-text: 22 53 45;
+  --suki-rgb-text-strong: 15 41 34;
+  --suki-rgb-text-muted: 96 115 109;
+  --suki-rgb-text-subtle: 132 149 143;
+
+  /* lines */
+  --suki-rgb-border: 216 230 223;
+  --suki-rgb-border-strong: 191 211 202;
+
+  /* brand + semantic states */
+  --suki-rgb-primary: 8 127 112;
+  --suki-rgb-primary-hover: 6 107 95;
+  --suki-rgb-primary-soft: 227 243 238;
+  --suki-rgb-gold: 212 175 55;
+  --suki-rgb-danger: 194 65 59;
+  --suki-rgb-warning: 161 98 7;
+  --suki-rgb-success: 22 128 90;
+  --suki-rgb-info: 36 107 143;
+
+  /* foreground pairings that keep AA contrast on filled brand surfaces */
+  --suki-on-primary: #ffffff;
+  --suki-on-gold: #3d2f05;
+}
+
+html[data-theme='dark'] {
+  --suki-rgb-bg: 13 29 25;
+  --suki-rgb-surface: 19 42 36;
+  --suki-rgb-surface-raised: 25 53 45;
+  --suki-rgb-surface-muted: 28 59 50;
+  --suki-rgb-surface-soft: 23 50 41;
+
+  --suki-rgb-text: 232 243 238;
+  --suki-rgb-text-strong: 244 250 247;
+  --suki-rgb-text-muted: 174 195 186;
+  --suki-rgb-text-subtle: 137 165 154;
+
+  --suki-rgb-border: 45 80 69;
+  --suki-rgb-border-strong: 65 105 90;
+
+  --suki-rgb-primary: 97 209 192;
+  --suki-rgb-primary-hover: 130 223 208;
+  --suki-rgb-primary-soft: 29 75 64;
+  --suki-rgb-gold: 230 182 109;
+  --suki-rgb-danger: 255 142 135;
+  --suki-rgb-warning: 241 197 110;
+  --suki-rgb-success: 101 210 164;
+  --suki-rgb-info: 122 180 214;
+
+  --suki-on-primary: #04211c;
+  --suki-on-gold: #2a1f05;
+}
+
+/* -----------------------------------------------------------------------------
+   2. SCALES
+   One rhythm for spacing, radius, type, elevation and motion. Additive: the
+   existing --theme-shadow-* / --radius-* values remain the source of truth and
+   are referenced, not replaced.
+   -------------------------------------------------------------------------- */
+:root {
+  /* spacing (4px base) */
+  --suki-space-1: 0.25rem;
+  --suki-space-2: 0.5rem;
+  --suki-space-3: 0.75rem;
+  --suki-space-4: 1rem;
+  --suki-space-5: 1.25rem;
+  --suki-space-6: 1.5rem;
+  --suki-space-8: 2rem;
+  --suki-space-10: 2.5rem;
+  --suki-space-12: 3rem;
+
+  /* radius */
+  --suki-radius-xs: 8px;
+  --suki-radius-sm: 12px;
+  --suki-radius-md: 16px;
+  --suki-radius-lg: 20px;
+  --suki-radius-xl: 26px;
+  --suki-radius-pill: 999px;
+
+  /* control sizing — --suki-tap-min is the accessible floor */
+  --suki-control-sm: 36px;
+  --suki-control-md: 44px;
+  --suki-control-lg: 52px;
+  --suki-tap-min: 44px;
+
+  /* motion */
+  --suki-ease-standard: cubic-bezier(0.23, 1, 0.32, 1);
+  --suki-ease-emphasis: cubic-bezier(0.32, 0.72, 0, 1);
+  --suki-duration-fast: 140ms;
+  --suki-duration-base: 200ms;
+  --suki-duration-slow: 320ms;
+
+  /* type ramp */
+  --suki-text-xs: 0.6875rem;
+  --suki-text-sm: 0.8125rem;
+  --suki-text-base: 0.9375rem;
+  --suki-text-lg: 1.0625rem;
+  --suki-text-xl: 1.3125rem;
+  --suki-text-2xl: clamp(1.5rem, 1.2rem + 1.4vw, 1.875rem);
+  --suki-text-3xl: clamp(1.875rem, 1.4rem + 2.2vw, 2.5rem);
+  --suki-leading-tight: 1.15;
+  --suki-leading-normal: 1.55;
+
+  /* focus ring */
+  --suki-ring-width: 3px;
+  --suki-ring-offset: 2px;
+}
+
+/* -----------------------------------------------------------------------------
+   3. LEGACY TOKEN BRIDGE
+   Collapses --color-*, --suki-*, --rh-*, --tsuki-*, --marketplace-* and the
+   conflicting bare-name blocks onto the canonical contract. Declared last in
+   the cascade for equal specificity, so these win.
+   -------------------------------------------------------------------------- */
+:root,
+html[data-theme='light'],
+html[data-theme='dark'] {
+  /* --color-* family (globals.css ~line 3138) */
+  --color-bg: rgb(var(--suki-rgb-bg));
+  --color-surface: rgb(var(--suki-rgb-surface));
+  --color-surface-subtle: rgb(var(--suki-rgb-surface-muted));
+  --color-surface-elevated: rgb(var(--suki-rgb-surface-raised));
+  --color-text-primary: rgb(var(--suki-rgb-text));
+  --color-text-secondary: rgb(var(--suki-rgb-text-muted));
+  --color-text-tertiary: rgb(var(--suki-rgb-text-subtle));
+  --color-text-disabled: rgb(var(--suki-rgb-text-subtle));
+  --color-border: rgb(var(--suki-rgb-border));
+  --color-border-strong: rgb(var(--suki-rgb-border-strong));
+  --color-brand: rgb(var(--suki-rgb-primary));
+  --color-brand-hover: rgb(var(--suki-rgb-primary-hover));
+  --color-brand-active: rgb(var(--suki-rgb-primary-hover));
+  --color-brand-soft: rgb(var(--suki-rgb-primary-soft));
+  --color-success: rgb(var(--suki-rgb-success));
+  --color-warning: rgb(var(--suki-rgb-warning));
+  --color-danger: rgb(var(--suki-rgb-danger));
+  --color-info: rgb(var(--suki-rgb-info));
+  --color-focus: rgb(var(--suki-rgb-primary));
+
+  /* --suki-* family (globals.css lines 3, 988, 1013) */
+  --suki-ink: rgb(var(--suki-rgb-text));
+  --suki-forest: rgb(var(--suki-rgb-primary));
+  --suki-teal: rgb(var(--suki-rgb-primary));
+  --suki-mint: rgb(var(--suki-rgb-primary-soft));
+  --suki-sand: rgb(var(--suki-rgb-surface-muted));
+  --suki-gold: rgb(var(--suki-rgb-gold));
+  --suki-coral: rgb(var(--suki-rgb-danger));
+  --suki-line: rgb(var(--suki-rgb-border));
+  --suki-border: rgb(var(--suki-rgb-border));
+  --suki-primary: rgb(var(--suki-rgb-primary));
+  --suki-primary-strong: rgb(var(--suki-rgb-primary-hover));
+  --suki-primary-soft: rgb(var(--suki-rgb-primary-soft));
+  --suki-app-bg: rgb(var(--suki-rgb-bg));
+  --suki-surface: rgb(var(--suki-rgb-surface));
+  --suki-text: rgb(var(--suki-rgb-text));
+  --suki-muted: rgb(var(--suki-rgb-text-muted));
+  --suki-subtle: rgb(var(--suki-rgb-text-subtle));
+  --suki-indigo: rgb(var(--suki-rgb-primary));
+  --suki-alert: rgb(var(--suki-rgb-danger));
+  --suki-chat-border: rgb(var(--suki-rgb-border));
+  --suki-text-light: rgb(var(--suki-rgb-text));
+  --suki-text-dark: rgb(var(--suki-rgb-text));
+  --suki-secondary-light: rgb(var(--suki-rgb-text-muted));
+  --suki-secondary-dark: rgb(var(--suki-rgb-text-muted));
+  --suki-surface-light: rgb(var(--suki-rgb-surface));
+  --suki-surface-dark: rgb(var(--suki-rgb-surface));
+
+  /* bare names — previously declared 4x with conflicting values */
+  --ink: rgb(var(--suki-rgb-text));
+  --forest: rgb(var(--suki-rgb-primary));
+  --teal: rgb(var(--suki-rgb-primary));
+  --mint: rgb(var(--suki-rgb-primary-soft));
+  --sand: rgb(var(--suki-rgb-surface-muted));
+  --gold: rgb(var(--suki-rgb-gold));
+  --coral: rgb(var(--suki-rgb-danger));
+  --line: rgb(var(--suki-rgb-border));
+  --muted: rgb(var(--suki-rgb-text-muted));
+  --paper: rgb(var(--suki-rgb-surface));
+  --canvas: rgb(var(--suki-rgb-bg));
+  --focus: rgb(var(--suki-rgb-primary));
+  --bg: rgb(var(--suki-rgb-bg));
+  --surface: rgb(var(--suki-rgb-surface));
+  --surface-2: rgb(var(--suki-rgb-surface-muted));
+  --surface-3: rgb(var(--suki-rgb-surface-soft));
+  --brand: rgb(var(--suki-rgb-primary));
+  --brand-strong: rgb(var(--suki-rgb-primary-hover));
+  --brand-soft: rgb(var(--suki-rgb-primary-soft));
+  --on-brand: var(--suki-on-primary);
+  --blue: rgb(var(--suki-rgb-info));
+  --ink-soft: rgb(var(--suki-rgb-text-muted));
+  --sand-strong: rgb(var(--suki-rgb-border-strong));
+
+  /* --rh-* family */
+  --rh-ink: rgb(var(--suki-rgb-text));
+  --rh-brand: rgb(var(--suki-rgb-primary));
+  --rh-brand-dark: rgb(var(--suki-rgb-primary-hover));
+  --rh-page: rgb(var(--suki-rgb-bg));
+  --rh-paper: rgb(var(--suki-rgb-surface));
+  --rh-raised: rgb(var(--suki-rgb-surface-raised));
+  --rh-soft: rgb(var(--suki-rgb-surface-soft));
+  --rh-mint: rgb(var(--suki-rgb-primary-soft));
+  --rh-sand: rgb(var(--suki-rgb-surface-muted));
+  --rh-line: rgb(var(--suki-rgb-border));
+  --rh-line-strong: rgb(var(--suki-rgb-border-strong));
+  --rh-muted: rgb(var(--suki-rgb-text-muted));
+  --rh-subtle: rgb(var(--suki-rgb-text-subtle));
+
+  /* --tsuki-* family (Beranda shell) */
+  --tsuki-bg: rgb(var(--suki-rgb-bg));
+  --tsuki-card: rgb(var(--suki-rgb-surface));
+  --tsuki-ink: rgb(var(--suki-rgb-text));
+  --tsuki-muted: rgb(var(--suki-rgb-text-muted));
+  --tsuki-line: rgb(var(--suki-rgb-border));
+  --tsuki-primary: rgb(var(--suki-rgb-primary));
+  --tsuki-primary-soft: rgb(var(--suki-rgb-primary-soft));
+
+  /* --marketplace-* family */
+  --marketplace-bg: rgb(var(--suki-rgb-bg));
+  --marketplace-card: rgb(var(--suki-rgb-surface));
+  --marketplace-ink: rgb(var(--suki-rgb-text));
+  --marketplace-muted: rgb(var(--suki-rgb-text-muted));
+  --marketplace-line: rgb(var(--suki-rgb-border));
+  --marketplace-teal: rgb(var(--suki-rgb-primary));
+}
+
+/* -----------------------------------------------------------------------------
+   4. TAILWIND `sultra-*` COMPATIBILITY
+   The palette in tailwind.config.ts now resolves through the channel tokens, so
+   light/dark adapt automatically. These rules cover the cases where a single
+   utility name carries two different meanings (a "forest" used as page text vs.
+   used as a filled background), which Tailwind cannot express with one key.
+   -------------------------------------------------------------------------- */
+
+/* text roles */
+.text-sultra-forest { color: rgb(var(--suki-rgb-text-strong)); }
+.text-sultra-teal { color: rgb(var(--suki-rgb-primary)); }
+.text-sultra-sand { color: rgb(var(--suki-rgb-text)); }
+.text-sultra-mint { color: rgb(var(--suki-rgb-primary)); }
+.text-sultra-gold { color: rgb(var(--suki-rgb-gold)); }
+.text-sultra-coral { color: rgb(var(--suki-rgb-danger)); }
+
+/* fill roles */
+.bg-sultra-forest { background-color: rgb(var(--suki-rgb-primary)); }
+.bg-sultra-teal { background-color: rgb(var(--suki-rgb-primary)); }
+.bg-sultra-mint { background-color: rgb(var(--suki-rgb-primary-soft)); }
+.bg-sultra-sand { background-color: rgb(var(--suki-rgb-surface-muted)); }
+.bg-sultra-dark { background-color: rgb(var(--suki-rgb-surface)); }
+.bg-sultra-gold { background-color: rgb(var(--suki-rgb-gold)); }
+.bg-sultra-blue { background-color: rgb(var(--suki-rgb-info)); }
+
+/* line roles */
+.border-sultra-mint { border-color: rgb(var(--suki-rgb-border)); }
+.border-sultra-forest { border-color: rgb(var(--suki-rgb-border-strong)); }
+.border-sultra-teal { border-color: rgb(var(--suki-rgb-primary)); }
+
+/* ring role */
+.ring-sultra-gold { --tw-ring-color: rgb(var(--suki-rgb-gold)); }
+
+/* contrast guard: text on a filled brand surface must stay legible */
+.bg-sultra-forest,
+.bg-sultra-teal {
+  color: var(--suki-on-primary);
+}
+.bg-sultra-gold {
+  color: var(--suki-on-gold);
+}
+
+/* `to-sultra-blue` previously matched no palette key, so it emitted no colour. */
+.to-sultra-blue { --tw-gradient-to: rgb(var(--suki-rgb-info)) var(--tw-gradient-to-position); }
+.from-sultra-blue { --tw-gradient-from: rgb(var(--suki-rgb-info)) var(--tw-gradient-from-position); }
+
+/* -----------------------------------------------------------------------------
+   5. TOUCH TARGETS
+   WCAG 2.5.8 (Target Size Minimum) / platform guidance: >= 44x44 CSS px.
+   Only interactive elements are adjusted; decorative icon spans and layout
+   boxes are deliberately untouched. Full-width list rows keep min-width 0 so
+   only the height constraint applies.
+   -------------------------------------------------------------------------- */
+.menu-item,
+.drawer-head button,
+.modal-close,
+.collapse-toggle,
+.heart-btn,
+.header-icon,
+.topbar-menu,
+.mobile-menu,
+.quick-filters button,
+.profile-actions button,
+.drawer-tools button,
+.sidebar-preference-row button,
+.drawer-preference-card button,
+.chat-header-actions button,
+.chat-conversation-actions button,
+.chat-attach,
+.chat-emoji,
+.chat-send,
+.chat-composer button,
+.chat-back-button,
+.chat-bubble-actions button,
+.reel-mute,
+.reel-side-actions button,
+.security-choice button,
+.danger-btn,
+.blocked-row .danger-btn,
+.notification-item,
+.create-option,
+.marketplace-card-actions button,
+.marketplace-quick-links button,
+.marketplace-districts button,
+.marketplace-gallery-button {
+  min-height: var(--suki-tap-min);
+}
+
+.menu-item,
+.sidebar-preference-row button,
+.drawer-preference-card button,
+.quick-filters button,
+.notification-item {
+  min-width: 0; /* full-width rows: height is the constraint */
+}
+
+.header-icon,
+.chat-header-actions button,
+.chat-conversation-actions button,
+.chat-bubble-actions button,
+.profile-actions button,
+.drawer-tools button,
+.modal-close,
+.collapse-toggle,
+.chat-back-button,
+.heart-btn,
+.chat-attach,
+.chat-emoji,
+.chat-send,
+.reel-mute {
+  display: inline-grid;
+  place-items: center;
+}
+
+/* icon-only controls grow to the 44px floor without scaling their glyph */
+.profile-actions button,
+.drawer-tools button,
+.header-icon,
+.chat-header-actions button,
+.chat-conversation-actions button,
+.chat-back-button,
+.heart-btn,
+.modal-close,
+.chat-attach,
+.chat-emoji,
+.chat-send,
+.reel-mute {
+  width: var(--suki-tap-min);
+  height: var(--suki-tap-min);
+}
+
+.collapse-toggle {
+  width: var(--suki-tap-min);
+  height: var(--suki-tap-min);
+  right: calc(var(--suki-tap-min) / -2);
+}
+
+/* the drawer close control was 36x36 */
+.drawer-head button {
+  width: var(--suki-tap-min);
+  height: var(--suki-tap-min);
+}
+
+/* -----------------------------------------------------------------------------
+   6. FOCUS VISIBILITY
+   One ring everywhere, keyboard-only. Components that previously suppressed
+   outlines (outline: 0 on .quick-nav-item) get a visible replacement.
+   -------------------------------------------------------------------------- */
+:where(a, button, input, select, textarea, summary, [role='button'], [role='tab'], [tabindex]):focus-visible {
+  outline: var(--suki-ring-width) solid color-mix(in srgb, rgb(var(--suki-rgb-primary)) 62%, transparent);
+  outline-offset: var(--suki-ring-offset);
+  border-radius: max(var(--suki-radius-xs), 0.375rem);
+}
+
+/* Skip link — invisible until focused, first stop for keyboard users. */
+.suki-skip-link {
+  position: absolute;
+  left: var(--suki-space-4);
+  top: -100px;
+  z-index: 200;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--suki-tap-min);
+  padding: 0 var(--suki-space-5);
+  border-radius: var(--suki-radius-pill);
+  background: rgb(var(--suki-rgb-primary));
+  color: var(--suki-on-primary);
+  font-size: var(--suki-text-sm);
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: var(--theme-shadow-md, 0 12px 30px rgb(20 55 45 / 9%));
+  transition: top var(--suki-duration-base) var(--suki-ease-standard);
+}
+.suki-skip-link:focus {
+  top: var(--suki-space-4);
+}
+
+/* -----------------------------------------------------------------------------
+   7. SHARED STATE PRIMITIVES
+   Loading, empty and error were re-implemented in 19/16/17 files respectively.
+   These give the app one vocabulary so every surface reads the same way.
+   -------------------------------------------------------------------------- */
+.suki-skeleton {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--suki-radius-sm);
+  background: rgb(var(--suki-rgb-surface-muted));
+}
+.suki-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, rgb(var(--suki-rgb-surface)) 70%, transparent),
+    transparent
+  );
+  animation: suki-shimmer 1.5s var(--suki-ease-standard) infinite;
+}
+@keyframes suki-shimmer {
+  100% { transform: translateX(100%); }
+}
+
+.suki-state {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: var(--suki-space-2);
+  padding: var(--suki-space-8) var(--suki-space-5);
+  border: 1px solid rgb(var(--suki-rgb-border));
+  border-radius: var(--suki-radius-lg);
+  background: rgb(var(--suki-rgb-surface));
+  color: rgb(var(--suki-rgb-text-muted));
+  text-align: center;
+}
+.suki-state > svg {
+  color: rgb(var(--suki-rgb-primary));
+}
+.suki-state strong {
+  color: rgb(var(--suki-rgb-text-strong));
+  font-size: var(--suki-text-lg);
+  line-height: var(--suki-leading-tight);
+}
+.suki-state p,
+.suki-state small {
+  max-width: 44ch;
+  margin: 0;
+  color: rgb(var(--suki-rgb-text-muted));
+  font-size: var(--suki-text-sm);
+  line-height: var(--suki-leading-normal);
+}
+.suki-state__action {
+  margin-top: var(--suki-space-3);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--suki-space-2);
+  min-height: var(--suki-tap-min);
+  padding: 0 var(--suki-space-5);
+  border: 1px solid rgb(var(--suki-rgb-border));
+  border-radius: var(--suki-radius-pill);
+  background: rgb(var(--suki-rgb-surface));
+  color: rgb(var(--suki-rgb-primary));
+  font-size: var(--suki-text-sm);
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.suki-state--error {
+  border-color: color-mix(in srgb, rgb(var(--suki-rgb-danger)) 40%, rgb(var(--suki-rgb-border)));
+  background: color-mix(in srgb, rgb(var(--suki-rgb-danger)) 7%, rgb(var(--suki-rgb-surface)));
+}
+.suki-state--error > svg,
+.suki-state--error strong {
+  color: rgb(var(--suki-rgb-danger));
+}
+.suki-state--loading > svg {
+  animation: suki-spin 900ms linear infinite;
+}
+@keyframes suki-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Inline feedback banner for auth / profile / settings flows */
+.suki-feedback {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--suki-space-2);
+  padding: var(--suki-space-3) var(--suki-space-4);
+  border: 1px solid rgb(var(--suki-rgb-border));
+  border-radius: var(--suki-radius-sm);
+  background: rgb(var(--suki-rgb-surface-muted));
+  color: rgb(var(--suki-rgb-text));
+  font-size: var(--suki-text-sm);
+  line-height: var(--suki-leading-normal);
+}
+.suki-feedback[data-tone='error'] {
+  border-color: color-mix(in srgb, rgb(var(--suki-rgb-danger)) 45%, rgb(var(--suki-rgb-border)));
+  background: color-mix(in srgb, rgb(var(--suki-rgb-danger)) 9%, rgb(var(--suki-rgb-surface)));
+  color: color-mix(in srgb, rgb(var(--suki-rgb-danger)) 86%, rgb(var(--suki-rgb-text)));
+}
+.suki-feedback[data-tone='success'] {
+  border-color: color-mix(in srgb, rgb(var(--suki-rgb-success)) 45%, rgb(var(--suki-rgb-border)));
+  background: color-mix(in srgb, rgb(var(--suki-rgb-success)) 9%, rgb(var(--suki-rgb-surface)));
+  color: color-mix(in srgb, rgb(var(--suki-rgb-success)) 86%, rgb(var(--suki-rgb-text)));
+}
+
+/* -----------------------------------------------------------------------------
+   8. LAYOUT SAFETY
+   Only 7 overflow guards existed across 40 routes. `overflow-x: clip` prevents
+   horizontal scroll without creating a scroll container, so sticky/fixed
+   layers keep working.
+   -------------------------------------------------------------------------- */
+html,
+body {
+  overflow-x: clip;
+  max-width: 100%;
+}
+.app-frame,
+.content-wrap,
+.platform-shell,
+.page-shell,
+.beranda-shell,
+.marketplace-page,
+.suki-chat-page {
+  min-width: 0;
+  max-width: 100%;
+}
+.content-wrap > *,
+.platform-shell > *,
+.page-shell > *,
+.beranda-shell > * {
+  min-width: 0;
+}
+img,
+video,
+svg,
+canvas {
+  max-width: 100%;
+}
+img,
+video {
+  height: auto;
+}
+pre,
+code,
+kbd,
+samp {
+  overflow-wrap: anywhere;
+}
+
+/* Long unbroken strings (URLs, usernames, emails) must not force scroll. */
+.suki-state strong,
+.suki-state p,
+.chat-list-copy,
+.chat-conversation-title,
+.profile-mini strong,
+.profile-mini small,
+.menu-item span,
+.suki-feedback {
+  overflow-wrap: anywhere;
+}
+
+/* Mobile: guarantee bottom breathing room above the quick-nav bar and honour
+   the device safe area. */
+@media (max-width: 780px) {
+  .page-shell,
+  .platform-shell,
+  .beranda-shell,
+  .marketplace-page {
+    padding-bottom: max(var(--suki-space-10), env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* -----------------------------------------------------------------------------
+   9. MOTION PREFERENCES
+   globals.css already honours prefers-reduced-motion in 30+ blocks. This makes
+   the new primitives respect it too, plus the explicit in-app "Kurangi animasi"
+   preference that ProfileHub already writes as `html.reduce-motion`.
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .suki-skeleton::after,
+  .suki-state--loading > svg {
+    animation: none;
+  }
+  .suki-skip-link {
+    transition: none;
+  }
+}
+
+html.reduce-motion .suki-skeleton::after,
+html.reduce-motion .suki-state--loading > svg {
+  animation: none;
+}
+html.reduce-motion *,
+html.reduce-motion *::before,
+html.reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* -----------------------------------------------------------------------------
+   10. FORCED COLORS / HIGH CONTRAST
+   -------------------------------------------------------------------------- */
+@media (forced-colors: active) {
+  .suki-state,
+  .suki-feedback,
+  .suki-skeleton,
+  .suki-skip-link {
+    border: 1px solid CanvasText;
+  }
+}
+
+/* -----------------------------------------------------------------------------
+   11. AUTH SURFACE — DARK MODE CORRECTION
+   `components/auth/AuthGate.tsx` carries ~80 hard-coded light-mode hex values
+   (`bg-[#f6faf8]`, `text-[#163e38]`, `text-[#188875]`, …). Rewriting those call
+   sites would mean editing the authentication screen, which this branch must
+   not do — the auth flow, OAuth redirects, session handling and validation all
+   live in that file.
+
+   Instead the values are remapped here, by class, only under dark mode. The
+   component keeps its exact markup and behaviour; only the rendered colour
+   changes. In light mode these rules are inert, so the approved light design is
+   byte-for-byte unchanged.
+
+   The escape sequence `\[#rrggbb\]` matches Tailwind's arbitrary-value class
+   name literally, e.g. the class `text-[#188875]` is emitted as
+   `.text-\[\#188875\]`.
+   -------------------------------------------------------------------------- */
+html[data-theme='dark'] .auth-shell {
+  background: rgb(var(--suki-rgb-bg)) !important;
+  color: rgb(var(--suki-rgb-text)) !important;
+}
+
+/* page + decorative wash */
+html[data-theme='dark'] .auth-shell .bg-\[\#f6faf8\] { background-color: rgb(var(--suki-rgb-bg)) !important; }
+html[data-theme='dark'] .auth-shell .bg-\[\#d8f4e9\],
+html[data-theme='dark'] .auth-shell .bg-\[\#f3e8cb\] { background-color: rgb(var(--suki-rgb-primary-soft)) !important; }
+html[data-theme='dark'] .auth-shell .border-\[\#d7eae3\] { border-color: rgb(var(--suki-rgb-border)) !important; }
+
+/* text ramp — every hard-coded ink value collapses onto the semantic ramp */
+html[data-theme='dark'] .auth-shell .text-\[\#163e38\],
+html[data-theme='dark'] .auth-shell .text-\[\#123b35\],
+html[data-theme='dark'] .auth-shell .text-\[\#123d36\],
+html[data-theme='dark'] .auth-shell .text-\[\#123f38\],
+html[data-theme='dark'] .auth-shell .text-\[\#103e37\],
+html[data-theme='dark'] .auth-shell .text-\[\#153e38\],
+html[data-theme='dark'] .auth-shell .text-\[\#173f39\],
+html[data-theme='dark'] .auth-shell .text-\[\#355951\] { color: rgb(var(--suki-rgb-text-strong)) !important; }
+
+html[data-theme='dark'] .auth-shell .text-\[\#41645d\],
+html[data-theme='dark'] .auth-shell .text-\[\#516f68\],
+html[data-theme='dark'] .auth-shell .text-\[\#38564f\],
+html[data-theme='dark'] .auth-shell .text-\[\#476961\],
+html[data-theme='dark'] .auth-shell .text-\[\#39776c\],
+html[data-theme='dark'] .auth-shell .text-\[\#607d76\] { color: rgb(var(--suki-rgb-text-muted)) !important; }
+
+html[data-theme='dark'] .auth-shell .text-\[\#718a84\],
+html[data-theme='dark'] .auth-shell .text-\[\#718983\],
+html[data-theme='dark'] .auth-shell .text-\[\#718b85\],
+html[data-theme='dark'] .auth-shell .text-\[\#78938c\],
+html[data-theme='dark'] .auth-shell .text-\[\#78948c\],
+html[data-theme='dark'] .auth-shell .text-\[\#7e958f\],
+html[data-theme='dark'] .auth-shell .text-\[\#819891\],
+html[data-theme='dark'] .auth-shell .text-\[\#8ba29c\],
+html[data-theme='dark'] .auth-shell .text-\[\#94a7a2\],
+html[data-theme='dark'] .auth-shell .text-\[\#9aada8\],
+html[data-theme='dark'] .auth-shell .text-\[\#a0b1ac\] { color: rgb(var(--suki-rgb-text-subtle)) !important; }
+
+/* brand accent stays brand, not amber */
+html[data-theme='dark'] .auth-shell .text-\[\#188875\],
+html[data-theme='dark'] .auth-shell .text-\[\#1b806f\],
+html[data-theme='dark'] .auth-shell .text-\[\#1b8f7d\],
+html[data-theme='dark'] .auth-shell .text-\[\#187461\],
+html[data-theme='dark'] .auth-shell .text-\[\#166de0\] { color: rgb(var(--suki-rgb-primary)) !important; }
+
+/* surfaces + borders */
+html[data-theme='dark'] .auth-shell .bg-white,
+html[data-theme='dark'] .auth-shell .bg-white\/95,
+html[data-theme='dark'] .auth-shell .bg-white\/80,
+html[data-theme='dark'] .auth-shell .bg-white\/70,
+html[data-theme='dark'] .auth-shell .bg-white\/65 { background-color: rgb(var(--suki-rgb-surface)) !important; }
+
+html[data-theme='dark'] .auth-shell .bg-\[\#eef6f2\],
+html[data-theme='dark'] .auth-shell .bg-\[\#edf8f3\],
+html[data-theme='dark'] .auth-shell .bg-\[\#edf6f2\],
+html[data-theme='dark'] .auth-shell .bg-\[\#e3f4ed\],
+html[data-theme='dark'] .auth-shell .bg-\[\#e7efec\],
+html[data-theme='dark'] .auth-shell .bg-\[\#e6f6ef\],
+html[data-theme='dark'] .auth-shell .bg-\[\#f0faf5\],
+html[data-theme='dark'] .auth-shell .bg-\[\#fbfdfc\],
+html[data-theme='dark'] .auth-shell .bg-\[\#bcebdc\] { background-color: rgb(var(--suki-rgb-surface-muted)) !important; }
+
+html[data-theme='dark'] .auth-shell .border-\[\#d9e7e2\],
+html[data-theme='dark'] .auth-shell .border-\[\#dce8e3\],
+html[data-theme='dark'] .auth-shell .border-\[\#dce9e4\],
+html[data-theme='dark'] .auth-shell .border-\[\#deebe6\],
+html[data-theme='dark'] .auth-shell .border-\[\#d7e9e2\],
+html[data-theme='dark'] .auth-shell .border-\[\#d0eadf\],
+html[data-theme='dark'] .auth-shell .border-\[\#c6d9d2\],
+html[data-theme='dark'] .auth-shell .border-\[\#c5dad3\],
+html[data-theme='dark'] .auth-shell .border-\[\#bcd5cd\],
+html[data-theme='dark'] .auth-shell .border-\[\#e5ebe8\],
+html[data-theme='dark'] .auth-shell .border-\[\#edf2f0\] { border-color: rgb(var(--suki-rgb-border)) !important; }
+
+/* hover states referenced by the language menu */
+html[data-theme='dark'] .auth-shell .hover\:bg-\[\#edf8f3\]:hover { background-color: rgb(var(--suki-rgb-primary-soft)) !important; }
+html[data-theme='dark'] .auth-shell .hover\:bg-white:hover { background-color: rgb(var(--suki-rgb-surface-raised)) !important; }
+html[data-theme='dark'] .auth-shell .hover\:border-\[\#bcd5cd\]:hover { border-color: rgb(var(--suki-rgb-border-strong)) !important; }
+
+/* danger + warning tints */
+html[data-theme='dark'] .auth-shell .text-\[\#a84f40\] { color: rgb(var(--suki-rgb-danger)) !important; }
+html[data-theme='dark'] .auth-shell .bg-\[\#fff7f5\] { background-color: color-mix(in srgb, rgb(var(--suki-rgb-danger)) 10%, rgb(var(--suki-rgb-surface))) !important; }
+html[data-theme='dark'] .auth-shell .border-\[\#f4d9d3\] { border-color: color-mix(in srgb, rgb(var(--suki-rgb-danger)) 40%, rgb(var(--suki-rgb-border))) !important; }
+html[data-theme='dark'] .auth-shell .bg-\[\#d9ad4e\] { background-color: rgb(var(--suki-rgb-gold)) !important; }
+html[data-theme='dark'] .auth-shell .bg-\[\#d67d69\] { background-color: rgb(var(--suki-rgb-danger)) !important; }
+
+/* The language trigger used ring/border tints at 10-20% alpha on a hard-coded
+   brand hex. Re-point the focus ring at the theme focus token. */
+html[data-theme='dark'] .auth-shell .ring-\[\#188875\]\/10,
+html[data-theme='dark'] .auth-shell .ring-\[\#188875\]\/20 { --tw-ring-color: color-mix(in srgb, rgb(var(--suki-rgb-primary)) 30%, transparent) !important; }
+
+/* Decorative blobs were full-opacity washes; calm them in dark mode so they
+   read as ambience instead of glare. */
+html[data-theme='dark'] .auth-shell > div[aria-hidden='true'] > div { opacity: .18; }
+
+/* Social provider buttons keep their own brand colours in both themes, but the
+   Meta blue needed enough contrast against the dark surface. */
+html[data-theme='dark'] .auth-shell .bg-\[\#1877f2\] { background-color: #1877f2 !important; }
+html[data-theme='dark'] .auth-shell .bg-\[\#166de0\] { background-color: #166de0 !important; }
