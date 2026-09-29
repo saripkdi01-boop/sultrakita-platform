@@ -153,6 +153,18 @@ const config: Config = {
         },
 
         'on-accent': 'var(--qwen-on-accent)',
+
+        /* Semantic state colours as top-level keys. They already existed but
+           only as `suki-danger`, `suki-success` and so on, so a component
+           wanting a danger border had to reach into the `suki` namespace while
+           its neighbours used bare names like `border-subtle`. These aliases
+           point at the same canonical channel tokens — no new value is
+           introduced — and they collide with nothing, since Tailwind has no
+           core `danger`/`success`/`warning`/`info` keys. */
+        danger: withAlpha('--suki-rgb-danger'),
+        success: withAlpha('--suki-rgb-success'),
+        warning: withAlpha('--suki-rgb-warning'),
+        info: withAlpha('--suki-rgb-info'),
       },
 
       borderRadius: {
@@ -201,10 +213,10 @@ const config: Config = {
            overriding core `shadow-sm/md/lg` would retint 49 existing call
            sites. These carry the spec's warm tint and the brand-tinted hover
            step. */
-        'qwen-sm': 'var(--qwen-shadow-sm)',
-        'qwen-md': 'var(--qwen-shadow-md)',
-        'qwen-md-hover': 'var(--qwen-shadow-md-hover)',
-        'qwen-lg': 'var(--qwen-shadow-lg)',
+        'tint-sm': 'var(--qwen-shadow-sm)',
+        'tint-md': 'var(--qwen-shadow-md)',
+        'tint-md-hover': 'var(--qwen-shadow-md-hover)',
+        'tint-lg': 'var(--qwen-shadow-lg)',
       },
 
       backdropBlur: { glass: '24px' },

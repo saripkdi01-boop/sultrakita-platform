@@ -127,40 +127,17 @@ export function LoadingState({ label = 'Memuat…', className }: { label?: strin
 }
 
 /**
- * Skeleton block. `lines` renders a text-like stack; `height`/`width` cover
- * media and card placeholders. Purely decorative, so it is hidden from AT.
+ * Skeleton now lives in its own module (`components/ui/skeleton.tsx`) and is
+ * re-exported here so both import paths resolve to one implementation.
+ *
+ * The UI spec asks for `components/ui/skeleton.tsx`; PR #16 had already put a
+ * `Skeleton` in this file. Keeping a copy in both places would have meant two
+ * shimmer implementations drifting apart, so the dedicated module is canonical
+ * and this is a thin forwarder. The prop shape changed in the process
+ * (`variant` + `width`/`height` instead of `radius`), which is safe because
+ * nothing in the codebase imported `Skeleton` from here.
  */
-export function Skeleton({
-  width = '100%',
-  height = '1rem',
-  radius = 'var(--suki-radius-sm)',
-  lines = 1,
-  className,
-}: {
-  width?: string;
-  height?: string;
-  radius?: string;
-  lines?: number;
-  className?: string;
-}) {
-  const items = Array.from({ length: Math.max(1, lines) });
-  return (
-    <div className={classes('suki-skeleton-stack', className)} aria-hidden="true">
-      {items.map((_, index) => (
-        <span
-          key={index}
-          className="suki-skeleton"
-          style={{
-            display: 'block',
-            width: index === items.length - 1 && lines > 1 ? '72%' : width,
-            height,
-            borderRadius: radius,
-          }}
-        />
-      ))}
-    </div>
-  );
-}
+export { Skeleton } from './skeleton';
 
 /**
  * Inline feedback banner for form submissions and settings saves.
