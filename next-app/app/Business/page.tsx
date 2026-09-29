@@ -1,61 +1,110 @@
 import Link from 'next/link';
-import { ArrowRight, BadgeCheck, BarChart3, Building2, ChevronDown, Handshake, MapPin, Megaphone, Quote, Store, TrendingUp, UsersRound } from 'lucide-react';
 import type { Metadata } from 'next';
+import {
+  ArrowRight,
+  BadgeCheck,
+  BarChart3,
+  Building2,
+  Check,
+  ChevronDown,
+  CircleDollarSign,
+  Handshake,
+  Layers3,
+  MapPin,
+  Menu,
+  MessageCircle,
+  MoveUpRight,
+  Store,
+  UsersRound,
+} from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'SUKI Business — Bangun Eksistensi Bisnis di Sultra',
-  description: 'Ruang untuk seller, partner, developer, sponsor, dan organisasi bertumbuh bersama ekosistem digital Sulawesi Tenggara.',
+  title: 'SUKI Business — Ruang tumbuh untuk bisnis lokal',
+  description: 'Bangun kehadiran bisnis yang lebih dekat dengan warga Sulawesi Tenggara melalui SUKI Business.',
   alternates: { canonical: 'https://sukiapps.web.id/Business' },
 };
 
-const businessPaths = [
-  { icon: Store, title: 'Seller & UMKM', text: 'Hadirkan produk dan layanan Anda kepada warga yang mencari pilihan lokal.', tone: 'mint' },
-  { icon: Building2, title: 'Properti & developer', text: 'Tampilkan proyek dan ruang terbaik dengan konteks lokasi yang lebih jelas.', tone: 'sand' },
-  { icon: Handshake, title: 'Partner & organisasi', text: 'Bangun kolaborasi, campaign, dan inisiatif yang berdampak bagi Sultra.', tone: 'blue' },
+const audiences = [
+  { icon: Store, label: 'Seller & UMKM', text: 'Temukan ruang yang tepat untuk produk, layanan, dan cerita usaha Anda.', tone: 'mint' },
+  { icon: Building2, label: 'Properti & developer', text: 'Buat proyek dan ruang Anda lebih mudah dipahami calon pembeli lokal.', tone: 'sand' },
+  { icon: Handshake, label: 'Partner & organisasi', text: 'Bangun campaign dan kolaborasi yang berangkat dari kebutuhan nyata.', tone: 'blue' },
 ];
 
-const steps = [
-  { number: '01', title: 'Kenali kebutuhan Anda', text: 'Pilih tujuan: menjual, memperkenalkan proyek, mencari talenta, atau membangun kolaborasi.' },
-  { number: '02', title: 'Susun kehadiran', text: 'Kami membantu menghubungkan cerita, penawaran, dan informasi bisnis ke ruang yang relevan.' },
-  { number: '03', title: 'Tumbuh bersama', text: 'Bangun hubungan yang lebih dekat dengan warga dan komunitas di wilayah Anda.' },
+const capabilities = [
+  { icon: Layers3, title: 'Satu profil, banyak ruang', text: 'Kehadiran bisnis Anda dapat terhubung ke marketplace, properti, pekerjaan, dan komunitas.' },
+  { icon: UsersRound, title: 'Lebih dekat dengan konteks', text: 'Cerita dan penawaran muncul di tempat warga memang sedang mencari dan terhubung.' },
+  { icon: BarChart3, title: 'Tumbuh dengan arah', text: 'Mulai dari kebutuhan yang jelas, lalu kembangkan kehadiran Anda selangkah demi selangkah.' },
 ];
 
-const testimonials = [
-  { quote: 'Hari ini belajar bahwa langkah kecil tetap berarti. Mulai dari mendukung satu usaha lokal di sekitar kita.', name: 'Nadia Rahma', meta: 'Kendari · Cerita warga', initials: 'NR' },
-  { quote: 'Senang melihat semakin banyak anak muda Sultra yang berani berkarya dan membawa cerita daerah ke ruang yang lebih luas.', name: 'Fajar La Ode', meta: 'Baubau · Cerita warga', initials: 'FL' },
-  { quote: 'Gotong royong membersihkan pesisir kembali digelar. Terima kasih untuk semua warga yang sudah hadir.', name: 'Komunitas Pesisir', meta: 'Wakatobi · Komunitas', initials: 'KP' },
-];
-
-const caseStudies = [
-  { type: 'Marketplace', title: 'Kopi Tolaki Premium', place: 'Konawe', result: '320 terjual', text: 'Contoh bagaimana produk lokal dapat ditemukan melalui kategori belanja yang dekat dengan konteks wilayah.', tone: 'mint' },
-  { type: 'Marketplace', title: 'Tas Anyaman Wakatobi', place: 'Wakatobi', result: '86 terjual', text: 'Cerita produk dan identitas daerah bertemu dalam satu listing yang mudah dijelajahi warga.', tone: 'sand' },
-  { type: 'Property', title: 'Nirwana Residence', place: 'Anduonohu, Kendari', result: 'Hubungi via WhatsApp', text: 'SUKI Suits membantu calon pembeli menemukan ruang dan melanjutkan percakapan dengan jalur yang jelas.', tone: 'blue' },
+const plans = [
+  { name: 'Mulai', description: 'Untuk bisnis yang ingin hadir dengan fondasi yang jelas.', features: ['Profil bisnis terarah', 'Ruang untuk cerita dan penawaran', 'Pendampingan langkah pertama'], featured: false },
+  { name: 'Bertumbuh', description: 'Untuk bisnis yang siap menjangkau lebih banyak peluang lokal.', features: ['Semua fitur Mulai', 'Penempatan di ruang yang relevan', 'Ruang kolaborasi dengan partner'], featured: true },
+  { name: 'Kolaborasi', description: 'Untuk organisasi dan inisiatif dengan kebutuhan yang lebih khusus.', features: ['Ruang campaign khusus', 'Diskusi kebutuhan bersama tim', 'Jalur integrasi dan partner'], featured: false },
 ];
 
 export default function BusinessPage() {
-  return <main className="business-shell">
-    <header className="business-nav">
-      <Link href="/" className="marketing-brand" aria-label="Kembali ke SUKI Apps"><span className="marketing-brand-mark">S</span><span><strong>SUKI Apps</strong><small>by SULTRAKITA</small></span></Link>
-      <nav className="business-nav-links" aria-label="Navigasi bisnis"><Link href="/#ekosistem">Ekosistem</Link><a href="#manfaat">Manfaat</a><a href="#cara-kerja">Cara kerja</a><a href="#bukti">Bukti</a></nav>
-      <Link href="/beranda" className="business-nav-link">Masuk ke aplikasi <ArrowRight size={15} /></Link>
-    </header>
+  return (
+    <main className="suki-business-page">
+      <header className="suki-business-nav">
+        <Link href="/" className="suki-business-brand" aria-label="Kembali ke SUKI Apps">
+          <span className="suki-business-mark">S</span>
+          <span><strong>SUKI</strong><small>Business</small></span>
+        </Link>
+        <nav aria-label="Navigasi SUKI Business">
+          <a href="#cara-kerja">Cara kerja</a>
+          <a href="#ruang-tumbuh">Ruang tumbuh</a>
+          <a href="#paket">Paket</a>
+        </nav>
+        <div className="suki-business-nav-actions">
+          <Link href="/login" className="suki-business-login">Masuk</Link>
+          <a href="#mulai" className="suki-business-button suki-business-button-dark">Mulai bersama <ArrowRight size={15} /></a>
+        </div>
+        <button className="suki-business-menu" aria-label="Buka menu"><Menu size={21} /></button>
+      </header>
 
-    <section className="business-hero"><div className="business-hero-copy"><p className="marketing-eyebrow"><span className="eyebrow-dot" /> SUKI Business</p><h1>Bangun eksistensi bisnis Anda di ekosistem lokal.</h1><p className="business-lede">Hadirkan produk, properti, layanan, atau campaign Anda kepada warga yang relevan — dengan ruang digital yang dibangun dari konteks Sulawesi Tenggara.</p><div className="marketing-hero-actions"><a href="#mulai" className="marketing-button marketing-button-primary">Mulai bersama SUKI <ArrowRight size={17} /></a><a href="#cara-kerja" className="marketing-button marketing-button-secondary">Lihat cara kerja</a></div></div><div className="business-hero-art"><div className="business-art-glow" /><div className="business-dashboard-card"><div className="dashboard-top"><span className="dashboard-avatar">SK</span><span><b>Profil bisnis Anda</b><small>Terlihat di ruang yang tepat</small></span><BadgeCheck size={20} /></div><div className="dashboard-chart"><span className="chart-label">Kehadiran lokal</span><div className="chart-bars"><i /><i /><i /><i /><i /><i /><i /></div><strong>bertumbuh bersama</strong></div><div className="dashboard-tags"><span>Produk</span><span>Komunitas</span><span>Kolaborasi</span></div></div><div className="business-art-note note-one"><Megaphone size={15} /> Cerita Anda, lebih dekat</div><div className="business-art-note note-two"><UsersRound size={15} /> Warga yang relevan</div></div></section>
+      <section className="suki-business-hero">
+        <div className="suki-business-hero-copy">
+          <p className="suki-business-kicker"><span /> LOCAL BUSINESS OPERATING SYSTEM</p>
+          <h1>Bisnis lokal tidak perlu berjalan sendirian.</h1>
+          <p className="suki-business-hero-text">SUKI Business membantu Anda membangun kehadiran, menemukan koneksi, dan bertumbuh di ekosistem digital yang memahami Sulawesi Tenggara.</p>
+          <div className="suki-business-hero-actions">
+            <a href="#mulai" className="suki-business-button suki-business-button-teal">Mulai bersama SUKI <ArrowRight size={16} /></a>
+            <a href="#cara-kerja" className="suki-business-text-link">Lihat cara kerja <MoveUpRight size={15} /></a>
+          </div>
+          <div className="suki-business-trust-line"><BadgeCheck size={16} /> Dibangun dari konteks lokal, untuk langkah yang nyata.</div>
+        </div>
+        <div className="suki-business-hero-visual" aria-label="Pratinjau ruang kerja SUKI Business">
+          <div className="suki-business-orbit orbit-a" /><div className="suki-business-orbit orbit-b" />
+          <div className="suki-business-preview">
+            <div className="suki-business-preview-top"><span className="suki-business-preview-brand"><span className="suki-business-mini-mark">S</span><b>Ruang bisnis</b></span><span className="suki-business-status"><i /> Aktif</span></div>
+            <div className="suki-business-preview-heading"><span>Profil Anda terlihat di</span><strong>ruang yang tepat.</strong></div>
+            <div className="suki-business-preview-chart"><div className="suki-business-chart-label"><span>Kehadiran lokal</span><b>bertumbuh bersama</b></div><div className="suki-business-bars"><i /><i /><i /><i /><i /><i /><i /><i /></div></div>
+            <div className="suki-business-preview-footer"><span><Store size={14} /> Marketplace</span><span><UsersRound size={14} /> Komunitas</span><span><Handshake size={14} /> Partner</span></div>
+          </div>
+          <div className="suki-business-float-card float-top"><CircleDollarSign size={16} /><span><b>Peluang baru</b><small>datang dari konteks</small></span></div>
+          <div className="suki-business-float-card float-bottom"><MapPin size={16} /><span><b>Kendari, Sultra</b><small>mulai dari yang dekat</small></span></div>
+        </div>
+      </section>
 
-    <section className="business-audience" id="manfaat"><div className="business-section-heading"><p className="marketing-eyebrow">Dibuat untuk langkah Anda berikutnya</p><h2>Satu ruang untuk berbagai cara bertumbuh.</h2></div><div className="business-path-grid">{businessPaths.map((path) => { const Icon = path.icon; return <article className={`business-path-card business-path-${path.tone}`} key={path.title}><span className="product-icon"><Icon size={21} /></span><h3>{path.title}</h3><p>{path.text}</p><a href="#mulai">Pelajari lebih lanjut <ArrowRight size={15} /></a></article>; })}</div></section>
+      <section className="suki-business-audience" id="ruang-tumbuh">
+        <div className="suki-business-section-head"><p className="suki-business-kicker">Dibuat untuk langkah Anda berikutnya</p><h2>Satu ruang untuk berbagai cara bertumbuh.</h2><p>Mulai dari kebutuhan yang paling dekat, lalu bangun kehadiran yang punya arah.</p></div>
+        <div className="suki-business-audience-grid">{audiences.map(({ icon: Icon, label, text, tone }) => <article className={`suki-business-audience-card tone-${tone}`} key={label}><span className="suki-business-icon"><Icon size={20} /></span><h3>{label}</h3><p>{text}</p><a href="#mulai">Pelajari ruangnya <ArrowRight size={14} /></a></article>)}</div>
+      </section>
 
-    <section className="business-steps" id="cara-kerja"><div className="business-section-heading"><p className="marketing-eyebrow">Cara kerja</p><h2>Mulai dari kebutuhan. Tumbuh dengan arah.</h2></div><div className="business-step-grid">{steps.map((step) => <article key={step.number}><span>{step.number}</span><h3>{step.title}</h3><p>{step.text}</p></article>)}</div></section>
+      <section className="suki-business-process" id="cara-kerja">
+        <div className="suki-business-section-head"><p className="suki-business-kicker">Cara kerja</p><h2>Dari kebutuhan menjadi kehadiran.</h2></div>
+        <div className="suki-business-process-grid"><article><span>01</span><h3>Kenali kebutuhan</h3><p>Ceritakan apa yang ingin Anda capai, siapa yang ingin dijangkau, dan ruang apa yang sudah Anda miliki.</p></article><article><span>02</span><h3>Susun kehadiran</h3><p>Kami membantu menemukan jalur yang paling relevan — dari profil, listing, campaign, sampai kolaborasi.</p></article><article><span>03</span><h3>Tumbuh bersama</h3><p>Bangun hubungan yang lebih dekat dengan warga, partner, dan komunitas di wilayah Anda.</p></article></div>
+      </section>
 
-    <section className="business-value-banner"><div><p className="marketing-eyebrow">Konteks lokal adalah keunggulan</p><h2>Lebih dekat dengan orang yang ingin Anda jangkau.</h2><p>SUKI Apps menghubungkan kehadiran bisnis dengan ruang yang sudah digunakan warga: marketplace, properti, pekerjaan, dan komunitas.</p></div><div className="business-value-list"><div><BadgeCheck size={18} /><span>Profil yang lebih terarah</span></div><div><BarChart3 size={18} /><span>Ruang untuk membangun kepercayaan</span></div><div><Handshake size={18} /><span>Peluang kolaborasi yang relevan</span></div></div></section>
+      <section className="suki-business-capabilities"><div className="suki-business-capabilities-copy"><p className="suki-business-kicker">Kenapa SUKI Business</p><h2>Lebih dekat. Lebih relevan. Lebih manusiawi.</h2><p>SUKI bukan sekadar tempat menampilkan bisnis. Ini adalah ruang digital untuk membuat hal-hal lokal lebih mudah ditemukan, dipahami, dan dikembangkan.</p><a href="#mulai" className="suki-business-text-link">Temukan ruang Anda <ArrowRight size={15} /></a></div><div className="suki-business-capability-list">{capabilities.map(({ icon: Icon, title, text }, index) => <article key={title}><span className="suki-business-capability-number">0{index + 1}</span><span className="suki-business-icon"><Icon size={18} /></span><div><h3>{title}</h3><p>{text}</p></div></article>)}</div></section>
 
-    <section className="business-proof-section" id="bukti"><div className="business-section-heading"><p className="marketing-eyebrow">Cerita yang sudah hadir</p><h2>Kepercayaan tumbuh dari cerita yang nyata.</h2><p className="business-proof-note">Kutipan dan contoh di bawah berasal dari konten serta listing yang tampil di ekosistem SUKI. Angka bukan proyeksi dan tidak menggantikan verifikasi pemilik bisnis.</p></div><div className="testimonial-grid">{testimonials.map((item) => <article className="testimonial-card" key={item.name}><Quote size={22} className="testimonial-quote-icon" /><blockquote>“{item.quote}”</blockquote><div className="testimonial-author"><span className="mini-avatar">{item.initials}</span><span><b>{item.name}</b><small>{item.meta}</small></span></div></article>)}</div></section>
+      <section className="suki-business-plans" id="paket"><div className="suki-business-section-head"><p className="suki-business-kicker">Ruang yang bisa Anda mulai</p><h2>Pilih langkah, bukan sekadar paket.</h2><p>Fase awal SUKI Business dimulai dari percakapan agar bentuk kehadiran Anda benar-benar sesuai kebutuhan.</p></div><div className="suki-business-plan-grid">{plans.map((plan) => <article className={`suki-business-plan ${plan.featured ? 'is-featured' : ''}`} key={plan.name}>{plan.featured && <span className="suki-business-plan-badge">Paling relevan</span>}<h3>{plan.name}</h3><p>{plan.description}</p><div className="suki-business-plan-divider" />{plan.features.map((feature) => <span className="suki-business-plan-feature" key={feature}><Check size={14} /> {feature}</span>)}<a href="#mulai" className="suki-business-plan-link">Mulai percakapan <ArrowRight size={14} /></a></article>)}</div></section>
 
-    <section className="business-cases-section"><div className="business-section-heading"><p className="marketing-eyebrow">Studi kasus dari ekosistem</p><h2>Dari listing menjadi langkah berikutnya.</h2></div><div className="case-study-grid">{caseStudies.map((item) => <article className={`case-study-card case-study-${item.tone}`} key={item.title}><div className="case-study-top"><span>{item.type}</span><TrendingUp size={17} /></div><h3>{item.title}</h3><p className="case-study-place"><MapPin size={13} /> {item.place}</p><p>{item.text}</p><strong>{item.result}</strong><small>terlihat pada listing yang ditampilkan</small></article>)}</div></section>
+      <section className="suki-business-cta" id="mulai"><div><p className="suki-business-kicker">Langkah berikutnya</p><h2>Punya tujuan bisnis yang ingin diwujudkan di Sultra?</h2><p>Ceritakan kebutuhan Anda. Tim SUKI akan membantu menentukan jalur yang paling relevan untuk langkah pertama.</p></div><div className="suki-business-cta-actions"><a href="mailto:hello@sukiapps.web.id" className="suki-business-button suki-business-button-light">Hubungi tim SUKI <ArrowRight size={16} /></a><Link href="/beranda" className="suki-business-cta-link">Kembali ke aplikasi <ArrowRight size={14} /></Link></div></section>
 
-    <section className="business-contact" id="mulai"><div><p className="marketing-eyebrow">Mari mulai percakapan</p><h2>Punya tujuan bisnis yang ingin diwujudkan di Sultra?</h2><p>Ceritakan kebutuhan Anda. Tim SUKI akan membantu menentukan jalur yang paling relevan untuk langkah pertama.</p></div><div className="business-contact-actions"><a href="mailto:hello@sukiapps.web.id" className="marketing-button marketing-button-light">Hubungi tim SUKI <ArrowRight size={17} /></a><Link href="/beranda" className="business-back-link">Kembali ke aplikasi <ArrowRight size={15} /></Link></div></section>
+      <section className="suki-business-faq"><div className="suki-business-section-head"><p className="suki-business-kicker">Pertanyaan umum</p><h2>Mulai dengan hal yang ingin Anda ketahui.</h2></div><div className="suki-business-faq-list"><details><summary>Siapa yang dapat bergabung dengan SUKI Business?<ChevronDown size={17} /></summary><p>Seller, UMKM, developer, pemilik properti, organisasi, sponsor, dan partner yang ingin membangun kehadiran di ekosistem digital Sulawesi Tenggara.</p></details><details><summary>Apakah saya harus memiliki toko online?<ChevronDown size={17} /></summary><p>Tidak selalu. Anda dapat memulai dari profil, cerita, listing, atau percakapan awal sesuai tujuan bisnis Anda.</p></details><details><summary>Bagaimana cara memulai?<ChevronDown size={17} /></summary><p>Kirimkan kebutuhan Anda melalui email. Tim SUKI akan menghubungi Anda untuk memahami konteks dan menyusun langkah awal.</p></details></div></section>
 
-    <section className="business-faq"><div className="business-section-heading"><p className="marketing-eyebrow">Pertanyaan umum</p><h2>Mulai dengan hal yang ingin Anda ketahui.</h2></div><div className="faq-list"><details><summary>Siapa yang dapat bergabung dengan SUKI Business?<ChevronDown size={17} /></summary><p>Seller, UMKM, developer, pemilik properti, organisasi, sponsor, dan partner yang ingin membangun kehadiran di ekosistem digital Sulawesi Tenggara.</p></details><details><summary>Apakah sudah ada paket bisnis yang tersedia?<ChevronDown size={17} /></summary><p>Fase awal difokuskan untuk memahami kebutuhan bisnis terlebih dahulu. Tim SUKI akan membantu menentukan bentuk kehadiran dan kolaborasi yang paling sesuai.</p></details><details><summary>Apakah saya harus memiliki toko online?<ChevronDown size={17} /></summary><p>Tidak selalu. Anda dapat memulai dari profil, cerita, listing, atau percakapan awal sesuai tujuan bisnis Anda.</p></details></div></section>
-
-    <footer className="marketing-footer business-footer"><div className="marketing-brand footer-brand"><span className="marketing-brand-mark">S</span><span><strong>SUKI Apps</strong><small>by SULTRAKITA</small></span></div><div className="footer-links"><Link href="/">SUKI Apps</Link><Link href="/beranda">Aplikasi</Link><Link href="/help-center">Panduan</Link><Link href="/legal/privacy">Privasi</Link></div><span className="footer-copy">© 2026 SUKI Apps · Sulawesi Tenggara</span></footer>
-  </main>;
+      <footer className="suki-business-footer"><div className="suki-business-brand"><span className="suki-business-mark">S</span><span><strong>SUKI</strong><small>Business</small></span></div><p>Ruang tumbuh untuk bisnis lokal Sulawesi Tenggara.</p><div className="suki-business-footer-links"><Link href="/">SUKI Apps</Link><Link href="/beranda">Aplikasi</Link><Link href="/help-center">Panduan</Link><Link href="/legal/privacy">Privasi</Link></div><small className="suki-business-copyright">© 2026 SUKI Apps · Sulawesi Tenggara</small></footer>
+    </main>
+  );
 }
