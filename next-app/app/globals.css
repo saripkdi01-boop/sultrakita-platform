@@ -3227,3 +3227,131 @@ html[data-theme='dark'] .auth-shell > div[aria-hidden='true'] > div { opacity: .
 @media(max-width:920px){.suki-overhaul-header-inner{gap:20px}.suki-overhaul-header nav,.suki-overhaul-header-actions{display:none}.suki-overhaul-menu{display:grid;place-items:center;margin-left:auto}.suki-overhaul-header.is-open .suki-overhaul-header-inner{flex-wrap:wrap;height:auto;padding-top:16px;padding-bottom:16px}.suki-overhaul-header.is-open{height:auto}.suki-overhaul-header.is-open nav{display:flex;order:3;width:100%;flex-direction:column;gap:0;padding-top:11px;border-top:1px solid var(--so-line)}.suki-overhaul-header.is-open nav a{padding:11px 0}.suki-overhaul-hero{padding-top:68px}.suki-overhaul-hero-grid{grid-template-columns:1fr;gap:22px}.suki-overhaul-hero-copy{max-width:720px}.suki-overhaul-hero-map{min-height:470px}.suki-overhaul-section-heading{grid-template-columns:1fr .7fr;gap:35px}.suki-overhaul-ecosystem-layout{grid-template-columns:1fr;gap:35px}.suki-overhaul-ecosystem-note{border-top:0;padding-top:0}.suki-overhaul-about-grid{grid-template-columns:1fr;gap:55px}.suki-overhaul-about-card{max-width:650px}.suki-overhaul-footer-main{grid-template-columns:1fr 1fr}.suki-overhaul-footer-links{justify-content:flex-start}}
 @media(max-width:620px){.suki-overhaul-container{width:calc(100% - 30px)}.suki-overhaul-topbar{height:30px}.suki-overhaul-topbar .suki-overhaul-container{font-size:9px}.suki-overhaul-topbar a{display:none}.suki-overhaul-header{height:66px}.suki-overhaul-hero{padding:52px 0 75px}.suki-overhaul-hero h1{font-size:clamp(44px,13vw,61px)}.suki-overhaul-hero-copy>p{font-size:13px}.suki-overhaul-hero-actions{flex-direction:column;align-items:stretch}.suki-overhaul-primary,.suki-overhaul-secondary{width:100%}.suki-overhaul-proof{gap:9px;flex-wrap:wrap;font-size:9px}.suki-overhaul-hero-map{min-height:360px}.suki-map{height:360px;transform:scale(.82);transform-origin:center}.ring-large{width:430px}.ring-small{width:320px}.node-one{top:28px;left:-2px}.node-two{top:16px;right:-7px}.node-three{bottom:42px;left:-4px}.node-four{bottom:24px;right:-7px}.suki-map-detail{bottom:-12px}.suki-overhaul-search-band{padding-bottom:68px}.suki-overhaul-search-trigger{height:58px}.suki-overhaul-search-trigger kbd{display:none}.suki-overhaul-quick-links{overflow:auto;margin-right:-15px;padding-bottom:4px}.suki-overhaul-quick-links>span{display:none}.suki-overhaul-quick-links a{flex:none}.suki-overhaul-section,.suki-overhaul-process,.suki-overhaul-about{padding:78px 0 88px}.suki-overhaul-section-heading{display:block}.suki-overhaul-section-heading>p{margin-top:20px}.suki-overhaul-section-heading h2,.suki-overhaul-about h2,.suki-overhaul-business h2{font-size:36px}.suki-overhaul-ecosystem-list{grid-template-columns:1fr;gap:9px;margin-top:35px}.suki-overhaul-ecosystem-item{min-height:135px}.suki-overhaul-process-layout{margin-top:36px;grid-template-columns:22px 1fr;gap:12px}.suki-overhaul-process-steps article{grid-template-columns:40px 1fr 20px;padding:17px 10px}.suki-overhaul-process-steps h3{font-size:16px}.suki-overhaul-process-steps p{font-size:10px}.suki-overhaul-about-card{min-height:370px}.suki-overhaul-about-card>strong{margin-top:63px;font-size:37px}.suki-about-route{right:18px;bottom:25px}.suki-overhaul-business{padding:55px 0}.suki-overhaul-business-inner{align-items:flex-start;flex-direction:column}.suki-overhaul-business p{font-size:11px}.suki-overhaul-light-button{width:100%}.suki-overhaul-final{padding:60px 0 75px}.suki-overhaul-final-card{padding:35px 24px;align-items:flex-start;flex-direction:column}.suki-overhaul-final-card .suki-overhaul-primary{width:100%}.suki-overhaul-footer-main{display:block}.suki-overhaul-footer-main>p{margin:17px 0 23px}.suki-overhaul-footer-links{gap:25px;justify-content:flex-start}.suki-overhaul-footer-bottom{display:block;line-height:1.8}.suki-overhaul-footer-bottom span{display:block}}
 @media(prefers-reduced-motion:reduce){.suki-overhaul-home *{scroll-behavior:auto!important;animation:none!important;transition:none!important}.suki-map-node:hover,.suki-overhaul-ecosystem-item:hover{transform:none!important}}
+
+/* SUKI high-fidelity semantic layer: light/dark values are remapped here, while components keep the same selectors. */
+.suki-overhaul-home{
+  --so-surface-base:var(--so-sand);
+  --so-surface-raised:#fff;
+  --so-surface-elevated:#fff;
+  --so-content-primary:var(--so-ink);
+  --so-content-secondary:var(--so-forest);
+  --so-content-muted:var(--so-muted);
+  --so-border-subtle:var(--so-line);
+  --so-border-default:#bfd8ce;
+  --so-action-primary:var(--so-teal);
+  --so-action-primary-hover:#0f746a;
+  --so-action-primary-active:#0b5b53;
+  --so-content-on-action:#fff;
+  --so-focus-ring:#0b5b53;
+  --so-feedback-error:#b64e43;
+  --so-feedback-success:#187d61;
+  background:var(--so-surface-base);
+  color:var(--so-content-primary);
+}
+.suki-overhaul-home :is(a,button,input):focus-visible{outline:3px solid var(--so-focus-ring);outline-offset:3px;box-shadow:0 0 0 6px var(--so-surface-base)}
+.suki-overhaul-home .suki-overhaul-primary{background:var(--so-action-primary)}
+.suki-overhaul-home .suki-overhaul-primary:hover{background:var(--so-action-primary-hover)}
+.suki-overhaul-home .suki-overhaul-secondary{border-color:var(--so-border-default);color:var(--so-content-secondary)}
+
+/* Dark is a dedicated tonal appearance, not a filter or a light-theme inversion. */
+.dark .suki-overhaul-home{
+  --so-ink:#e9f3ef;
+  --so-forest:#b7e0d2;
+  --so-teal:#71d5c1;
+  --so-mint:#193a34;
+  --so-sand:#171e1c;
+  --so-gold:#e6c47a;
+  --so-line:#34504a;
+  --so-muted:#a7bdb6;
+  --so-surface-base:#171e1c;
+  --so-surface-raised:#202b28;
+  --so-surface-elevated:#2a3834;
+  --so-content-primary:#e9f3ef;
+  --so-content-secondary:#b7e0d2;
+  --so-content-muted:#a7bdb6;
+  --so-border-subtle:#34504a;
+  --so-border-default:#4b6d63;
+  --so-action-primary:#71d5c1;
+  --so-action-primary-hover:#8be3d1;
+  --so-action-primary-active:#5abfac;
+  --so-content-on-action:#11231f;
+  --so-focus-ring:#f1cf78;
+  --so-feedback-error:#f09b91;
+  --so-feedback-success:#72d4ad;
+  background:var(--so-surface-base);
+  color:var(--so-content-primary);
+}
+.dark .suki-overhaul-home .suki-overhaul-topbar,
+.dark .suki-overhaul-home .suki-overhaul-nav,
+.dark .suki-overhaul-home .suki-overhaul-section,
+.dark .suki-overhaul-home .suki-overhaul-about,
+.dark .suki-overhaul-home .suki-overhaul-final,
+.dark .suki-overhaul-home .suki-overhaul-footer{background:var(--so-surface-base);color:var(--so-content-primary)}
+.dark .suki-overhaul-home .suki-overhaul-search-band,
+.dark .suki-overhaul-home .suki-overhaul-process{background:#1b2925;color:var(--so-content-primary)}
+.dark .suki-overhaul-home .suki-overhaul-business{background:#1d3832;border-color:var(--so-border-subtle)}
+.dark .suki-overhaul-home .suki-overhaul-search-shell,
+.dark .suki-overhaul-home .suki-overhaul-ecosystem-item,
+.dark .suki-overhaul-home .suki-map-node,
+.dark .suki-overhaul-home .suki-map-detail,
+.dark .suki-overhaul-home .suki-overhaul-process-steps article.is-active{background:var(--so-surface-raised);border-color:var(--so-border-default);color:var(--so-content-primary)}
+.dark .suki-overhaul-home .suki-overhaul-search-shell.is-open{background:var(--so-surface-elevated);border-color:var(--so-teal)}
+.dark .suki-overhaul-home .suki-overhaul-search-expanded>div:first-child{border-color:var(--so-border-default)}
+.dark .suki-overhaul-home .suki-overhaul-search-expanded input{color:var(--so-content-primary)}
+.dark .suki-overhaul-home .suki-overhaul-search-expanded>button[type=submit]{background:var(--so-action-primary);color:var(--so-content-on-action)}
+.dark .suki-overhaul-home .suki-overhaul-ecosystem-item.tone-mint{background:#1d3b35}
+.dark .suki-overhaul-home .suki-overhaul-ecosystem-item.tone-sand{background:#3b3222}
+.dark .suki-overhaul-home .suki-overhaul-ecosystem-item.tone-blue{background:#21363d}
+.dark .suki-overhaul-home .suki-overhaul-ecosystem-item.tone-peach{background:#3b2b27}
+.dark .suki-overhaul-home .suki-overhaul-about-card,
+.dark .suki-overhaul-home .suki-overhaul-final-card{box-shadow:0 24px 58px rgba(0,0,0,.28)}
+.dark .suki-overhaul-home .suki-overhaul-final-card .suki-overhaul-primary{background:#d9f2e9;color:#173b32!important}
+.dark .suki-overhaul-home .suki-overhaul-footer-links a{color:var(--so-content-muted)}
+.dark .suki-overhaul-home .suki-overhaul-footer-links a:hover{color:var(--so-teal)}
+
+/* Review fixes: keep visible controls comfortably tappable at the 320px reflow floor. */
+.suki-overhaul-home .suki-overhaul-brand,
+.suki-overhaul-home .suki-overhaul-menu,
+.suki-overhaul-home .suki-map-node{min-height:44px}
+.suki-overhaul-home .suki-overhaul-quick-links a{min-height:44px}
+.suki-overhaul-home .suki-overhaul-text-link{min-height:44px}
+.suki-overhaul-home .suki-overhaul-footer-links a{min-height:44px;display:inline-flex;align-items:center}
+.dark:has(.suki-overhaul-home),
+.dark:has(.suki-overhaul-home) body{background:#171e1c}
+/* Final review precedence fixes. */
+.dark body{background:#171e1c!important}
+.suki-overhaul-home .suki-overhaul-menu,
+.suki-overhaul-home .suki-map-node{height:44px;min-height:44px}
+@media(min-width:781px){
+  .suki-overhaul-home .suki-overhaul-topbar a,
+  .suki-overhaul-home .suki-overhaul-nav a,
+  .suki-overhaul-home .suki-overhaul-login{min-height:44px;display:inline-flex;align-items:center}
+}
+/* Runtime theme bridge: HomeClient persists data-theme on the document root. */
+[data-theme="dark"] body{background:#171e1c!important}
+[data-theme="dark"] .suki-overhaul-home{
+  --so-ink:#e9f3ef;--so-forest:#b7e0d2;--so-teal:#71d5c1;--so-mint:#193a34;--so-sand:#171e1c;--so-gold:#e6c47a;--so-line:#34504a;--so-muted:#a7bdb6;
+  --so-surface-base:#171e1c;--so-surface-raised:#202b28;--so-surface-elevated:#2a3834;--so-content-primary:#e9f3ef;--so-content-secondary:#b7e0d2;--so-content-muted:#a7bdb6;--so-border-subtle:#34504a;--so-border-default:#4b6d63;--so-action-primary:#71d5c1;--so-action-primary-hover:#8be3d1;--so-action-primary-active:#5abfac;--so-content-on-action:#11231f;--so-focus-ring:#f1cf78;
+  background:var(--so-surface-base);color:var(--so-content-primary)
+}
+[data-theme="dark"] .suki-overhaul-home .suki-overhaul-topbar,
+[data-theme="dark"] .suki-overhaul-home .suki-overhaul-section,
+[data-theme="dark"] .suki-overhaul-home .suki-overhaul-about,
+[data-theme="dark"] .suki-overhaul-home .suki-overhaul-final,
+[data-theme="dark"] .suki-overhaul-home .suki-overhaul-footer{background:var(--so-surface-base);color:var(--so-content-primary)}
+[data-theme="dark"] .suki-overhaul-home .suki-overhaul-search-band,
+[data-theme="dark"] .suki-overhaul-home .suki-overhaul-process{background:#1b2925;color:var(--so-content-primary)}
+[data-theme="dark"] .suki-overhaul-home .suki-overhaul-business{background:#1d3832;border-color:var(--so-border-subtle)}
+[data-theme="dark"] .suki-overhaul-home .suki-overhaul-search-shell,
+[data-theme="dark"] .suki-overhaul-home .suki-overhaul-ecosystem-item,
+[data-theme="dark"] .suki-overhaul-home .suki-map-node,
+[data-theme="dark"] .suki-overhaul-home .suki-map-detail,
+[data-theme="dark"] .suki-overhaul-home .suki-overhaul-process-steps article.is-active{background:var(--so-surface-raised);border-color:var(--so-border-default);color:var(--so-content-primary)}
+[data-theme="dark"] .suki-overhaul-home .suki-overhaul-search-shell.is-open{background:var(--so-surface-elevated);border-color:var(--so-teal)}
+[data-theme="dark"] .suki-overhaul-home .suki-overhaul-search-expanded input{color:var(--so-content-primary)}
+[data-theme="dark"] .suki-overhaul-home .suki-overhaul-search-expanded>button[type=submit]{background:var(--so-action-primary);color:var(--so-content-on-action)}
+[data-theme="dark"] .suki-overhaul-home .suki-overhaul-ecosystem-item.tone-mint{background:#1d3b35}
+[data-theme="dark"] .suki-overhaul-home .suki-overhaul-ecosystem-item.tone-sand{background:#3b3222}
+[data-theme="dark"] .suki-overhaul-home .suki-overhaul-ecosystem-item.tone-blue{background:#21363d}
+[data-theme="dark"] .suki-overhaul-home .suki-overhaul-ecosystem-item.tone-peach{background:#3b2b27}
+[data-theme="dark"] .suki-overhaul-home :is(a,button,input):focus-visible{outline-color:var(--so-focus-ring);box-shadow:0 0 0 6px var(--so-surface-base)}

@@ -61,7 +61,7 @@ function EcosystemMap({ active, onSelect }: { active: EcosystemKey; onSelect: (k
         const selected = item.key === active;
         return <motion.button key={item.key} type="button" className={`suki-map-node ${item.orbit} ${selected ? 'is-active' : ''}`} onClick={() => onSelect(item.key)} onMouseEnter={() => onSelect(item.key)} aria-pressed={selected} aria-label={`${item.title}: ${item.text}`} whileHover={{ scale: 1.04 }} whileTap={{ scale: .97 }} transition={sukiMotion.spring.press}><span className="suki-map-node-icon"><Icon size={17} /></span><span><b>{item.label}</b><small>{selected ? 'dipilih' : 'jelajahi'}</small></span></motion.button>;
       })}
-      <AnimatePresence mode="wait"><motion.div key={activeItem.key} className="suki-map-detail" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: sukiMotion.duration.standard, ease: sukiMotion.ease.out }}><span className={`suki-map-detail-icon tone-${activeItem.tone}`}><activeItem.icon size={15} /></span><div><small>{activeItem.label}</small><strong>{activeItem.title}</strong></div><ArrowRight size={15} /></motion.div></AnimatePresence>
+      <AnimatePresence mode="wait"><motion.div key={activeItem.key} className="suki-map-detail" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: sukiMotion.duration.standard, ease: sukiMotion.ease.out }}>{(() => { const ActiveIcon = activeItem.icon; return <><span className={`suki-map-detail-icon tone-${activeItem.tone}`}><ActiveIcon size={15} /></span><div><small>{activeItem.label}</small><strong>{activeItem.title}</strong></div><ArrowRight size={15} /></>; })()}</motion.div></AnimatePresence>
     </div>
   );
 }
