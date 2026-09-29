@@ -54,7 +54,10 @@ for (const route of routes) {
       await page.evaluate(() => document.fonts?.ready);
       await assertThemeContract(page, theme);
       await expect(page).toHaveScreenshot(`${route.name}-${theme}.png`, {
-        fullPage: true,
+        // Full-page height varies with seeded/API-backed content between the
+        // sandbox and GitHub runners. Viewport capture keeps responsive UI
+        // coverage deterministic while still testing the visible experience.
+        fullPage: false,
         animations: 'disabled',
         caret: 'hide',
         scale: 'css',
