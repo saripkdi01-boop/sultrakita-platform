@@ -1,0 +1,45 @@
+/* UI UX Pro Max review layer: keep visual decisions token-driven and compatibility-safe. */
+.suki-overhaul-home {
+  --uiux-touch-target: 44px;
+  --uiux-content-max: 1180px;
+}
+
+.suki-overhaul-home :where(h1, h2, h3) {
+  text-wrap: balance;
+}
+
+.suki-overhaul-home :where(a, button) {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.suki-overhaul-home :where(button, a, input, select):focus-visible {
+  outline: 3px solid var(--so-focus-ring, #0b5b53);
+  outline-offset: 3px;
+}
+
+.suki-overhaul-home :where(.suki-overhaul-primary, .suki-overhaul-secondary, .suki-overhaul-light-button, .suki-overhaul-search-trigger, .suki-overhaul-menu) {
+  min-height: var(--uiux-touch-target);
+}
+
+.suki-overhaul-home :where(#ekosistem, #cara-kerja, #tentang) {
+  scroll-margin-top: 88px;
+}
+
+@media (max-width: 620px) {
+  .suki-overhaul-home :where(.suki-overhaul-hero-copy, .suki-overhaul-section-heading, .suki-overhaul-final-card) {
+    text-wrap: pretty;
+  }
+
+  .suki-overhaul-home :where(.suki-overhaul-search-expanded input) {
+    min-height: var(--uiux-touch-target);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .suki-overhaul-home :where(*, *::before, *::after) {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
