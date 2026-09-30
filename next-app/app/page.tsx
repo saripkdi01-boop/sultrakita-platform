@@ -14,12 +14,21 @@ export const metadata: Metadata = {
     siteName: 'SUKI Apps',
     locale: 'id_ID',
     type: 'website',
+    images: [
+      {
+        url: '/brand/suki-logo-mark.png',
+        width: 512,
+        height: 512,
+        alt: 'Logo SUKI Apps',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'SUKI Apps — Ekosistem Digital Sulawesi Tenggara',
     description:
       'Temukan produk lokal, properti, peluang, komunitas, dan layanan bisnis di satu ekosistem.',
+    images: ['/brand/suki-logo-mark.png'],
   },
 };
 
