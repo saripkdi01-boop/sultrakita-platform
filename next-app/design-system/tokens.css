@@ -39,6 +39,11 @@
   --suki-theme-success: #16734f;
   --suki-theme-warning: #9a6500;
   --suki-theme-danger: #b4473d;
+  --theme-bg: var(--suki-theme-bg);
+  --theme-surface: var(--suki-theme-surface);
+  --theme-surface-muted: var(--suki-theme-surface-muted);
+  --theme-text: var(--suki-theme-text);
+  --theme-primary: var(--suki-theme-primary);
 }
 
 html[data-theme='dark'] {

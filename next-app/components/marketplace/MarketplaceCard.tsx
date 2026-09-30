@@ -52,7 +52,8 @@ export function MarketplaceCard({ item, saved, onSave, onQuickView, compared, on
     setImageIndex(index => (index + direction + images.length) % images.length);
   }
 
-  return <article className="marketplace-card group">
+  const titleId = `marketplace-listing-${item.id}`;
+  return <article className="marketplace-card group" aria-labelledby={titleId}>
     <div className="marketplace-card-image">
       {image ? <img src={image} alt={`${item.title} — foto ${imageIndex + 1}`} loading="lazy" /> : <div className="marketplace-card-placeholder"><span>{item.is_featured ? 'Pilihan warga Sultra' : 'Produk lokal'}</span><b>{item.title.slice(0, 1)}</b></div>}
       <div className="marketplace-card-image-shade" aria-hidden="true" />
@@ -66,7 +67,7 @@ export function MarketplaceCard({ item, saved, onSave, onQuickView, compared, on
     </div>
     <div className="marketplace-card-body">
       <div className="marketplace-card-price">{rupiah(Number(item.price))}</div>
-      <h2 title={item.title}>{item.title}</h2>
+      <h2 id={titleId} title={item.title}>{item.title}</h2>
       <p className="marketplace-card-meta"><MapPin size={13} aria-hidden="true" /><span>{location}</span><span aria-hidden="true">·</span><span>{conditionLabel(item.condition)}</span></p>
       <div className="seller-trust-row" aria-label={`Informasi kepercayaan penjual ${item.seller?.name || 'Penjual lokal'}`}>
         <div className="seller-avatar">{item.seller?.avatar_url ? <img src={item.seller.avatar_url} alt="" /> : <span>{(item.seller?.name || 'PL').slice(0, 2).toUpperCase()}</span>}</div>
