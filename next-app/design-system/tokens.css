@@ -1,0 +1,72 @@
+:root {
+  --suki-space-1: 4px;
+  --suki-space-2: 8px;
+  --suki-space-3: 12px;
+  --suki-space-4: 16px;
+  --suki-space-5: 20px;
+  --suki-space-6: 24px;
+  --suki-space-8: 32px;
+  --suki-space-10: 40px;
+  --suki-space-12: 48px;
+  --suki-radius-sm: 8px;
+  --suki-radius-md: 12px;
+  --suki-radius-lg: 16px;
+  --suki-radius-xl: 24px;
+  --suki-shadow-card: 0 1px 2px rgb(15 41 34 / 0.04), 0 10px 28px rgb(15 41 34 / 0.06);
+  --suki-shadow-float: 0 18px 42px rgb(15 41 34 / 0.12);
+  --suki-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --suki-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --suki-ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --suki-duration-instant: 100ms;
+  --suki-duration-fast: 160ms;
+  --suki-duration-normal: 220ms;
+  --suki-duration-slow: 320ms;
+  --suki-motion-press: 0.97;
+  --suki-motion-pop: 1.015;
+  --suki-theme-bg: #f7faf8;
+  --suki-theme-surface: #ffffff;
+  --suki-theme-surface-muted: #eef4f1;
+  --suki-theme-surface-elevated: #ffffff;
+  --suki-theme-text: #18332d;
+  --suki-theme-text-muted: #60736d;
+  --suki-theme-text-subtle: #82918c;
+  --suki-theme-border: #d9e6e0;
+  --suki-theme-primary: #0b7567;
+  --suki-theme-primary-hover: #075b50;
+  --suki-theme-primary-soft: #e3f3ee;
+  --suki-theme-on-primary: #ffffff;
+  --suki-theme-focus: #0b8a77;
+  --suki-theme-success: #16734f;
+  --suki-theme-warning: #9a6500;
+  --suki-theme-danger: #b4473d;
+}
+
+html[data-theme='dark'] {
+  --suki-theme-bg: #0e1915;
+  --suki-theme-surface: #16241f;
+  --suki-theme-surface-muted: #1b2d26;
+  --suki-theme-surface-elevated: #20332b;
+  --suki-theme-text: #e7f1ec;
+  --suki-theme-text-muted: #a9bbb3;
+  --suki-theme-text-subtle: #7f958b;
+  --suki-theme-border: #30483e;
+  --suki-theme-primary: #5bd2b0;
+  --suki-theme-primary-hover: #82e3c5;
+  --suki-theme-primary-soft: #173b30;
+  --suki-theme-on-primary: #08221a;
+  --suki-theme-focus: #76e2c2;
+  --suki-theme-success: #65d39e;
+  --suki-theme-warning: #e8c16d;
+  --suki-theme-danger: #f28c82;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --suki-duration-instant: 1ms;
+    --suki-duration-fast: 1ms;
+    --suki-duration-normal: 1ms;
+    --suki-duration-slow: 1ms;
+    --suki-motion-press: 1;
+    --suki-motion-pop: 1;
+  }
+}
