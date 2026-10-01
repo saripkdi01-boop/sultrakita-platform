@@ -1,49 +1,61 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSupabase } from '@/lib/supabase/server';
+import { checkRateLimit, clientIp } from '@/lib/rate-limit';
+import { apiError, badRequest, forbidden, internalError, unauthorized } from '@/lib/api-error';
 
-const buckets = new Map<string, { count: number; resetAt: number }>();
-const WINDOW_MS = 60_000;
-const MAX_REQUESTS = 60;
+// Fase 1.5: rate limit 60x/menit per user (atau IP bila anonim) via modul bersama.
 
-function limited(key: string) {
-  const now = Date.now();
-  const current = buckets.get(key);
-  if (!current || current.resetAt <= now) { buckets.set(key, { count: 1, resetAt: now + WINDOW_MS }); return false; }
-  current.count += 1;
-  return current.count > MAX_REQUESTS;
+async function currentUser() {
+  try {
+    const client = await getServerSupabase();
+    const { data: { user } } = await client.auth.getUser();
+    return user ? { supabase: client, user } : { supabase: null, user: null };
+  } catch {
+    return { supabase: null, user: null };
+  }
+}
+
+function checkCsrf(request: NextRequest) {
+  const csrfHeader = request.headers.get('x-csrf-token');
+  const csrfCookie = request.cookies.get('suki_csrf')?.value;
+  return !!csrfHeader && !!csrfCookie && csrfHeader === csrfCookie;
 }
 
 export async function POST(request: NextRequest) {
-  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-  if (limited(`interaction:${ip}`)) return NextResponse.json({ error: 'rate_limited' }, { status: 429, headers: { 'Retry-After': '60', 'Cache-Control': 'no-store' } });
-  const csrfHeader = request.headers.get('x-csrf-token');
-  const csrfCookie = request.cookies.get('suki_csrf')?.value;
-  if (!csrfHeader || !csrfCookie || csrfHeader !== csrfCookie) return NextResponse.json({ error: 'csrf_failed' }, { status: 403 });
+  const limited = await checkRateLimit(request, 'api', clientIp(request));
+  if (limited) return limited;
+  if (!checkCsrf(request)) return forbidden(request, 'Token keamanan tidak valid. Muat ulang halaman.');
   let body: { action?: string; postId?: string; idempotencyKey?: string };
-  try { body = await request.json(); } catch { return NextResponse.json({ error: 'invalid_json' }, { status: 400 }); }
-  if (body.action !== 'like' || !body.postId || !/^[a-zA-Z0-9_-]{1,120}$/.test(body.postId)) return NextResponse.json({ error: 'invalid_interaction' }, { status: 400 });
-  const { supabase, user } = await (async () => { try { return await getServerSupabase().then(async (client) => { const { data: { user: current } } = await client.auth.getUser(); return current ? { supabase: client, user: current } : { supabase: null, user: null }; }); } catch { return { supabase: null, user: null }; } })();
-  if (!supabase || !user) return NextResponse.json({ error: 'authentication_required' }, { status: 401 });
+  try { body = await request.json(); } catch { return badRequest(request, 'Format data tidak valid.'); }
+  if (body.action !== 'like' || !body.postId || !/^[a-zA-Z0-9_-]{1,120}$/.test(body.postId)) return badRequest(request, 'Interaksi tidak valid.');
+  const { supabase, user } = await currentUser();
+  if (!supabase || !user) return unauthorized(request);
+  const limitedUser = await checkRateLimit(request, 'api', user.id);
+  if (limitedUser) return limitedUser;
   const idempotencyKey = body.idempotencyKey?.slice(0, 120) || `${user.id}:${body.postId}:like`;
   const { data: existing, error: lookupError } = await supabase.from('likes').select('post_id').eq('post_id', body.postId).eq('user_id', user.id).maybeSingle();
-  if (lookupError && lookupError.code !== 'PGRST116') return NextResponse.json({ error: 'interaction_unavailable' }, { status: 500 });
+  if (lookupError && lookupError.code !== 'PGRST116') return internalError(request, 'Interaksi belum dapat diproses.');
   if (existing) return NextResponse.json({ ok: true, liked: true, idempotencyKey }, { headers: { 'Cache-Control': 'no-store' } });
   const { error } = await supabase.from('likes').insert({ post_id: body.postId, user_id: user.id });
-  if (error && error.code !== '23505') return NextResponse.json({ error: 'interaction_failed' }, { status: 500 });
+  if (error && error.code !== '23505') return internalError(request, 'Interaksi belum dapat diproses.');
   return NextResponse.json({ ok: true, liked: true, idempotencyKey }, { headers: { 'Cache-Control': 'no-store' } });
 }
 
 export async function DELETE(request: NextRequest) {
-  const csrfHeader = request.headers.get('x-csrf-token');
-  const csrfCookie = request.cookies.get('suki_csrf')?.value;
-  if (!csrfHeader || !csrfCookie || csrfHeader !== csrfCookie) return NextResponse.json({ error: 'csrf_failed' }, { status: 403 });
+  const limited = await checkRateLimit(request, 'api', clientIp(request));
+  if (limited) return limited;
+  if (!checkCsrf(request)) return forbidden(request, 'Token keamanan tidak valid. Muat ulang halaman.');
   const postId = request.nextUrl.searchParams.get('postId');
-  if (!postId || !/^[a-zA-Z0-9_-]{1,120}$/.test(postId)) return NextResponse.json({ error: 'invalid_interaction' }, { status: 400 });
+  if (!postId || !/^[a-zA-Z0-9_-]{1,120}$/.test(postId)) return badRequest(request, 'Interaksi tidak valid.');
   try {
-    const { supabase, user } = await (async () => { const client = await getServerSupabase(); const { data: { user: current } } = await client.auth.getUser(); return { supabase: client, user: current }; })();
-    if (!user) return NextResponse.json({ error: 'authentication_required' }, { status: 401 });
+    const { supabase, user } = await currentUser();
+    if (!supabase || !user) return unauthorized(request);
+    const limitedUser = await checkRateLimit(request, 'api', user.id);
+    if (limitedUser) return limitedUser;
     const { error } = await supabase.from('likes').delete().eq('post_id', postId).eq('user_id', user.id);
-    if (error) return NextResponse.json({ error: 'interaction_failed' }, { status: 500 });
+    if (error) return internalError(request, 'Interaksi belum dapat diproses.');
     return NextResponse.json({ ok: true, liked: false }, { headers: { 'Cache-Control': 'no-store' } });
-  } catch { return NextResponse.json({ error: 'interaction_unavailable' }, { status: 500 }); }
+  } catch {
+    return apiError('SERVICE_UNAVAILABLE', 'Interaksi sementara belum tersedia.', 503, request);
+  }
 }

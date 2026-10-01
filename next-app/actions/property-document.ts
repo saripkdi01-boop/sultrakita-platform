@@ -3,6 +3,8 @@
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { requireServerUser } from '@/lib/supabase/server';
+import { revalidatePath } from 'next/cache';
+import { requireRole } from '@/lib/dal';
 
 export async function createPropertyDocumentDownload(propertyId: string, objectKey: string) {
   const { supabase, user } = await requireServerUser();
@@ -24,10 +26,8 @@ export async function createPropertyDocumentDownload(propertyId: string, objectK
 
 
 async function requireAdmin() {
-  const { supabase, user } = await requireServerUser();
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle();
-  if (profile?.role !== 'admin') throw new Error('Akses admin diperlukan.');
-  return { supabase, user };
+  // Fase 1.3: otorisasi admin terpusat via DAL.
+  return requireRole('admin');
 }
 
 export async function listAdminPropertyVerifications(filter: 'all' | 'pending' | 'verified' = 'pending') {
@@ -49,6 +49,8 @@ export async function reviewPropertyVerification(propertyId: string, verified: b
     const { supabase, user } = await requireAdmin();
     const { data, error } = await supabase.from('properties').update({ is_admin_verified: verified, status: verified ? 'available' : 'rejected', published_at: verified ? new Date().toISOString() : null }).eq('id', propertyId).select('id,is_admin_verified,status,published_at,updated_at').single();
     if (error) throw error;
+    revalidatePath('/properti');
+    revalidatePath(`/properti/${propertyId}`);
     return { ok: true as const, data, reviewerId: user.id };
   } catch (error) {
     return { ok: false as const, error: error instanceof Error ? error.message : 'Status verifikasi belum dapat diperbarui.' };
