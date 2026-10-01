@@ -88,3 +88,23 @@ Dibiarkan di repo untuk referensi/arsip; rencana: diarsipkan permanen di fase be
   notifikasi via tabel `notifications`).
 - JSON-LD `ItemList > Product` di `/marketplace`: hanya harga asli integer IDR,
   tanpa klaim ketersediaan palsu.
+
+## Properti map-first ala Zillow (Fase 3)
+- Halaman `/properti`: layout desktop split 57% (daftar) / 43% (peta sticky);
+  mobile memakai tab Daftar/Peta. Peta Leaflet client-only (`ssr: false`) dengan
+  tile CARTO Voyager + markercluster + pin harga ala Zillow.
+- Deep link `?lat=&lng=&zoom=` diperbarui saat peta digeser (debounce 600 mdtk,
+  `history.replaceState`). Tombol "Lokasi saya" memakai Geolocation API — karena
+  itu `Permissions-Policy` di `next.config.mjs` mengizinkan `geolocation=(self)`.
+- Hover kartu listing menyorot pin di peta; klik pin scroll ke kartu.
+- Fondasi geo: migrasi `20261001080000_properti_fase3_mapfirst.sql` — ekstensi
+  PostGIS (defensif: dilewati bila tidak tersedia), kolom `geog geography`,
+  trigger sinkronisasi lat/lng, index GIST, RPC `properties_in_bbox` dan
+  `properties_nearby`. Server action `lib/actions/property-geo.ts` memakai RPC
+  bila ada, fallback ke perbandingan latitude/longitude + haversine di JS.
+- Geocode dilakukan SAAT SIMPAN (`createProperty` via Nominatim OSM dengan
+  User-Agent + jeda 1100 mdtk), bukan saat search; kegagalan geocode tidak
+  menggagalkan penyimpanan listing.
+- Halaman detail: mini-map asli (fallback centroid kecamatan berlabel jujur
+  "perkiraan" bila tanpa koordinat), seksi "Serupa di dekat sini", JSON-LD
+  `RealEstateListing` hanya dengan data yang benar-benar ada.
