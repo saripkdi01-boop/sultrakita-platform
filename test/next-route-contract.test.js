@@ -16,6 +16,10 @@ const groupsMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', '
 const appLayout = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'components', 'layout', 'AppLayout.tsx'), 'utf8');
 const createMenu = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'components', 'layout', 'CreateMenu.tsx'), 'utf8');
 const berandaPage = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'app', 'beranda', 'page.tsx'), 'utf8');
+// Fase 1: page.tsx area menjadi Server Component; logika client (baca query param,
+// composer, dsb.) pindah ke page-client.tsx. Contract test membaca keduanya.
+const berandaClient = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'app', 'beranda', 'page-client.tsx'), 'utf8');
+const groupsClient = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'app', 'groups', 'page-client.tsx'), 'utf8');
 
 test('feed route selects only profile columns that exist in Supabase', () => {
   assert.match(feedRoute, /profiles\(display_name,username,avatar_url,visibility_settings\)/);
@@ -29,23 +33,34 @@ test('feed route selects only profile columns that exist in Supabase', () => {
 
 test('feed route rejects invalid cursors and filters without leaking database errors', () => {
   assert.match(feedRoute, /invalid_cursor/);
-  assert.match(feedRoute, /invalid_filter/);
-  assert.match(feedRoute, /feed_query_failed/);
+  // Fase 1.4: error code lama diganti helper error terpusat (format { error: { code, message, requestId } }).
+  // Invarian tetap: kursor/filter tidak valid ditolak (400), error DB tidak bocor (pesan generik, 500).
+  assert.match(feedRoute, /Filter feed tidak valid/);
+  assert.match(feedRoute, /Kursor feed tidak valid/);
+  assert.match(feedRoute, /internalError\(request, 'Feed belum dapat dimuat\.'\)/);
 });
 
 test('marketplace demo data is never used in production', () => {
+  // Fase 1.1: query listing publik terpusat di lib/listings-query.ts (satu sumber
+  // kebenaran untuk API route dan SSR halaman). Contract dibaca dari kedua berkas.
+  const listingsQuery = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'lib', 'listings-query.ts'), 'utf8');
+  const apiErrorLib = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'lib', 'api-error.ts'), 'utf8');
   assert.match(listingsRoute, /ALLOW_DEMO_DATA.*NODE_ENV !== 'production'/);
   assert.match(listingsRoute, /source: 'unavailable'/);
-  assert.match(listingsRoute, /status: 503/);
-  assert.match(listingsRoute, /invalid_price_filter/);
-  assert.match(listingsRoute, /invalid_price_range/);
-  assert.match(listingsRoute, /image_url/);
-  assert.doesNotMatch(listingsRoute, /select\('[^']*\bimages\b/);
-  assert.match(listingsRoute, /SUPABASE_SERVICE_ROLE_KEY/);
+  assert.match(listingsRoute, /SERVICE_UNAVAILABLE/);
+  // SERVICE_UNAVAILABLE dipetakan ke HTTP 503 oleh helper error terpusat.
+  assert.match(apiErrorLib, /'SERVICE_UNAVAILABLE', message, 503/);
+  assert.match(listingsRoute, /Filter harga minimum\/maksimum tidak valid/);
+  assert.match(listingsRoute, /Harga minimum tidak boleh lebih besar dari maksimum/);
+  assert.match(listingsQuery, /image_url/);
+  // Kolom `images` (array foto) adalah bagian sah dari skema sejak Fase 2
+  // (galeri multi-foto); guard lama yang melarang select `images` sudah usang.
+  assert.match(listingsQuery, /SUPABASE_SERVICE_ROLE_KEY/);
+  assert.doesNotMatch(listingsQuery, /NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY/);
   assert.doesNotMatch(listingsRoute, /NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY/);
-  assert.match(listingsRoute, /is_demo\.is\.null,is_demo\.eq\.false/);
-  assert.match(listingsRoute, /curated_demo/);
-  assert.match(listingsRoute, /DEMO-SEED-/);
+  assert.match(listingsQuery, /is_demo\.is\.null,is_demo\.eq\.false/);
+  assert.match(listingsQuery, /curated_demo/);
+  assert.match(listingsQuery, /DEMO-SEED-/);
 });
 
 test('Create Post binds identity server-side and supports safe idempotent publish', () => {
@@ -73,10 +88,12 @@ test('Create Post media upload is authenticated and bounded', () => {
 });
 
 test('Create Post wiring preserves the requested content type', () => {
-  const page = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'app', 'beranda', 'page.tsx'), 'utf8');
   const input = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'components', 'beranda', 'CreatePostInput.tsx'), 'utf8');
   assert.match(input, /onCreate\?\.\('reel'\)/);
-  assert.match(page, /CreatePostInput onCreate=\{openComposer\}/);
+  // Fase 1: page.tsx menjadi Server Component yang me-render BerandaPageClient;
+  // wiring composer (openComposer) kini ada di page-client.tsx.
+  assert.match(berandaPage, /BerandaPageClient/);
+  assert.match(berandaClient, /CreatePostInput onCreate=\{openComposer\}/);
   assert.match(composer, /postType === 'reel'/);
 });
 
@@ -96,23 +113,27 @@ test('profile identity uses authenticated nickname and live profile columns', ()
 });
 
 test('Groups is a real authenticated community surface, not demo content', () => {
-  assert.match(groupsPage, /createGroup/);
-  assert.match(groupsPage, /joinGroup/);
-  assert.match(groupsPage, /createGroupPost/);
-  assert.match(groupsPage, /Cari komunitas berdasarkan nama/);
-  assert.match(groupsPage, /Buat komunitas baru/);
+  // Fase 1: page.tsx menjadi Server Component yang me-render GroupsPageClient;
+  // interaksi (create/join/post) kini ada di page-client.tsx.
+  assert.match(groupsPage, /GroupsPageClient/);
+  assert.match(groupsClient, /createGroup/);
+  assert.match(groupsClient, /joinGroup/);
+  assert.match(groupsClient, /createGroupPost/);
+  assert.match(groupsClient, /Cari komunitas berdasarkan nama/);
+  assert.match(groupsClient, /Buat komunitas baru/);
   assert.match(groupsAction, /requireServerUser/);
   assert.match(groupsAction, /create_suki_group/);
   assert.match(groupsAction, /group_posts/);
   assert.match(groupsMigration, /create table if not exists public\.groups/);
   assert.match(groupsMigration, /alter table public\.groups enable row level security/);
   assert.match(groupsMigration, /group_posts_member_insert/);
-  assert.doesNotMatch(groupsPage, /125 rb|48 rb|SUKI Foodies|UMKM Sultra Naik Kelas/);
+  assert.doesNotMatch(groupsClient, /125 rb|48 rb|SUKI Foodies|UMKM Sultra Naik Kelas/);
 });
 
 test('Groups quick navigation and publish entry are functional across shells', () => {
   assert.match(appLayout, /key === 'groups'.*window\.location\.href = '\/groups'/);
   assert.match(createMenu, /window\.location\.href = `\/beranda\?compose=\$\{type\}`/);
-  assert.match(berandaPage, /URLSearchParams\(window\.location\.search\)/);
-  assert.match(berandaPage, /get\('compose'\)/);
+  // Fase 1: baca query param ?compose= pindah ke page-client.tsx (page.tsx kini Server Component).
+  assert.match(berandaClient, /URLSearchParams\(window\.location\.search\)/);
+  assert.match(berandaClient, /get\('compose'\)/);
 });
