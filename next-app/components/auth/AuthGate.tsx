@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
 import {
-  ArrowRight, Check, ChevronDown, Eye, EyeOff, Facebook, Globe2, LockKeyhole, Moon, Sun,
+  ArrowRight, Check, Eye, EyeOff, Facebook, LockKeyhole,
   Mail, ShieldCheck, Sparkles, UserRound, X, BriefcaseBusiness, House,
   ShoppingBag, UsersRound
 } from 'lucide-react';
@@ -44,22 +44,6 @@ function safeRedirect(value: string | null) {
 }
 
 type Mode = 'login' | 'signup';
-type Language = { code: string; label: string; native: string };
-
-const languages: Language[] = [
-  { code: 'id', label: 'Indonesian', native: 'Bahasa Indonesia' }, { code: 'en', label: 'English', native: 'English' },
-  { code: 'zh', label: 'Chinese', native: '中文' }, { code: 'hi', label: 'Hindi', native: 'हिन्दी' },
-  { code: 'es', label: 'Spanish', native: 'Español' }, { code: 'fr', label: 'French', native: 'Français' },
-  { code: 'ar', label: 'Arabic', native: 'العربية' }, { code: 'bn', label: 'Bengali', native: 'বাংলা' },
-  { code: 'pt', label: 'Portuguese', native: 'Português' }, { code: 'ru', label: 'Russian', native: 'Русский' },
-  { code: 'ja', label: 'Japanese', native: '日本語' }, { code: 'de', label: 'German', native: 'Deutsch' },
-  { code: 'ko', label: 'Korean', native: '한국어' }, { code: 'vi', label: 'Vietnamese', native: 'Tiếng Việt' },
-  { code: 'tr', label: 'Turkish', native: 'Türkçe' }, { code: 'it', label: 'Italian', native: 'Italiano' },
-  { code: 'th', label: 'Thai', native: 'ไทย' }, { code: 'pl', label: 'Polish', native: 'Polski' },
-  { code: 'uk', label: 'Ukrainian', native: 'Українська' }, { code: 'nl', label: 'Dutch', native: 'Nederlands' },
-  { code: 'ms', label: 'Malay', native: 'Bahasa Melayu' }, { code: 'fa', label: 'Persian', native: 'فارسی' },
-  { code: 'sw', label: 'Swahili', native: 'Kiswahili' }, { code: 'tl', label: 'Filipino', native: 'Filipino' },
-];
 
 const copy = {
   id: {
@@ -102,8 +86,6 @@ export function AuthGate({ initialMode = 'login' }: { initialMode?: Mode }) {
   const router = useRouter();
   const params = useSearchParams();
   const [mode, setMode] = useState<Mode>(initialMode);
-  const [language, setLanguage] = useState('id');
-  const [languageOpen, setLanguageOpen] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -116,9 +98,8 @@ export function AuthGate({ initialMode = 'login' }: { initialMode?: Mode }) {
   const [signupAvatar, setSignupAvatar] = useState<File | null>(null);
   const [signupAvatarPreview, setSignupAvatarPreview] = useState('');
   const [remember, setRemember] = useState(true);
-  const { theme, toggleTheme } = usePreferences();
+  const { language } = usePreferences();
 
-  const selectedLanguage = languages.find(item => item.code === language) || languages[0];
   const t = copy[language === 'en' ? 'en' : 'id'];
   const score = useMemo(() => strength(password), [password]);
 
@@ -218,39 +199,7 @@ export function AuthGate({ initialMode = 'login' }: { initialMode?: Mode }) {
         <div className="absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#d7eae3] opacity-50" />
       </div>
 
-      <header className="relative mx-auto flex w-full max-w-[1240px] items-center justify-between px-5 py-5 sm:px-7 lg:px-8">
-        <Logo />
-        <div className="flex items-center gap-2">
-          <button type="button" onClick={toggleTheme} className="theme-toggle-control" aria-label={theme === 'dark' ? 'Aktifkan mode terang' : 'Aktifkan mode gelap'} aria-pressed={theme === 'dark'}>
-            {theme === 'dark' ? <Sun size={16} aria-hidden="true" /> : <Moon size={16} aria-hidden="true" />}
-            <span className="sr-only">{theme === 'dark' ? 'Mode terang' : 'Mode gelap'}</span>
-          </button>
-          <div className="relative">
-          <button
-            type="button" onClick={() => setLanguageOpen(value => !value)}
-            className="inline-flex min-h-10 items-center gap-2 rounded-full border border-[#d9e7e2] bg-white/80 px-3.5 text-xs font-bold text-[#41645d] shadow-sm backdrop-blur transition hover:border-[#bcd5cd] hover:bg-white focus:outline-none focus:ring-4 focus:ring-[#188875]/10"
-            aria-expanded={languageOpen} aria-haspopup="listbox" aria-label="Pilih bahasa"
-          >
-            <Globe2 size={15} className="text-[#188875]" /> {selectedLanguage.native} <ChevronDown size={14} />
-          </button>
-          {languageOpen && (
-            <div role="listbox" aria-label="Bahasa" className="absolute right-0 z-30 mt-2 max-h-80 w-64 overflow-y-auto rounded-2xl border border-[#dce9e4] bg-white p-1.5 shadow-[0_18px_50px_rgba(19,65,57,.16)]">
-              {languages.map(item => (
-                <button
-                  type="button" role="option" aria-selected={item.code === language} key={item.code}
-                  onClick={() => { setLanguage(item.code); setLanguageOpen(false); }}
-                  className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm transition hover:bg-[#edf8f3] focus:outline-none focus:ring-2 focus:ring-[#188875]/20 ${item.code === language ? 'bg-[#edf8f3] font-bold text-[#123f38]' : 'text-[#516f68]'}`}
-                >
-                  <span>{item.native}</span><small className="text-[11px] text-[#94a7a2]">{item.label}</small>
-                </button>
-              ))}
-            </div>
-          )}
-          </div>
-        </div>
-      </header>
-
-      <div className="relative mx-auto grid w-full max-w-[1240px] items-center gap-8 px-5 pb-8 pt-2 sm:px-7 lg:min-h-[calc(100svh-80px)] lg:grid-cols-[1fr_470px] lg:gap-16 lg:px-8 lg:pb-10">
+      <div className="relative mx-auto grid w-full max-w-[1240px] items-center gap-8 px-5 pb-8 pt-6 sm:px-7 lg:min-h-[calc(100svh-80px)] lg:grid-cols-[1fr_470px] lg:gap-16 lg:px-8 lg:pb-10">
         <section className="hidden lg:block">
           <div className="max-w-[590px]">
             <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-[#d7e9e2] bg-white/65 px-3.5 py-2 text-[11px] font-extrabold uppercase tracking-[.16em] text-[#39776c] backdrop-blur">
