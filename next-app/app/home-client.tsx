@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import {
@@ -69,7 +70,7 @@ function EcosystemMap({ active, onSelect }: { active: EcosystemKey; onSelect: (k
         layout={!reduceMotion}
         transition={sukiMotion.spring.gentle}
       >
-        <span><img src="/brand/suki-logo-mark.svg" alt="" /></span>
+        <span><Image src="/brand/suki-logo-mark.svg" alt="" width={23} height={23} /></span>
         <strong>SUKI</strong>
         <small>ruang lokal</small>
       </motion.div>
@@ -241,7 +242,7 @@ export default function HomeClient() {
       <header className={`suki-overhaul-header ${menuOpen ? 'is-open' : ''}`}>
         <div className="suki-overhaul-container suki-overhaul-header-inner">
           <Link href="/" className="suki-overhaul-brand" aria-label="SUKI Apps — beranda" onClick={closeMenu}>
-            <span className="suki-overhaul-brand-mark"><img src="/brand/suki-logo-mark.svg" alt="" /></span>
+            <span className="suki-overhaul-brand-mark"><Image src="/brand/suki-logo-mark.svg" alt="" width={23} height={23} /></span>
             <span><strong>SUKI Apps</strong><small>by SULTRAKITA</small></span>
           </Link>
           <nav id="suki-primary-navigation" aria-label="Navigasi utama">
@@ -467,7 +468,7 @@ export default function HomeClient() {
           </div>
           <div className="suki-overhaul-about-card">
             <div className="suki-about-card-top">
-              <span className="suki-about-logo"><img src="/brand/suki-logo-mark.svg" alt="" /></span>
+              <span className="suki-about-logo"><Image src="/brand/suki-logo-mark.svg" alt="" width={26} height={26} /></span>
               <span><small>LOCAL DIGITAL ECOSYSTEM</small><b>Kendari, Sultra</b></span>
             </div>
             <strong>Temukan.<br />Terhubung.<br /><em>Bertumbuh.</em></strong>
@@ -505,7 +506,7 @@ export default function HomeClient() {
           <div className="suki-overhaul-footer-main">
             <div>
               <div className="suki-overhaul-brand">
-                <span className="suki-overhaul-brand-mark"><img src="/brand/suki-logo-mark.svg" alt="" /></span>
+                <span className="suki-overhaul-brand-mark"><Image src="/brand/suki-logo-mark.svg" alt="" width={23} height={23} /></span>
                 <span><strong>SUKI Apps</strong><small>by SULTRAKITA</small></span>
               </div>
               <p>Ekosistem digital yang menghubungkan kebutuhan, peluang, dan jejaring lokal Sulawesi Tenggara.</p>
