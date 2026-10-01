@@ -78,6 +78,7 @@ async function requireAdmin() {
 }
 
 type Ok<T> = { ok: true } & T;
+type OkEmpty = { ok: true };
 type Fail = { ok: false; error: string };
 
 export async function listAdPlacements(): Promise<Ok<{ placements: AdPlacementRow[] }> | Fail> {
@@ -95,7 +96,7 @@ export async function listAdPlacements(): Promise<Ok<{ placements: AdPlacementRo
   }
 }
 
-export async function saveAdPlacement(input: { placement: string; provider: AdProvider; adsense_slot: string }): Promise<Ok<Record<string, never>> | Fail> {
+export async function saveAdPlacement(input: { placement: string; provider: AdProvider; adsense_slot: string }): Promise<OkEmpty | Fail> {
   try {
     if (!isPlacementId(input.placement)) return { ok: false, error: 'Placement tidak valid.' };
     if (input.provider !== 'adsense' && input.provider !== 'house' && input.provider !== 'off') {
@@ -170,7 +171,7 @@ export async function updateHouseAd(id: string, input: HouseAdInput): Promise<Ok
   }
 }
 
-export async function toggleHouseAd(id: string, active: boolean): Promise<Ok<Record<string, never>> | Fail> {
+export async function toggleHouseAd(id: string, active: boolean): Promise<OkEmpty | Fail> {
   try {
     const supabase = await requireAdmin();
     const { error } = await supabase.from('house_ads').update({ active, updated_at: new Date().toISOString() }).eq('id', id);
@@ -182,7 +183,7 @@ export async function toggleHouseAd(id: string, active: boolean): Promise<Ok<Rec
   }
 }
 
-export async function deleteHouseAd(id: string): Promise<Ok<Record<string, never>> | Fail> {
+export async function deleteHouseAd(id: string): Promise<OkEmpty | Fail> {
   try {
     const supabase = await requireAdmin();
     const { error } = await supabase.from('house_ads').delete().eq('id', id);
