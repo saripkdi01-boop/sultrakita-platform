@@ -3,7 +3,7 @@ import { getProperties } from '@/lib/actions/property';
 import PropertiPageClient from './page-client';
 
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://sukiapps.web.id').replace(/\/$/, '');
-const ogImage = `${siteUrl}/suki-logo-mark.png`;
+const ogImage = `${siteUrl}/og-image.png`;
 
 const title = 'SUKI Properti — Jual Beli & Sewa Properti Sulawesi Tenggara';
 const description = 'Cari rumah, tanah, ruko, dan properti lelang di Sulawesi Tenggara. Data terverifikasi, bisa KPR, dengan peta dan foto lengkap.';

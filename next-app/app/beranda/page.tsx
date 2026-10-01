@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import BerandaPageClient from './page-client';
 
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://sukiapps.web.id').replace(/\/$/, '');
-const ogImage = `${siteUrl}/suki-logo-mark.png`;
+const ogImage = `${siteUrl}/og-image.png`;
 
 const title = 'Beranda — Cerita Warga Sulawesi Tenggara | SUKI Apps';
 const description = 'Feed sosial SUKI Apps: kabar, cerita, dan percakapan terbaru dari warga Sulawesi Tenggara. Bagikan ceritamu, ikuti warga, dan temukan komunitas lokal.';

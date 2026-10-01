@@ -9,7 +9,7 @@ import { getJobById } from '@/lib/actions/jobs';
 export const revalidate = 300;
 
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://sukiapps.web.id').replace(/\/$/, '');
-const ogImage = `${siteUrl}/suki-logo-mark.png`;
+const ogImage = `${siteUrl}/og-image.png`;
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
