@@ -1,21 +1,26 @@
 /**
  * Audit trail untuk aksi admin/moderasi (P0-3).
  *
+ * SERVER-ONLY: modul ini memakai SUPABASE_SERVICE_ROLE_KEY (bypass RLS) dan
+ * TIDAK BOLEH diimpor dari kode client. Selalu berjalan di server (server
+ * actions / route handlers / server components).
+ *
  * KONTRAK BERSAMA — modul ini diimpor slice lain, jadi API-nya harus stabil:
  *   logAuditEvent(client, { actorId, action, targetType, targetId?, reason?, metadata? })
  *     -> Promise<{ ok: true, id?: string } | { ok: false, error?: string }>
  *
- * - `client` adalah Supabase client DENGAN hak tulis ke tabel `audit_events`.
- *   Karena RLS tabel ini tidak membuka INSERT publik, pakai service-role
- *   client (server-side saja) — lihat migrasi
- *   `supabase/migrations/20261001140001_security_audit_events.sql`.
+ * - Parameter `client` dipertahankan demi kompatibilitas pemanggil lama
+ *   (lib/admin/actions.ts, app/admin/billing/actions.ts), tetapi penulisan
+ *   SELALU memakai client internal dari getAuditWriterClient() — service-role
+ *   server-side — karena anon-key client tidak bisa INSERT ke `audit_events`
+ *   (lihat migrasi `supabase/migrations/20261001140001_security_audit_events.sql`).
  * - Fungsi ini TIDAK PERNAH throw: kegagalan pencatatan dikembalikan sebagai
- *   `{ ok: false }` agar aksi bisnis tidak gagal hanya karena audit gagal.
- *   Panggil di `catch`/finally atau fire-and-forget sesuai kebutuhan —
- *   tapi JANGAN jadikan kegagalan audit sebagai alasan membatalkan aksi.
+ *   `{ ok: false }` DAN dicatat ke console.error dengan konteks, agar aksi
+ *   bisnis tidak gagal hanya karena audit gagal — tapi kegagalan TIDAK
+ *   ditelan diam-diam.
  */
 
-import type { SupabaseClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 export interface AuditEventInput {
   /** ID pengguna pelaku; null untuk aksi sistem. */
@@ -49,12 +54,24 @@ export const AUDIT_ACTIONS = {
   PROPERTY_VERIFY: 'property.verify',
 } as const;
 
+/** Singleton client service-role untuk penulisan audit (dibuat sekali per proses). */
+let cachedWriter: SupabaseClient | null = null;
+
 export async function logAuditEvent(
-  client: SupabaseClient,
+  // Dipertahankan demi kompatibilitas pemanggil; penulisan selalu memakai
+  // getAuditWriterClient() di bawah, bukan client ini.
+  _client: SupabaseClient,
   event: AuditEventInput,
 ): Promise<AuditResult> {
+  const context = {
+    action: event.action,
+    actorId: event.actorId,
+    targetType: event.targetType,
+    targetId: event.targetId ?? null,
+  };
   try {
-    const { data, error } = await client
+    const writer = getAuditWriterClient();
+    const { data, error } = await writer
       .from('audit_events')
       .insert({
         actor_id: event.actorId,
@@ -68,10 +85,35 @@ export async function logAuditEvent(
       .single();
 
     if (error) {
+      // Keras: kegagalan audit tidak boleh hilang diam-diam.
+      console.error('[audit] Gagal mencatat event audit', { ...context, error: error.message });
       return { ok: false, error: error.message };
     }
     return { ok: true, id: data?.id ?? undefined };
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : 'Gagal mencatat audit' };
+    const message = err instanceof Error ? err.message : 'Gagal mencatat audit';
+    console.error('[audit] Gagal mencatat event audit', { ...context, error: message });
+    return { ok: false, error: message };
   }
+}
+
+/**
+ * Client Supabase KHUSUS pencatatan audit: memakai SUPABASE_SERVICE_ROLE_KEY
+ * (bypass RLS) sehingga INSERT ke tabel `audit_events` selalu diizinkan.
+ *
+ * HANYA server-side. Guard runtime menolak pemakaian dari browser; jangan
+ * pernah mengimpor modul ini (atau meneruskan client ini) ke komponen client.
+ */
+export function getAuditWriterClient(): SupabaseClient {
+  if (typeof window !== 'undefined') {
+    throw new Error('getAuditWriterClient hanya boleh dipakai server-side.');
+  }
+  if (cachedWriter) return cachedWriter;
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) {
+    throw new Error('SUPABASE_SERVICE_ROLE_KEY belum dikonfigurasi; audit tidak dapat ditulis.');
+  }
+  cachedWriter = createClient(url, key, { auth: { autoRefreshToken: false, persistSession: false } });
+  return cachedWriter;
 }
