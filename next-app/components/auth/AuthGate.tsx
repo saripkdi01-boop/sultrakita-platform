@@ -63,26 +63,26 @@ const languages: Language[] = [
 
 const copy = {
   id: {
-    login: 'Selamat datang kembali', signup: 'Bangun ruangmu di SultraKita',
+    login: 'Selamat datang kembali', signup: 'Bangun ruangmu di SUKI Apps',
     sub: 'Satu pintu untuk warga, usaha, dan cerita Sulawesi Tenggara.',
-    loginCta: 'Masuk ke SultraKita', signupCta: 'Buat akun gratis',
+    loginCta: 'Masuk ke SUKI Apps', signupCta: 'Buat akun gratis',
     gmail: 'Lanjutkan dengan Google', facebook: 'Lanjutkan dengan Facebook'
   },
   en: {
-    login: 'Welcome back', signup: 'Build your space on SultraKita',
+    login: 'Welcome back', signup: 'Build your space on SUKI Apps',
     sub: 'One home for people, businesses, and stories from Southeast Sulawesi.',
-    loginCta: 'Enter SultraKita', signupCta: 'Create free account',
+    loginCta: 'Enter SUKI Apps', signupCta: 'Create free account',
     gmail: 'Continue with Google', facebook: 'Continue with Facebook'
   }
 } as const;
 
 function Logo({ compact = false }: { compact?: boolean }) {
   return (
-    <a href="/" aria-label="SultraKita home" className="group flex items-center gap-2.5">
+    <a href="/" aria-label="SUKI Apps home" className="group flex items-center gap-2.5">
       <span className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-[13px] bg-[#0d4b43] shadow-[0_8px_24px_rgba(13,75,67,.16)] ring-1 ring-black/5">
         <img src="/brand/suki-logo-mark.svg" alt="" className="h-7 w-7 object-contain" />
       </span>
-      {!compact && <span className="font-display text-[21px] font-bold tracking-[-.035em] text-[#123b35]">Sultra<span className="text-[#188875]">Kita</span></span>}
+      {!compact && <span className="font-display text-[21px] font-bold tracking-[-.035em] text-[#123b35]">SUKI</span>}
     </a>
   );
 }
@@ -395,7 +395,7 @@ export function AuthGate({ initialMode = 'login' }: { initialMode?: Mode }) {
           </form>
 
           <p className="mt-4 text-center text-[10px] leading-4.5 text-[#8ba29c]">
-            Dengan melanjutkan, kamu menyetujui <a href="/legal/terms" className="font-extrabold text-[#188875] hover:underline">Ketentuan</a> dan <a href="/legal/privacy" className="font-extrabold text-[#188875] hover:underline">Kebijakan Privasi</a> SultraKita.
+            Dengan melanjutkan, kamu menyetujui <a href="/legal/terms" className="font-extrabold text-[#188875] hover:underline">Ketentuan</a> dan <a href="/legal/privacy" className="font-extrabold text-[#188875] hover:underline">Kebijakan Privasi</a> SUKI Apps.
           </p>
           <div className="mt-4 flex items-center justify-center gap-4 border-t border-[#edf2f0] pt-3.5 text-[10px] font-semibold text-[#8ba29c]">
             <span className="flex items-center gap-1"><ShieldCheck size={13} className="text-[#188875]" /> SSL Secure</span>
