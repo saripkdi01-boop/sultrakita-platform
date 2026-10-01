@@ -3,10 +3,10 @@
 Hal yang belum bisa aktif/selesai karena kredensial, provider, data, atau approval manusia.
 Diperbarui: 2026-10-01.
 
-## Push ke origin — PENDING (butuh manusia)
-- Branch `upgrade/worldclass-execution` hanya di-commit lokal di worktree ini.
-- Push ke `origin` membutuhkan PAT GitHub sekali pakai dari Sarip (tidak ada kredensial di environment subagent; JANGAN akali).
-- Setelah push: buat PR draft ke `main` untuk review (jangan merge langsung).
+## Push ke origin — TERSEDIA VIA PARENT (update 2026-10-01 ~12:57 WITA)
+- Sarip memberikan GitHub PAT; push dijalankan oleh parent agent (koordinator utama), BUKAN oleh subagent ini.
+- Alur: setelah branch `upgrade/worldclass-execution` siap (commit rapi, tsc/lint/build lolos), laporkan ke parent: nama branch persis, hash commit, ringkasan isi, hasil verifikasi. Parent yang push ke origin.
+- Subagent ini tetap TIDAK mencari/menebak/memakai kredensial apa pun di environment-nya.
 
 ## Pembayaran nyata — NOT CONFIGURED
 - `SUKI_BILLING_PROVIDER=sandbox`; `SUKI_BILLING_WEBHOOK_SECRET` kosong.
