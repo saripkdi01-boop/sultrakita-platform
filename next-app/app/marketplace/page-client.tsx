@@ -1,13 +1,15 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
+import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { BellPlus, Check, Heart, MapPin, Plus, Scale, Search, Sparkles, Tag, Trash2, X } from 'lucide-react';
+import { BellPlus, Check, ChevronRight, Heart, LayoutGrid, MapPin, Plus, Scale, Search, SlidersHorizontal, Sparkles, Trash2, X } from 'lucide-react';
 import type { PublicListing } from '@/lib/listings-query';
 import type { MarketplaceFilters } from './page';
-import { MarketplaceSubNav } from '@/components/marketplace/MarketplaceSubNav';
+import './marketplace-fb.css';
+import { FbmSearch } from '@/components/marketplace/FbmSearch';
+import { FbmFilters, categories, categoryIcons, conditions } from '@/components/marketplace/FbmFilters';
 import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
-import { CategoryBrowser } from '@/components/marketplace/CategoryBrowser';
 import { DealOfTheDay } from '@/components/marketplace/DealOfTheDay';
 import { QuickViewModal } from '@/components/marketplace/QuickViewModal';
 import { CompareBar } from '@/components/marketplace/CompareBar';
@@ -18,37 +20,13 @@ import { useWishlist } from '@/components/marketplace/useWishlist';
 import { useSessionProfile } from '@/hooks/useSessionProfile';
 import { deleteSavedSearch, listSavedSearches, saveSearchAlert, setSearchAlertEnabled } from '@/lib/actions/marketplace';
 
-// Fase 2.1: filter tersinkron URL via router.push + useTransition.
-// - URL selalu mencerminkan state filter (shareable, SEO-friendly)
-// - Tombol back/forward browser benar (tidak seperti replaceState)
-// - Server me-render ulang dengan searchParams baru -> data selalu sinkron
-// - q dari search bar bersifat submit-based (tidak perlu debounce karena
-//   hanya terkirim saat submit/saran diklik)
-
-const categories = [
-  { value: 'all', label: 'Semua', icon: '🛍️' },
-  { value: 'Elektronik', label: 'Elektronik', icon: '📱' },
-  { value: 'Kendaraan', label: 'Kendaraan', icon: '🚗' },
-  { value: 'Properti', label: 'Properti', icon: '🏠' },
-  { value: 'Fashion', label: 'Fashion', icon: '👕' },
-  { value: 'Kuliner', label: 'Kuliner', icon: '🍜' },
-  { value: 'Furnitur', label: 'Furnitur', icon: '🛋️' },
-  { value: 'Jasa', label: 'Jasa', icon: '🔧' },
-  { value: 'Pertanian', label: 'Pertanian', icon: '🌾' },
-  { value: 'Perikanan', label: 'Perikanan', icon: '🐟' },
-  { value: 'Kecantikan', label: 'Kecantikan', icon: '💄' },
-  { value: 'Olahraga', label: 'Olahraga', icon: '⚽' },
-];
-
-const districts = ['Semua distrik', 'Kendari', 'Baubau', 'Kolaka', 'Konawe', 'Muna', 'Buton', 'Konawe Selatan', 'Bombana', 'Wakatobi'];
-
-const conditions = [
-  { value: '', label: 'Semua kondisi' },
-  { value: 'new', label: 'Baru' },
-  { value: 'like_new', label: 'Seperti baru' },
-  { value: 'good', label: 'Bekas — baik' },
-  { value: 'fair', label: 'Bekas — layak pakai' },
-];
+// Gaya Facebook Marketplace (basis) + pola Amazon (filter checkbox +
+// hitungan, rating bintang, kepadatan info) + Rakuten (identitas toko,
+// strip deal). Kontrak data & perilaku dipertahankan penuh:
+// - filter tersinkron URL (?q=&district=&category=&condition=&minPrice=&maxPrice=&sort= + alias)
+// - wishlist optimistis + login sheet, compare maks 3, quick view ?listing=,
+//   simpan pencarian + alert, DealOfTheDay (is_featured), rekomendasi,
+//   trust strip, SEO tetap di page.tsx.
 
 const sortOptions = [
   { value: 'terbaru', label: 'Terbaru' },
@@ -57,6 +35,10 @@ const sortOptions = [
 ];
 
 type SavedSearch = { id: string; name: string; filters: Record<string, unknown>; alert_enabled: boolean; created_at: string };
+
+function clearFilters(): MarketplaceFilters {
+  return { q: '', district: 'Semua distrik', category: '', condition: '', minPrice: '', maxPrice: '', sort: 'terbaru' };
+}
 
 export default function MarketplacePageClient({ initialItems, initialFilters, initialNotice }: { initialItems: PublicListing[]; initialFilters: MarketplaceFilters; initialNotice: string }) {
   const router = useRouter();
@@ -69,18 +51,14 @@ export default function MarketplacePageClient({ initialItems, initialFilters, in
   const [showWishlistOnly, setShowWishlistOnly] = useState(false);
   const [compare, setCompare] = useState<string[]>([]);
   const [quickView, setQuickView] = useState<PublicListing | null>(null);
-  const [filtersOpen, setFiltersOpen] = useState(false);
-  const [minDraft, setMinDraft] = useState(initialFilters.minPrice);
-  const [maxDraft, setMaxDraft] = useState(initialFilters.maxPrice);
   const [saveOpen, setSaveOpen] = useState(false);
   const [compareOpen, setCompareOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   // Sinkron dari server saat URL berubah (termasuk back/forward browser).
   useEffect(() => {
     setItems(initialItems);
     setFilters(initialFilters);
-    setMinDraft(initialFilters.minPrice);
-    setMaxDraft(initialFilters.maxPrice);
     setNotice(initialNotice);
   }, [initialItems, initialFilters, initialNotice]);
 
@@ -101,7 +79,7 @@ export default function MarketplacePageClient({ initialItems, initialFilters, in
 
   const update = useCallback((patch: Partial<MarketplaceFilters>) => pushFilters({ ...filters, ...patch }), [filters, pushFilters]);
 
-  // Deep link ?listing=<uuid> — buka quick view langsung dari URL shareable.
+  // Deep link ?listing=<id> — buka quick view langsung dari URL shareable.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const target = params.get('listing');
@@ -113,16 +91,38 @@ export default function MarketplacePageClient({ initialItems, initialFilters, in
   const wishlistItems = useMemo(() => items.filter((item) => wishlist.savedIds.includes(String(item.id))), [items, wishlist.savedIds]);
   const visibleItems = showWishlistOnly ? wishlistItems : items;
   const compareItems = useMemo(() => items.filter((item) => compare.includes(String(item.id))), [items, compare]);
-  const dealItems = useMemo(() => items.filter((item) => item.is_featured).slice(0, 8), [items]);
 
   const toggleCompare = useCallback((id: string) => {
     setCompare((current) => (current.includes(id) ? current.filter((item) => item !== id) : current.length >= 3 ? current : [...current, id]));
   }, []);
 
+  const categoryLabelOf = useCallback((item: PublicListing) => {
+    const label = typeof item.category_name === 'string' ? item.category_name : typeof item.category === 'string' ? item.category : '';
+    return label;
+  }, []);
+
   const categoryCounts = useMemo(() => {
     const counts = new Map<string, number>();
     for (const item of items) {
-      const label = typeof item.category_name === 'string' ? item.category_name : typeof item.category === 'string' ? item.category : '';
+      const label = categoryLabelOf(item);
+      if (label) counts.set(label, (counts.get(label) || 0) + 1);
+    }
+    return counts;
+  }, [items, categoryLabelOf]);
+
+  const districtCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const item of items) {
+      const label = typeof item.district === 'string' ? item.district : '';
+      if (label) counts.set(label, (counts.get(label) || 0) + 1);
+    }
+    return counts;
+  }, [items]);
+
+  const conditionCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const item of items) {
+      const label = typeof item.condition === 'string' ? item.condition : '';
       if (label) counts.set(label, (counts.get(label) || 0) + 1);
     }
     return counts;
@@ -138,138 +138,216 @@ export default function MarketplacePageClient({ initialItems, initialFilters, in
     return chips;
   }, [filters, update]);
 
-  const resultsLabel = isPending ? 'Memuat hasil…' : `${visibleItems.length} listing ditemukan`;
+  const resultsCount = visibleItems.length;
+  const openQuickView = useCallback((item: PublicListing) => setQuickView(item), []);
+  const openSaveSearch = useCallback(() => { if (!user) { wishlist.setLoginSheetOpen(true); return; } setSaveOpen(true); }, [user, wishlist]);
+  const openWishlistTab = useCallback(() => { if (!user) { wishlist.setLoginSheetOpen(true); return; } setShowWishlistOnly(true); }, [user, wishlist]);
+
+  const breadcrumbCategory = filters.category || '';
+  const filterProps = { filters, update, categoryCounts, districtCounts, conditionCounts, onClearAll: () => pushFilters(clearFilters()) };
 
   return (
-    <main className="marketplace-page">
-      <MarketplaceSubNav query={filters.q} onQueryChange={(value) => update({ q: value })} />
-
-      <div className="marketplace-content">
-        <CategoryBrowser />
-
-        <div className="marketplace-main">
-          <section className="marketplace-toolbar" aria-label="Filter marketplace">
-            <div className="marketplace-toolbar-row">
-              <button type="button" className="marketplace-filter-toggle" onClick={() => setFiltersOpen((v) => !v)} aria-expanded={filtersOpen}>
-                <Tag size={15} aria-hidden="true" /> Filter
+    <main className="fbm-page">
+      {/* Mobile: search pill sticky di bawah navbar global */}
+      <div className="fbm-msearch">
+        <FbmSearch id="fbm-search-mobile" value={filters.q} onSearch={(value) => update({ q: value })} />
+        <div className="fbm-chiprail" role="group" aria-label="Kategori">
+          {categories.map((category) => {
+            const Icon = categoryIcons[category.value] || LayoutGrid;
+            const active = (filters.category || 'all') === category.value;
+            return (
+              <button
+                key={category.value}
+                type="button"
+                className="fbm-chip-cat"
+                aria-pressed={active}
+                onClick={() => update({ category: category.value === 'all' ? '' : active ? '' : category.value })}
+              >
+                <span className="fbm-cat-icon"><Icon size={14} aria-hidden="true" /></span>
+                {category.label}
               </button>
-              <div className="marketplace-sort" role="group" aria-label="Urutkan">
-                {sortOptions.map((option) => (
-                  <button key={option.value} type="button" className={`marketplace-sort-chip${filters.sort === option.value ? ' active' : ''}`} aria-pressed={filters.sort === option.value} onClick={() => update({ sort: option.value })}>{option.label}</button>
-                ))}
-              </div>
-              <button type="button" className={`marketplace-wishlist-toggle${showWishlistOnly ? ' active' : ''}`} onClick={() => { if (!user) { wishlist.setLoginSheetOpen(true); return; } setShowWishlistOnly((v) => !v); }} aria-pressed={showWishlistOnly}>
-                <Heart size={15} aria-hidden="true" /> Wishlist{wishlist.savedIds.length > 0 && ` (${wishlist.savedIds.length})`}
-              </button>
-              <button type="button" className="marketplace-save-toggle" onClick={() => { if (!user) { wishlist.setLoginSheetOpen(true); return; } setSaveOpen(true); }}>
-                <BellPlus size={15} aria-hidden="true" /> Simpan pencarian
-              </button>
-            </div>
+            );
+          })}
+        </div>
+      </div>
 
-            {filtersOpen && (
-              <div className="marketplace-filter-panel">
-                <label>
-                  <span>Distrik</span>
-                  <select value={filters.district} onChange={(event) => update({ district: event.target.value })}>
-                    {districts.map((district) => <option key={district} value={district}>{district}</option>)}
-                  </select>
-                </label>
-                <label>
-                  <span>Kondisi</span>
-                  <select value={filters.condition} onChange={(event) => update({ condition: event.target.value })}>
-                    {conditions.map((condition) => <option key={condition.value} value={condition.value}>{condition.label}</option>)}
-                  </select>
-                </label>
-                <div className="marketplace-price-range">
-                  <label><span>Harga min</span><input inputMode="numeric" type="number" min={0} placeholder="Rp" value={minDraft} onChange={(event) => setMinDraft(event.target.value)} /></label>
-                  <label><span>Harga maks</span><input inputMode="numeric" type="number" min={0} placeholder="Rp" value={maxDraft} onChange={(event) => setMaxDraft(event.target.value)} /></label>
-                  <button type="button" onClick={() => update({ minPrice: minDraft, maxPrice: maxDraft })}><Check size={15} aria-hidden="true" /> Terapkan</button>
-                </div>
-              </div>
-            )}
+      <div className="fbm-layout">
+        {/* Desktop: sidebar kiri sticky ala FB */}
+        <aside className="fbm-sidebar" aria-label="Pencarian dan filter marketplace">
+          <h1 className="fbm-side-title">Marketplace</h1>
+          <FbmSearch id="fbm-search-desktop" value={filters.q} onSearch={(value) => update({ q: value })} />
+          <button type="button" className="fbm-browse-all" onClick={() => pushFilters({ ...clearFilters(), q: filters.q })}>
+            <span className="fbm-cat-icon"><LayoutGrid size={15} aria-hidden="true" /></span>
+            Telusuri semua
+          </button>
+          <FbmFilters {...filterProps} />
+        </aside>
 
-            {activeChips.length > 0 && (
-              <div className="marketplace-chips" aria-label="Filter aktif">
-                {activeChips.map((chip) => (
-                  <button key={chip.key} type="button" className="marketplace-chip" onClick={chip.clear} aria-label={`Hapus filter ${chip.label}`}>
-                    {chip.label} <X size={13} aria-hidden="true" />
-                  </button>
-                ))}
-                <button type="button" className="marketplace-chip-clear" onClick={() => pushFilters({ q: '', district: 'Semua distrik', category: '', condition: '', minPrice: '', maxPrice: '', sort: 'terbaru' })}>Hapus semua</button>
-              </div>
-            )}
-          </section>
+        <div className="fbm-main">
+          {/* Tab Telusuri | Pembelian | Penjualan ala FB */}
+          <nav className="fbm-tabs" aria-label="Navigasi marketplace">
+            <button type="button" className="fbm-tab" aria-selected={!showWishlistOnly} onClick={() => setShowWishlistOnly(false)}>
+              Telusuri
+            </button>
+            <button type="button" className="fbm-tab" aria-selected={showWishlistOnly} onClick={openWishlistTab}>
+              <Heart size={15} aria-hidden="true" /> Pembelian
+              {wishlist.savedIds.length > 0 && <span className="fbm-tab-badge">{wishlist.savedIds.length}</span>}
+            </button>
+            <Link href="/marketplace/seller-tools" className="fbm-tab" aria-selected={false}>
+              Penjualan
+            </Link>
+          </nav>
 
-          {notice && <p className="marketplace-notice" role="status">{notice}</p>}
+          {/* Breadcrumb kecil ala Amazon saat filter aktif */}
+          {(breadcrumbCategory || (filters.district && filters.district !== 'Semua distrik')) && !showWishlistOnly && (
+            <p className="fbm-breadcrumb" aria-label="Lokasi Anda">
+              <button type="button" onClick={() => pushFilters(clearFilters())}>Marketplace</button>
+              <ChevronRight size={12} aria-hidden="true" />
+              {breadcrumbCategory ? (
+                <span aria-current="page">{breadcrumbCategory}</span>
+              ) : (
+                <span aria-current="page">{filters.district}</span>
+              )}
+            </p>
+          )}
 
-          <div className="marketplace-districts" role="group" aria-label="Kategori">
-            {categories.map((category) => (
-              <button key={category.value} type="button" className={(filters.category || 'all') === category.value ? 'active' : ''} aria-pressed={(filters.category || 'all') === category.value} onClick={() => update({ category: category.value === 'all' ? '' : category.value })}>
-                {category.icon} {category.label}{category.value !== 'all' && (categoryCounts.get(category.value) || 0) > 0 ? ` (${categoryCounts.get(category.value)})` : ''}
-              </button>
-            ))}
+          {/* Toolbar: jumlah hasil + sort + aksi */}
+          <div className="fbm-toolbar">
+            <p className="fbm-results-count" role="status">
+              {isPending ? 'Memuat hasil…' : showWishlistOnly
+                ? (<><strong>{resultsCount}</strong> tersimpan di wishlist</>)
+                : (<><strong>{resultsCount}</strong> hasil</>)}
+            </p>
+            <label className="fbm-sort">
+              <span className="fbm-sort-label">Urutkan</span>
+              <select value={filters.sort} onChange={(event) => update({ sort: event.target.value })} aria-label="Urutkan hasil">
+                {sortOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+              </select>
+            </label>
+            <button type="button" className="fbm-action-btn" onClick={openSaveSearch}>
+              <BellPlus size={15} aria-hidden="true" /> Simpan pencarian
+            </button>
+            <button type="button" className="fbm-action-btn fbm-filter-open-btn" onClick={() => setSheetOpen(true)} aria-haspopup="dialog">
+              <SlidersHorizontal size={15} aria-hidden="true" /> Filter
+            </button>
           </div>
 
-          {dealItems.length > 0 && !showWishlistOnly && <DealOfTheDay items={items} />}
+          {/* Tablet: chip kategori horizontal */}
+          <div className="fbm-chiprail fbm-chiprail-tablet" role="group" aria-label="Kategori">
+            {categories.map((category) => {
+              const Icon = categoryIcons[category.value] || LayoutGrid;
+              const active = (filters.category || 'all') === category.value;
+              return (
+                <button
+                  key={category.value}
+                  type="button"
+                  className="fbm-chip-cat"
+                  aria-pressed={active}
+                  onClick={() => update({ category: category.value === 'all' ? '' : active ? '' : category.value })}
+                >
+                  <span className="fbm-cat-icon"><Icon size={14} aria-hidden="true" /></span>
+                  {category.label}
+                </button>
+              );
+            })}
+          </div>
 
-          <div className="marketplace-results" aria-live="polite" aria-busy={isPending}>
-            <div className="marketplace-results-head">
-              <h2>{showWishlistOnly ? 'Wishlist saya' : 'Jelajahi listing'}</h2>
-              <span className="marketplace-results-count" role="status">{resultsLabel}</span>
+          {activeChips.length > 0 && !showWishlistOnly && (
+            <div className="fbm-chips" aria-label="Filter aktif">
+              {activeChips.map((chip) => (
+                <button key={chip.key} type="button" className="fbm-chip" onClick={chip.clear} aria-label={`Hapus filter ${chip.label}`}>
+                  {chip.label} <X size={13} aria-hidden="true" />
+                </button>
+              ))}
+              <button type="button" className="fbm-chip-clear" onClick={() => pushFilters(clearFilters())}>Hapus semua</button>
             </div>
+          )}
 
+          {notice && <p className="fbm-notice" role="status">{notice}</p>}
+
+          {!showWishlistOnly && <DealOfTheDay items={items} onQuickView={openQuickView} />}
+
+          <section aria-live="polite" aria-busy={isPending} aria-label={showWishlistOnly ? 'Wishlist saya' : 'Hasil pencarian'}>
             {isPending ? (
-              <div className="marketplace-grid" aria-hidden="true">
-                {Array.from({ length: 8 }).map((_, index) => <div key={index} className="marketplace-card-skeleton" />)}
+              <div className="fbm-grid" aria-hidden="true">
+                {Array.from({ length: 8 }).map((_, index) => (
+                  <div key={index} className="fbm-skeleton">
+                    <div className="fbm-skeleton-thumb skeleton-shimmer" />
+                    <div className="fbm-skeleton-line skeleton-shimmer" />
+                    <div className="fbm-skeleton-line short skeleton-shimmer" />
+                  </div>
+                ))}
               </div>
             ) : visibleItems.length === 0 ? (
-              <div className="marketplace-empty">
+              <div className="fbm-empty">
                 <Search size={28} aria-hidden="true" />
                 <h3>{showWishlistOnly ? 'Wishlist masih kosong' : 'Tidak ada listing yang cocok'}</h3>
                 <p>{showWishlistOnly ? 'Ketuk ikon hati pada listing untuk menyimpannya di sini.' : 'Coba ubah kata kunci atau longgarkan filter pencarianmu.'}</p>
                 {!showWishlistOnly && (
-                  <button type="button" onClick={() => pushFilters({ q: '', district: 'Semua distrik', category: '', condition: '', minPrice: '', maxPrice: '', sort: 'terbaru' })}>
+                  <button type="button" className="fbm-action-btn primary" onClick={() => pushFilters(clearFilters())}>
                     Atur ulang filter
                   </button>
                 )}
               </div>
             ) : (
-              <div className="marketplace-grid">
+              <div className="fbm-grid">
                 {visibleItems.map((item, index) => (
                   <MarketplaceCard
                     key={String(item.id)}
                     listing={item}
                     index={index}
                     saved={wishlist.savedIds.includes(String(item.id))}
-                    inCompare={compare.includes(String(item.id))}
                     onToggleWishlist={() => { void wishlist.toggle(String(item.id)); }}
-                    onQuickView={() => setQuickView(item)}
-                    onCompare={() => toggleCompare(String(item.id))}
+                    onQuickView={() => openQuickView(item)}
                   />
                 ))}
               </div>
             )}
-          </div>
+          </section>
 
-          {!showWishlistOnly && visibleItems.length > 0 && <Recommendations items={visibleItems} query={filters.q} />}
+          {!showWishlistOnly && visibleItems.length > 0 && <Recommendations items={visibleItems} query={filters.q} onQuickView={openQuickView} />}
+
+          <div className="fbm-trust" aria-label="Kepercayaan marketplace">
+            <span><MapPin size={14} aria-hidden="true" /> Penjual dari Sulawesi Tenggara</span>
+            <span><Sparkles size={14} aria-hidden="true" /> Badge toko dihitung dari verifikasi &amp; ulasan nyata</span>
+            <span><Scale size={14} aria-hidden="true" /> Bandingkan hingga 3 listing sebelum membeli</span>
+          </div>
         </div>
       </div>
+
+      {/* Bottom sheet filter untuk tablet/mobile */}
+      {sheetOpen && (
+        <div className="fbm-sheet-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setSheetOpen(false); }}>
+          <section className="fbm-sheet" role="dialog" aria-modal="true" aria-labelledby="fbm-filter-title">
+            <div className="fbm-sheet-head">
+              <h2 id="fbm-filter-title">Filter</h2>
+              <button type="button" className="fbm-sheet-close" onClick={() => setSheetOpen(false)} aria-label="Tutup filter"><X size={18} aria-hidden="true" /></button>
+            </div>
+            <FbmSearch id="fbm-search-sheet" value={filters.q} onSearch={(value) => update({ q: value })} />
+            <FbmFilters {...filterProps} />
+            <button type="button" className="fbm-sheet-apply" onClick={() => setSheetOpen(false)}>
+              Tampilkan {resultsCount} hasil
+            </button>
+          </section>
+        </div>
+      )}
 
       <CompareBar items={compareItems} onRemove={(id) => setCompare((current) => current.filter((item) => item !== id))} onClear={() => setCompare([])} onOpen={() => setCompareOpen(true)} />
       {compareOpen && <ComparePanel items={compareItems} onClose={() => setCompareOpen(false)} />}
 
-      <QuickViewModal listing={quickView} saved={quickView ? wishlist.savedIds.includes(String(quickView.id)) : false} onToggleWishlist={quickView ? () => { void wishlist.toggle(String(quickView.id)); } : undefined} onClose={() => setQuickView(null)} />
+      <QuickViewModal
+        listing={quickView}
+        saved={quickView ? wishlist.savedIds.includes(String(quickView.id)) : false}
+        inCompare={quickView ? compare.includes(String(quickView.id)) : false}
+        onToggleWishlist={quickView ? () => { void wishlist.toggle(String(quickView.id)); } : undefined}
+        onToggleCompare={quickView ? () => toggleCompare(String(quickView.id)) : undefined}
+        onClose={() => setQuickView(null)}
+      />
 
       <SaveSearchDialog open={saveOpen} onClose={() => setSaveOpen(false)} filters={filters} />
 
       <LoginSheet open={wishlist.loginSheetOpen} onClose={() => wishlist.setLoginSheetOpen(false)} />
-      {wishlist.lastError && <p className="marketplace-wishlist-error" role="alert">{wishlist.lastError}</p>}
-
-      <div className="marketplace-trust-strip" aria-label="Kepercayaan marketplace">
-        <span><MapPin size={14} aria-hidden="true" /> Penjual dari Sulawesi Tenggara</span>
-        <span><Sparkles size={14} aria-hidden="true" /> Badge toko dihitung dari verifikasi & ulasan nyata</span>
-        <span><Scale size={14} aria-hidden="true" /> Bandingkan hingga 3 listing sebelum membeli</span>
-      </div>
+      {wishlist.lastError && <p className="fbm-wishlist-error" role="alert">{wishlist.lastError}</p>}
     </main>
   );
 }
@@ -325,32 +403,32 @@ function SaveSearchDialog({ open, onClose, filters }: { open: boolean; onClose: 
   }
 
   return (
-    <div className="login-sheet-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
-      <section className="save-search-dialog" role="dialog" aria-modal="true" aria-labelledby="save-search-title">
-        <button type="button" className="login-sheet-close" onClick={onClose} aria-label="Tutup"><X size={18} /></button>
+    <div className="fbm-qv-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+      <section className="fbm-save-dialog" role="dialog" aria-modal="true" aria-labelledby="save-search-title">
+        <button type="button" className="fbm-sheet-close" onClick={onClose} aria-label="Tutup"><X size={18} aria-hidden="true" /></button>
         <h2 id="save-search-title"><BellPlus size={18} aria-hidden="true" /> Simpan pencarian</h2>
-        <p className="save-search-summary">Dapatkan notifikasi saat ada listing baru yang cocok dengan filter saat ini.</p>
-        <label className="save-search-field">
+        <p className="fbm-save-summary">Dapatkan notifikasi saat ada listing baru yang cocok dengan filter saat ini.</p>
+        <label className="fbm-save-field">
           <span>Nama pencarian</span>
           <input value={name} onChange={(event) => setName(event.target.value)} placeholder="mis. Laptop bekas Kendari" maxLength={120} />
         </label>
-        <label className="save-search-check">
+        <label className="fbm-save-check">
           <input type="checkbox" checked={alertEnabled} onChange={(event) => setAlertEnabled(event.target.checked)} />
           Beri tahu saya saat ada listing baru yang cocok
         </label>
-        <button type="button" className="save-search-submit" onClick={() => { void handleSave(); }}><Plus size={15} aria-hidden="true" /> Simpan</button>
-        {status && <p className="save-search-status" role="status">{status}</p>}
+        <button type="button" className="fbm-save-submit" onClick={() => { void handleSave(); }}><Plus size={15} aria-hidden="true" /> Simpan</button>
+        {status && <p className="fbm-save-status" role="status">{status}</p>}
 
         <h3>Pencarian tersimpan</h3>
         {loading ? <p>Memuat…</p> : saved.length === 0 ? (
-          <p className="save-search-empty">Belum ada pencarian tersimpan.</p>
+          <p className="fbm-save-empty">Belum ada pencarian tersimpan.</p>
         ) : (
-          <ul className="save-search-list">
+          <ul className="fbm-save-list">
             {saved.map((item) => (
               <li key={item.id}>
                 <div><strong>{item.name}</strong><small>{new Date(item.created_at).toLocaleDateString('id-ID')}</small></div>
                 <button type="button" onClick={() => { void handleToggleAlert(item); }} aria-pressed={item.alert_enabled} aria-label={item.alert_enabled ? 'Nonaktifkan alert' : 'Aktifkan alert'}>
-                  {item.alert_enabled ? <span className="save-search-alert-on"><Check size={13} aria-hidden="true" /> Alert aktif</span> : 'Aktifkan alert'}
+                  {item.alert_enabled ? <span className="fbm-save-alert-on"><Check size={13} aria-hidden="true" /> Alert aktif</span> : 'Aktifkan alert'}
                 </button>
                 <button type="button" onClick={() => { void handleDelete(item.id); }} aria-label={`Hapus ${item.name}`}><Trash2 size={15} aria-hidden="true" /></button>
               </li>
