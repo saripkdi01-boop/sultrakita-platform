@@ -10,5 +10,13 @@ const securityHeaders = [
 const nextConfig = {
   images: { remotePatterns: [{ protocol: 'https', hostname: 'images.unsplash.com' }, { protocol: 'https', hostname: '**.supabase.co' }] },
   async headers() { return [{ source: '/(.*)', headers: securityHeaders }]; },
+  // Fase 0: rapikan URL duplikat/mati. `permanent: true` menghasilkan 308.
+  async redirects() {
+    return [
+      // Komunitas hidup di /groups; /komunitas hanya alias lama yang me-return 404.
+      { source: '/komunitas', destination: '/groups', permanent: true },
+      { source: '/komunitas/:path*', destination: '/groups/:path*', permanent: true },
+    ];
+  },
 };
 export default nextConfig;

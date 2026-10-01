@@ -10,6 +10,7 @@ import { RightSidebar } from '@/components/beranda/RightSidebar';
 import { StoriesSection } from '@/components/beranda/StoriesSection';
 import { useInfiniteFeed, type FeedFilter } from '@/hooks/useInfiniteFeed';
 import { setPostLike } from '@/lib/feed-interactions';
+import { supabase } from '@/lib/supabase/client';
 
 type ExploreItem = { href: string; label: string; description: string; Icon: typeof ShoppingBag; tone: string };
 
@@ -29,16 +30,31 @@ const filters: Array<{ value: FeedFilter; label: string }> = [
 ];
 
 const categories = ['Semua', 'Kuliner', 'UMKM', 'Event', 'Wisata', 'Peluang', 'Budaya'];
-const products = [
-  { title: 'Koleksi tenun pesisir', seller: 'Pengrajin Baubau', place: 'Baubau', tag: 'Cerita penjual', tone: 'sand' },
-  { title: 'Oleh-oleh pilihan Sultra', seller: 'Dapur Kendari', place: 'Kendari', tag: 'Pilihan warga', tone: 'peach' },
-  { title: 'Kerajinan dari pulau', seller: 'Ruang Wakatobi', place: 'Wakatobi', tag: 'Produk lokal', tone: 'mint' },
+
+type BerandaProduct = { id: string; title: string; seller: string; place: string; tag: string; tone: string };
+type BerandaEvent = { id: string; date: string; month: string; title: string; place: string; type: string };
+
+// Fase 0 (2026-10-01): data contoh di bawah HANYA dipakai saat development lokal
+// (NODE_ENV !== 'production') dan selalu berlabel "Contoh". Di produksi yang tampil
+// hanya data nyata dari Supabase, atau empty state jujur bila kosong/gagal.
+const isDevPreview = process.env.NODE_ENV !== 'production';
+const devProducts: BerandaProduct[] = [
+  { id: 'dev-1', title: 'Koleksi tenun pesisir', seller: 'Pengrajin Baubau', place: 'Baubau', tag: 'Contoh', tone: 'sand' },
+  { id: 'dev-2', title: 'Oleh-oleh pilihan Sultra', seller: 'Dapur Kendari', place: 'Kendari', tag: 'Contoh', tone: 'peach' },
+  { id: 'dev-3', title: 'Kerajinan dari pulau', seller: 'Ruang Wakatobi', place: 'Wakatobi', tag: 'Contoh', tone: 'mint' },
 ];
-const events = [
-  { date: '12', month: 'OKT', title: 'Pasar kreatif warga', place: 'Kendari · akhir pekan', type: 'UMKM' },
-  { date: '19', month: 'OKT', title: 'Bersih pesisir bersama', place: 'Wakatobi · komunitas', type: 'Lingkungan' },
-  { date: '26', month: 'OKT', title: 'Kelas mulai usaha', place: 'Baubau · workshop', type: 'Peluang' },
+const devEvents: BerandaEvent[] = [
+  { id: 'dev-1', date: '12', month: 'OKT', title: 'Pasar kreatif warga', place: 'Kendari · akhir pekan', type: 'Contoh' },
+  { id: 'dev-2', date: '19', month: 'OKT', title: 'Bersih pesisir bersama', place: 'Wakatobi · komunitas', type: 'Contoh' },
+  { id: 'dev-3', date: '26', month: 'OKT', title: 'Kelas mulai usaha', place: 'Baubau · workshop', type: 'Contoh' },
 ];
+const productTones = ['sand', 'peach', 'mint'];
+
+function formatEventMonth(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleDateString('id-ID', { month: 'short' }).replace('.', '').toUpperCase();
+}
 
 export default function BerandaPage() {
   const { filter, setFilter, items, loading, error, hasNextPage, loadMore, reload } = useInfiniteFeed();
@@ -46,11 +62,74 @@ export default function BerandaPage() {
   const [composerOpen, setComposerOpen] = useState(false);
   const [composerType, setComposerType] = useState<'post' | 'reel'>('post');
   const [category, setCategory] = useState('Semua');
+  const [products, setProducts] = useState<BerandaProduct[]>([]);
+  const [productsLoading, setProductsLoading] = useState(true);
+  const [events, setEvents] = useState<BerandaEvent[]>([]);
+  const [eventsLoading, setEventsLoading] = useState(true);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   function openComposer(type: 'post' | 'reel' = 'post') { setComposerType(type); setComposerOpen(true); }
   useEffect(() => { const compose = new URLSearchParams(window.location.search).get('compose'); if (compose === 'post' || compose === 'reel') openComposer(compose); }, []);
   useEffect(() => { const node = sentinelRef.current; if (!node) return; const observer = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) loadMore(); }, { rootMargin: '480px' }); observer.observe(node); return () => observer.disconnect(); }, [loadMore]);
+
+  // Produk nyata dari tabel listings (via /api/listings yang sudah menyaring demo).
+  useEffect(() => {
+    let active = true;
+    fetch('/api/listings?limit=3', { cache: 'no-store' })
+      .then(response => response.json())
+      .then((result: { ok?: boolean; data?: Array<{ id: string | number; title?: string; district?: string; city?: string; seller?: { name?: string } | null }> }) => {
+        if (!active) return;
+        const rows = result.ok && Array.isArray(result.data) ? result.data : [];
+        const mapped: BerandaProduct[] = rows.slice(0, 3).map((item, index) => ({
+          id: String(item.id),
+          title: item.title || 'Produk lokal',
+          seller: item.seller?.name || 'Penjual lokal',
+          place: item.city || item.district || 'Sultra',
+          tag: isDevPreview ? 'Nyata' : 'Produk lokal',
+          tone: productTones[index % productTones.length],
+        }));
+        setProducts(mapped.length > 0 || !isDevPreview ? mapped : devProducts);
+      })
+      .catch(() => { if (active) setProducts(isDevPreview ? devProducts : []); })
+      .finally(() => { if (active) setProductsLoading(false); });
+    return () => { active = false; };
+  }, []);
+
+  // Event komunitas mendatang dari tabel group_events (RLS: grup publik terbaca).
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        if (!supabase) throw new Error('supabase_unavailable');
+        const { data, error } = await supabase
+          .from('group_events')
+          .select('id,title,starts_at,location,groups(name)')
+          .gte('starts_at', new Date().toISOString())
+          .order('starts_at', { ascending: true })
+          .limit(3);
+        if (error) throw error;
+        const mapped: BerandaEvent[] = (data || []).map((event: { id: string; title?: string; starts_at?: string; location?: string; groups?: { name?: string } | Array<{ name?: string }> | null }) => {
+          const startsAt = event.starts_at || '';
+          const date = new Date(startsAt);
+          const groupName = Array.isArray(event.groups) ? event.groups[0]?.name : event.groups?.name;
+          return {
+            id: String(event.id),
+            date: Number.isNaN(date.getTime()) ? '–' : String(date.getDate()).padStart(2, '0'),
+            month: formatEventMonth(startsAt),
+            title: event.title || 'Kegiatan komunitas',
+            place: [groupName, event.location].filter(Boolean).join(' · ') || 'Sulawesi Tenggara',
+            type: 'Komunitas',
+          };
+        });
+        if (active) setEvents(mapped.length > 0 || !isDevPreview ? mapped : devEvents);
+      } catch {
+        if (active) setEvents(isDevPreview ? devEvents : []);
+      } finally {
+        if (active) setEventsLoading(false);
+      }
+    })();
+    return () => { active = false; };
+  }, []);
 
   function search(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -91,9 +170,9 @@ export default function BerandaPage() {
             {loading && <div className="beranda-v4-loading" aria-live="polite"><LoaderCircle size={18} className="spin"/> Memuat cerita warga...</div>}
             <div ref={sentinelRef} className="feed-sentinel" aria-hidden="true" />{!hasNextPage && items.length > 0 && !loading && <p className="feed-end">Anda sudah melihat semua cerita terbaru.</p>}
 
-            <section className="beranda-v4-section" aria-labelledby="market-title"><div className="beranda-v4-section-head"><div><span className="beranda-v4-eyebrow">Belanja dari yang dekat</span><h2 id="market-title">Produk dengan cerita.</h2></div><a href="/marketplace">Lihat marketplace <ArrowRight size={15}/></a></div><div className="beranda-v4-product-grid">{products.map(product => <a href="/marketplace" className="beranda-v4-product" key={product.title}><div className={`beranda-v4-product-art ${product.tone}`}><ShoppingBag size={27}/><span>{product.tag}</span></div><strong>{product.title}</strong><small>{product.seller} · {product.place}</small><b>Lihat produk <ArrowRight size={13}/></b></a>)}</div></section>
+            <section className="beranda-v4-section" aria-labelledby="market-title"><div className="beranda-v4-section-head"><div><span className="beranda-v4-eyebrow">Belanja dari yang dekat</span><h2 id="market-title">Produk dengan cerita.</h2></div><a href="/marketplace">Lihat marketplace <ArrowRight size={15}/></a></div><div className="beranda-v4-product-grid">{productsLoading ? [1, 2, 3].map(item => <div key={item} className="beranda-v4-product"><div className="beranda-v4-product-art sand animate-pulse" /><div className="h-4 w-3/4 animate-pulse rounded bg-slate-200" /><div className="h-3 w-1/2 animate-pulse rounded bg-slate-200" /></div>) : products.length > 0 ? products.map(product => <a href={`/marketplace?listing=${encodeURIComponent(product.id)}`} className="beranda-v4-product" key={product.id}><div className={`beranda-v4-product-art ${product.tone}`}><ShoppingBag size={27}/><span>{product.tag}</span></div><strong>{product.title}</strong><small>{product.seller} · {product.place}</small><b>Lihat produk <ArrowRight size={13}/></b></a>) : <div className="feed-state"><strong>Belum ada produk yang ditampilkan.</strong><span>Jadilah yang pertama memasang produk di marketplace.</span></div>}</div></section>
 
-            <section className="beranda-v4-section" aria-labelledby="events-title"><div className="beranda-v4-section-head"><div><span className="beranda-v4-eyebrow">Temukan kegiatan di sekitarmu</span><h2 id="events-title">Ada yang bisa diikuti.</h2></div><a href="/groups">Jelajahi komunitas <ArrowRight size={15}/></a></div><div className="beranda-v4-event-grid">{events.map(event => <a className="beranda-v4-event" href="/groups" key={event.title}><span className="beranda-v4-date"><b>{event.date}</b><small>{event.month}</small></span><span><strong>{event.title}</strong><small>{event.place}</small><em>{event.type}</em></span><ArrowRight size={16}/></a>)}</div></section>
+            <section className="beranda-v4-section" aria-labelledby="events-title"><div className="beranda-v4-section-head"><div><span className="beranda-v4-eyebrow">Temukan kegiatan di sekitarmu</span><h2 id="events-title">Ada yang bisa diikuti.</h2></div><a href="/groups">Jelajahi komunitas <ArrowRight size={15}/></a></div><div className="beranda-v4-event-grid">{eventsLoading ? [1, 2, 3].map(item => <div key={item} className="beranda-v4-event"><div className="h-12 w-12 animate-pulse rounded-xl bg-slate-200" /><div className="h-4 w-2/3 animate-pulse rounded bg-slate-200" /></div>) : events.length > 0 ? events.map(event => <a className="beranda-v4-event" href="/groups" key={event.id}><span className="beranda-v4-date"><b>{event.date}</b><small>{event.month}</small></span><span><strong>{event.title}</strong><small>{event.place}</small><em>{event.type}</em></span><ArrowRight size={16}/></a>) : <div className="feed-state"><strong>Belum ada kegiatan terjadwal.</strong><span>Buat kegiatan di komunitasmu dan undang warga.</span></div>}</div></section>
           </div>
           <aside className="beranda-v4-rail"><section className="beranda-v4-opportunity"><span className="beranda-v4-opportunity-icon"><Compass size={20}/></span><span className="beranda-v4-eyebrow">Peluang hari ini</span><h2>Mulai dari hal yang bisa kamu lakukan.</h2><p>Temukan kerja, kolaborasi, volunteer, dan ruang untuk mengembangkan ide lokal.</p><a href="/jobs">Lihat peluang <ArrowRight size={15}/></a></section><section className="beranda-v4-trust"><span className="beranda-v4-eyebrow">Dibangun untuk warga</span><h2>Local-first. Tetap terpercaya.</h2><p>SUKI menjaga agar cerita, usaha, dan koneksi lokal tetap dekat, relevan, dan manusiawi.</p><ul><li><Check size={15}/> Profil dan usaha dapat diverifikasi</li><li><Check size={15}/> Konten dapat dilaporkan</li><li><Check size={15}/> Aksi warga tetap transparan</li></ul></section><RightSidebar /></aside>
         </div>

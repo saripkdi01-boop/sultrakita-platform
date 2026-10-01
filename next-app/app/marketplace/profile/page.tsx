@@ -1,6 +1,6 @@
 'use client';
 
-import { Bookmark, Bell, ChevronRight, Clock3, Heart, MapPin, MessageCircle, Settings, ShieldCheck, Star, Store, UserRound, UsersRound } from 'lucide-react';
+import { Bookmark, Bell, ChevronRight, Clock3, Heart, MapPin, Settings, ShieldCheck, Star, Store, UserRound, UsersRound } from 'lucide-react';
 import Link from 'next/link';
 import { Header } from '@/components/layout/Header';
 import { QuickNavBar, type QuickNavKey } from '@/components/layout/QuickNavBar';
@@ -8,7 +8,8 @@ import { SavedSearches } from '@/components/marketplace/SavedSearches';
 import { getProfileNickname, useSessionProfile } from '@/hooks/useSessionProfile';
 
 type Action = { label: string; description: string; Icon: typeof Bookmark; href: string };
-const actions: Action[] = [{ label: 'Item tersimpan', description: 'Listing favoritmu', Icon: Bookmark, href: '#saved' }, { label: 'Kotak masuk', description: 'Pesan dari pembeli', Icon: MessageCircle, href: '/chat' }, { label: 'Ulasan', description: 'Reputasi penjual', Icon: Star, href: '#reviews' }, { label: 'Baru saja dilihat', description: 'Riwayat listing', Icon: Clock3, href: '#recent' }];
+// Fase 0: aksi 'Kotak masuk' (/chat) disembunyikan sementara. Kembalikan saat chat aktif.
+const actions: Action[] = [{ label: 'Item tersimpan', description: 'Listing favoritmu', Icon: Bookmark, href: '#saved' }, { label: 'Ulasan', description: 'Reputasi penjual', Icon: Star, href: '#reviews' }, { label: 'Baru saja dilihat', description: 'Riwayat listing', Icon: Clock3, href: '#recent' }];
 const selling = [{ label: 'Tawaran Anda', meta: 'Kelola penawaran yang masuk', count: '20+', Icon: Store }, { label: 'Tindakan cepat', meta: 'Optimalkan listing yang aktif', Icon: Heart }, { label: 'Pengikut Marketplace', meta: 'Orang yang mengikuti tokomu', Icon: UsersRound }, { label: 'Semua aktivitas berjualan', meta: 'Lihat ringkasan aktivitas', Icon: ShieldCheck }];
 const account = [{ label: 'Akses Marketplace', meta: 'Atur preferensi belanja dan jualan', Icon: Store }, { label: 'Lokasi', meta: 'Sulawesi Tenggara', Icon: MapPin }, { label: 'Notifikasi', meta: 'Aktif untuk pesan penting', Icon: Bell }, { label: 'Pengaturan', meta: 'Kelola pengalaman Marketplace', Icon: Settings }];
 

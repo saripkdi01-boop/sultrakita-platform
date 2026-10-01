@@ -1,3 +1,4 @@
-import { Building2, Home, MessageCircle, PlaySquare, Store, Users } from 'lucide-react';
-const items = [{ label: 'Beranda', href: '/beranda', Icon: Home }, { label: 'Marketplace', href: '/marketplace', Icon: Store }, { label: 'Reels', href: '/reels', Icon: PlaySquare }, { label: 'Komunitas', href: '/groups', Icon: Users }, { label: 'Properti', href: '/properti', Icon: Building2 }, { label: 'SUKI Chat', href: '/chat', Icon: MessageCircle }];
+import { Building2, Home, PlaySquare, Store, Users } from 'lucide-react';
+// Fase 0: item 'SUKI Chat' disembunyikan sementara (chat dinonaktifkan). Kembalikan saat chat aktif.
+const items = [{ label: 'Beranda', href: '/beranda', Icon: Home }, { label: 'Marketplace', href: '/marketplace', Icon: Store }, { label: 'Reels', href: '/reels', Icon: PlaySquare }, { label: 'Komunitas', href: '/groups', Icon: Users }, { label: 'Properti', href: '/properti', Icon: Building2 }];
 export function LeftSidebar() { return <aside className="beranda-left-sidebar" aria-label="Navigasi Beranda"><div className="beranda-side-profile"><span>SH</span><div><strong>Syarief Hidayatulloh</strong><small>Warga Sultra</small></div></div><nav>{items.map(({ label, href, Icon }, index) => <a key={href} href={href} className={index === 0 ? 'active' : ''}><Icon size={18}/><span>{label}</span></a>)}</nav></aside>; }

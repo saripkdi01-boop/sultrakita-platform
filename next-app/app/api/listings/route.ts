@@ -19,6 +19,28 @@ function getListingsClient() {
   return createClient(url, key, { auth: { autoRefreshToken: false, persistSession: false } });
 }
 
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// Cache label/slug -> UUID kategori agar tidak query tabel categories di setiap request.
+let categoryCache: Array<{ id: string; slug: string; name: string }> | null = null;
+async function resolveCategoryId(client: NonNullable<ReturnType<typeof getListingsClient>>, raw: string): Promise<string | null> {
+  const value = raw.trim();
+  if (!value) return null;
+  if (uuidPattern.test(value)) return value;
+  const normalized = value.toLowerCase();
+  try {
+    if (!categoryCache) {
+      const { data, error } = await client.from('categories').select('id,slug,name').eq('is_active', true);
+      if (error) throw error;
+      categoryCache = (data || []).map(row => ({ id: String(row.id), slug: String(row.slug || '').toLowerCase(), name: String(row.name || '').toLowerCase() }));
+    }
+    const match = categoryCache.find(entry => entry.slug === normalized || entry.name === normalized);
+    return match ? match.id : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
   const queryText = params.get('q')?.trim(); const district = params.get('district')?.trim(); const category = params.get('category')?.trim(); const condition = params.get('condition')?.trim();
@@ -32,7 +54,14 @@ export async function GET(request: NextRequest) {
     if (queryText) { const term = escapeLike(queryText); query = query.or(`title.ilike.%${term}%,description.ilike.%${term}%,district.ilike.%${term}%,city.ilike.%${term}%`); }
     if (district && district !== 'Semua distrik') query = query.eq('district', district);
     if (condition) query = query.eq('condition', condition);
-    // Category labels are resolved by the marketplace UI; UUID category filters can be added here when supplied.
+    // Filter kategori: UUID dipakai langsung; label/slug (mis. dari CategoryBrowser)
+    // di-resolve ke UUID tabel categories. Bila tidak dikenal, kembalikan hasil kosong
+    // yang jujur alih-alih mengabaikan filter.
+    if (category) {
+      const categoryId = await resolveCategoryId(client, category);
+      if (!categoryId) return NextResponse.json({ ok: true, data: [], filters: { q: queryText || '', district: district || '', category: category || '', condition: condition || '' }, warning: 'Kategori tidak ditemukan.' });
+      query = query.eq('category_id', categoryId);
+    }
     if (Number.isFinite(minPrice) && minPrice > 0) query = query.gte('price', minPrice);
     if (Number.isFinite(maxPrice) && maxPrice > 0) query = query.lte('price', maxPrice);
     const { data, error } = await query;
