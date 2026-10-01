@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Activity, Bell, Bookmark, ChevronLeft, ChevronRight, CircleHelp, Clock3, LogOut, Palette, Shield, Star, Store, UserRound, UsersRound, X } from 'lucide-react';
 import Link from 'next/link';
 import { SettingTab, useProfileStore, UserProfile, UserRole } from '@/store/profile';
+import { apiErrorMessage } from '@/lib/api-client';
 import { ActiveSessions } from '@/components/security/ActiveSessions';
 import { ActivityLogs } from '@/components/security/ActivityLogs';
 import { BlockedUsers } from '@/components/security/BlockedUsers';
@@ -88,7 +89,7 @@ function ProfileEditForm({ userId }: { userId?: string }) {
     const response = await fetch('/api/profile/avatar', { method: 'POST', body: formData, credentials: 'include' });
     const payload = await response.json().catch(() => ({}));
     setUploading(false);
-    if (!response.ok || !payload.ok) { setError(payload.error || 'Foto gagal diproses. Periksa environment R2 dan coba lagi.'); return; }
+    if (!response.ok || !payload.ok) { setError(apiErrorMessage(payload, 'Foto gagal diproses. Periksa environment R2 dan coba lagi.')); return; }
     const avatarUrl = String(payload.data?.avatar_url || '');
     setDraft(current => ({ ...current, avatar_url: avatarUrl }));
     setProfile({ avatar_url: avatarUrl });

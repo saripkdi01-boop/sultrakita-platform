@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 import { getServerSupabase } from '@/lib/supabase/server';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 const campaign = { name: 'Ajak Teman, Tumbuh Bersama', pointsPerQualifiedInvite: 100, pointsPerRupiah: 10, minimumRedemption: 1000, endDate: '2026-12-31' };
 
@@ -13,7 +14,8 @@ function adminClient() {
 }
 function codeFor(id: string) { return `SULTRA-${createHash('sha256').update(`referral:${id}`).digest('hex').slice(0, 8).toUpperCase()}`; }
 function json(data: unknown, status = 200) { return NextResponse.json({ ok: true, data }, { status }); }
-function bad(error: string, status = 400) { return NextResponse.json({ ok: false, error }, { status }); }
+// Fase 1.4: format error konsisten { error: { code, message, requestId } }.
+function bad(message: string, status = 400) { return NextResponse.json({ ok: false, error: { code: 'REFERRAL_ERROR', message, requestId: randomUUID() } }, { status, headers: { 'Cache-Control': 'no-store' } }); }
 async function currentUser() { try { const client = await getServerSupabase(); const { data: { user } } = await client.auth.getUser(); return user; } catch { return null; } }
 function campaignClosed() { return new Date(`${campaign.endDate}T23:59:59.999Z`).getTime() < Date.now(); }
 function fingerprint(value: string) {
@@ -43,6 +45,9 @@ function referralError(error: unknown) {
 }
 
 export async function GET(request: NextRequest) {
+  // Fase 1.5: batasi 60 request/menit per IP untuk API publik.
+  const limited = await checkRateLimit(request, 'api');
+  if (limited) return limited;
   const action = request.nextUrl.searchParams.get('action') || 'campaign';
   if (action === 'campaign') return json(campaign);
   try {
@@ -100,6 +105,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  // Fase 1.5: batasi 60 request/menit per IP (endpoint sensitif: payout & klaim).
+  const limited = await checkRateLimit(request, 'api');
+  if (limited) return limited;
   const body = await request.json().catch(() => ({})); const action = String(body.action || 'visit');
   try {
     const db = adminClient();

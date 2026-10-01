@@ -1,8 +1,33 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, BriefcaseBusiness, Building2, CheckCircle2, Clock3, MapPin } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { getJobById } from '@/lib/actions/jobs';
+
+// Fase 1.1: ISR + metadata SEO/OG untuk detail lowongan.
+export const revalidate = 300;
+
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://sukiapps.web.id').replace(/\/$/, '');
+const ogImage = `${siteUrl}/suki-logo-mark.png`;
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  try {
+    const job = await getJobById(id);
+    const title = `${job.title} — ${job.company?.name || 'SUKI Jobs'}`;
+    const description = `${job.location || 'Sulawesi Tenggara'} · ${labels[job.job_type] || job.job_type || ''} · ${labels[job.work_type] || job.work_type || ''}. Lamar langsung lewat SUKI Jobs.`.trim();
+    const url = `${siteUrl}/jobs/${job.id}`;
+    return {
+      title, description,
+      alternates: { canonical: url },
+      openGraph: { title, description, type: 'website', url, siteName: 'SUKI Apps', locale: 'id_ID', images: [{ url: ogImage, alt: 'SUKI Apps' }] },
+      twitter: { card: 'summary_large_image', title, description, images: [ogImage] },
+    };
+  } catch {
+    return { title: 'Lowongan tidak ditemukan | SUKI Jobs' };
+  }
+}
 
 const labels: Record<string, string> = {
   full_time: 'Full-time', part_time: 'Part-time', contract: 'Kontrak', freelance: 'Freelance', internship: 'Magang',

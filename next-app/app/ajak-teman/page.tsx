@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import QRCode from 'qrcode';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { apiErrorMessage } from '@/lib/api-client';
 
 type Tab = 'overview' | 'analytics' | 'leaderboard' | 'redeem' | 'rules';
 type Summary = { referral_code?: string; total_points?: number; lifetime_points?: number; qualified_referrals?: number; recent_activity?: Array<{ event_type: string; source_channel?: string; created_at?: string }> };
@@ -43,7 +44,7 @@ export default function AjakTemanPage() {
   async function share() { const payload = { title: 'Ajak Teman, Tumbuh Bersama · SUKI Affiliate Rewards', text: 'Gabung sebagai affiliator SUKI dan bantu user baru masuk ke ekosistem SultraKita.', url: referralLink }; if (navigator.share) await navigator.share(payload); else { await navigator.clipboard?.writeText(referralLink); setMessage('Link referral disalin.'); } }
   async function copy() { await navigator.clipboard?.writeText(referralLink); setMessage('Link referral disalin.'); }
   async function copyTemplate(template: string) { await navigator.clipboard?.writeText(template); setMessage('Template promosi disalin.'); }
-  async function redeem(event: FormEvent<HTMLFormElement>) { event.preventDefault(); const form = new FormData(event.currentTarget); const response = await fetch('/api/referral', { method: 'POST', headers: { 'content-type': 'application/json' }, credentials: 'include', body: JSON.stringify({ action: 'redeem', points: Number(form.get('points')), payout_method: form.get('payout_method'), payout_account: form.get('payout_account') }) }); const payload = await response.json().catch(() => ({})); setMessage(payload?.data?.message || payload?.error || 'Pengajuan diterima untuk verifikasi.'); if (response.ok) event.currentTarget.reset(); }
+  async function redeem(event: FormEvent<HTMLFormElement>) { event.preventDefault(); const form = new FormData(event.currentTarget); const response = await fetch('/api/referral', { method: 'POST', headers: { 'content-type': 'application/json' }, credentials: 'include', body: JSON.stringify({ action: 'redeem', points: Number(form.get('points')), payout_method: form.get('payout_method'), payout_account: form.get('payout_account') }) }); const payload = await response.json().catch(() => ({})); setMessage(payload?.data?.message || apiErrorMessage(payload, 'Pengajuan diterima untuk verifikasi.')); if (response.ok) event.currentTarget.reset(); }
   const select = (next: Tab) => { setTab(next); setMessage(''); };
   const channelLink = (channel: string) => `${referralLink}&src=${encodeURIComponent(channel)}`;
   useEffect(() => { void QRCode.toDataURL(channelLink(qrChannel), { width: 220, margin: 2, color: { dark: '#123f39', light: '#ffffff' } }).then(setQrData).catch(() => setQrData('')); }, [qrChannel, referralLink]);
