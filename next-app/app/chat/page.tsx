@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { MessageCircle } from 'lucide-react';
+import { AppLayout } from '@/components/layout/AppLayout';
 import { getServerSupabase } from '@/lib/supabase/server';
 // import ChatPageClient from './ChatPageClient'; // Fase 0: chat dinonaktifkan sementara.
 
@@ -20,6 +21,7 @@ export default async function ChatPage() {
   // return <ChatPageClient />;
 
   return (
+    <AppLayout>
     <main style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', padding: 24, background: 'var(--theme-bg, #f7fbf8)' }}>
       <div style={{ maxWidth: 440, width: '100%', textAlign: 'center', background: '#fff', borderRadius: 24, padding: '40px 28px', boxShadow: '0 12px 40px rgba(18,33,31,.08)' }}>
         <div style={{ width: 64, height: 64, margin: '0 auto 16px', borderRadius: 20, display: 'grid', placeItems: 'center', background: '#e5f3ed', color: '#0e6258' }}>
@@ -35,5 +37,6 @@ export default async function ChatPage() {
         </Link>
       </div>
     </main>
+    </AppLayout>
   );
 }

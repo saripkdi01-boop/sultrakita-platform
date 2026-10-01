@@ -4,6 +4,7 @@ import { BadgeCheck } from 'lucide-react';
 import { fetchPublicListings, fetchSellerProfile } from '@/lib/listings-query';
 import { sellerTier, sellerRatingText } from '@/lib/seller-trust';
 import { SafeImage } from '@/components/marketplace/SafeImage';
+import { AppLayout } from '@/components/layout/AppLayout';
 import { TokoListings } from './toko-listings';
 
 // Fase 2.5: etalase toko publik — profil penjual + semua listing aktifnya.
@@ -40,6 +41,7 @@ export default async function TokoPage({ params }: { params: Promise<{ id: strin
   const items = listings.ok && 'items' in listings ? listings.items : [];
 
   return (
+    <AppLayout>
     <main className="toko-page">
       <header className="toko-header">
         <div className="toko-avatar">
@@ -62,5 +64,6 @@ export default async function TokoPage({ params }: { params: Promise<{ id: strin
         <TokoListings items={items} />
       </section>
     </main>
+    </AppLayout>
   );
 }
