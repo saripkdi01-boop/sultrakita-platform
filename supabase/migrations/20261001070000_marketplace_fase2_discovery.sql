@@ -1,6 +1,6 @@
 -- Fase 2 (2026-10-01): Marketplace menjadi mesin discovery.
 -- 1) saved_searches: pencarian tersimpan milik user + alert listing baru (dicocokkan cron).
--- 2) listing_media: tambah kolom listing_uuid agar bisa merujuk public.listings(id uuid).
+-- 2) listing_media: tambah kolom listing_uuid agar bisa merujuk public.listings(id bigint).
 --    (kolom listing_id bigint adalah warisan skema lama dan tetap dipertahankan.)
 -- File migrasi saja — JANGAN dijalankan manual ke DB remote tanpa review.
 
@@ -25,9 +25,9 @@ create policy saved_searches_owner on public.saved_searches
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
 
--- listing_media.listing_uuid: relasi yang benar ke listings(id uuid).
+-- listing_media.listing_uuid: relasi yang benar ke listings(id bigint).
 alter table public.listing_media
-  add column if not exists listing_uuid uuid references public.listings(id) on delete cascade;
+  add column if not exists listing_uuid bigint references public.listings(id) on delete cascade;
 
 create index if not exists listing_media_uuid_idx
   on public.listing_media (listing_uuid, created_at);
