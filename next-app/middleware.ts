@@ -127,9 +127,17 @@ async function handleApiRequest(request: NextRequest): Promise<NextResponse> {
 
 export async function middleware(request: NextRequest) {
   const url = request.nextUrl;
-  if (url.hostname === 'www.sukiapps.web.id') {
+  // Domain kanonis SUKI Apps: sukiapps.web.id.
+  // Alihkan host non-kanonis (URL Vercel produksi & www) dengan 308 permanen
+  // SEBELUM logika lain, sehingga seluruh konten selalu tampil di sukiapps.web.id
+  // dan callback login Google/Facebook (redirectTo = origin halaman) selalu
+  // kembali ke sukiapps.web.id. Host preview PR (*.vercel.app acak) dan
+  // localhost TIDAK dialihkan.
+  if (url.hostname === 'sultrakita-platform.vercel.app' || url.hostname === 'www.sukiapps.web.id') {
     const canonical = url.clone();
     canonical.hostname = 'sukiapps.web.id';
+    canonical.protocol = 'https:';
+    canonical.port = '';
     return NextResponse.redirect(canonical, 308);
   }
 

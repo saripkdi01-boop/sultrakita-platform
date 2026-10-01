@@ -17,6 +17,9 @@ const nextConfig = {
     ];
   },
   // Fase 0: rapikan URL duplikat/mati. `permanent: true` menghasilkan 308.
+  // Fase 0: rapikan URL duplikat/mati. `permanent: true` menghasilkan 308.
+  // (Pengalihan domain kanonis sukiapps.web.id ditangani di middleware.ts,
+  //  karena aturan `has: host` di next.config tidak dievaluasi untuk host ini.)
   async redirects() {
     return [
       // Komunitas hidup di /groups; /komunitas hanya alias lama yang me-return 404.
