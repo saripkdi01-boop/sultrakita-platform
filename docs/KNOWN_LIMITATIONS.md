@@ -20,8 +20,13 @@ Diperbarui: 2026-10-01.
 - File migrasi `supabase/migrations/2026100114*.sql` (audit_events, site_settings, billing_*, analytics_events) ditulis & direview, tetapi BELUM dijalankan ke database Supabase manapun.
 - Perlu dijalankan via Supabase dashboard/CLI oleh manusia (atau dengan secret key) ke staging dulu, lalu produksi. Lihat `docs/OPERATIONS_RUNBOOK.md`.
 
-## Merge dengan Fase 1 — PENDING
-- Branch `upgrade/fase-1-ssr-seo-fondasi` (SSR/SEO) masih dikerjakan paralel. Setelah ia commit & push, lakukan merge/rebase ke `upgrade/worldclass-execution` dan selesaikan konflik (diprediksi minim karena file disjoint).
+## Merge dengan Fase 1 — TERSEDIA, rekonsiliasi saat integrasi (update 2026-10-01 ~13:00 WITA)
+- `origin/upgrade/fase-1-ssr-seo-fondasi` (commit `72c5679`) sudah di-fetch. Merge ke branch ini SETELAH semua slice commit.
+- OVERLAP yang harus direkonsiliasi saat merge (jangan duplikasi):
+  - `next-app/lib/rate-limit.ts` (Fase 1, teruji burst→429 di 5 API routes) vs `next-app/lib/security/rate-limit.ts` (Slice-A): jadikan milik Fase 1 kanonis; middleware Slice-A memakai ulang.
+  - `next-app/lib/dal.ts` (Fase 1: requireUser/requireRole) vs `next-app/lib/admin/guards.ts` (Slice-B): pakai `dal.ts` sebagai basis, guards hanya menambah maskPII/util admin.
+  - `next-app/lib/env.ts` (Fase 1: validasi Zod fail-fast): pastikan kunci billing baru Slice-C terdaftar/konsisten.
+- File Fase 1 yang kini BOLEH dibaca untuk rekonsiliasi (tetap jangan diedit sembarang): daftar 45 file di commit 72c5679.
 
 ## Chat — dinonaktifkan (Fase 0)
 - `/chat` menampilkan halaman "segera hadir". Mengaktifkan kembali butuh keputusan produk + audit WS yang rusak (temuan Fase 0).
