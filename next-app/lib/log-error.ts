@@ -72,16 +72,17 @@ function safeExtra(extra: LogErrorContext['extra']): Record<string, string | num
  * TIDAK PERNAH throw — kegagalan pencatatan tidak boleh mengganggu alur utama.
  */
 export function logError(context: LogErrorContext, error: unknown): LogErrorEntry {
+  const ctx: Partial<LogErrorContext> = context ?? {};
   const entry: LogErrorEntry = {
     ts: new Date().toISOString(),
     level: 'error',
     service: 'suki-apps',
-    route: String(context.route ?? 'unknown').slice(0, 200),
-    request_id: context.requestId?.slice(0, 64) ?? null,
-    user_hash: context.userId ? hashUserIdForLog(context.userId) : null,
+    route: String(ctx.route ?? 'unknown').slice(0, 200),
+    request_id: ctx.requestId?.slice(0, 64) ?? null,
+    user_hash: ctx.userId ? hashUserIdForLog(ctx.userId) : null,
     error_name: safeName(error),
     error_message: safeMessage(error),
-    extra: safeExtra(context.extra),
+    extra: safeExtra(ctx.extra),
   };
   try {
     // Satu baris JSON → mudah difilter di Vercel Runtime Logs ("suki-apps" + "level":"error").

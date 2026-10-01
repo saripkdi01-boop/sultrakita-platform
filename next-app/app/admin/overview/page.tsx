@@ -183,7 +183,7 @@ async function referralFunnel(): Promise<ReferralFunnel> {
       else if (row.event_type === 'qualified') entry.qualified += 1;
       byChannel.set(channel, entry);
     }
-    const channels = [...byChannel.values()].sort(
+    const channels = Array.from(byChannel.values()).sort(
       (a, b) => b.qualified - a.qualified || b.signups - a.signups || b.visits - a.visits,
     );
     return {
@@ -229,7 +229,7 @@ async function utmSignups(client: SupabaseClient, days = 30): Promise<UtmResult>
       counts.set(source, (counts.get(source) ?? 0) + 1);
     }
     return {
-      rows: [...counts.entries()]
+      rows: Array.from(counts.entries())
         .map(([source, count]) => ({ source, count }))
         .sort((a, b) => b.count - a.count),
       available: true,
@@ -313,7 +313,7 @@ function LaunchEyebrow({ children }: { children: ReactNode }) {
 
 function LaunchTrend({ label, trend, footnote }: { label: string; trend: DailyTrend; footnote: string }) {
   const max = Math.max(1, ...trend.values.map((v) => v ?? 0));
-  const total = trend.available ? trend.values.reduce((n, v) => n + (v ?? 0), 0) : null;
+  const total = trend.available ? trend.values.reduce<number>((n, v) => n + (v ?? 0), 0) : null;
   return (
     <LaunchCard>
       <div className="flex items-baseline justify-between gap-2">
