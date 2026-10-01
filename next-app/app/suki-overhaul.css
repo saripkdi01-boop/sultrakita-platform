@@ -583,7 +583,13 @@
    sehingga aturan di bawah menang berdasarkan urutan sumber + spesifisitas.
    Jangan hapus bagian ini selama blok lama masih ada di globals.css.
    ========================================================================== */
-.suki-overhaul-home{overflow-y:clip}
+.suki-overhaul-home{overflow:clip}
+/* Sticky header butuh rantai ancestor tanpa scroll container. Aturan lama
+   html,body{overflow-x:hidden} di globals.css menjadikan <body> scroll
+   container sehingga position:sticky pada header tidak berfungsi.
+   overflow-x:clip tetap mencegah scroll horizontal tanpa merusak sticky.
+   :has() membatasi perbaikan ini hanya pada homepage. */
+html:has(.suki-overhaul-home),html:has(.suki-overhaul-home) body{overflow-x:clip}
 .suki-overhaul-home .suki-overhaul-header{height:auto}
 .suki-overhaul-home .suki-overhaul-header-inner{height:auto}
 .suki-overhaul-home .suki-overhaul-brand-mark img,
@@ -681,3 +687,17 @@
 [data-theme="dark"] .suki-overhaul-home .suki-overhaul-secondary:hover{background:var(--su-card)}
 [data-theme="dark"] .suki-overhaul-home :is(a,button,input):focus-visible{box-shadow:none}
 .suki-overhaul-home .suki-overhaul-ecosystem-item small{display:block}
+
+/* ==========================================================================
+   PERBAIKAN QA (2026-10-01) — badge hero /marketplace.
+   Sublabel badge (.marketplace-hero-proof) terpotong/tumpang-tindih di
+   desktop: izinkan badge membungkus ke baris baru dan jangan pernah
+   terkompresi oleh flex .marketplace-subnav-head. Ukuran teks badge
+   sedikit diperbesar agar terbaca penuh. Mobile (<=900px) tidak diubah.
+   ========================================================================== */
+@media (min-width: 901px){
+  .marketplace-page .marketplace-hero-proof{flex-wrap:wrap;row-gap:8px;flex-shrink:0}
+  .marketplace-page .marketplace-hero-proof>span{min-width:0}
+}
+.marketplace-page .marketplace-hero-proof b{font-size:11px}
+.marketplace-page .marketplace-hero-proof small{font-size:10px}

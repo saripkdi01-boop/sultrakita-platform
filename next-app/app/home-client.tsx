@@ -126,6 +126,7 @@ export default function HomeClient() {
   const stepsRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchShellRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const current = document.documentElement.dataset.theme;
@@ -146,13 +147,16 @@ export default function HomeClient() {
     return () => observer.disconnect();
   }, []);
 
-  // Keyboard: ⌘K / Ctrl+K membuka pencarian, Escape menutup menu & pencarian.
+  // Keyboard: ⌘K / Ctrl+K membuka–menutup (toggle) pencarian, Escape menutup menu & pencarian.
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
       const mod = event.metaKey || event.ctrlKey;
       if (mod && event.key.toLowerCase() === 'k') {
+        // Guard: jangan rebut ⌘K/Ctrl+K saat fokus sedang di dalam kolom pencarian.
+        const inSearchInput = searchShellRef.current?.contains(document.activeElement) ?? false;
+        if (searchOpen && inSearchInput) return;
         event.preventDefault();
-        setSearchOpen(true);
+        setSearchOpen((value) => !value);
         return;
       }
       if (event.key === 'Escape') {
@@ -168,9 +172,13 @@ export default function HomeClient() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [searchOpen, menuOpen]);
 
+  // Saat pencarian dibuka, gulir shell ke area pandang (form ada di bawah fold)
+  // lalu fokuskan input. Hormati preferensi reduce-motion.
   useEffect(() => {
-    if (searchOpen) searchInputRef.current?.focus();
-  }, [searchOpen]);
+    if (!searchOpen) return;
+    searchShellRef.current?.scrollIntoView({ block: 'nearest', behavior: reduceMotion ? 'auto' : 'smooth' });
+    searchInputRef.current?.focus({ preventScroll: true });
+  }, [searchOpen, reduceMotion]);
 
   // Kunci scroll body saat menu mobile terbuka agar halaman belakang tidak ikut bergeser.
   useEffect(() => {
@@ -310,7 +318,7 @@ export default function HomeClient() {
 
       <section className="suki-overhaul-search-band" aria-label="Pencarian SUKI Apps">
         <div className="suki-overhaul-container">
-          <div className={`suki-overhaul-search-shell ${searchOpen ? 'is-open' : ''}`}>
+          <div ref={searchShellRef} className={`suki-overhaul-search-shell ${searchOpen ? 'is-open' : ''}`}>
             <button
               type="button"
               className="suki-overhaul-search-trigger"
