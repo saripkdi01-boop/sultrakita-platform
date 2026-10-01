@@ -3,7 +3,7 @@ import { fetchPublicListings } from '@/lib/listings-query';
 import MarketplacePageClient from './page-client';
 
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://sukiapps.web.id').replace(/\/$/, '');
-const ogImage = `${siteUrl}/suki-logo-mark.png`;
+const ogImage = `${siteUrl}/og-image.png`;
 
 // Fase 1.1: halaman dirender di server — data listing awal diambil saat request
 // (SSR), SEO metadata + OG hadir di HTML, client hanya me-hydrate.

@@ -3,7 +3,7 @@ import { getGroups } from '@/lib/actions/groups';
 import GroupsPageClient from './page-client';
 
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://sukiapps.web.id').replace(/\/$/, '');
-const ogImage = `${siteUrl}/suki-logo-mark.png`;
+const ogImage = `${siteUrl}/og-image.png`;
 
 const title = 'SUKI Groups — Komunitas Sulawesi Tenggara';
 const description = 'Bergabung dengan komunitas lokal Sulawesi Tenggara: diskusi, acara, dan kolaborasi warga di SUKI Groups.';

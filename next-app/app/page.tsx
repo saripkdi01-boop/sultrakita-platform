@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: '/brand/suki-logo-mark.png',
+        url: '/og-image.png',
         width: 512,
         height: 512,
         alt: 'Logo SUKI Apps',
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     title: 'SUKI Apps — Ekosistem Digital Sulawesi Tenggara',
     description:
       'Temukan produk lokal, properti, peluang, komunitas, dan layanan bisnis di satu ekosistem.',
-    images: ['/brand/suki-logo-mark.png'],
+    images: ['/og-image.png'],
   },
 };
 

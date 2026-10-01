@@ -1,16 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
-  <title id="title">SUKI Apps</title>
-  <desc id="desc">Teal rounded square with a white stylized S and gold community spark</desc>
-  <defs>
-    <linearGradient id="sukiGradient" x1="8" y1="4" x2="57" y2="60" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#18B6A4"/>
-      <stop offset="1" stop-color="#087F73"/>
-    </linearGradient>
-    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#063D39" flood-opacity=".22"/>
-    </filter>
-  </defs>
-  <rect x="3" y="3" width="58" height="58" rx="17" fill="url(#sukiGradient)" filter="url(#softShadow)"/>
-  <path d="M43.9 18.1c-3.1-2.3-6.8-3.5-11.2-3.5-8.2 0-13.5 4.1-13.5 10.3 0 6.3 4.8 8.8 12.8 10.5 5.1 1.1 6.7 2.2 6.7 4.7 0 2.4-2.3 4-5.8 4-4.1 0-7.4-1.4-10.4-4.4l-4.8 5.8c4.1 3.8 9.1 5.7 15 5.7 8.5 0 14.1-4.1 14.1-10.9 0-6.1-4.1-8.8-12.3-10.5-5.2-1.1-7.2-2-7.2-4.6 0-2.1 1.9-3.6 5.2-3.6 3.3 0 6.4 1.1 9.3 3.4z" fill="#fff"/>
-  <path d="M47.8 11.7c1.5 0 2.7 1.2 2.7 2.7s-1.2 2.7-2.7 2.7-2.7-1.2-2.7-2.7 1.2-2.7 2.7-2.7Z" fill="#F4D35E"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="SUKI Apps"><g transform="translate(0 0) scale(1)"><rect x="32" y="32" width="448" height="448" rx="100" fill="#0E6258"/><path transform="translate(129.52 400.36) scale(0.47018 -0.47018)" d="M269 -12Q179 -12 112.5 30.5Q46 73 22 145L132 197Q153 153 189.0 128.0Q225 103 269 103Q301 103 318.0 116.0Q335 129 335 152Q335 164 329.0 172.5Q323 181 311.0 188.0Q299 195 281 200L188 226Q121 245 85.0 287.5Q49 330 49 388Q49 439 75.0 477.0Q101 515 148.0 536.5Q195 558 256 558Q336 558 396.5 520.5Q457 483 482 415L371 363Q359 397 327.5 417.5Q296 438 256 438Q227 438 210.5 426.0Q194 414 194 393Q194 382 200.0 373.0Q206 364 219.5 357.0Q233 350 253 344L340 318Q408 298 444.0 257.5Q480 217 480 158Q480 107 453.5 69.0Q427 31 380.0 9.5Q333 -12 269 -12Z" fill="#FFFFFF"/><circle cx="388" cy="130" r="30" fill="#D4AF37"/></g></svg>

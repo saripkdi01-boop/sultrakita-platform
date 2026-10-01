@@ -9,9 +9,9 @@ export const metadata: Metadata = {
     description: 'Bagikan kabar dan temukan informasi, peluang, layanan, serta properti dari Sulawesi Tenggara.',
     url: 'https://sukiapps.web.id/beranda',
     type: 'website',
-    images: [{ url: '/og-image.svg', width: 1200, height: 630, alt: 'SUKI Platforms' }],
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'SUKI Platforms' }],
   },
-  twitter: { card: 'summary_large_image', title: 'Beranda SUKI | Informasi Sulawesi Tenggara', description: 'Bagikan kabar dan temukan informasi, peluang, layanan, serta properti dari Sulawesi Tenggara.', images: ['/og-image.svg'] },
+  twitter: { card: 'summary_large_image', title: 'Beranda SUKI | Informasi Sulawesi Tenggara', description: 'Bagikan kabar dan temukan informasi, peluang, layanan, serta properti dari Sulawesi Tenggara.', images: ['/og-image.png'] },
 };
 
 export default function BerandaLayout({ children }: Readonly<{ children: React.ReactNode }>) { return children; }

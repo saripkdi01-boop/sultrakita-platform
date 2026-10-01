@@ -3,7 +3,7 @@ import { getJobs } from '@/lib/actions/jobs';
 import JobsPageClient from './page-client';
 
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://sukiapps.web.id').replace(/\/$/, '');
-const ogImage = `${siteUrl}/suki-logo-mark.png`;
+const ogImage = `${siteUrl}/og-image.png`;
 
 const title = 'SUKI Jobs — Lowongan Kerja Sulawesi Tenggara';
 const description = 'Temukan lowongan kerja terbaru di Sulawesi Tenggara: full-time, part-time, freelance, dan remote. Lamar langsung, simpan lowongan favorit.';
