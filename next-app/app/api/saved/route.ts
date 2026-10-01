@@ -36,11 +36,11 @@ function toPublicProfile(
     | undefined,
 ) {
   if (!profile || typeof profile !== 'object') return null;
-  const avatarPublic = profile.visibility_settings?.avatar === 'public';
+  const avatarHidden = profile.visibility_settings?.avatar !== 'public';
   return {
     display_name: profile.display_name ?? null,
     username: profile.username ?? null,
-    avatar_url: avatarPublic ? profile.avatar_url ?? null : null,
+    avatar_url: avatarHidden ? null : (profile.avatar_url ?? null),
   };
 }
 
