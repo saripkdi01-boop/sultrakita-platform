@@ -4,6 +4,9 @@ const securityHeaders = [
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
   { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
   { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+  // Item 19 audit keamanan 2026-10-02: HSTS sebelumnya hilang. Rollout
+  // bertahap — mulai tanpa `preload`; tambah `preload` setelah stabil.
+  { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains' },
   { key: 'Content-Security-Policy', value: "default-src 'self'; img-src 'self' data: https:; media-src 'self' https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://images.unsplash.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'" },
 ];
 
