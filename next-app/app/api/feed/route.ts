@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSupabase } from '@/lib/supabase/server';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { badRequest, internalError, unauthorized } from '@/lib/api-error';
+import { attachInteractionMeta } from '@/lib/feed-counts';
 
 const FILTERS = ['recommended', 'following', 'latest', 'property', 'video'] as const;
 type FeedFilter = (typeof FILTERS)[number];
@@ -42,11 +43,13 @@ export async function GET(request: NextRequest) {
 
   try {
     const supabase = await getServerSupabase();
+    // Satu panggilan sesi untuk filter 'following' SEKALIGUS status liked/follow —
+    // dipakai ulang di bawah agar tidak ada roundtrip auth ganda.
+    const { data: { user } } = await supabase.auth.getUser();
     let query = supabase.from('posts').select('id,content,media_urls,type,privacy,location,mood,tagged_user_ids,created_at,user_id,profiles(display_name,username,avatar_url,visibility_settings)').eq('status', 'published').order('created_at', { ascending: false }).order('id', { ascending: false }).limit(limit + 1);
     if (filter === 'property') query = query.eq('type', 'property');
     if (filter === 'video') query = query.eq('type', 'reel');
     if (filter === 'following') {
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) return unauthorized(request, 'Masuk untuk melihat feed mengikuti.');
       const { data: follows, error: followError } = await supabase.from('follows').select('following_id').eq('follower_id', user.id);
       if (followError) return internalError(request, 'Feed belum dapat dimuat.');
@@ -69,6 +72,9 @@ export async function GET(request: NextRequest) {
       }
       return row;
     });
+    // P0-F1: tempelkan likes_count, comments_count, liked, following_author
+    // secara BATCH (3 query agregat untuk seluruh halaman — tanpa N+1).
+    await attachInteractionMeta(supabase, safeRows as Array<Record<string, unknown> & { id: string }>, user ? user.id : null);
     return NextResponse.json({ data: safeRows, pageInfo: { endCursor, hasNextPage }, rankingVersion: 'baseline-v1', filter }, { headers: { 'Cache-Control': 'private, no-store', Vary: 'Cookie' } });
   } catch {
     return internalError(request, 'Feed belum dapat dimuat.');

@@ -1,4 +1,93 @@
 'use client';
-import { useEffect, useState } from 'react'; import { usePathname } from 'next/navigation'; import { Header } from './Header'; import { QuickNavBar, type QuickNavKey } from './QuickNavBar'; import { SidebarDesktop } from './SidebarDesktop'; import { SidebarMobileDrawer } from './SidebarMobileDrawer'; import { getHeaderEcosystemApps } from '@/lib/actions/ecosystem'; import { useUIStore } from '@/store/ui';
-const fallbackRoutes = { suits: '/properti', marketplace: '/marketplace' };
-export function AppLayout({ children, onCreate, active = 'home' }: { children: React.ReactNode; onCreate?: (type?: 'post' | 'reel') => void; active?: QuickNavKey }) { const { mobileOpen } = useUIStore(); const pathname = usePathname(); const [routes, setRoutes] = useState(fallbackRoutes); const routeActive: QuickNavKey = pathname.startsWith('/properti') || pathname.startsWith('/dashboard/properties') || pathname.startsWith('/dashboard/inquiries') || pathname.startsWith('/admin/property-verification') ? 'suits' : pathname.startsWith('/marketplace') ? 'marketplace' : pathname.startsWith('/jobs') ? 'market' : pathname.startsWith('/campaigns') ? 'campaigns' : pathname.startsWith('/groups') ? 'groups' : pathname.startsWith('/ajak-teman') ? 'referral' : active; useEffect(() => { void getHeaderEcosystemApps().then(result => { if (result.ok) { const suits = result.data.find(item => item.slug === 'suki-suits')?.route; setRoutes({ suits: suits || fallbackRoutes.suits, marketplace: fallbackRoutes.marketplace }); } }).catch(() => setRoutes(fallbackRoutes)); }, []); const navigate = (key: QuickNavKey) => { if (key === 'suits') { window.location.href = routes.suits; return; } if (key === 'marketplace') { window.location.href = routes.marketplace; return; } if (key === 'referral') { window.location.href = '/ajak-teman'; return; } if (key === 'market') { window.location.href = '/jobs'; return; } if (key === 'campaigns') { window.location.href = '/campaigns'; return; } if (key === 'groups') { window.location.href = '/groups'; return; } if (key === 'home') { window.location.href = '/beranda'; return; } window.location.hash = key; }; return <><Header onCreate={onCreate} /><QuickNavBar active={routeActive} onNavigate={navigate} onCreate={onCreate} /><div className="app-frame"><SidebarDesktop /><SidebarMobileDrawer open={mobileOpen} /><div className="content-wrap">{children}</div></div></>; }
+
+import type { ReactNode } from 'react';
+import { usePathname } from 'next/navigation';
+import type { QuickNavKey } from './QuickNavBar';
+import { useProfileStore } from '@/store/profile';
+import { SkTopBar } from './SkTopBar';
+import { SkLeftRail, type SkNavKey } from './SkLeftRail';
+import { SkBottomNav } from './SkBottomNav';
+import './sk-nav.css';
+
+export type { SkNavKey };
+
+type AppLayoutProps = {
+  children: ReactNode;
+  onCreate?: (type?: 'post' | 'reel') => void;
+  active?: QuickNavKey | SkNavKey;
+  /** Slot rail konteks kanan (mis. widget beranda). Hanya dirender bila diisi. */
+  rightRail?: ReactNode;
+};
+
+/**
+ * Shell navigasi social workspace SUKI: top bar kompak + left rail (desktop)
+ * + konten utama + slot rail kanan + bottom nav (mobile).
+ *
+ * API dipertahankan: { active, onCreate, children }.
+ * Halaman membungkus kontennya dengan <main> sendiri, sehingga wrapper di sini
+ * memakai <div> agar tidak ada <main> bersarang.
+ */
+export function AppLayout({ children, onCreate, active = 'home', rightRail }: AppLayoutProps) {
+  const pathname = usePathname();
+  const username = useProfileStore((state) => state.profile.username);
+  const profileHref = username ? `/profile/${username}` : '/settings/account';
+  const navActive = resolveActive(pathname, active);
+
+  // Contract test (test/next-route-contract.test.js) mengunci string di bawah:
+  // navigasi cepat Komunitas selalu lewat satu jalur ini.
+  const navigate = (key: SkNavKey | QuickNavKey) => { if (key === 'groups') { window.location.href = '/groups'; return; } window.location.hash = key; };
+
+  return (
+    <div className="sk-shell">
+      <a href="#sk-main-content" className="sk-skip-link">
+        Lewati ke konten utama
+      </a>
+      <SkTopBar onCreate={onCreate} profileHref={profileHref} />
+      <div className="sk-body">
+        <SkLeftRail active={navActive} profileHref={profileHref} onNavigate={navigate} />
+        <div id="sk-main-content" className="sk-main" tabIndex={-1}>
+          {children}
+        </div>
+        {rightRail ? (
+          <aside className="sk-right-rail" aria-label="Konteks">
+            {rightRail}
+          </aside>
+        ) : null}
+      </div>
+      <SkBottomNav active={navActive} onCreate={onCreate} profileHref={profileHref} />
+    </div>
+  );
+}
+
+/**
+ * Petakan pathname + prop `active` lama ke kunci nav baru.
+ * Halaman tanpa padanan (admin, jobs, properti, …) → null (tanpa indikator aktif,
+ * lebih jujur daripada menandai item yang salah).
+ */
+function resolveActive(pathname: string, active?: QuickNavKey | SkNavKey): SkNavKey | null {
+  if (pathname.startsWith('/beranda')) return 'home';
+  if (pathname.startsWith('/groups')) return 'groups';
+  if (pathname.startsWith('/marketplace')) return 'explore';
+  if (pathname.startsWith('/chat')) return 'messages';
+  if (pathname.startsWith('/profile/')) return 'profile';
+  switch (active) {
+    case 'home':
+      return 'home';
+    case 'explore':
+      return 'explore';
+    case 'notifications':
+      return 'notifications';
+    case 'messages':
+      return 'messages';
+    case 'groups':
+      return 'groups';
+    case 'saved':
+      return 'saved';
+    case 'profile':
+      return 'profile';
+    case 'marketplace':
+      return 'explore';
+    default:
+      return null;
+  }
+}

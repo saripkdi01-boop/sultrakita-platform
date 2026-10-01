@@ -75,3 +75,85 @@ html[data-theme='dark'] {
     --suki-motion-pop: 1;
   }
 }
+
+/* ==========================================================================
+   Teluk & Tenun — design tokens (namespace --sk-*)
+   Identitas /beranda overhaul: warm sand/cream, ink hangat, aksen
+   amber-gold + coral bakar + teal dalam. Social platform, BUKAN dashboard.
+   DILARANG: gradien neon, glassmorphism berlebih, blob, bayangan raksasa.
+   Catatan: app menerapkan tema gelap lewat class `.dark` pada <html>
+   (lib/preferences.tsx), sehingga override dark ditulis di sini.
+   Anti-drift: token baru hanya boleh ditambah dengan alasan tertulis di
+   DESIGN-SYSTEM.md (root worktree).
+   ========================================================================== */
+
+:root {
+  /* --- Warna (light, sudah live di globals.css) --- */
+  --sk-bg: #FAF9F6;            /* warm sand/cream */
+  --sk-surface: #FFFFFF;
+  --sk-surface-2: #F5EEDB;     /* sand lebih dalam */
+  --sk-ink: #1C1917;           /* ink hangat */
+  --sk-ink-2: #292524;
+  --sk-muted: #66736F;         /* teks sekunder — kontras ≥ 4.5:1 di atas --sk-bg */
+  --sk-faint: #A8A29E;         /* dekoratif/meta kecil SAJA, bukan body */
+  --sk-line: #E7E5E4;
+  --sk-line-strong: #D6D3D1;
+
+  --sk-brand: #A16207;         /* amber-gold */
+  --sk-brand-hover: #854D05;
+  --sk-brand-soft: #FAF3E3;    /* latar lembut amber */
+  --sk-teal: #0E6258;          /* teal dalam */
+  --sk-teal-soft: #E6F2EF;
+  --sk-danger: #B3261E;
+  --sk-success: #2E7D32;
+  --sk-warning: #B45309;
+  --sk-focus: #0E6258;         /* ring fokus — selalu terlihat di kedua tema */
+
+  /* --- Radius --- */
+  --sk-r-sm: 8px;
+  --sk-r-md: 12px;
+  --sk-r-lg: 16px;
+  --sk-r-xl: 20px;
+  --sk-r-pill: 999px;
+
+  /* --- Motion --- */
+  --sk-d-fast: 120ms;
+  --sk-d-base: 180ms;
+  --sk-d-slow: 280ms;
+  --sk-ease: cubic-bezier(.2, .7, .3, 1);
+
+  /* --- Tipografi --- */
+  --sk-font: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.dark {
+  /* --- Dark mode intentional (bukan inversi mekanis): permukaan tetap hangat --- */
+  --sk-bg: #141210;
+  --sk-surface: #1E1B18;
+  --sk-surface-2: #292524;
+  --sk-ink: #F5F5F4;
+  --sk-ink-2: #E7E5E4;
+  --sk-muted: #A8A29E;         /* kontras ≥ 4.5:1 di atas --sk-bg */
+  --sk-faint: #78716C;         /* dekoratif SAJA, bukan body */
+  --sk-line: #2E2A26;
+  --sk-line-strong: #44403C;
+
+  --sk-brand: #D4AF37;         /* gold terang agar terbaca di gelap */
+  --sk-brand-hover: #E5C15A;
+  --sk-brand-soft: #2A2417;
+  --sk-teal: #45B8A8;
+  --sk-teal-soft: #1A2B28;
+  --sk-danger: #E57373;
+  --sk-success: #81C784;
+  --sk-warning: #E8A04C;
+  --sk-focus: #45B8A8;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --sk-d-fast: 1ms;
+    --sk-d-base: 1ms;
+    --sk-d-slow: 1ms;
+    --sk-ease: linear;
+  }
+}
