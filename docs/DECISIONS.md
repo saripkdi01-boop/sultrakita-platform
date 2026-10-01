@@ -37,3 +37,17 @@ Alasan: merge bersih setelah Fase 1 commit.
 Konteks: godaan menampilkan metrik placeholder agar dashboard "kelihatan jadi".
 Keputusan: semua KPI admin dari query nyata; bila data kosong tampilkan empty state jujur; tidak ada angka fabrikasi.
 Alasan: kepercayaan & auditability; sesuai aturan "tanpa klaim palsu".
+
+## D-08 — Rekonsiliasi overlap Fase 1 vs slice worldclass (merge 2026-10-01)
+Konteks: Fase 1 (commit 72c5679) membawa `lib/rate-limit.ts` (Upstash + fallback memori, teruji burst→429),
+`lib/dal.ts` (requireUser/requireRole/canEditListing), `lib/env.ts` (validasi Zod).
+Slice-A/B membangun yang sepadan: `lib/security/rate-limit.ts`, `lib/admin/guards.ts`.
+Keputusan:
+- Rate limit: KEDUA file dipertahankan — lapisan berbeda. `lib/rate-limit.ts` (Fase 1) kanonis untuk route handler
+  (dukungan Upstash lintas instance); `lib/security/rate-limit.ts` (Slice-A) primitif edge-safe untuk middleware.
+  Tidak ada konflik API (signature berbeda); double-enforcement berlapis dapat diterima.
+- Otorisasi: `lib/dal.ts` kanonis app-wide; `lib/admin/guards.ts` spesialisasi area admin
+  (super_admin, suspend check, maskPII, redirect). Keduanya membaca sumber kebenaran yang sama
+  (profiles.role + user_roles). Tidak di-refactor ulang untuk menghindari regresi halaman admin yang sudah jadi.
+- `lib/env.ts`: kunci billing `SUKI_BILLING_*` ditambahkan sebagai opsional + feature warning jujur.
+- `/admin/*`: header `X-Robots-Tag: noindex, nofollow` di next.config.mjs (temuan SEO_CHECKLIST Slice-D).

@@ -20,6 +20,9 @@ const serverEnvSchema = z.object({
   N8N_WEBHOOK_SECRET: z.string().min(1).optional(),
   UPSTASH_REDIS_REST_URL: z.string().url().optional(),
   UPSTASH_REDIS_REST_TOKEN: z.string().min(1).optional(),
+  SUKI_BILLING_PROVIDER: z.string().min(1).optional(),
+  SUKI_BILLING_WEBHOOK_SECRET: z.string().min(1).optional(),
+  SUKI_BILLING_CURRENCY: z.string().min(1).optional(),
   NEXT_PUBLIC_CHAT_WS_URL: z.string().min(1).optional(),
   FEED_CURSOR_SECRET: z.string().min(1).optional(),
   ALLOW_DEMO_DATA: z.string().optional(),
@@ -35,6 +38,7 @@ const featureRequirements: Array<{ feature: string; vars: string[]; hint: string
   { feature: 'Fitur AI (fokus foto, dsb.)', vars: ['GEMINI_API_KEY'], hint: 'Fitur AI dinonaktifkan; fallback lokal dipakai bila ada.' },
   { feature: 'OTP WhatsApp', vars: ['N8N_WHATSAPP_WEBHOOK_URL', 'N8N_WEBHOOK_SECRET'], hint: 'OTP WhatsApp via webhook n8n tidak akan terkirim.' },
   { feature: 'Rate limit lintas instance', vars: ['UPSTASH_REDIS_REST_URL', 'UPSTASH_REDIS_REST_TOKEN'], hint: 'Rate limiting memakai memori per-instance (tidak sinkron antar instance).' },
+  { feature: 'Billing/monetisasi', vars: ['SUKI_BILLING_PROVIDER', 'SUKI_BILLING_WEBHOOK_SECRET'], hint: 'Mode sandbox; pembayaran nyata berstatus not_configured.' },
 ];
 
 let validated = false;

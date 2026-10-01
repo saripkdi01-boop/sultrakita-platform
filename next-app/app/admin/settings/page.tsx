@@ -73,7 +73,7 @@ export default async function AdminSettingsPage() {
               ))}
             </div>
             <p className="mt-6 text-center text-xs text-[#78948c]">
-              Nilai disimpan sebagai JSON. Contoh: <code>true</code>, <code>"teks pengumuman"</code>, <code>123</code>, <code>{'{ "a": 1 }'}</code>.
+              Nilai disimpan sebagai JSON. Contoh: <code>true</code>, <code>&quot;teks pengumuman&quot;</code>, <code>123</code>, <code>{'{ "a": 1 }'}</code>.
             </p>
           </div>
         </div>
