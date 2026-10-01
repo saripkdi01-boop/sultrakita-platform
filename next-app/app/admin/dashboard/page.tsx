@@ -7,11 +7,14 @@ const adminModules = [
   { href: '/admin/overview', title: 'Ringkasan operasional', description: 'KPI jujur dari database: pengguna, listing, laporan, dan aktivitas admin terbaru.', tone: 'bg-[#e9f7f2]' },
   { href: '/admin/users', title: 'Kelola pengguna', description: 'Cari, saring, tangguhkan/pulihkan akun, ubah peran, dan catatan internal.', tone: 'bg-[#eaf1ff]' },
   { href: '/admin/moderation', title: 'Moderasi laporan', description: 'Antrean laporan marketplace: tinjau, tolak, atau takedown listing dengan alasan.', tone: 'bg-[#fff5dc]' },
+  { href: '/admin/monitoring', title: 'Monitoring operasional', description: 'Uptime endpoint, latensi, kesehatan DB/storage, status cron — dicek live saat halaman dibuka.', tone: 'bg-[#e9f7f2]' },
+  { href: '/admin/billing', title: 'Billing & langganan', description: 'Paket, entitlement, dan pesanan (sandbox).', tone: 'bg-[#f3efff]' },
   { href: '/admin/settings', title: 'Pengaturan situs', description: 'Feature flags & maintenance mode. Perubahan berlaku ≤60 detik, tercatat di audit.', tone: 'bg-[#f3efff]' },
   { href: '/admin/support-tickets', title: 'Support tickets', description: 'Triage, respons, dan lifecycle tiket dukungan.', tone: 'bg-[#e9f7f2]' },
   { href: '/admin/ecosystem-banners', title: 'Ecosystem banners', description: 'Kelola banner lintas Marketplace, Jobs, dan SUKI Suits.', tone: 'bg-[#fff5dc]' },
   { href: '/admin/property-verification', title: 'Property verification', description: 'Tinjau dokumen dan status verifikasi properti.', tone: 'bg-[#eaf1ff]' },
   { href: '/admin/affiliate-rewards', title: 'Affiliate rewards', description: 'Review dan rekonsiliasi antrean payout affiliate.', tone: 'bg-[#f7edff]' },
+  { href: '/admin/launch', title: 'Checklist launch', description: 'Daftar verifikasi pra-launch dari data/launch-checklist.json — status lolos/gagal/belum diperiksa.', tone: 'bg-[#eaf1ff]' },
 ] as const;
 
 export default async function AdminDashboardPage() {
