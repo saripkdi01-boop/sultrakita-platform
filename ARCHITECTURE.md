@@ -59,3 +59,32 @@ Dibiarkan di repo untuk referensi/arsip; rencana: diarsipkan permanen di fase be
 - `/marketplace` adalah halaman marketplace kanonis. `/suki-marketplace` me-redirect ke `/marketplace`
   (sudah ada di `next-app/app/suki-marketplace/page.tsx`).
 - `/komunitas` → 308 redirect ke `/groups` (komunitas hidup di `/groups`; diatur di `next-app/next.config.mjs`).
+
+## Marketplace discovery (Fase 2)
+
+- `/marketplace` tetap SSR (Server Component) + ISR 120 dtk; filter tersinkron URL
+  (`?q=&district=&category=&condition=&minPrice=&maxPrice=&sort=`, alias pendek
+  `cat/min/max/kondisi`) via `router.push` + `useTransition` di `page-client.tsx` —
+  shareable, tombol back browser benar.
+- Sort server-side (`terbaru|termurah|termahal`) di `lib/listings-query.ts`
+  (`fetchPublicListings`) dan diteruskan `/api/listings`.
+- Kartu listing (`components/marketplace/MarketplaceCard.tsx`): `next/image`
+  lazy + anti-CLS (SafeImage dengan fallback `<img>` untuk host tak dikenal),
+  harga `Intl id-ID IDR`, badge kondisi, chip seller + rating asli, badge tier
+  dari `lib/seller-trust.ts` (diturunkan dari `verification_status` &
+  `rating_count`, ambang Official = 50 ulasan), galeri multi-foto, hover lift
+  hanya `@media (hover:hover)`.
+- Galeri multi-foto memakai tabel `listing_media` (kolom baru `listing_uuid`,
+  migrasi `supabase/migrations/20261001070000_marketplace_fase2_discovery.sql`);
+  upload langsung ke R2 via presigned POST (`createListingMediaUpload`) +
+  konfirmasi owner-only (`confirmListingMedia`, otorisasi `canEditListing`).
+- Wishlist optimistis (`useWishlist.ts`) + `LoginSheet` saat belum login;
+  aksi tertunda dilanjutkan otomatis setelah login (localStorage pending key).
+- Etalase toko publik: `/marketplace/toko/[id]` (SSR + metadata + notFound).
+- Simpan pencarian & alert: tabel `saved_searches` (migrasi yang sama) +
+  server actions (`saveSearchAlert`, `listSavedSearches`, `deleteSavedSearch`,
+  `setSearchAlertEnabled`) + cron per jam `app/api/cron/saved-search-alerts`
+  (dijadwalkan di `vercel.json`; skip graceful bila `CRON_SECRET` belum diset;
+  notifikasi via tabel `notifications`).
+- JSON-LD `ItemList > Product` di `/marketplace`: hanya harga asli integer IDR,
+  tanpa klaim ketersediaan palsu.

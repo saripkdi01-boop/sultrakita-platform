@@ -1,51 +1,363 @@
 'use client';
 
-import { ChevronDown, Filter, SlidersHorizontal, Sparkles } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { apiErrorMessage } from '@/lib/api-client';
-import { CategoryBrowser } from '@/components/marketplace/CategoryBrowser';
-import { MarketplaceCard, type MarketplaceListing } from '@/components/marketplace/MarketplaceCard';
-import { MarketplaceCardSkeleton } from '@/components/marketplace/MarketplaceCardSkeleton';
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
+import { BellPlus, Check, Heart, MapPin, Plus, Scale, Search, Sparkles, Tag, Trash2, X } from 'lucide-react';
+import type { PublicListing } from '@/lib/listings-query';
+import type { MarketplaceFilters } from './page';
 import { MarketplaceSubNav } from '@/components/marketplace/MarketplaceSubNav';
+import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
+import { CategoryBrowser } from '@/components/marketplace/CategoryBrowser';
 import { DealOfTheDay } from '@/components/marketplace/DealOfTheDay';
 import { QuickViewModal } from '@/components/marketplace/QuickViewModal';
 import { CompareBar } from '@/components/marketplace/CompareBar';
 import { ComparePanel } from '@/components/marketplace/ComparePanel';
 import { Recommendations } from '@/components/marketplace/Recommendations';
-import { toggleWishlist } from '@/lib/actions/marketplace';
-import { SidebarMobileDrawer } from '@/components/layout/SidebarMobileDrawer';
-import { Header } from '@/components/layout/Header';
-import { QuickNavBar, type QuickNavKey } from '@/components/layout/QuickNavBar';
-import { useUIStore } from '@/store/ui';
-import { EcosystemSlider } from '@/components/marketing/EcosystemSlider';
+import { LoginSheet } from '@/components/marketplace/LoginSheet';
+import { useWishlist } from '@/components/marketplace/useWishlist';
+import { useSessionProfile } from '@/hooks/useSessionProfile';
+import { deleteSavedSearch, listSavedSearches, saveSearchAlert, setSearchAlertEnabled } from '@/lib/actions/marketplace';
 
-// Fase 0 (2026-10-01): listing contoh dicabut dari produksi. State awal kosong;
-// skeleton ditampilkan saat memuat, lalu data nyata dari /api/listings.
+// Fase 2.1: filter tersinkron URL via router.push + useTransition.
+// - URL selalu mencerminkan state filter (shareable, SEO-friendly)
+// - Tombol back/forward browser benar (tidak seperti replaceState)
+// - Server me-render ulang dengan searchParams baru -> data selalu sinkron
+// - q dari search bar bersifat submit-based (tidak perlu debounce karena
+//   hanya terkirim saat submit/saran diklik)
 
-const districts = ['Semua distrik', 'Kendari', 'Baubau', 'Wakatobi', 'Kolaka', 'Bombana'];
+const categories = [
+  { value: 'all', label: 'Semua', icon: '🛍️' },
+  { value: 'Elektronik', label: 'Elektronik', icon: '📱' },
+  { value: 'Kendaraan', label: 'Kendaraan', icon: '🚗' },
+  { value: 'Properti', label: 'Properti', icon: '🏠' },
+  { value: 'Fashion', label: 'Fashion', icon: '👕' },
+  { value: 'Kuliner', label: 'Kuliner', icon: '🍜' },
+  { value: 'Furnitur', label: 'Furnitur', icon: '🛋️' },
+  { value: 'Jasa', label: 'Jasa', icon: '🔧' },
+  { value: 'Pertanian', label: 'Pertanian', icon: '🌾' },
+  { value: 'Perikanan', label: 'Perikanan', icon: '🐟' },
+  { value: 'Kecantikan', label: 'Kecantikan', icon: '💄' },
+  { value: 'Olahraga', label: 'Olahraga', icon: '⚽' },
+];
 
-// Fase 1.1: initialItems di-render di server (SEO + LCP). Client melewati fetch pertama
-// bila data awal sudah tersedia, lalu tetap mengambil ulang saat filter berubah.
-export default function MarketplacePage({ initialItems = [], initialNotice = '' }: { initialItems?: MarketplaceListing[]; initialNotice?: string }) {
-  const { mobileOpen } = useUIStore();
-  const [query, setQuery] = useState(''); const [district, setDistrict] = useState('Semua distrik'); const [items, setItems] = useState<MarketplaceListing[]>(initialItems); const [saved, setSaved] = useState<string[]>([]); const [loading, setLoading] = useState(initialItems.length === 0); const [notice, setNotice] = useState(initialNotice); const skipInitialFetch = useRef(initialItems.length > 0); const [sort, setSort] = useState('Terbaru'); const [filtersOpen, setFiltersOpen] = useState(false); const [minPrice, setMinPrice] = useState(''); const [maxPrice, setMaxPrice] = useState(''); const [condition, setCondition] = useState(''); const [category, setCategory] = useState(''); const [deepLinkId, setDeepLinkId] = useState(''); const [quickView, setQuickView] = useState<MarketplaceListing | null>(null); const [compareItems, setCompareItems] = useState<MarketplaceListing[]>([]); const [compareOpen, setCompareOpen] = useState(false);
-  useEffect(() => { const params = new URLSearchParams(window.location.search); setQuery(params.get('q') || ''); setDistrict(params.get('district') || 'Semua distrik'); setMinPrice(params.get('minPrice') || ''); setMaxPrice(params.get('maxPrice') || ''); setCondition(params.get('condition') || ''); setCategory(params.get('category') || ''); setDeepLinkId(params.get('listing') || ''); }, []);
-  useEffect(() => { if (skipInitialFetch.current) { skipInitialFetch.current = false; setLoading(false); return; } let active = true; const timer = window.setTimeout(() => { setLoading(true); const params = new URLSearchParams({ limit: '30' }); if (query) params.set('q', query); if (district !== 'Semua distrik') params.set('district', district); if (minPrice) params.set('minPrice', minPrice); if (maxPrice) params.set('maxPrice', maxPrice); if (condition) params.set('condition', condition); if (category) params.set('category', category); fetch(`/api/listings?${params}`, { cache: 'no-store' }).then(async response => ({ response, result: await response.json() })).then(({ response, result }) => { if (!active) return; const data = response.ok && result.ok && Array.isArray(result.data) ? result.data : []; setItems(data); setNotice(apiErrorMessage(result, '')); if (deepLinkId) setQuickView(data.find((item: MarketplaceListing) => String(item.id) === deepLinkId) || null); }).catch(() => { if (active) { setItems([]); setNotice('Listing sementara belum tersedia. Silakan coba lagi nanti.'); } }).finally(() => { if (active) setLoading(false); }); }, 180); return () => { active = false; window.clearTimeout(timer); }; }, [query, district, minPrice, maxPrice, condition, category, deepLinkId]);
-  useEffect(() => { const params = new URLSearchParams(window.location.search); query ? params.set('q', query) : params.delete('q'); district !== 'Semua distrik' ? params.set('district', district) : params.delete('district'); minPrice ? params.set('minPrice', minPrice) : params.delete('minPrice'); maxPrice ? params.set('maxPrice', maxPrice) : params.delete('maxPrice'); condition ? params.set('condition', condition) : params.delete('condition'); category ? params.set('category', category) : params.delete('category'); window.history.replaceState(null, '', `${window.location.pathname}${params.toString() ? `?${params}` : ''}`); }, [query, district, minPrice, maxPrice, condition, category]);
-  const sorted = useMemo(() => [...items].sort((a, b) => sort === 'Harga terendah' ? Number(a.price) - Number(b.price) : sort === 'Harga tertinggi' ? Number(b.price) - Number(a.price) : Number(Boolean(b.is_featured)) - Number(Boolean(a.is_featured))), [items, sort]);
-  const activeFilters = [
-    query ? { label: `“${query}”`, clear: () => setQuery('') } : null,
-    district !== 'Semua distrik' ? { label: district, clear: () => setDistrict('Semua distrik') } : null,
-    minPrice ? { label: `Min Rp ${Number(minPrice).toLocaleString('id-ID')}`, clear: () => setMinPrice('') } : null,
-    maxPrice ? { label: `Maks Rp ${Number(maxPrice).toLocaleString('id-ID')}`, clear: () => setMaxPrice('') } : null,
-    condition ? { label: condition === 'new' ? 'Baru' : condition === 'like_new' ? 'Seperti baru' : condition === 'good' ? 'Terawat' : 'Cukup baik', clear: () => setCondition('') } : null,
-    category ? { label: `Kategori: ${category}`, clear: () => setCategory('') } : null,
-  ].filter((filter): filter is { label: string; clear: () => void } => Boolean(filter));
-  function resetFilters() { setQuery(''); setDistrict('Semua distrik'); setMinPrice(''); setMaxPrice(''); setCondition(''); setCategory(''); }
-  async function save(id: string) { const result = await toggleWishlist(id); if (result.ok) setSaved(current => result.saved ? (current.includes(id) ? current : [...current, id]) : current.filter(item => item !== id)); else setNotice('Login diperlukan untuk menyimpan listing.'); }
-  function toggleCompare(item: MarketplaceListing) { setCompareItems(current => current.some(entry => entry.id === item.id) ? current.filter(entry => entry.id !== item.id) : current.length < 3 ? [...current, item] : current); if (compareItems.length >= 3 && !compareItems.some(entry => entry.id === item.id)) setNotice('Maksimal 3 listing dapat dibandingkan.'); }
-  function closeQuickView() { setQuickView(null); setDeepLinkId(''); const params = new URLSearchParams(window.location.search); params.delete('listing'); window.history.replaceState(null, '', `${window.location.pathname}${params.toString() ? `?${params}` : ''}`); }
-  function saveSearch() { const search = { query, district, minPrice, maxPrice, condition, savedAt: new Date().toISOString() }; try { const existing = JSON.parse(window.localStorage.getItem('suki-marketplace-saved-searches') || '[]'); const searches = Array.isArray(existing) ? existing.filter(item => JSON.stringify(item) !== JSON.stringify(search)).slice(0, 4) : []; window.localStorage.setItem('suki-marketplace-saved-searches', JSON.stringify([search, ...searches])); setNotice('Pencarian berhasil disimpan di perangkat ini.'); } catch { setNotice('Pencarian tidak dapat disimpan di perangkat ini.'); } }
-  const navigate = (key: QuickNavKey) => { if (key === 'home') window.location.href = '/beranda'; if (key === 'campaigns') window.location.href = '/campaigns'; if (key === 'groups') window.location.href = '/groups'; if (key === 'market') window.location.href = '/jobs'; if (key === 'suits') window.location.href = '/properti'; if (key === 'referral') window.location.href = '/ajak-teman'; };
-  return <><Header /><QuickNavBar active="marketplace" onNavigate={navigate} /><SidebarMobileDrawer open={mobileOpen} /><main className="marketplace-page"><EcosystemSlider appSlug="marketplace" /><MarketplaceSubNav query={query} onQueryChange={setQuery} />{!loading && <DealOfTheDay items={items} />}<div className="marketplace-content"><CategoryBrowser /><section className="marketplace-results" aria-labelledby="listing-heading"><div className="marketplace-results-heading"><div className="marketplace-results-title"><span className="marketplace-kicker marketplace-results-kicker">Pilihan terbaru dari Sultra</span><h2 id="listing-heading">Listing di sekitar Anda</h2><p className="marketplace-results-summary" aria-live="polite">{loading ? 'Menyiapkan rekomendasi untuk Anda…' : `${sorted.length} listing cocok dengan pencarian Anda`}</p></div><div className="marketplace-sort"><SlidersHorizontal size={16} aria-hidden="true" /><select value={sort} onChange={event => setSort(event.target.value)} aria-label="Urutkan listing"><option>Terbaru</option><option>Harga terendah</option><option>Harga tertinggi</option></select><ChevronDown size={14} aria-hidden="true" /></div></div><div className="marketplace-filter-row"><div className="marketplace-districts" aria-label="Filter distrik">{districts.map(value => <button type="button" key={value} onClick={() => setDistrict(value)} className={district === value ? 'active' : ''} aria-pressed={district === value}>{value}</button>)}</div><button type="button" className="marketplace-filter-button" onClick={() => setFiltersOpen(value => !value)} aria-expanded={filtersOpen} aria-controls="marketplace-filter-panel"><Filter size={15} aria-hidden="true" /> Filter</button></div>{filtersOpen && <div id="marketplace-filter-panel" className="marketplace-filter-panel" role="region" aria-label="Filter lanjutan"><label>Harga minimum<input inputMode="numeric" value={minPrice} onChange={event => setMinPrice(event.target.value.replace(/\D/g, ''))} placeholder="Rp 0" /></label><label>Harga maksimum<input inputMode="numeric" value={maxPrice} onChange={event => setMaxPrice(event.target.value.replace(/\D/g, ''))} placeholder="Tanpa batas" /></label><label>Kondisi<select value={condition} onChange={event => setCondition(event.target.value)}><option value="">Semua kondisi</option><option value="new">Baru</option><option value="like_new">Seperti baru</option><option value="good">Terawat</option><option value="fair">Cukup baik</option></select></label><button type="button" onClick={() => { setMinPrice(''); setMaxPrice(''); setCondition(''); }}>Reset</button><button type="button" className="marketplace-save-search" onClick={saveSearch}>Simpan pencarian</button></div>}{activeFilters.length > 0 && <div className="marketplace-active-filters" aria-label="Filter aktif"><span className="marketplace-active-label">Filter aktif</span>{activeFilters.map(filter => <button type="button" key={filter.label} onClick={filter.clear}>{filter.label}<span aria-hidden="true">×</span></button>)}<button type="button" className="marketplace-clear-filters" onClick={resetFilters}>Hapus semua</button></div>}{notice && <p className="marketplace-notice" role="status" aria-live="polite">{notice}</p>}{loading ? <div className="marketplace-card-grid" aria-label="Memuat listing">{[1, 2, 3, 4, 5, 6].map(item => <MarketplaceCardSkeleton key={item} />)}</div> : <div className="marketplace-card-grid" aria-live="polite">{sorted.map(item => <MarketplaceCard key={item.id} item={item} saved={saved.includes(item.id)} onSave={save} onQuickView={setQuickView} compared={compareItems.some(entry => entry.id === item.id)} onCompare={toggleCompare} />)}</div>}{!loading && !sorted.length && <div className="marketplace-empty"><Sparkles size={25} aria-hidden="true" /><h3>Belum menemukan listing yang cocok</h3><p>Coba kata kunci atau distrik lain untuk melihat lebih banyak produk lokal.</p>{activeFilters.length > 0 && <button type="button" onClick={resetFilters}>Bersihkan filter dan lihat semua</button>}</div>}</section></div>{!loading && <Recommendations items={items} query={query} />}</main><QuickViewModal item={quickView} onClose={closeQuickView} /> <CompareBar items={compareItems} onRemove={id => setCompareItems(current => current.filter(item => item.id !== id))} onClear={() => setCompareItems([])} onOpen={() => setCompareOpen(true)} />{compareOpen && <ComparePanel items={compareItems} onClose={() => setCompareOpen(false)} />}</>;
+const districts = ['Semua distrik', 'Kendari', 'Baubau', 'Kolaka', 'Konawe', 'Muna', 'Buton', 'Konawe Selatan', 'Bombana', 'Wakatobi'];
+
+const conditions = [
+  { value: '', label: 'Semua kondisi' },
+  { value: 'new', label: 'Baru' },
+  { value: 'like_new', label: 'Seperti baru' },
+  { value: 'good', label: 'Bekas — baik' },
+  { value: 'fair', label: 'Bekas — layak pakai' },
+];
+
+const sortOptions = [
+  { value: 'terbaru', label: 'Terbaru' },
+  { value: 'termurah', label: 'Termurah' },
+  { value: 'termahal', label: 'Termahal' },
+];
+
+type SavedSearch = { id: string; name: string; filters: Record<string, unknown>; alert_enabled: boolean; created_at: string };
+
+export default function MarketplacePageClient({ initialItems, initialFilters, initialNotice }: { initialItems: PublicListing[]; initialFilters: MarketplaceFilters; initialNotice: string }) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const { user } = useSessionProfile();
+  const wishlist = useWishlist();
+  const [items, setItems] = useState<PublicListing[]>(initialItems);
+  const [filters, setFilters] = useState<MarketplaceFilters>(initialFilters);
+  const [notice, setNotice] = useState(initialNotice);
+  const [showWishlistOnly, setShowWishlistOnly] = useState(false);
+  const [compare, setCompare] = useState<string[]>([]);
+  const [quickView, setQuickView] = useState<PublicListing | null>(null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [minDraft, setMinDraft] = useState(initialFilters.minPrice);
+  const [maxDraft, setMaxDraft] = useState(initialFilters.maxPrice);
+  const [saveOpen, setSaveOpen] = useState(false);
+  const [compareOpen, setCompareOpen] = useState(false);
+
+  // Sinkron dari server saat URL berubah (termasuk back/forward browser).
+  useEffect(() => {
+    setItems(initialItems);
+    setFilters(initialFilters);
+    setMinDraft(initialFilters.minPrice);
+    setMaxDraft(initialFilters.maxPrice);
+    setNotice(initialNotice);
+  }, [initialItems, initialFilters, initialNotice]);
+
+  const pushFilters = useCallback((next: MarketplaceFilters) => {
+    setFilters(next);
+    setShowWishlistOnly(false);
+    const params = new URLSearchParams();
+    if (next.q) params.set('q', next.q);
+    if (next.district && next.district !== 'Semua distrik') params.set('district', next.district);
+    if (next.category) params.set('category', next.category);
+    if (next.condition) params.set('condition', next.condition);
+    if (next.minPrice) params.set('minPrice', next.minPrice);
+    if (next.maxPrice) params.set('maxPrice', next.maxPrice);
+    if (next.sort && next.sort !== 'terbaru') params.set('sort', next.sort);
+    const query = params.toString();
+    startTransition(() => router.push(query ? `/marketplace?${query}` : '/marketplace', { scroll: false }));
+  }, [router]);
+
+  const update = useCallback((patch: Partial<MarketplaceFilters>) => pushFilters({ ...filters, ...patch }), [filters, pushFilters]);
+
+  // Deep link ?listing=<uuid> — buka quick view langsung dari URL shareable.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const target = params.get('listing');
+    if (!target) return;
+    const found = items.find((item) => String(item.id) === target);
+    if (found) setQuickView(found);
+  }, [items]);
+
+  const wishlistItems = useMemo(() => items.filter((item) => wishlist.savedIds.includes(String(item.id))), [items, wishlist.savedIds]);
+  const visibleItems = showWishlistOnly ? wishlistItems : items;
+  const compareItems = useMemo(() => items.filter((item) => compare.includes(String(item.id))), [items, compare]);
+  const dealItems = useMemo(() => items.filter((item) => item.is_featured).slice(0, 8), [items]);
+
+  const toggleCompare = useCallback((id: string) => {
+    setCompare((current) => (current.includes(id) ? current.filter((item) => item !== id) : current.length >= 3 ? current : [...current, id]));
+  }, []);
+
+  const categoryCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const item of items) {
+      const label = typeof item.category_name === 'string' ? item.category_name : typeof item.category === 'string' ? item.category : '';
+      if (label) counts.set(label, (counts.get(label) || 0) + 1);
+    }
+    return counts;
+  }, [items]);
+
+  const activeChips = useMemo(() => {
+    const chips: Array<{ key: string; label: string; clear: () => void }> = [];
+    if (filters.q) chips.push({ key: 'q', label: `"${filters.q}"`, clear: () => update({ q: '' }) });
+    if (filters.category) chips.push({ key: 'category', label: filters.category, clear: () => update({ category: '' }) });
+    if (filters.condition) chips.push({ key: 'condition', label: conditions.find((c) => c.value === filters.condition)?.label || filters.condition, clear: () => update({ condition: '' }) });
+    if (filters.district && filters.district !== 'Semua distrik') chips.push({ key: 'district', label: filters.district, clear: () => update({ district: 'Semua distrik' }) });
+    if (filters.minPrice || filters.maxPrice) chips.push({ key: 'price', label: `Rp${Number(filters.minPrice || 0).toLocaleString('id-ID')} – Rp${filters.maxPrice ? Number(filters.maxPrice).toLocaleString('id-ID') : '∞'}`, clear: () => update({ minPrice: '', maxPrice: '' }) });
+    return chips;
+  }, [filters, update]);
+
+  const resultsLabel = isPending ? 'Memuat hasil…' : `${visibleItems.length} listing ditemukan`;
+
+  return (
+    <main className="marketplace-page">
+      <MarketplaceSubNav query={filters.q} onQueryChange={(value) => update({ q: value })} />
+
+      <div className="marketplace-content">
+        <CategoryBrowser />
+
+        <div className="marketplace-main">
+          <section className="marketplace-toolbar" aria-label="Filter marketplace">
+            <div className="marketplace-toolbar-row">
+              <button type="button" className="marketplace-filter-toggle" onClick={() => setFiltersOpen((v) => !v)} aria-expanded={filtersOpen}>
+                <Tag size={15} aria-hidden="true" /> Filter
+              </button>
+              <div className="marketplace-sort" role="group" aria-label="Urutkan">
+                {sortOptions.map((option) => (
+                  <button key={option.value} type="button" className={`marketplace-sort-chip${filters.sort === option.value ? ' active' : ''}`} aria-pressed={filters.sort === option.value} onClick={() => update({ sort: option.value })}>{option.label}</button>
+                ))}
+              </div>
+              <button type="button" className={`marketplace-wishlist-toggle${showWishlistOnly ? ' active' : ''}`} onClick={() => { if (!user) { wishlist.setLoginSheetOpen(true); return; } setShowWishlistOnly((v) => !v); }} aria-pressed={showWishlistOnly}>
+                <Heart size={15} aria-hidden="true" /> Wishlist{wishlist.savedIds.length > 0 && ` (${wishlist.savedIds.length})`}
+              </button>
+              <button type="button" className="marketplace-save-toggle" onClick={() => { if (!user) { wishlist.setLoginSheetOpen(true); return; } setSaveOpen(true); }}>
+                <BellPlus size={15} aria-hidden="true" /> Simpan pencarian
+              </button>
+            </div>
+
+            {filtersOpen && (
+              <div className="marketplace-filter-panel">
+                <label>
+                  <span>Distrik</span>
+                  <select value={filters.district} onChange={(event) => update({ district: event.target.value })}>
+                    {districts.map((district) => <option key={district} value={district}>{district}</option>)}
+                  </select>
+                </label>
+                <label>
+                  <span>Kondisi</span>
+                  <select value={filters.condition} onChange={(event) => update({ condition: event.target.value })}>
+                    {conditions.map((condition) => <option key={condition.value} value={condition.value}>{condition.label}</option>)}
+                  </select>
+                </label>
+                <div className="marketplace-price-range">
+                  <label><span>Harga min</span><input inputMode="numeric" type="number" min={0} placeholder="Rp" value={minDraft} onChange={(event) => setMinDraft(event.target.value)} /></label>
+                  <label><span>Harga maks</span><input inputMode="numeric" type="number" min={0} placeholder="Rp" value={maxDraft} onChange={(event) => setMaxDraft(event.target.value)} /></label>
+                  <button type="button" onClick={() => update({ minPrice: minDraft, maxPrice: maxDraft })}><Check size={15} aria-hidden="true" /> Terapkan</button>
+                </div>
+              </div>
+            )}
+
+            {activeChips.length > 0 && (
+              <div className="marketplace-chips" aria-label="Filter aktif">
+                {activeChips.map((chip) => (
+                  <button key={chip.key} type="button" className="marketplace-chip" onClick={chip.clear} aria-label={`Hapus filter ${chip.label}`}>
+                    {chip.label} <X size={13} aria-hidden="true" />
+                  </button>
+                ))}
+                <button type="button" className="marketplace-chip-clear" onClick={() => pushFilters({ q: '', district: 'Semua distrik', category: '', condition: '', minPrice: '', maxPrice: '', sort: 'terbaru' })}>Hapus semua</button>
+              </div>
+            )}
+          </section>
+
+          {notice && <p className="marketplace-notice" role="status">{notice}</p>}
+
+          <div className="marketplace-districts" role="group" aria-label="Kategori">
+            {categories.map((category) => (
+              <button key={category.value} type="button" className={(filters.category || 'all') === category.value ? 'active' : ''} aria-pressed={(filters.category || 'all') === category.value} onClick={() => update({ category: category.value === 'all' ? '' : category.value })}>
+                {category.icon} {category.label}{category.value !== 'all' && (categoryCounts.get(category.value) || 0) > 0 ? ` (${categoryCounts.get(category.value)})` : ''}
+              </button>
+            ))}
+          </div>
+
+          {dealItems.length > 0 && !showWishlistOnly && <DealOfTheDay items={items} />}
+
+          <div className="marketplace-results" aria-live="polite" aria-busy={isPending}>
+            <div className="marketplace-results-head">
+              <h2>{showWishlistOnly ? 'Wishlist saya' : 'Jelajahi listing'}</h2>
+              <span className="marketplace-results-count" role="status">{resultsLabel}</span>
+            </div>
+
+            {isPending ? (
+              <div className="marketplace-grid" aria-hidden="true">
+                {Array.from({ length: 8 }).map((_, index) => <div key={index} className="marketplace-card-skeleton" />)}
+              </div>
+            ) : visibleItems.length === 0 ? (
+              <div className="marketplace-empty">
+                <Search size={28} aria-hidden="true" />
+                <h3>{showWishlistOnly ? 'Wishlist masih kosong' : 'Tidak ada listing yang cocok'}</h3>
+                <p>{showWishlistOnly ? 'Ketuk ikon hati pada listing untuk menyimpannya di sini.' : 'Coba ubah kata kunci atau longgarkan filter pencarianmu.'}</p>
+                {!showWishlistOnly && (
+                  <button type="button" onClick={() => pushFilters({ q: '', district: 'Semua distrik', category: '', condition: '', minPrice: '', maxPrice: '', sort: 'terbaru' })}>
+                    Atur ulang filter
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="marketplace-grid">
+                {visibleItems.map((item, index) => (
+                  <MarketplaceCard
+                    key={String(item.id)}
+                    listing={item}
+                    index={index}
+                    saved={wishlist.savedIds.includes(String(item.id))}
+                    inCompare={compare.includes(String(item.id))}
+                    onToggleWishlist={() => { void wishlist.toggle(String(item.id)); }}
+                    onQuickView={() => setQuickView(item)}
+                    onCompare={() => toggleCompare(String(item.id))}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+          {!showWishlistOnly && visibleItems.length > 0 && <Recommendations items={visibleItems} query={filters.q} />}
+        </div>
+      </div>
+
+      <CompareBar items={compareItems} onRemove={(id) => setCompare((current) => current.filter((item) => item !== id))} onClear={() => setCompare([])} onOpen={() => setCompareOpen(true)} />
+      {compareOpen && <ComparePanel items={compareItems} onClose={() => setCompareOpen(false)} />}
+
+      <QuickViewModal listing={quickView} saved={quickView ? wishlist.savedIds.includes(String(quickView.id)) : false} onToggleWishlist={quickView ? () => { void wishlist.toggle(String(quickView.id)); } : undefined} onClose={() => setQuickView(null)} />
+
+      <SaveSearchDialog open={saveOpen} onClose={() => setSaveOpen(false)} filters={filters} />
+
+      <LoginSheet open={wishlist.loginSheetOpen} onClose={() => wishlist.setLoginSheetOpen(false)} />
+      {wishlist.lastError && <p className="marketplace-wishlist-error" role="alert">{wishlist.lastError}</p>}
+
+      <div className="marketplace-trust-strip" aria-label="Kepercayaan marketplace">
+        <span><MapPin size={14} aria-hidden="true" /> Penjual dari Sulawesi Tenggara</span>
+        <span><Sparkles size={14} aria-hidden="true" /> Badge toko dihitung dari verifikasi & ulasan nyata</span>
+        <span><Scale size={14} aria-hidden="true" /> Bandingkan hingga 3 listing sebelum membeli</span>
+      </div>
+    </main>
+  );
+}
+
+function SaveSearchDialog({ open, onClose, filters }: { open: boolean; onClose: () => void; filters: MarketplaceFilters }) {
+  const [name, setName] = useState('');
+  const [alertEnabled, setAlertEnabled] = useState(true);
+  const [saved, setSaved] = useState<SavedSearch[]>([]);
+  const [status, setStatus] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    setStatus('');
+    setLoading(true);
+    listSavedSearches()
+      .then((result) => { if (result.ok) setSaved(result.searches); else setStatus(result.error || 'Gagal memuat.'); })
+      .finally(() => setLoading(false));
+  }, [open ]);
+
+  if (!open) return null;
+
+  const filtersPayload: Record<string, unknown> = {
+    ...(filters.q ? { q: filters.q } : {}),
+    ...(filters.district && filters.district !== 'Semua distrik' ? { district: filters.district } : {}),
+    ...(filters.category ? { category: filters.category } : {}),
+    ...(filters.condition ? { condition: filters.condition } : {}),
+    ...(filters.minPrice ? { minPrice: Number(filters.minPrice) } : {}),
+    ...(filters.maxPrice ? { maxPrice: Number(filters.maxPrice) } : {}),
+  };
+
+  async function handleSave() {
+    if (!name.trim()) { setStatus('Beri nama untuk pencarian ini.'); return; }
+    setStatus('Menyimpan…');
+    const result = await saveSearchAlert({ name: name.trim(), filters: filtersPayload, alertEnabled });
+    if (!result.ok) { setStatus(result.error || 'Gagal menyimpan.'); return; }
+    setName('');
+    const refreshed = await listSavedSearches();
+    if (refreshed.ok) setSaved(refreshed.searches);
+    setStatus('Pencarian tersimpan. Kamu akan diberi tahu saat ada listing baru yang cocok.');
+  }
+
+  async function handleDelete(id: string) {
+    const result = await deleteSavedSearch(id);
+    if (result.ok) setSaved((current) => current.filter((item) => item.id !== id));
+    else setStatus(result.error || 'Gagal menghapus.');
+  }
+
+  async function handleToggleAlert(item: SavedSearch) {
+    const result = await setSearchAlertEnabled({ id: item.id, enabled: !item.alert_enabled });
+    if (result.ok) setSaved((current) => current.map((row) => (row.id === item.id ? { ...row, alert_enabled: !row.alert_enabled } : row)));
+    else setStatus(result.error || 'Gagal mengubah alert.');
+  }
+
+  return (
+    <div className="login-sheet-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+      <section className="save-search-dialog" role="dialog" aria-modal="true" aria-labelledby="save-search-title">
+        <button type="button" className="login-sheet-close" onClick={onClose} aria-label="Tutup"><X size={18} /></button>
+        <h2 id="save-search-title"><BellPlus size={18} aria-hidden="true" /> Simpan pencarian</h2>
+        <p className="save-search-summary">Dapatkan notifikasi saat ada listing baru yang cocok dengan filter saat ini.</p>
+        <label className="save-search-field">
+          <span>Nama pencarian</span>
+          <input value={name} onChange={(event) => setName(event.target.value)} placeholder="mis. Laptop bekas Kendari" maxLength={120} />
+        </label>
+        <label className="save-search-check">
+          <input type="checkbox" checked={alertEnabled} onChange={(event) => setAlertEnabled(event.target.checked)} />
+          Beri tahu saya saat ada listing baru yang cocok
+        </label>
+        <button type="button" className="save-search-submit" onClick={() => { void handleSave(); }}><Plus size={15} aria-hidden="true" /> Simpan</button>
+        {status && <p className="save-search-status" role="status">{status}</p>}
+
+        <h3>Pencarian tersimpan</h3>
+        {loading ? <p>Memuat…</p> : saved.length === 0 ? (
+          <p className="save-search-empty">Belum ada pencarian tersimpan.</p>
+        ) : (
+          <ul className="save-search-list">
+            {saved.map((item) => (
+              <li key={item.id}>
+                <div><strong>{item.name}</strong><small>{new Date(item.created_at).toLocaleDateString('id-ID')}</small></div>
+                <button type="button" onClick={() => { void handleToggleAlert(item); }} aria-pressed={item.alert_enabled} aria-label={item.alert_enabled ? 'Nonaktifkan alert' : 'Aktifkan alert'}>
+                  {item.alert_enabled ? <span className="save-search-alert-on"><Check size={13} aria-hidden="true" /> Alert aktif</span> : 'Aktifkan alert'}
+                </button>
+                <button type="button" onClick={() => { void handleDelete(item.id); }} aria-label={`Hapus ${item.name}`}><Trash2 size={15} aria-hidden="true" /></button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+    </div>
+  );
 }
