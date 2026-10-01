@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSupabase } from '@/lib/supabase/server';
 import { checkRateLimit, clientIp } from '@/lib/rate-limit';
 import { apiError, badRequest, forbidden, internalError, unauthorized } from '@/lib/api-error';
+import { verifyCsrfToken } from '@/lib/security/csrf';
 
 // Fase 1.5: rate limit 60x/menit per user (atau IP bila anonim) via modul bersama.
 
@@ -15,10 +16,9 @@ async function currentUser() {
   }
 }
 
+// Delegasi ke verifyCsrfToken waktu-konstan di lib/security/csrf.ts.
 function checkCsrf(request: NextRequest) {
-  const csrfHeader = request.headers.get('x-csrf-token');
-  const csrfCookie = request.cookies.get('suki_csrf')?.value;
-  return !!csrfHeader && !!csrfCookie && csrfHeader === csrfCookie;
+  return verifyCsrfToken(request);
 }
 
 export async function POST(request: NextRequest) {

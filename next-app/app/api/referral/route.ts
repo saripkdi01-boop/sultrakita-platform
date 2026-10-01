@@ -3,6 +3,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 import { getServerSupabase } from '@/lib/supabase/server';
 import { checkRateLimit } from '@/lib/rate-limit';
+import { csrfProtected } from '@/lib/security/csrf';
 
 const campaign = { name: 'Ajak Teman, Tumbuh Bersama', pointsPerQualifiedInvite: 100, pointsPerRupiah: 10, minimumRedemption: 1000, endDate: '2026-12-31' };
 
@@ -104,7 +105,7 @@ export async function GET(request: NextRequest) {
   } catch (error) { console.error('[referral-summary]', error instanceof Error ? error.message : 'unknown'); return referralError(error); }
 }
 
-export async function POST(request: NextRequest) {
+async function postHandler(request: NextRequest) {
   // Fase 1.5: batasi 60 request/menit per IP (endpoint sensitif: payout & klaim).
   const limited = await checkRateLimit(request, 'api');
   if (limited) return limited;
@@ -165,3 +166,6 @@ export async function POST(request: NextRequest) {
     return bad('Action referral tidak dikenali.');
   } catch (error) { console.error('[referral-api]', error instanceof Error ? error.message : 'unknown'); return referralError(error); }
 }
+
+// CSRF double-submit: endpoint payout/klaim sensitif, wajib token valid.
+export const POST = csrfProtected(postHandler);

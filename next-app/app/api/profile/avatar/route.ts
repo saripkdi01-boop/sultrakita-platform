@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireServerUser } from '@/lib/supabase/server';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { apiError } from '@/lib/api-error';
+import { csrfProtected } from '@/lib/security/csrf';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -84,7 +85,7 @@ async function processAvatar(input: Buffer) {
   return { output, focusSource: focus ? 'gemini' : 'center' };
 }
 
-export async function POST(request: NextRequest) {
+async function postHandler(request: NextRequest) {
   try {
     const { user, supabase } = await requireServerUser();
     // Fase 1.5: upload dibatasi 10x/jam per user.
@@ -113,3 +114,6 @@ export async function POST(request: NextRequest) {
     return jsonError(request, 'Foto profil tidak dapat diproses saat ini.', 500);
   }
 }
+
+// CSRF double-submit: upload avatar mutasi profil user, wajib token valid.
+export const POST = csrfProtected(postHandler);

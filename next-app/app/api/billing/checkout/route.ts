@@ -16,6 +16,7 @@ import { getServerSupabase } from '@/lib/supabase/server';
 import { checkRateLimit } from '@/lib/security/rate-limit';
 import { createSandboxCheckout } from '@/lib/billing/sandbox';
 import { getPlan, isCheckoutablePlan } from '@/lib/billing/plans';
+import { csrfProtected } from '@/lib/security/csrf';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,7 +38,7 @@ function bad(error: string, status = 400) {
   return NextResponse.json({ ok: false, error }, { status });
 }
 
-export async function POST(request: NextRequest) {
+async function postHandler(request: NextRequest) {
   // 1. Auth wajib.
   let userId: string;
   try {
@@ -132,9 +133,12 @@ export async function POST(request: NextRequest) {
       simulation: {
         token: checkout.token,
         howToComplete:
-          'Untuk menyelesaikan simulasi, panggil POST /api/billing/webhook dengan header x-sandbox: true dan payload { eventId, orderId, outcome: "paid" | "failed", providerRef, sandbox: true }.',
+          'Untuk menyelesaikan simulasi, panggil POST /api/billing/webhook dengan header x-sandbox: true (non-production) dan payload { eventId, orderId, outcome: "paid" | "failed", providerRef, sandbox: true, ts, nonce } — ts = unix epoch detik (±5 menit), nonce unik per pengiriman.',
       },
     },
     201,
   );
 }
+
+// CSRF double-submit: checkout mutasi dana (walau sandbox), wajib token valid.
+export const POST = csrfProtected(postHandler);
