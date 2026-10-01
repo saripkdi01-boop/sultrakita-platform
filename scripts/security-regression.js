@@ -1,170 +1,345 @@
 #!/usr/bin/env node
 'use strict';
 
-const crypto = require('node:crypto');
-const app = require('../server');
-const { run } = require('../database');
-const { hashToken } = require('../auth');
+/**
+ * Security regression untuk aplikasi yang LIVE di production (Vercel):
+ * next-app/ (Next.js 15 + Supabase) — BUKAN server Express legacy.
+ *
+ * Alur:
+ *   1. Build next-app (`npm run build` di next-app/).
+ *   2. Jalankan `next start` di port test lokal.
+ *   3. Tunggu server siap (polling /api/health).
+ *   4. Preflight database: /api/health WAJIB melaporkan db:'up'.
+ *   5. Assert perilaku security nyata terhadap route yang live.
+ *
+ * DILARANG SKIP DIAM-DIAM: bila env DB belum dikonfigurasi, build gagal,
+ * server gagal start, target tak terjangkau, atau DB tak tersedia → proses
+ * keluar dengan kode non-zero dan pesan yang jelas (menggagalkan CI).
+ *
+ * Env:
+ *   NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY — WAJIB,
+ *     menunjuk project Supabase test/staging yang reachable.
+ *   SECURITY_TEST_PORT            — port lokal next start (default 3101).
+ *   SECURITY_TEST_READY_TIMEOUT_MS — batas tunggu server siap (default 120000).
+ *   SECURITY_TEST_BURST           — jumlah request uji rate-limit (default 90).
+ *   SECURITY_TEST_SKIP_BUILD=1    — lewati `npm run build` bila .next sudah ada
+ *     (eksplisit; untuk iterasi lokal. Default: selalu build ulang).
+ *
+ * Dipanggil dari:
+ *   - next-app/package.json → "test:security": "node ../scripts/security-regression.js"
+ *   - root package.json     → "test:security": "node scripts/security-regression.js"
+ *   - .github/workflows/ci.yml job `verify`
+ */
 
-let server;
-let baseUrl;
-let originalOtpDevMode;
+const { spawn, spawnSync } = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
 
-function assert(condition, message) {
-  if (!condition) throw new Error(message);
+const NEXT_APP_DIR = path.resolve(__dirname, 'next-app');
+const PORT = Number(process.env.SECURITY_TEST_PORT || 3101);
+const BASE_URL = `http://127.0.0.1:${PORT}`;
+const READY_TIMEOUT_MS = Number(process.env.SECURITY_TEST_READY_TIMEOUT_MS || 120000);
+const BURST = Number(process.env.SECURITY_TEST_BURST || 90);
+const SKIP_BUILD = process.env.SECURITY_TEST_SKIP_BUILD === '1';
+const REQUEST_TIMEOUT_MS = 15000;
+
+let server = null;
+const passed = [];
+let alreadyReported = false;
+
+function pass(name, detail) {
+  passed.push(name);
+  console.log(`  [PASS] ${name}${detail ? ` — ${detail}` : ''}`);
 }
 
-async function request(path, options = {}) {
-  const response = await fetch(`${baseUrl}${path}`, options);
-  const text = await response.text();
-  let body;
-  try { body = JSON.parse(text); } catch { body = null; }
-  return { response, body, text };
+function fail(message) {
+  // Selalu non-zero + pesan jelas. Tidak ada jalur SKIP dalam skrip ini.
+  console.error(`\nFAIL: ${message}`);
+  alreadyReported = true;
+  process.exitCode = 1;
+  throw new Error(message);
+}
+
+function assert(condition, message) {
+  if (!condition) fail(message);
+}
+
+async function request(pathname, options = {}) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  try {
+    const res = await fetch(`${BASE_URL}${pathname}`, {
+      redirect: 'manual',
+      ...options,
+      signal: controller.signal,
+    });
+    const text = await res.text();
+    let body = null;
+    try {
+      body = JSON.parse(text);
+    } catch {
+      body = null;
+    }
+    return { res, body, text };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function checkEnv() {
+  const missing = ['NEXT_PUBLIC_SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_ANON_KEY'].filter(
+    (key) => !process.env[key],
+  );
+  if (missing.length > 0) {
+    fail(
+      `Konfigurasi database belum tersedia (missing: ${missing.join(', ')}). ` +
+        'Security regression membutuhkan project Supabase test/staging yang reachable. ' +
+        'Di CI, isi secrets SUPABASE_TEST_URL / SUPABASE_TEST_ANON_KEY. ' +
+        'Lokal: export NEXT_PUBLIC_SUPABASE_URL dan NEXT_PUBLIC_SUPABASE_ANON_KEY sebelum menjalankan.',
+    );
+  }
+  console.log('Env database: terkonfigurasi.');
+}
+
+function buildApp() {
+  if (SKIP_BUILD) {
+    const nextDir = path.join(NEXT_APP_DIR, '.next');
+    assert(
+      fs.existsSync(nextDir),
+      'SECURITY_TEST_SKIP_BUILD=1 diminta tetapi next-app/.next tidak ada. Jalankan tanpa SKIP_BUILD dulu.',
+    );
+    console.log('Build dilewati (SECURITY_TEST_SKIP_BUILD=1, memakai .next yang ada).');
+    return;
+  }
+  console.log('Membangun next-app …');
+  const result = spawnSync('npm', ['run', 'build'], {
+    cwd: NEXT_APP_DIR,
+    stdio: 'inherit',
+    env: process.env,
+  });
+  if (result.status !== 0) {
+    fail(`\`npm run build\` di next-app/ gagal (exit ${result.status}). Perbaiki build sebelum uji security.`);
+  }
+  console.log('Build sukses.');
+}
+
+async function startServer() {
+  console.log(`Menjalankan \`next start\` di ${BASE_URL} …`);
+  server = spawn('npx', ['next', 'start', '-p', String(PORT)], {
+    cwd: NEXT_APP_DIR,
+    env: process.env,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+
+  let serverOutput = '';
+  server.stdout.on('data', (chunk) => {
+    serverOutput += chunk.toString();
+  });
+  server.stderr.on('data', (chunk) => {
+    serverOutput += chunk.toString();
+  });
+  const earlyExit = new Promise((resolve) => {
+    server.on('exit', (code, signal) => resolve({ code, signal }));
+  });
+
+  const deadline = Date.now() + READY_TIMEOUT_MS;
+  let lastError = '';
+  for (;;) {
+    const exited = await Promise.race([
+      earlyExit.then((info) => info),
+      new Promise((resolve) => setTimeout(() => resolve(null), 250)),
+    ]);
+    if (exited) {
+      fail(
+        `\`next start\` mati sebelum siap (exit ${exited.code}, signal ${exited.signal}). Output:\n${serverOutput.slice(-3000)}`,
+      );
+    }
+    try {
+      // /api/health dikecualikan dari rate-limit middleware → aman untuk polling.
+      await fetch(`${BASE_URL}/api/health`, { redirect: 'manual', signal: AbortSignal.timeout(5000) });
+      console.log('Server siap.');
+      return;
+    } catch (error) {
+      lastError = error instanceof Error ? error.message : String(error);
+    }
+    if (Date.now() > deadline) {
+      fail(
+        `Server tidak terjangkau di ${BASE_URL} setelah ${READY_TIMEOUT_MS}ms ` +
+          `(terakhir: ${lastError}). Output server:\n${serverOutput.slice(-3000)}`,
+      );
+    }
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+}
+
+async function preflightDatabase() {
+  const { res, body } = await request('/api/health');
+  const dbState = body?.data?.db;
+  const apiState = body?.data?.api;
+  assert(
+    apiState === 'up' && dbState === 'up',
+    `DB tak tersedia: GET /api/health → HTTP ${res.status}, api=${apiState}, db=${dbState}, storage=${body?.data?.storage}. ` +
+      'Pastikan NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY menunjuk project Supabase test/staging yang reachable ' +
+      'dan tabel `categories` bisa dibaca anon key.',
+  );
+  pass('health-check', `api=up, db=up (HTTP ${res.status})`);
+}
+
+function extractCookie(setCookieHeader, name) {
+  if (!setCookieHeader) return null;
+  const match = setCookieHeader.match(new RegExp(`${name}=([^;]+)`));
+  return match ? match[1] : null;
 }
 
 async function main() {
-  if (!process.env.DATABASE_URL && !process.env.SUPABASE_DB_URL) {
-    console.log('SKIP: security regression membutuhkan DATABASE_URL atau SUPABASE_DB_URL staging; tidak menjalankan mutation terhadap database lokal/ephemeral.');
-    return;
+  console.log('Security regression (target: next-app/ yang live di Vercel)');
+  console.log(`Target: ${BASE_URL}`);
+
+  checkEnv();
+  buildApp();
+  await startServer();
+  await preflightDatabase();
+
+  // 1. Admin boundary: halaman admin tanpa sesi → redirect /login (307/308).
+  {
+    const { res } = await request('/admin/overview');
+    const location = res.headers.get('location') || '';
+    assert(
+      [307, 308].includes(res.status) && location.includes('/login'),
+      `GET /admin/overview tanpa sesi: ekspektasi redirect 307/308 ke /login, ` +
+        `diterima HTTP ${res.status} location=${location || '(kosong)'}`,
+    );
+    pass('admin-guard', `GET /admin/overview → ${res.status} → ${location}`);
   }
-  server = app.listen(0);
-  await new Promise(resolve => server.once('listening', resolve));
-  baseUrl = `http://127.0.0.1:${server.address().port}`;
-  console.log(`Security regression test: ${baseUrl}`);
 
-  const unauthenticatedAdmin = await request('/api/admin/overview');
-  assert(unauthenticatedAdmin.response.status === 401, 'admin endpoint must reject missing admin credential');
-  assert(unauthenticatedAdmin.body?.success === false, 'admin rejection must use failure envelope');
+  // 2. Penerbit token CSRF hidup.
+  let csrfToken;
+  let csrfCookie;
+  {
+    const { res, body } = await request('/api/csrf');
+    const setCookie = res.headers.get('set-cookie') || '';
+    csrfCookie = extractCookie(setCookie, 'suki_csrf');
+    csrfToken = body?.csrfToken;
+    assert(res.status === 200, `GET /api/csrf: ekspektasi 200, diterima ${res.status}`);
+    assert(
+      typeof csrfToken === 'string' && csrfToken.length >= 32 && csrfToken === csrfCookie,
+      'GET /api/csrf: token respons harus sama dengan cookie suki_csrf',
+    );
+    pass('csrf-issuer', 'GET /api/csrf → 200, cookie suki_csrf terbit & cocok');
+  }
 
-  const invalidConversation = await request('/api/conversations/not-an-id/messages');
-  assert(invalidConversation.response.status === 400, 'conversation endpoint must reject non-numeric IDs');
-  assert(invalidConversation.body?.success === false, 'invalid conversation ID must use failure envelope');
-
-  const invalidMessage = await request('/api/conversations/1/messages', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ sender_id: 1, body: '' })
-  });
-  assert(invalidMessage.response.status === 422, 'message endpoint must reject empty message bodies');
-  assert(invalidMessage.body?.success === false, 'invalid message must use failure envelope');
-
-  originalOtpDevMode = process.env.OTP_DEV_MODE;
-  process.env.OTP_DEV_MODE = 'false';
-  const unconfiguredOtpPhone = `08${crypto.randomInt(100000000, 999999999)}${crypto.randomInt(10, 99)}`;
-  const unconfiguredOtp = await request('/api/auth/request-otp', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ phone: unconfiguredOtpPhone })
-  });
-  assert(unconfiguredOtp.response.status === 503, 'OTP request must fail closed when provider is not configured');
-  assert(unconfiguredOtp.body?.code === 'OTP_NOT_CONFIGURED', 'unconfigured OTP must use a stable error code');
-
-  process.env.OTP_DEV_MODE = 'true';
-  const otpPhone = `08${crypto.randomInt(100000000, 999999999)}${crypto.randomInt(10, 99)}`;
-  const otpRequest = await request('/api/auth/request-otp', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ phone: otpPhone })
-  });
-  assert(otpRequest.response.status === 200, 'OTP request should create a challenge in explicit demo mode');
-  assert(typeof otpRequest.body?.data?.dev_code === 'string', 'dev_code should be returned only in explicit demo mode');
-
-  for (let attempt = 1; attempt <= 5; attempt += 1) {
-    const wrongOtp = await request('/api/auth/verify-otp', {
+  // 3. CSRF ditegakkan: POST /api/comments tanpa token → 403 (dicek SEBELUM auth).
+  {
+    const { res, body, text } = await request('/api/comments', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ phone: otpPhone, code: '000000' })
+      body: JSON.stringify({ postId: 'abc123', content: 'uji tanpa csrf' }),
     });
-    assert(wrongOtp.response.status === 401, `wrong OTP attempt ${attempt} must return 401`);
+    assert(res.status === 403, `POST /api/comments tanpa token CSRF: ekspektasi 403, diterima ${res.status}`);
+    assert(body?.error?.code === 'FORBIDDEN', 'respons 403 harus memakai envelope error FORBIDDEN');
+    assert(!/stack trace|node_modules/i.test(text), 'respons error membocorkan detail internal');
+    pass('csrf-enforced', 'POST /api/comments tanpa token → 403 FORBIDDEN');
   }
-  const lockedOtp = await request('/api/auth/verify-otp', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ phone: otpPhone, code: '000000' })
-  });
-  assert(lockedOtp.response.status === 401, 'OTP challenge must remain unavailable after five failed attempts');
 
-  const fixtureSeller = await run('INSERT INTO users (name, phone, role, district, phone_verified) VALUES (?, ?, ?, ?, true)', ['Fixture Seller', `08${crypto.randomInt(100000000, 999999999)}${crypto.randomInt(10, 99)}`, 'seller', 'Kendari']);
-  const fixtureListing = await run('INSERT INTO listings (seller_id, category_id, title, description, price, condition, district, city) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [fixtureSeller.id, 1, 'Fixture ownership listing', 'Listing fixture untuk pengujian batas kepemilikan.', 100000, 'new', 'Kendari', 'Kendari']);
+  // 4. Validasi input zod: body invalid dengan CSRF valid → 400 BAD_REQUEST.
+  {
+    const { res, body } = await request('/api/comments', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-csrf-token': csrfToken,
+        cookie: `suki_csrf=${csrfCookie}`,
+      },
+      body: JSON.stringify({ postId: '!!!', content: '' }),
+    });
+    assert(res.status === 400, `POST /api/comments body invalid: ekspektasi 400, diterima ${res.status}`);
+    assert(body?.error?.code === 'BAD_REQUEST', 'respons 400 harus memakai envelope error BAD_REQUEST');
+    pass('input-validation', 'POST /api/comments body invalid → 400 BAD_REQUEST (zod)');
+  }
 
-  const authPhone = `08${crypto.randomInt(100000000, 999999999)}${crypto.randomInt(10, 99)}`;
-  const authOtpRequest = await request('/api/auth/request-otp', {
-    method: 'POST', headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ phone: authPhone })
-  });
-  const authLogin = await request('/api/auth/verify-otp', {
-    method: 'POST', headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ phone: authPhone, code: authOtpRequest.body?.data?.dev_code, name: 'Regression Seller', role: 'seller', district: 'Kendari' })
-  });
-  assert(authLogin.response.status === 200 && authLogin.body?.data?.token, 'valid OTP must issue a session token');
-  const token = authLogin.body.data.token;
-  const authHeaders = { 'content-type': 'application/json', authorization: `Bearer ${token}` };
-
-  const spoofedListing = await request('/api/listings', {
-    method: 'POST', headers: authHeaders,
-    body: JSON.stringify({ seller_id: 999999, category_id: 1, title: 'Regression ownership listing', description: 'Listing dibuat untuk menguji identity binding.', price: 100000, condition: 'new', district: 'Kendari', city: 'Kendari' })
-  });
-  assert(spoofedListing.response.status === 201, 'authenticated seller should be able to create a valid listing');
-  assert(Number(spoofedListing.body?.data?.seller_id) === Number(authLogin.body.data.user.id), 'listing seller_id must come from session, not request body');
-
-  const otherSellerListing = await request(`/api/listings/${fixtureListing.id}`, {
-    method: 'PUT', headers: authHeaders,
-    body: JSON.stringify({ category_id: 1, title: 'Unauthorized edit attempt', description: 'This should be rejected by ownership checks.', price: 100000, condition: 'new', district: 'Kendari', city: 'Kendari' })
-  });
-  assert(otherSellerListing.response.status === 403, `seller must not edit another seller listing; received ${otherSellerListing.response.status}: ${otherSellerListing.text}`);
-
-  const publicProfile = await request(`/api/users/${authLogin.body.data.user.id}`);
-  assert(publicProfile.response.status === 200 && publicProfile.body?.data?.phone === undefined, 'public user profile must redact phone number');
-  const publicListing = await request(`/api/listings/${fixtureListing.id}`);
-  assert(publicListing.response.status === 200 && publicListing.body?.data?.seller_phone === undefined, 'public listing detail must redact seller phone');
-
-  const conversation = await request('/api/conversations', { method: 'POST', headers: authHeaders, body: JSON.stringify({ listing_id: fixtureListing.id, buyer_id: authLogin.body.data.user.id, seller_id: fixtureSeller.id }) });
-  assert(conversation.response.status === 201 || conversation.response.status === 200, 'authenticated buyer should create or reuse a conversation');
-  const conversationId = conversation.body?.data?.id;
-  const outsider = await run('INSERT INTO users (name, phone, role, district, phone_verified) VALUES (?, ?, ?, ?, true)', ['Outsider', `08${crypto.randomInt(100000000, 999999999)}${crypto.randomInt(10, 99)}`, 'buyer', 'Kendari']);
-  const outsiderToken = crypto.randomBytes(32).toString('hex');
-  await run('INSERT INTO sessions (token_hash, user_id, expires_at) VALUES (?, ?, ?)', [hashToken(outsiderToken), outsider.id, Date.now() + 60 * 60 * 1000]);
-  const outsiderHeaders = { 'content-type': 'application/json', authorization: `Bearer ${outsiderToken}` };
-  const outsiderRead = await request(`/api/conversations/${conversationId}/messages`, { headers: outsiderHeaders });
-  assert(outsiderRead.response.status === 403, 'conversation history must require membership');
-  const outsiderStream = await request(`/api/conversations/${conversationId}/stream`, { headers: outsiderHeaders });
-  assert(outsiderStream.response.status === 403, 'conversation stream must require membership');
-  const spoofedSuggestion = await request('/api/suggestions', { method: 'POST', headers: outsiderHeaders, body: JSON.stringify({ user_id: authLogin.body.data.user.id, name: 'Outsider', body: 'Percobaan identity spoofing' }) });
-  assert(spoofedSuggestion.response.status === 403, 'suggestion user identity must come from session');
-  const anonymousUpload = await request(`/api/listings/${fixtureListing.id}/images`, { method: 'POST' });
-  assert(anonymousUpload.response.status === 401, 'image upload must reject anonymous requests before file processing');
-  const fakeImage = new FormData();
-  fakeImage.append('images', new Blob(['not-a-real-jpeg'], { type: 'image/jpeg' }), 'listing.jpg');
-  const invalidSignatureUpload = await request(`/api/listings/${fixtureListing.id}/images`, { method: 'POST', headers: { authorization: `Bearer ${token}` }, body: fakeImage });
-  assert(invalidSignatureUpload.response.status === 422, 'upload must reject a fake image signature');
-
-  const logout = await request('/api/auth/logout', { method: 'POST', headers: authHeaders });
-  assert(logout.response.status === 200, 'logout should revoke the active session');
-  const revoked = await request('/api/listings', { method: 'POST', headers: authHeaders, body: JSON.stringify({ category_id: 1, title: 'Revoked session listing', description: 'This must be rejected after logout.', price: 100000, condition: 'new', district: 'Kendari' }) });
-  assert(revoked.response.status === 401, 'revoked session must not create listings');
-
-  const invalidReport = await request('/api/reports', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ listing_id: 0, reporter_name: 'Test', reason: 'x' })
-  });
-  assert(invalidReport.response.status === 422, 'report endpoint must reject invalid payloads');
-
-  for (const result of [unauthenticatedAdmin, invalidConversation, invalidMessage, otpRequest, lockedOtp, authLogin, spoofedListing, otherSellerListing, publicProfile, publicListing, conversation, outsiderRead, outsiderStream, spoofedSuggestion, anonymousUpload, logout, revoked, invalidReport]) {
-    const lower = result.text.toLowerCase();
-    for (const forbidden of ['stack trace', 'node_modules', 'database password', 'authorization: bearer']) {
-      assert(!lower.includes(forbidden), `response appears to disclose forbidden detail: ${forbidden}`);
+  // 5. Rate limit middleware: bombardir /api/* melebihi 60/menit → ada 429.
+  {
+    let count429 = 0;
+    let sawRetryAfter = false;
+    let sawLimitHeader = false;
+    for (let i = 0; i < BURST; i += 1) {
+      const { res } = await request('/api/csrf');
+      if (res.status === 429) {
+        count429 += 1;
+        if (res.headers.get('retry-after')) sawRetryAfter = true;
+        if (res.headers.get('x-ratelimit-limit') === '60') sawLimitHeader = true;
+      }
     }
+    assert(
+      count429 >= 5,
+      `Rate limit tidak terpicu: ${BURST} request cepat ke /api/csrf hanya menghasilkan ${count429} respons 429 ` +
+        '(ekspektasi ≥5 setelah melewati batas 60/menit)',
+    );
+    assert(sawRetryAfter, 'respons 429 harus menyertakan header Retry-After');
+    assert(sawLimitHeader, 'respons 429 harus menyertakan header X-RateLimit-Limit: 60');
+    pass('rate-limit', `${BURST} request → ${count429}x 429 + Retry-After + X-RateLimit-*`);
   }
 
-  console.log('PASS: admin boundary, identifier validation, message validation, OTP lockout, session identity binding, ownership denial, conversation membership, PII redaction, upload boundary, logout revocation, report validation, and disclosure checks');
+  // 6. Security headers di respons API.
+  {
+    const { res } = await request('/api/health');
+    const headers = res.headers;
+    const checks = [
+      ['strict-transport-security', (v) => /max-age=\d+/.test(v || '')],
+      ['x-content-type-options', (v) => v === 'nosniff'],
+      ['x-frame-options', (v) => v === 'SAMEORIGIN'],
+      ['referrer-policy', (v) => !!v],
+      ['permissions-policy', (v) => !!v],
+      ['content-security-policy', (v) => (v || '').includes("default-src 'self'")],
+    ];
+    const missing = checks.filter(([name, test]) => !test(headers.get(name))).map(([name]) => name);
+    assert(missing.length === 0, `Security headers hilang: ${missing.join(', ')}`);
+    pass('security-headers', 'HSTS, nosniff, SAMEORIGIN, Referrer-Policy, Permissions-Policy, CSP aktif');
+  }
+
+  // 7. Kebersihan envelope error: tidak ada stack trace / path internal.
+  {
+    const probes = await Promise.all([
+      request('/api/comments/segala-sesuatu-yang-tidak-ada'),
+      request('/api/tidak-ada-rute-ini'),
+    ]);
+    const combined = probes.map((p) => p.text).join('\n').toLowerCase();
+    for (const forbidden of ['stack trace', 'node_modules', '/home/', 'webpack-internal']) {
+      assert(!combined.includes(forbidden), `respons error membocorkan detail internal: ${forbidden}`);
+    }
+    pass('error-hygiene', 'tidak ada stack trace / path internal di respons error');
+  }
+
+  console.log(`\nPASS: ${passed.length} pemeriksaan security — ${passed.join(', ')}`);
 }
 
-main().catch(error => {
-  console.error(`FAIL: ${error.message}`);
-  process.exitCode = 1;
-}).finally(() => {
-  if (originalOtpDevMode === undefined) delete process.env.OTP_DEV_MODE;
-  else process.env.OTP_DEV_MODE = originalOtpDevMode;
-  if (server) server.close();
-});
+main()
+  .catch((error) => {
+    process.exitCode = 1;
+    if (!alreadyReported) console.error(`\nFAIL: ${error.message}`);
+  })
+  .finally(async () => {
+    if (server) {
+      await new Promise((resolve) => {
+        let done = false;
+        const finish = () => {
+          if (!done) {
+            done = true;
+            resolve();
+          }
+        };
+        server.on('exit', finish);
+        server.kill('SIGTERM');
+        setTimeout(() => {
+          if (!done) {
+            try {
+              server.kill('SIGKILL');
+            } catch {
+              /* sudah mati */
+            }
+          }
+          setTimeout(finish, 1000);
+        }, 5000);
+      });
+    }
+  });

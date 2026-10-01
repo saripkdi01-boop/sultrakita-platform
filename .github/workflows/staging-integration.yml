@@ -37,7 +37,21 @@ jobs:
           npm run db:migrate
       - run: npm run lint
       - run: npm test
-      - run: npm run test:security
+      - name: Install Next.js app dependencies (security regression target)
+        working-directory: next-app
+        run: npm ci
+      - name: Require staging Supabase secrets
+        run: |
+          if [[ -z "${{ secrets.STAGING_SUPABASE_URL }}" || -z "${{ secrets.STAGING_SUPABASE_ANON_KEY }}" ]]; then
+            echo '::error::Configure STAGING_SUPABASE_URL and STAGING_SUPABASE_ANON_KEY in GitHub Environment staging before running this workflow.'
+            exit 1
+          fi
+      - name: Security regression (live next-app routes)
+        working-directory: next-app
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
+        run: npm run test:security
       - run: npm run build
       - run: npm run smoke:api
       - name: Webhook replay smoke test
