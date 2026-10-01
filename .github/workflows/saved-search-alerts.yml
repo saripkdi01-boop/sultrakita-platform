@@ -1,0 +1,25 @@
+# Pemicu alert pencarian tersimpan — per jam, via GitHub Actions (gratis, repo publik).
+# Dipakai sebagai pengganti Vercel Cron karena paket Hobby hanya mengizinkan cron harian.
+# Prasyarat: tambahkan secret repo CRON_SECRET (Settings → Secrets and variables → Actions)
+# dengan nilai yang SAMA seperti CRON_SECRET di Vercel (dipakai sebagai Bearer token).
+name: Saved search alerts
+
+on:
+  schedule:
+    # Setiap jam, menit ke-5 (jadwal Actions memakai UTC)
+    - cron: '5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Panggil endpoint alert pencarian
+        run: |
+          set -euo pipefail
+          curl --fail --show-error --max-time 120 \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "https://sukiapps.web.id/api/cron/saved-search-alerts"

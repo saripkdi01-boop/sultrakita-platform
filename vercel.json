@@ -1,1 +1,1 @@
-{"crons":[{"path":"/api/cron/saved-search-alerts","schedule":"0 * * * *"}],"version":2}
+{"version":2}
