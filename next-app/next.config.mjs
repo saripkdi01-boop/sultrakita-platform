@@ -8,7 +8,7 @@ const securityHeaders = [
 ];
 
 const nextConfig = {
-  images: { remotePatterns: [{ protocol: 'https', hostname: 'images.unsplash.com' }, { protocol: 'https', hostname: '**.supabase.co' }] },
+  images: { remotePatterns: [{ protocol: 'https', hostname: 'images.unsplash.com' }, { protocol: 'https', hostname: '**.supabase.co' }, { protocol: 'https', hostname: '**.r2.dev' }] },
   async headers() {
     return [
       { source: '/(.*)', headers: securityHeaders },

@@ -29,6 +29,7 @@ export async function GET(request: NextRequest) {
     minPrice: rawMinPrice !== null && Number.isFinite(minPrice) ? minPrice : undefined,
     maxPrice: rawMaxPrice !== null && Number.isFinite(maxPrice) ? maxPrice : undefined,
     limit: Number(params.get('limit')) || 30,
+    sort: params.get('sort') || undefined,
   });
   if (!result.ok) {
     if (process.env.ALLOW_DEMO_DATA === 'true' && process.env.NODE_ENV !== 'production') return NextResponse.json({ ok: true, data: fallbackListings, source: 'demo', warning: 'Mode demo lokal aktif.' });
