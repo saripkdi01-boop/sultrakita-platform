@@ -13,6 +13,9 @@ function locationOf(property: any) { return [property.subdistrict_name, property
 function label(value?: string) { return value ? value.replaceAll('_', ' ').replace(/\b\w/g, char => char.toUpperCase()) : ''; }
 function freshness(value?: string) { if (!value) return 'Waktu pembaruan belum tersedia'; const date = new Date(value); if (Number.isNaN(date.getTime())) return 'Waktu pembaruan belum tersedia'; return `Diperbarui ${date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`; }
 
+// Fase 1.1: ISR — halaman detail di-cache 5 menit agar cepat dan tetap segar.
+export const revalidate = 300;
+
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
   const property: any = await getPublicPropertyById(id).catch(() => null);

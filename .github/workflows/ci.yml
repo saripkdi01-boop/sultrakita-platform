@@ -64,6 +64,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: verify
     timeout-minutes: 20
+    # Fase 1.4: server Next.js fail-fast bila NEXT_PUBLIC_SUPABASE_URL /
+    # NEXT_PUBLIC_SUPABASE_ANON_KEY kosong. Untuk regresi visual cukup nilai
+    # dummy — yang diuji adalah konsistensi tema/UI, bukan data backend.
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: dummy-visual-regression-key
+      NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3200
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5

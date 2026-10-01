@@ -1,6 +1,8 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSupabase } from '@/lib/supabase/server';
+import { checkRateLimit } from '@/lib/rate-limit';
+import { badRequest, internalError, unauthorized } from '@/lib/api-error';
 
 const FILTERS = ['recommended', 'following', 'latest', 'property', 'video'] as const;
 type FeedFilter = (typeof FILTERS)[number];
@@ -26,13 +28,16 @@ function decodeCursor(value: string | null, filter: FeedFilter): Cursor | null {
 }
 
 export async function GET(request: NextRequest) {
+  // Fase 1.5: batasi 60 request/menit per IP untuk API publik.
+  const limited = await checkRateLimit(request, 'api');
+  if (limited) return limited;
   const filterValue = request.nextUrl.searchParams.get('filter') || 'recommended';
-  if (!FILTERS.includes(filterValue as FeedFilter)) return NextResponse.json({ error: 'invalid_filter' }, { status: 400 });
+  if (!FILTERS.includes(filterValue as FeedFilter)) return badRequest(request, 'Filter feed tidak valid.');
   const filter = filterValue as FeedFilter;
   const limit = Math.min(Math.max(Number(request.nextUrl.searchParams.get('limit') || 10) || 10, 1), 30);
   let cursor: Cursor | null;
-  try { cursor = decodeCursor(request.nextUrl.searchParams.get('cursor'), filter); } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : 'invalid_cursor' }, { status: 400 });
+  try { cursor = decodeCursor(request.nextUrl.searchParams.get('cursor'), filter); } catch {
+    return badRequest(request, 'Kursor feed tidak valid. Muat ulang feed.');
   }
 
   try {
@@ -42,16 +47,16 @@ export async function GET(request: NextRequest) {
     if (filter === 'video') query = query.eq('type', 'reel');
     if (filter === 'following') {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return NextResponse.json({ error: 'authentication_required' }, { status: 401 });
+      if (!user) return unauthorized(request, 'Masuk untuk melihat feed mengikuti.');
       const { data: follows, error: followError } = await supabase.from('follows').select('following_id').eq('follower_id', user.id);
-      if (followError) return NextResponse.json({ error: 'feed_query_failed' }, { status: 500 });
+      if (followError) return internalError(request, 'Feed belum dapat dimuat.');
       const ids = (follows || []).map((row) => row.following_id).filter(Boolean);
       if (!ids.length) return NextResponse.json({ data: [], pageInfo: { endCursor: null, hasNextPage: false }, rankingVersion: 'baseline-v1', filter });
       query = query.in('user_id', ids);
     }
     if (cursor) query = query.lt('created_at', cursor.createdAt);
     const { data, error } = await query;
-    if (error) return NextResponse.json({ error: 'feed_query_failed' }, { status: 500 });
+    if (error) return internalError(request, 'Feed belum dapat dimuat.');
     const rows = (data || []) as Array<Record<string, unknown>>;
     const hasNextPage = rows.length > limit;
     if (hasNextPage) rows.pop();
@@ -65,7 +70,7 @@ export async function GET(request: NextRequest) {
       return row;
     });
     return NextResponse.json({ data: safeRows, pageInfo: { endCursor, hasNextPage }, rankingVersion: 'baseline-v1', filter }, { headers: { 'Cache-Control': 'private, no-store', Vary: 'Cookie' } });
-  } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : 'feed_unavailable' }, { status: 500 });
+  } catch {
+    return internalError(request, 'Feed belum dapat dimuat.');
   }
 }

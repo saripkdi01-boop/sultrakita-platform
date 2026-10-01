@@ -1,6 +1,7 @@
 'use server';
 
 import { getServerSupabase, requireServerUser } from '@/lib/supabase/server';
+import { getGroupMembership } from '@/lib/dal';
 
 const REACTION_TYPES = ['like', 'support', 'insight'] as const;
 type ReactionType = (typeof REACTION_TYPES)[number];
@@ -150,13 +151,18 @@ export async function toggleGroupReaction(groupId: string, postId: string, react
 export async function deleteGroupComment(groupId: string, commentId: string) {
   try {
     const { supabase, user } = await requireServerUser();
-    const membership = await requireActiveGroupMember(supabase, groupId, user.id);
+    await requireActiveGroupMember(supabase, groupId, user.id);
     if (!validUuid(commentId)) return { ok: false as const, error: 'Komentar tidak valid.' };
-    // Keep authorization in the database policy: authors and active owners/moderators
-    // may delete, while the query must never broaden the target to every comment in
-    // the group. The scoped predicates also make cross-group comment IDs harmless.
+    // Otorisasi eksplisit sisi server (Fase 1.3): penulis komentar atau moderator/owner/admin.
+    const { data: comment, error: commentError } = await supabase.from('group_post_comments').select('author_id').eq('id', commentId).eq('group_id', groupId).maybeSingle();
+    if (commentError) throw commentError;
+    if (!comment) return { ok: false as const, error: 'Komentar tidak ditemukan di komunitas ini.' };
+    const membership = await getGroupMembership(groupId, user.id);
+    const isAuthor = comment.author_id === user.id;
+    const isModerator = !!membership && ['owner', 'moderator', 'admin'].includes(membership.role);
+    if (!isAuthor && !isModerator) return { ok: false as const, error: 'Akses ditolak: hanya penulis atau moderator yang dapat menghapus komentar ini.' };
     const { error } = await supabase.from('group_post_comments').delete().eq('id', commentId).eq('group_id', groupId);
     if (error) throw error;
-    return { ok: true as const, moderator: ['owner', 'moderator'].includes(membership.role) };
+    return { ok: true as const, moderator: isModerator && !isAuthor };
   } catch (error) { return { ok: false as const, error: message(error) }; }
 }

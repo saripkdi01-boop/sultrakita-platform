@@ -1,49 +1,106 @@
-'use client';
+import type { Metadata } from 'next';
+import { fetchPublicListings } from '@/lib/listings-query';
+import MarketplacePageClient from './page-client';
 
-import { ChevronDown, Filter, SlidersHorizontal, Sparkles } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
-import { CategoryBrowser } from '@/components/marketplace/CategoryBrowser';
-import { MarketplaceCard, type MarketplaceListing } from '@/components/marketplace/MarketplaceCard';
-import { MarketplaceCardSkeleton } from '@/components/marketplace/MarketplaceCardSkeleton';
-import { MarketplaceSubNav } from '@/components/marketplace/MarketplaceSubNav';
-import { DealOfTheDay } from '@/components/marketplace/DealOfTheDay';
-import { QuickViewModal } from '@/components/marketplace/QuickViewModal';
-import { CompareBar } from '@/components/marketplace/CompareBar';
-import { ComparePanel } from '@/components/marketplace/ComparePanel';
-import { Recommendations } from '@/components/marketplace/Recommendations';
-import { toggleWishlist } from '@/lib/actions/marketplace';
-import { SidebarMobileDrawer } from '@/components/layout/SidebarMobileDrawer';
-import { Header } from '@/components/layout/Header';
-import { QuickNavBar, type QuickNavKey } from '@/components/layout/QuickNavBar';
-import { useUIStore } from '@/store/ui';
-import { EcosystemSlider } from '@/components/marketing/EcosystemSlider';
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://sukiapps.web.id').replace(/\/$/, '');
+const ogImage = `${siteUrl}/suki-logo-mark.png`;
 
-const fallback: MarketplaceListing[] = [
-  { id: 'demo-tenun', title: 'Kain Tenun Buton Premium', price: 450000, district: 'Baubau', city: 'Baubau', condition: 'new', is_featured: true, is_demo: true },
-  { id: 'demo-kuliner', title: 'Paket Ikan Bakar Sambal', price: 120000, district: 'Kendari', city: 'Kendari', condition: 'new', is_demo: true },
-  { id: 'demo-wakatobi', title: 'Paket Snorkeling Wakatobi', price: 350000, district: 'Wakatobi', city: 'Wakatobi', condition: 'good', is_demo: true },
-];
-const districts = ['Semua distrik', 'Kendari', 'Baubau', 'Wakatobi', 'Kolaka', 'Bombana'];
+// Fase 1.1: halaman dirender di server — data listing awal diambil saat request
+// (SSR), SEO metadata + OG hadir di HTML, client hanya me-hydrate.
+// Fase 2.1: filter tersinkron URL (?q=&category=&minPrice=&maxPrice=&condition=&district=&sort=)
+// + alias pendek (cat/min/max/kondisi). Shareable, tombol back browser benar,
+// halaman kategori dapat diindeks Google.
 
-export default function MarketplacePage() {
-  const { mobileOpen } = useUIStore();
-  const [query, setQuery] = useState(''); const [district, setDistrict] = useState('Semua distrik'); const [items, setItems] = useState<MarketplaceListing[]>(fallback); const [saved, setSaved] = useState<string[]>([]); const [loading, setLoading] = useState(true); const [notice, setNotice] = useState(''); const [sort, setSort] = useState('Terbaru'); const [filtersOpen, setFiltersOpen] = useState(false); const [minPrice, setMinPrice] = useState(''); const [maxPrice, setMaxPrice] = useState(''); const [condition, setCondition] = useState(''); const [deepLinkId, setDeepLinkId] = useState(''); const [quickView, setQuickView] = useState<MarketplaceListing | null>(null); const [compareItems, setCompareItems] = useState<MarketplaceListing[]>([]); const [compareOpen, setCompareOpen] = useState(false);
-  useEffect(() => { const params = new URLSearchParams(window.location.search); setQuery(params.get('q') || ''); setDistrict(params.get('district') || 'Semua distrik'); setMinPrice(params.get('minPrice') || ''); setMaxPrice(params.get('maxPrice') || ''); setCondition(params.get('condition') || ''); setDeepLinkId(params.get('listing') || ''); }, []);
-  useEffect(() => { let active = true; const timer = window.setTimeout(() => { setLoading(true); const params = new URLSearchParams({ limit: '30' }); if (query) params.set('q', query); if (district !== 'Semua distrik') params.set('district', district); if (minPrice) params.set('minPrice', minPrice); if (maxPrice) params.set('maxPrice', maxPrice); if (condition) params.set('condition', condition); fetch(`/api/listings?${params}`, { cache: 'no-store' }).then(async response => ({ response, result: await response.json() })).then(({ response, result }) => { if (!active) return; const data = response.ok && result.ok && Array.isArray(result.data) ? result.data : []; setItems(data); setNotice(result.warning || ''); if (deepLinkId) setQuickView(data.find((item: MarketplaceListing) => String(item.id) === deepLinkId) || null); }).catch(() => { if (active) { setItems([]); setNotice('Listing sementara belum tersedia. Silakan coba lagi nanti.'); } }).finally(() => { if (active) setLoading(false); }); }, 180); return () => { active = false; window.clearTimeout(timer); }; }, [query, district, minPrice, maxPrice, condition, deepLinkId]);
-  useEffect(() => { const params = new URLSearchParams(window.location.search); query ? params.set('q', query) : params.delete('q'); district !== 'Semua distrik' ? params.set('district', district) : params.delete('district'); minPrice ? params.set('minPrice', minPrice) : params.delete('minPrice'); maxPrice ? params.set('maxPrice', maxPrice) : params.delete('maxPrice'); condition ? params.set('condition', condition) : params.delete('condition'); window.history.replaceState(null, '', `${window.location.pathname}${params.toString() ? `?${params}` : ''}`); }, [query, district, minPrice, maxPrice, condition]);
-  const sorted = useMemo(() => [...items].sort((a, b) => sort === 'Harga terendah' ? Number(a.price) - Number(b.price) : sort === 'Harga tertinggi' ? Number(b.price) - Number(a.price) : Number(Boolean(b.is_featured)) - Number(Boolean(a.is_featured))), [items, sort]);
-  const activeFilters = [
-    query ? { label: `“${query}”`, clear: () => setQuery('') } : null,
-    district !== 'Semua distrik' ? { label: district, clear: () => setDistrict('Semua distrik') } : null,
-    minPrice ? { label: `Min Rp ${Number(minPrice).toLocaleString('id-ID')}`, clear: () => setMinPrice('') } : null,
-    maxPrice ? { label: `Maks Rp ${Number(maxPrice).toLocaleString('id-ID')}`, clear: () => setMaxPrice('') } : null,
-    condition ? { label: condition === 'new' ? 'Baru' : condition === 'like_new' ? 'Seperti baru' : condition === 'good' ? 'Terawat' : 'Cukup baik', clear: () => setCondition('') } : null,
-  ].filter((filter): filter is { label: string; clear: () => void } => Boolean(filter));
-  function resetFilters() { setQuery(''); setDistrict('Semua distrik'); setMinPrice(''); setMaxPrice(''); setCondition(''); }
-  async function save(id: string) { const result = await toggleWishlist(id); if (result.ok) setSaved(current => result.saved ? (current.includes(id) ? current : [...current, id]) : current.filter(item => item !== id)); else setNotice('Login diperlukan untuk menyimpan listing.'); }
-  function toggleCompare(item: MarketplaceListing) { setCompareItems(current => current.some(entry => entry.id === item.id) ? current.filter(entry => entry.id !== item.id) : current.length < 3 ? [...current, item] : current); if (compareItems.length >= 3 && !compareItems.some(entry => entry.id === item.id)) setNotice('Maksimal 3 listing dapat dibandingkan.'); }
-  function closeQuickView() { setQuickView(null); setDeepLinkId(''); const params = new URLSearchParams(window.location.search); params.delete('listing'); window.history.replaceState(null, '', `${window.location.pathname}${params.toString() ? `?${params}` : ''}`); }
-  function saveSearch() { const search = { query, district, minPrice, maxPrice, condition, savedAt: new Date().toISOString() }; try { const existing = JSON.parse(window.localStorage.getItem('suki-marketplace-saved-searches') || '[]'); const searches = Array.isArray(existing) ? existing.filter(item => JSON.stringify(item) !== JSON.stringify(search)).slice(0, 4) : []; window.localStorage.setItem('suki-marketplace-saved-searches', JSON.stringify([search, ...searches])); setNotice('Pencarian berhasil disimpan di perangkat ini.'); } catch { setNotice('Pencarian tidak dapat disimpan di perangkat ini.'); } }
-  const navigate = (key: QuickNavKey) => { if (key === 'home') window.location.href = '/beranda'; if (key === 'campaigns') window.location.href = '/campaigns'; if (key === 'groups') window.location.href = '/groups'; if (key === 'market') window.location.href = '/jobs'; if (key === 'suits') window.location.href = '/properti'; if (key === 'referral') window.location.href = '/ajak-teman'; };
-  return <><Header /><QuickNavBar active="marketplace" onNavigate={navigate} /><SidebarMobileDrawer open={mobileOpen} /><main className="marketplace-page"><EcosystemSlider appSlug="marketplace" /><MarketplaceSubNav query={query} onQueryChange={setQuery} />{!loading && <DealOfTheDay items={items} />}<div className="marketplace-content"><CategoryBrowser /><section className="marketplace-results" aria-labelledby="listing-heading"><div className="marketplace-results-heading"><div className="marketplace-results-title"><span className="marketplace-kicker marketplace-results-kicker">Pilihan terbaru dari Sultra</span><h2 id="listing-heading">Listing di sekitar Anda</h2><p className="marketplace-results-summary" aria-live="polite">{loading ? 'Menyiapkan rekomendasi untuk Anda…' : `${sorted.length} listing cocok dengan pencarian Anda`}</p></div><div className="marketplace-sort"><SlidersHorizontal size={16} aria-hidden="true" /><select value={sort} onChange={event => setSort(event.target.value)} aria-label="Urutkan listing"><option>Terbaru</option><option>Harga terendah</option><option>Harga tertinggi</option></select><ChevronDown size={14} aria-hidden="true" /></div></div><div className="marketplace-filter-row"><div className="marketplace-districts" aria-label="Filter distrik">{districts.map(value => <button type="button" key={value} onClick={() => setDistrict(value)} className={district === value ? 'active' : ''} aria-pressed={district === value}>{value}</button>)}</div><button type="button" className="marketplace-filter-button" onClick={() => setFiltersOpen(value => !value)} aria-expanded={filtersOpen} aria-controls="marketplace-filter-panel"><Filter size={15} aria-hidden="true" /> Filter</button></div>{filtersOpen && <div id="marketplace-filter-panel" className="marketplace-filter-panel" role="region" aria-label="Filter lanjutan"><label>Harga minimum<input inputMode="numeric" value={minPrice} onChange={event => setMinPrice(event.target.value.replace(/\D/g, ''))} placeholder="Rp 0" /></label><label>Harga maksimum<input inputMode="numeric" value={maxPrice} onChange={event => setMaxPrice(event.target.value.replace(/\D/g, ''))} placeholder="Tanpa batas" /></label><label>Kondisi<select value={condition} onChange={event => setCondition(event.target.value)}><option value="">Semua kondisi</option><option value="new">Baru</option><option value="like_new">Seperti baru</option><option value="good">Terawat</option><option value="fair">Cukup baik</option></select></label><button type="button" onClick={() => { setMinPrice(''); setMaxPrice(''); setCondition(''); }}>Reset</button><button type="button" className="marketplace-save-search" onClick={saveSearch}>Simpan pencarian</button></div>}{activeFilters.length > 0 && <div className="marketplace-active-filters" aria-label="Filter aktif"><span className="marketplace-active-label">Filter aktif</span>{activeFilters.map(filter => <button type="button" key={filter.label} onClick={filter.clear}>{filter.label}<span aria-hidden="true">×</span></button>)}<button type="button" className="marketplace-clear-filters" onClick={resetFilters}>Hapus semua</button></div>}{notice && <p className="marketplace-notice" role="status" aria-live="polite">{notice}</p>}{loading ? <div className="marketplace-card-grid" aria-label="Memuat listing">{[1, 2, 3, 4, 5, 6].map(item => <MarketplaceCardSkeleton key={item} />)}</div> : <div className="marketplace-card-grid" aria-live="polite">{sorted.map(item => <MarketplaceCard key={item.id} item={item} saved={saved.includes(item.id)} onSave={save} onQuickView={setQuickView} compared={compareItems.some(entry => entry.id === item.id)} onCompare={toggleCompare} />)}</div>}{!loading && !sorted.length && <div className="marketplace-empty"><Sparkles size={25} aria-hidden="true" /><h3>Belum menemukan listing yang cocok</h3><p>Coba kata kunci atau distrik lain untuk melihat lebih banyak produk lokal.</p>{activeFilters.length > 0 && <button type="button" onClick={resetFilters}>Bersihkan filter dan lihat semua</button>}</div>}</section></div>{!loading && <Recommendations items={items} query={query} />}</main><QuickViewModal item={quickView} onClose={closeQuickView} /> <CompareBar items={compareItems} onRemove={id => setCompareItems(current => current.filter(item => item.id !== id))} onClear={() => setCompareItems([])} onOpen={() => setCompareOpen(true)} />{compareOpen && <ComparePanel items={compareItems} onClose={() => setCompareOpen(false)} />}</>;
+export type MarketplaceFilters = {
+  q: string;
+  district: string;
+  category: string;
+  condition: string;
+  minPrice: string;
+  maxPrice: string;
+  sort: string;
+};
+
+const SORTS = ['terbaru', 'termurah', 'termahal'] as const;
+
+function pick(value: string | string[] | undefined): string {
+  const single = Array.isArray(value) ? value[0] : value;
+  return (single || '').trim();
+}
+
+function parseFilters(params: Record<string, string | string[] | undefined>): MarketplaceFilters {
+  const sort = pick(params.sort).toLowerCase();
+  return {
+    q: pick(params.q),
+    district: pick(params.district) || 'Semua distrik',
+    category: pick(params.category) || pick(params.cat),
+    condition: pick(params.condition) || pick(params.kondisi),
+    minPrice: pick(params.minPrice) || pick(params.min),
+    maxPrice: pick(params.maxPrice) || pick(params.max),
+    sort: (SORTS as readonly string[]).includes(sort) ? sort : 'terbaru',
+  };
+}
+
+export async function generateMetadata({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }): Promise<Metadata> {
+  const filters = parseFilters(await searchParams);
+  const title = filters.q
+    ? `Jual beli ${filters.q} di Sulawesi Tenggara | SUKI Marketplace`
+    : filters.category
+      ? `Kategori ${filters.category} | SUKI Marketplace`
+      : 'SUKI Marketplace — Jual Beli Produk Lokal Sulawesi Tenggara';
+  const description = 'Marketplace SUKI: jual beli produk, kuliner, dan jasa lokal Sulawesi Tenggara langsung dari penjual terverifikasi.';
+  // Canonical menyertakan kategori agar halaman kategori terindeks sebagai satu URL.
+  const canonical = filters.category ? `${siteUrl}/marketplace?category=${encodeURIComponent(filters.category)}` : `${siteUrl}/marketplace`;
+  return {
+    title,
+    description,
+    alternates: { canonical },
+    openGraph: { title, description, type: 'website', url: canonical, siteName: 'SUKI Apps', locale: 'id_ID', images: [{ url: ogImage, alt: 'SUKI Apps' }] },
+    twitter: { card: 'summary_large_image', title, description, images: [ogImage] },
+  };
+}
+
+export default async function MarketplacePage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const filters = parseFilters(await searchParams);
+  const result = await fetchPublicListings({
+    q: filters.q || undefined,
+    district: filters.district !== 'Semua distrik' ? filters.district : undefined,
+    category: filters.category || undefined,
+    condition: filters.condition || undefined,
+    minPrice: filters.minPrice ? Number(filters.minPrice) : undefined,
+    maxPrice: filters.maxPrice ? Number(filters.maxPrice) : undefined,
+    limit: 30,
+    sort: filters.sort,
+  });
+  const initialItems = result.ok && 'items' in result ? (result.items as never[]) : [];
+  const initialNotice = result.ok ? ('warning' in result ? result.warning : '') : result.error;
+
+  // Fase 2.7: JSON-LD ItemList > Product — HANYA dengan harga asli (integer IDR).
+  // Tanpa harga 0 dan tanpa klaim ketersediaan palsu.
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    itemListElement: (result.ok && 'items' in result ? result.items : []).slice(0, 20).map((item, index) => {
+      const price = Math.trunc(Number(item.price) || 0);
+      const image = item.images?.[0] || item.thumbnail_url || undefined;
+      return {
+        '@type': 'ListItem',
+        position: index + 1,
+        item: {
+          '@type': 'Product',
+          name: item.title,
+          ...(image ? { image } : {}),
+          url: `${siteUrl}/marketplace?listing=${encodeURIComponent(String(item.id))}`,
+          ...(price > 0 ? { offers: { '@type': 'Offer', price, priceCurrency: 'IDR' } } : {}),
+        },
+      };
+    }),
+  };
+
+  return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <MarketplacePageClient initialItems={initialItems} initialFilters={filters} initialNotice={initialNotice} />
+    </>
+  );
 }

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { BerandaPostData } from '@/components/beranda/FeedPost';
+import { apiErrorMessage } from '@/lib/api-client';
 
 export type FeedFilter = 'recommended' | 'following' | 'latest' | 'property' | 'video';
 type ApiPost = { id: string; content: string; media_urls?: string[]; type: string; privacy?: 'public' | 'followers'; location?: string; mood?: string | null; tagged_user_ids?: string[]; created_at: string; user_id: string; likes_count?: number; comments_count?: number; liked?: boolean; profiles?: { display_name?: string; username?: string; name?: string; avatar_url?: string | null; visibility_settings?: { avatar?: 'public' | 'followers' | 'private' } } | null };
@@ -35,7 +36,7 @@ export function useInfiniteFeed(initialFilter: FeedFilter = 'recommended') {
       if (nextCursor) params.set('cursor', nextCursor);
       const response = await fetch(`/api/feed?${params}`, { signal: controller.signal, credentials: 'include', headers: { Accept: 'application/json' } });
       const payload = await response.json() as FeedResponse;
-      if (!response.ok) throw new Error(payload.error || 'Feed tidak dapat dimuat.');
+      if (!response.ok) throw new Error(apiErrorMessage(payload, 'Feed tidak dapat dimuat.'));
       setItems((current) => {
         const source = replace ? payload.data.map(mapPost) : [...current, ...payload.data.map(mapPost)];
         return Array.from(new Map(source.map((item) => [item.id, item])).values());

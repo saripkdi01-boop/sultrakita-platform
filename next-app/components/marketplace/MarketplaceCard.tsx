@@ -1,83 +1,105 @@
 'use client';
 
-import { ChevronLeft, ChevronRight, Heart, MapPin, ShieldCheck, Star } from 'lucide-react';
+import { BadgeCheck, ChevronLeft, ChevronRight, Heart, MapPin, Scale, Zap } from 'lucide-react';
+import Link from 'next/link';
 import { useState } from 'react';
+import type { PublicListing } from '@/lib/listings-query';
+import { sellerRatingText, sellerTier } from '@/lib/seller-trust';
+import { SafeImage } from './SafeImage';
 
-export type MarketplaceSeller = {
-  name: string;
-  verification_status: string;
-  rating_average: number;
-  rating_count: number;
-  avatar_url?: string | null;
+// Tipe kanonis listing publik — diimpor komponen marketplace lain dari sini.
+export type MarketplaceListing = PublicListing;
+
+// Fase 2.2: kartu listing kelas dunia.
+// - next/image lazy + ukuran responsif, anti-CLS (container aspect rasio tetap)
+// - Harga diformat Intl id-ID IDR (tidak ada harga 0 yang diada-ada)
+// - Chip penjual + rating asli; badge kondisi; badge tier dari data nyata
+// - Galeri multi-foto (swipe/klik) bila listing punya >1 foto
+// - Hover lift hanya untuk perangkat dengan hover (mobile tidak nempel)
+
+const conditionLabels: Record<string, string> = { new: 'Baru', like_new: 'Seperti baru', good: 'Bekas baik', fair: 'Bekas layak' };
+
+type Props = {
+  listing: PublicListing;
+  index?: number;
+  saved?: boolean;
+  inCompare?: boolean;
+  onToggleWishlist?: () => void;
+  onQuickView?: () => void;
+  onCompare?: () => void;
 };
 
-export type MarketplaceListing = {
-  id: string;
-  title: string;
-  description?: string | null;
-  price: number;
-  images?: string[];
-  thumbnail_url?: string | null;
-  district?: string | null;
-  city?: string | null;
-  condition?: string | null;
-  is_featured?: boolean;
-  is_demo?: boolean;
-  seller_id?: number | null;
-  seller?: MarketplaceSeller | null;
-};
+export function MarketplaceCard({ listing, index = 0, saved = false, inCompare = false, onToggleWishlist, onQuickView, onCompare }: Props) {
+  const id = String(listing.id);
+  const images = Array.isArray(listing.images) && listing.images.length > 0 ? listing.images : listing.thumbnail_url ? [listing.thumbnail_url] : [];
+  const [photoIndex, setPhotoIndex] = useState(0);
+  const image = images[Math.min(photoIndex, images.length - 1)];
+  const price = Math.trunc(Number(listing.price) || 0);
+  const priceText = price > 0 ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(price) : 'Harga hubungi penjual';
+  const tier = sellerTier(listing.seller);
+  const ratingText = sellerRatingText(listing.seller);
+  const district = typeof listing.district === 'string' ? listing.district : '';
+  const createdAt = typeof listing.created_at === 'string' ? new Date(listing.created_at) : null;
+  const isRecent = createdAt ? Date.now() - createdAt.getTime() < 72 * 60 * 60 * 1000 : false;
 
-function conditionLabel(value?: string | null) {
-  return value === 'new' ? 'Baru' : value === 'like_new' ? 'Seperti baru' : value === 'fair' ? 'Cukup baik' : 'Terawat';
-}
-
-function rupiah(value: number) {
-  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(value);
-}
-
-function sellerIsVerified(seller?: MarketplaceSeller | null) {
-  return seller?.verification_status === 'approved';
-}
-
-export function MarketplaceCard({ item, saved, onSave, onQuickView, compared, onCompare }: { item: MarketplaceListing; saved: boolean; onSave: (id: string) => void; onQuickView: (item: MarketplaceListing) => void; compared: boolean; onCompare: (item: MarketplaceListing) => void }) {
-  const images = (item.images || []).filter(Boolean);
-  const [imageIndex, setImageIndex] = useState(0);
-  const image = images.length ? images[imageIndex] : item.thumbnail_url;
-  const verified = sellerIsVerified(item.seller);
-  const rating = Number(item.seller?.rating_average || 0);
-  const ratingCount = Number(item.seller?.rating_count || 0);
-  const location = item.district || item.city || 'Sulawesi Tenggara';
-
-  function moveImage(direction: number) {
-    setImageIndex(index => (index + direction + images.length) % images.length);
-  }
-
-  const titleId = `marketplace-listing-${item.id}`;
-  return <article className="marketplace-card group" aria-labelledby={titleId}>
-    <div className="marketplace-card-image">
-      {image ? <img src={image} alt={`${item.title} — foto ${imageIndex + 1}`} loading="lazy" /> : <div className="marketplace-card-placeholder"><span>{item.is_featured ? 'Pilihan warga Sultra' : 'Produk lokal'}</span><b>{item.title.slice(0, 1)}</b></div>}
-      <div className="marketplace-card-image-shade" aria-hidden="true" />
-      {item.is_featured && <span className="marketplace-card-badge"><Star size={11} fill="currentColor" aria-hidden="true" /> Pilihan warga</span>}
-      {images.length > 1 && <>
-        <button type="button" className="marketplace-gallery-button marketplace-gallery-prev" onClick={() => moveImage(-1)} aria-label="Foto sebelumnya"><ChevronLeft size={15} /></button>
-        <button type="button" className="marketplace-gallery-button marketplace-gallery-next" onClick={() => moveImage(1)} aria-label="Foto berikutnya"><ChevronRight size={15} /></button>
-        <div className="marketplace-gallery-dots" aria-label={`Foto ${imageIndex + 1} dari ${images.length}`}>{images.map((_, index) => <i key={index} className={index === imageIndex ? 'active' : ''} />)}</div>
-      </>}
-      <button type="button" className={`marketplace-save ${saved ? 'saved' : ''}`} onClick={() => onSave(item.id)} aria-label={saved ? `Hapus ${item.title} dari tersimpan` : `Simpan ${item.title}`} aria-pressed={saved}><Heart size={18} fill={saved ? 'currentColor' : 'none'} /></button>
-    </div>
-    <div className="marketplace-card-body">
-      <div className="marketplace-card-price">{rupiah(Number(item.price))}</div>
-      <h2 id={titleId} title={item.title}>{item.title}</h2>
-      <p className="marketplace-card-meta"><MapPin size={13} aria-hidden="true" /><span>{location}</span><span aria-hidden="true">·</span><span>{conditionLabel(item.condition)}</span></p>
-      <div className="seller-trust-row" aria-label={`Informasi kepercayaan penjual ${item.seller?.name || 'Penjual lokal'}`}>
-        <div className="seller-avatar">{item.seller?.avatar_url ? <img src={item.seller.avatar_url} alt="" /> : <span>{(item.seller?.name || 'PL').slice(0, 2).toUpperCase()}</span>}</div>
-        <div className="seller-trust-copy"><strong>{item.seller?.name || 'Penjual lokal'}</strong><span>{verified ? <><ShieldCheck size={12} aria-hidden="true" /> Terverifikasi</> : 'Profil belum terverifikasi'}</span></div>
-        {ratingCount > 0 ? <div className="seller-rating" aria-label={`Rating ${rating.toFixed(1)} dari 5 dari ${ratingCount} ulasan`}><Star size={13} fill="currentColor" aria-hidden="true" /><b>{rating.toFixed(1)}</b><small>({ratingCount})</small></div> : <small className="seller-rating-empty">Belum ada ulasan</small>}
+  return (
+    <article className="mp-card" aria-label={listing.title}>
+      <div className="mp-card-media">
+        <Link href={`/marketplace/${encodeURIComponent(id)}`} className="mp-card-image-link" aria-label={`Lihat detail ${listing.title}`}>
+          {image ? (
+            <SafeImage src={image} alt={listing.title} priority={index < 4} />
+          ) : (
+            <div className="mp-card-image-empty" aria-hidden="true">📦</div>
+          )}
+        </Link>
+        <div className="mp-card-badges">
+          {listing.condition && conditionLabels[listing.condition] && <span className="mp-badge mp-badge-condition">{conditionLabels[listing.condition]}</span>}
+          {listing.is_featured ? <span className="mp-badge mp-badge-featured">Pilihan</span> : isRecent ? <span className="mp-badge mp-badge-new">Baru</span> : null}
+        </div>
+        <button type="button" className={`mp-card-wishlist${saved ? ' saved' : ''}`} onClick={onToggleWishlist} aria-pressed={saved} aria-label={saved ? `Hapus ${listing.title} dari wishlist` : `Simpan ${listing.title} ke wishlist`}>
+          <Heart size={17} aria-hidden="true" fill={saved ? 'currentColor' : 'none'} />
+        </button>
+        {images.length > 1 && (
+          <>
+            <button type="button" className="mp-card-gallery-nav mp-card-gallery-prev" onClick={() => setPhotoIndex((i) => (i - 1 + images.length) % images.length)} aria-label="Foto sebelumnya">
+              <ChevronLeft size={16} aria-hidden="true" />
+            </button>
+            <button type="button" className="mp-card-gallery-nav mp-card-gallery-next" onClick={() => setPhotoIndex((i) => (i + 1) % images.length)} aria-label="Foto berikutnya">
+              <ChevronRight size={16} aria-hidden="true" />
+            </button>
+            <div className="mp-card-dots" aria-hidden="true">
+              {images.slice(0, 5).map((_, dot) => <span key={dot} className={dot === photoIndex ? 'active' : ''} />)}
+            </div>
+          </>
+        )}
       </div>
-      <div className="marketplace-card-actions">
-        <button type="button" className="marketplace-card-primary" onClick={() => onQuickView(item)}>Lihat detail</button>
-        <button type="button" className={`marketplace-card-secondary ${compared ? 'active' : ''}`} onClick={() => onCompare(item)} aria-pressed={compared}>{compared ? 'Dipilih' : 'Bandingkan'}</button>
+
+      <div className="mp-card-body">
+        <Link href={`/marketplace/${encodeURIComponent(id)}`} className="mp-card-title">{listing.title}</Link>
+        <p className="mp-card-price">{priceText}</p>
+
+        {listing.seller && (
+          <Link href={`/marketplace/toko/${encodeURIComponent(String(listing.seller.id ?? ''))}`} className="mp-card-seller" aria-label={`Lihat toko ${listing.seller.name}`}>
+            <span className="mp-card-seller-name">{listing.seller.name}</span>
+            {tier && (
+              <span className={`mp-badge mp-badge-tier mp-badge-tier-${tier.kind}`}>
+                <BadgeCheck size={12} aria-hidden="true" /> {tier.label}
+              </span>
+            )}
+            {ratingText && <span className="mp-card-rating">★ {ratingText}</span>}
+          </Link>
+        )}
+
+        <p className="mp-card-meta">
+          {district && <span><MapPin size={12} aria-hidden="true" /> {district}</span>}
+          {createdAt && <time dateTime={createdAt.toISOString()}>{createdAt.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</time>}
+        </p>
+
+        <div className="mp-card-actions">
+          {onQuickView && <button type="button" className="mp-card-action" onClick={onQuickView}><Zap size={14} aria-hidden="true" /> Lihat cepat</button>}
+          {onCompare && <button type="button" className={`mp-card-action${inCompare ? ' active' : ''}`} onClick={onCompare} aria-pressed={inCompare}><Scale size={14} aria-hidden="true" /> Bandingkan</button>}
+        </div>
       </div>
-    </div>
-  </article>;
+    </article>
+  );
 }

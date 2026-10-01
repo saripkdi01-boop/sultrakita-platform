@@ -8,7 +8,21 @@ const securityHeaders = [
 ];
 
 const nextConfig = {
-  images: { remotePatterns: [{ protocol: 'https', hostname: 'images.unsplash.com' }, { protocol: 'https', hostname: '**.supabase.co' }] },
-  async headers() { return [{ source: '/(.*)', headers: securityHeaders }]; },
+  images: { remotePatterns: [{ protocol: 'https', hostname: 'images.unsplash.com' }, { protocol: 'https', hostname: '**.supabase.co' }, { protocol: 'https', hostname: '**.r2.dev' }] },
+  async headers() {
+    return [
+      { source: '/(.*)', headers: securityHeaders },
+      // Area admin tidak boleh terindeks mesin pencari.
+      { source: '/admin/:path*', headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }] },
+    ];
+  },
+  // Fase 0: rapikan URL duplikat/mati. `permanent: true` menghasilkan 308.
+  async redirects() {
+    return [
+      // Komunitas hidup di /groups; /komunitas hanya alias lama yang me-return 404.
+      { source: '/komunitas', destination: '/groups', permanent: true },
+      { source: '/komunitas/:path*', destination: '/groups/:path*', permanent: true },
+    ];
+  },
 };
 export default nextConfig;

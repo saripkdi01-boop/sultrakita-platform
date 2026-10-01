@@ -1,54 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import { getServerSupabase } from '@/lib/supabase/server';
+import { checkRateLimit } from '@/lib/rate-limit';
+import { apiError, badRequest } from '@/lib/api-error';
+import { fetchPublicListings } from '@/lib/listings-query';
 
+// Data contoh hanya untuk development lokal: tampil HANYA bila
+// ALLOW_DEMO_DATA=true DAN bukan production, dengan label jelas.
 const fallbackListings = [
   { id: 'demo-tenun', title: 'Kain Tenun Buton Premium', description: 'Tenun lokal pilihan dari Baubau.', price: 450000, district: 'Baubau', city: 'Baubau', condition: 'new', is_featured: true, is_demo: true, images: [], thumbnail_url: null },
   { id: 'demo-kuliner', title: 'Paket Ikan Bakar Sambal', description: 'Rasa lokal untuk keluarga.', price: 120000, district: 'Kendari', city: 'Kendari', condition: 'new', is_featured: false, is_demo: true, images: [], thumbnail_url: null },
   { id: 'demo-wakatobi', title: 'Paket Snorkeling Wakatobi', description: 'Jelajah laut Wakatobi bersama pemandu lokal.', price: 350000, district: 'Wakatobi', city: 'Wakatobi', condition: 'good', is_featured: false, is_demo: true, images: [], thumbnail_url: null },
 ];
 
-function escapeLike(value: string) {
-  return value.replace(/[\\%_]/g, (character) => `\\${character}`).replace(/[(),]/g, ' ');
-}
-
-function getListingsClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) return null;
-  return createClient(url, key, { auth: { autoRefreshToken: false, persistSession: false } });
-}
-
 export async function GET(request: NextRequest) {
+  // Fase 1.5: batasi 60 request/menit per IP untuk API publik.
+  const limited = await checkRateLimit(request, 'api');
+  if (limited) return limited;
   const params = request.nextUrl.searchParams;
-  const queryText = params.get('q')?.trim(); const district = params.get('district')?.trim(); const category = params.get('category')?.trim(); const condition = params.get('condition')?.trim();
   const rawMinPrice = params.get('minPrice'); const rawMaxPrice = params.get('maxPrice');
-  const minPrice = Number(rawMinPrice); const maxPrice = Number(rawMaxPrice); const limit = Math.min(Math.max(Number(params.get('limit')) || 30, 1), 50);
-  if ((rawMinPrice !== null && (!Number.isFinite(minPrice) || minPrice < 0)) || (rawMaxPrice !== null && (!Number.isFinite(maxPrice) || maxPrice < 0))) return NextResponse.json({ ok: false, error: 'invalid_price_filter' }, { status: 400 });
-  if (rawMinPrice !== null && rawMaxPrice !== null && minPrice > maxPrice) return NextResponse.json({ ok: false, error: 'invalid_price_range' }, { status: 400 });
-  try {
-    const client = getListingsClient() || await getServerSupabase();
-    let query = client.from('listings').select('id,title,description,price,image_url,district,city,condition,is_featured,is_demo,provenance,created_at,seller_id').in('status', ['published', 'active']).or('is_demo.is.null,is_demo.eq.false').order('is_featured', { ascending: false }).order('created_at', { ascending: false }).limit(limit);
-    if (queryText) { const term = escapeLike(queryText); query = query.or(`title.ilike.%${term}%,description.ilike.%${term}%,district.ilike.%${term}%,city.ilike.%${term}%`); }
-    if (district && district !== 'Semua distrik') query = query.eq('district', district);
-    if (condition) query = query.eq('condition', condition);
-    // Category labels are resolved by the marketplace UI; UUID category filters can be added here when supplied.
-    if (Number.isFinite(minPrice) && minPrice > 0) query = query.gte('price', minPrice);
-    if (Number.isFinite(maxPrice) && maxPrice > 0) query = query.lte('price', maxPrice);
-    const { data, error } = await query;
-    if (error) throw error;
-    const visibleItems = (data || []).filter((item) => item.is_demo !== true && item.provenance !== 'curated_demo' && !String(item.title || '').startsWith('DEMO-SEED-'));
-    const sellerIds = Array.from(new Set(visibleItems.map((item) => item.seller_id).filter((id): id is number => Number.isFinite(Number(id))).map(Number)));
-    const sellerMap = new Map<number, { name: string; verification_status: string; rating_average: number; rating_count: number; avatar_url: string | null }>();
-    if (sellerIds.length) {
-      const { data: sellers, error: sellerError } = await client.from('users').select('id,name,verification_status,rating_average,rating_count,avatar_url').in('id', sellerIds);
-      if (sellerError) throw sellerError;
-      for (const seller of sellers || []) sellerMap.set(Number(seller.id), { name: String(seller.name || 'Penjual lokal'), verification_status: String(seller.verification_status || 'unverified'), rating_average: Number(seller.rating_average || 0), rating_count: Number(seller.rating_count || 0), avatar_url: seller.avatar_url || null });
-    }
-    const items = visibleItems.map((item) => ({ ...item, images: item.image_url ? [item.image_url] : [], thumbnail_url: item.image_url || null, seller: item.seller_id ? sellerMap.get(Number(item.seller_id)) || null : null }));
-    return NextResponse.json({ ok: true, data: items, filters: { q: queryText || '', district: district || '', category: category || '', condition: condition || '' } });
-  } catch (error) {
+  const minPrice = Number(rawMinPrice); const maxPrice = Number(rawMaxPrice);
+  if ((rawMinPrice !== null && (!Number.isFinite(minPrice) || minPrice < 0)) || (rawMaxPrice !== null && (!Number.isFinite(maxPrice) || maxPrice < 0))) return badRequest(request, 'Filter harga minimum/maksimum tidak valid.');
+  if (rawMinPrice !== null && rawMaxPrice !== null && minPrice > maxPrice) return badRequest(request, 'Harga minimum tidak boleh lebih besar dari maksimum.');
+  // Query terpusat di lib/listings-query.ts (satu sumber kebenaran dengan SSR halaman).
+  const result = await fetchPublicListings({
+    q: params.get('q') || undefined,
+    district: params.get('district') || undefined,
+    category: params.get('category') || undefined,
+    condition: params.get('condition') || undefined,
+    minPrice: rawMinPrice !== null && Number.isFinite(minPrice) ? minPrice : undefined,
+    maxPrice: rawMaxPrice !== null && Number.isFinite(maxPrice) ? maxPrice : undefined,
+    limit: Number(params.get('limit')) || 30,
+    sort: params.get('sort') || undefined,
+  });
+  if (!result.ok) {
     if (process.env.ALLOW_DEMO_DATA === 'true' && process.env.NODE_ENV !== 'production') return NextResponse.json({ ok: true, data: fallbackListings, source: 'demo', warning: 'Mode demo lokal aktif.' });
-    return NextResponse.json({ ok: false, data: [], source: 'unavailable', warning: 'Listing sementara belum tersedia. Silakan coba lagi nanti.' }, { status: 503 });
+    // Format error konsisten Fase 1.4: { error: { code, message, requestId } }.
+    return apiError('SERVICE_UNAVAILABLE', 'Listing sementara belum tersedia. Silakan coba lagi nanti.', 503, request, { source: 'unavailable' });
   }
+  if ('warning' in result) return NextResponse.json({ ok: true, data: [], filters: result.filters, warning: result.warning });
+  return NextResponse.json({ ok: true, data: result.items, filters: result.filters });
 }

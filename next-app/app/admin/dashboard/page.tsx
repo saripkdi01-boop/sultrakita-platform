@@ -4,6 +4,10 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { requireAdminUser } from '@/lib/supabase/server';
 
 const adminModules = [
+  { href: '/admin/overview', title: 'Ringkasan operasional', description: 'KPI jujur dari database: pengguna, listing, laporan, dan aktivitas admin terbaru.', tone: 'bg-[#e9f7f2]' },
+  { href: '/admin/users', title: 'Kelola pengguna', description: 'Cari, saring, tangguhkan/pulihkan akun, ubah peran, dan catatan internal.', tone: 'bg-[#eaf1ff]' },
+  { href: '/admin/moderation', title: 'Moderasi laporan', description: 'Antrean laporan marketplace: tinjau, tolak, atau takedown listing dengan alasan.', tone: 'bg-[#fff5dc]' },
+  { href: '/admin/settings', title: 'Pengaturan situs', description: 'Feature flags & maintenance mode. Perubahan berlaku ≤60 detik, tercatat di audit.', tone: 'bg-[#f3efff]' },
   { href: '/admin/support-tickets', title: 'Support tickets', description: 'Triage, respons, dan lifecycle tiket dukungan.', tone: 'bg-[#e9f7f2]' },
   { href: '/admin/ecosystem-banners', title: 'Ecosystem banners', description: 'Kelola banner lintas Marketplace, Jobs, dan SUKI Suits.', tone: 'bg-[#fff5dc]' },
   { href: '/admin/property-verification', title: 'Property verification', description: 'Tinjau dokumen dan status verifikasi properti.', tone: 'bg-[#eaf1ff]' },

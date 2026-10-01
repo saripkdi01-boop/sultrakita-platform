@@ -1,8 +1,10 @@
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import sharp from 'sharp';
 import { randomUUID } from 'node:crypto';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { requireServerUser } from '@/lib/supabase/server';
+import { checkRateLimit } from '@/lib/rate-limit';
+import { apiError } from '@/lib/api-error';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -11,8 +13,9 @@ const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/g
 
 type FocusBox = { x: number; y: number; width: number; height: number };
 
-function jsonError(message: string, status: number) {
-  return NextResponse.json({ ok: false, error: message }, { status });
+function jsonError(request: NextRequest, message: string, status: number) {
+  // Fase 1.4: format error konsisten { error: { code, message, requestId } }.
+  return apiError(status === 422 || status === 413 ? 'BAD_REQUEST' : status === 503 ? 'SERVICE_UNAVAILABLE' : 'INTERNAL_ERROR', message, status, request);
 }
 
 function parseFocus(payload: any): FocusBox | null {
@@ -81,18 +84,21 @@ async function processAvatar(input: Buffer) {
   return { output, focusSource: focus ? 'gemini' : 'center' };
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const { user, supabase } = await requireServerUser();
+    // Fase 1.5: upload dibatasi 10x/jam per user.
+    const limited = await checkRateLimit(request, 'upload', user.id);
+    if (limited) return limited;
     const form = await request.formData();
     const file = form.get('avatar');
-    if (!(file instanceof File)) return jsonError('Foto profil wajib dipilih.', 422);
-    if (!ALLOWED_TYPES.has(file.type)) return jsonError('Pilih JPG, PNG, WebP, atau GIF.', 422);
-    if (file.size > MAX_BYTES) return jsonError('Foto profil maksimal 5 MB.', 413);
+    if (!(file instanceof File)) return jsonError(request, 'Foto profil wajib dipilih.', 422);
+    if (!ALLOWED_TYPES.has(file.type)) return jsonError(request, 'Pilih JPG, PNG, WebP, atau GIF.', 422);
+    if (file.size > MAX_BYTES) return jsonError(request, 'Foto profil maksimal 5 MB.', 413);
     const input = Buffer.from(await file.arrayBuffer());
     const { output, focusSource } = await processAvatar(input);
     const config = getR2Config();
-    if (!config) return jsonError('Storage avatar belum terhubung. Pastikan R2_ENDPOINT/R2_BUCKET/R2_ACCESS_KEY_ID/R2_SECRET_ACCESS_KEY/R2_PUBLIC_BASE_URL tersedia di environment Production.', 503);
+    if (!config) return jsonError(request, 'Storage avatar belum terhubung. Pastikan R2_ENDPOINT/R2_BUCKET/R2_ACCESS_KEY_ID/R2_SECRET_ACCESS_KEY/R2_PUBLIC_BASE_URL tersedia di environment Production.', 503);
     const configuredRegion = String(process.env.R2_REGION || 'auto').trim();
     const region = /^[a-z0-9-]+$/i.test(configuredRegion) ? configuredRegion : 'auto';
     const client = new S3Client({ region, endpoint: config.endpoint, forcePathStyle: true, credentials: { accessKeyId: process.env.R2_ACCESS_KEY_ID!, secretAccessKey: config.secret } });
@@ -100,10 +106,10 @@ export async function POST(request: Request) {
     await client.send(new PutObjectCommand({ Bucket: config.bucket, Key: objectPath, Body: output, ContentType: 'image/jpeg', CacheControl: 'public, max-age=31536000, immutable' }));
     const avatarUrl = `${config.publicBase}/${objectPath}`;
     const { error } = await supabase.from('profiles').update({ avatar_url: avatarUrl }).eq('id', user.id);
-    if (error) return jsonError('Foto tersimpan tetapi profil gagal diperbarui.', 500);
+    if (error) return jsonError(request, 'Foto tersimpan tetapi profil gagal diperbarui.', 500);
     return NextResponse.json({ ok: true, data: { avatar_url: avatarUrl, width: 512, height: 512, focus_source: focusSource } });
   } catch (error) {
     console.error('[profile-avatar]', error instanceof Error ? error.message : error);
-    return jsonError('Foto profil tidak dapat diproses saat ini.', 500);
+    return jsonError(request, 'Foto profil tidak dapat diproses saat ini.', 500);
   }
 }
