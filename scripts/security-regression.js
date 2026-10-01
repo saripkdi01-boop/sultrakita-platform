@@ -21,7 +21,7 @@
  *     menunjuk project Supabase test/staging yang reachable.
  *   SECURITY_TEST_PORT            — port lokal next start (default 3101).
  *   SECURITY_TEST_READY_TIMEOUT_MS — batas tunggu server siap (default 120000).
- *   SECURITY_TEST_BURST           — jumlah request uji rate-limit (default 90).
+ *   SECURITY_TEST_BURST           — jumlah request uji rate-limit (default 150).
  *   SECURITY_TEST_SKIP_BUILD=1    — lewati `npm run build` bila .next sudah ada
  *     (eksplisit; untuk iterasi lokal. Default: selalu build ulang).
  *
@@ -33,13 +33,14 @@
 
 const { spawn, spawnSync } = require('node:child_process');
 const fs = require('node:fs');
+const net = require('node:net');
 const path = require('node:path');
 
-const NEXT_APP_DIR = path.resolve(__dirname, 'next-app');
+const NEXT_APP_DIR = path.resolve(__dirname, '..', 'next-app');
 const PORT = Number(process.env.SECURITY_TEST_PORT || 3101);
 const BASE_URL = `http://127.0.0.1:${PORT}`;
 const READY_TIMEOUT_MS = Number(process.env.SECURITY_TEST_READY_TIMEOUT_MS || 120000);
-const BURST = Number(process.env.SECURITY_TEST_BURST || 90);
+const BURST = Number(process.env.SECURITY_TEST_BURST || 150);
 const SKIP_BUILD = process.env.SECURITY_TEST_SKIP_BUILD === '1';
 const REQUEST_TIMEOUT_MS = 15000;
 
@@ -123,6 +124,22 @@ function buildApp() {
   console.log('Build sukses.');
 }
 
+function tcpProbe() {
+  // Cek apakah port sudah menerima koneksi TCP (server hidup), tanpa
+  // memedulikan apakah handler HTTP-nya menggantung (mis. DB lambat).
+  return new Promise((resolve) => {
+    const socket = net.connect(PORT, '127.0.0.1');
+    const done = (ok) => {
+      socket.destroy();
+      resolve(ok);
+    };
+    socket.setTimeout(2000);
+    socket.once('connect', () => done(true));
+    socket.once('timeout', () => done(false));
+    socket.once('error', () => done(false));
+  });
+}
+
 async function startServer() {
   console.log(`Menjalankan \`next start\` di ${BASE_URL} …`);
   server = spawn('npx', ['next', 'start', '-p', String(PORT)], {
@@ -157,10 +174,18 @@ async function startServer() {
     try {
       // /api/health dikecualikan dari rate-limit middleware → aman untuk polling.
       await fetch(`${BASE_URL}/api/health`, { redirect: 'manual', signal: AbortSignal.timeout(5000) });
-      console.log('Server siap.');
+      console.log('Server siap (respons HTTP /api/health).');
       return;
     } catch (error) {
       lastError = error instanceof Error ? error.message : String(error);
+      // Server bisa hidup tetapi handler-nya menggantung (mis. DB tak
+      // merespons): port yang menerima TCP tetap berarti "terjangkau".
+      // Preflight database sesudah ini yang akan menggagalkan dengan pesan
+      // "DB tak tersedia" yang tepat, bukan "server tak terjangkau".
+      if (await tcpProbe()) {
+        console.log('Server siap (port menerima koneksi TCP; /api/health lambat — lanjut ke preflight DB).');
+        return;
+      }
     }
     if (Date.now() > deadline) {
       fail(
@@ -173,7 +198,17 @@ async function startServer() {
 }
 
 async function preflightDatabase() {
-  const { res, body } = await request('/api/health');
+  let res;
+  let body;
+  try {
+    ({ res, body } = await request('/api/health'));
+  } catch (error) {
+    fail(
+      `DB tak tersedia: GET /api/health tidak merespons dalam ${REQUEST_TIMEOUT_MS}ms ` +
+        `(${error instanceof Error ? error.message : error}). Server hidup tetapi database tidak terjangkau. ` +
+        'Pastikan NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY menunjuk project Supabase test/staging yang reachable.',
+    );
+  }
   const dbState = body?.data?.db;
   const apiState = body?.data?.api;
   assert(
