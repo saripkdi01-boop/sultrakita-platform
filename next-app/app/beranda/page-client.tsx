@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { ArrowRight, Check, Compass, LoaderCircle, RefreshCw } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { CreatePostInput } from '@/components/beranda/CreatePostInput';
 import { CreatePostModal } from '@/components/beranda/CreatePostModal';
 import { FeedPost, FeedPostSkeleton } from '@/components/beranda/FeedPost';
 import { RightSidebar } from '@/components/beranda/RightSidebar';
+import { AdSlot } from '@/components/ads/AdSlot';
 import { StoriesSection } from '@/components/beranda/StoriesSection';
 import { useInfiniteFeed, type FeedFilter, type FeedTab } from '@/hooks/useInfiniteFeed';
 import { supabase } from '@/lib/supabase/client';
@@ -137,16 +138,24 @@ export default function BerandaPage() {
 
             {items.length > 0 && (
               <ul className={styles.feedList} aria-label={isSavedTab ? 'Daftar postingan tersimpan' : 'Daftar cerita warga'}>
-                {items.map((post) => (
-                  <li key={post.id}>
-                    <FeedPost
-                      post={post}
-                      currentUserId={currentUserId}
-                      saved={savedIds.has(post.id)}
-                      actions={actions}
-                      onNotice={setNotice}
-                    />
-                  </li>
+                {items.map((post, index) => (
+                  <Fragment key={post.id}>
+                    <li>
+                      <FeedPost
+                        post={post}
+                        currentUserId={currentUserId}
+                        saved={savedIds.has(post.id)}
+                        actions={actions}
+                        onNotice={setNotice}
+                      />
+                    </li>
+                    {/* T-ADS: iklan native tiap 8 postingan (~12,5% densitas). Tidak di tab Tersimpan. */}
+                    {!isSavedTab && (index + 1) % 8 === 0 && (
+                      <li>
+                        <AdSlot placementId="feed-infeed" eager={index === 7} />
+                      </li>
+                    )}
+                  </Fragment>
                 ))}
               </ul>
             )}
