@@ -1,4 +1,5 @@
 import './globals.css';
+import './suki-overhaul.css';
 import type { Metadata } from 'next';
 import { PreferencesProvider } from '@/lib/preferences';
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { ChevronDown, ChevronRight, Crown, LogOut, RefreshCw, X, Languages, Moon, Sun, UserRound, BadgeCheck } from 'lucide-react';
-import { useState, type MouseEvent } from 'react';
+import { useEffect, useRef, useState, type MouseEvent } from 'react';
 import Link from 'next/link';
 import { menuSections } from '@/config/navigation';
 import { MenuItem } from '@/components/ui/MenuItem';
@@ -19,6 +19,28 @@ export function SidebarMobileDrawer({ open }: { open: boolean }) {
   const { theme, toggleTheme, language, setLanguage } = usePreferences();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [languageOpen, setLanguageOpen] = useState(false);
+  const triggerRef = useRef<HTMLElement | null>(null);
+
+  // Ingat elemen pemicu saat drawer dibuka, untuk focus return saat ditutup via Escape.
+  useEffect(() => {
+    if (open) {
+      triggerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    }
+  }, [open ]);
+
+  // Escape menutup drawer + mengembalikan fokus ke pemicu
+  // (konsisten dengan perilaku menu mobile di homepage).
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        toggleMobile();
+        triggerRef.current?.focus();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [open, toggleMobile]);
   const labels = getLabels(language);
   const displayName = getProfileNickname(user, profile);
   const headline = profile?.bio || 'Profil belum dilengkapi';
