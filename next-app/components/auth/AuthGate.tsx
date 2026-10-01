@@ -344,7 +344,7 @@ export function AuthGate({ initialMode = 'login' }: { initialMode?: Mode }) {
           </form>
 
           <p className="mt-4 text-center text-[10px] leading-4.5 text-[#8ba29c]">
-            Dengan melanjutkan, kamu menyetujui <a href="/legal/terms" className="font-extrabold text-[#188875] hover:underline">Ketentuan</a> dan <a href="/legal/privacy" className="font-extrabold text-[#188875] hover:underline">Kebijakan Privasi</a> SUKI Apps.
+            Dengan melanjutkan, kamu menyetujui <a href="/legal/syarat-ketentuan" className="font-extrabold text-[#188875] hover:underline">Ketentuan</a> dan <a href="/legal/kebijakan-privasi" className="font-extrabold text-[#188875] hover:underline">Kebijakan Privasi</a> SUKI Apps.
           </p>
           <div className="mt-4 flex items-center justify-center gap-4 border-t border-[#edf2f0] pt-3.5 text-[10px] font-semibold text-[#8ba29c]">
             <span className="flex items-center gap-1"><ShieldCheck size={13} className="text-[#188875]" /> SSL Secure</span>
