@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { fetchPublicListings } from '@/lib/listings-query';
+import { AppLayout } from '@/components/layout/AppLayout';
 import MarketplacePageClient from './page-client';
 
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://sukiapps.web.id').replace(/\/$/, '');
@@ -98,9 +99,9 @@ export default async function MarketplacePage({ searchParams }: { searchParams: 
   };
 
   return (
-    <>
+    <AppLayout>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <MarketplacePageClient initialItems={initialItems} initialFilters={filters} initialNotice={initialNotice} />
-    </>
+    </AppLayout>
   );
 }
