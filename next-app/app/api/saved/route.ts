@@ -25,6 +25,26 @@ const saveSchema = z.object({
 });
 
 /**
+ * Profil publik yang aman untuk konsumsi klien: masking avatar dihitung
+ * server-side dari `visibility_settings`, lalu field internal
+ * `visibility_settings` DIBUANG agar tidak ikut di-serialize ke JSON.
+ */
+function toPublicProfile(
+  profile:
+    | { display_name?: unknown; username?: unknown; avatar_url?: unknown; visibility_settings?: { avatar?: string } }
+    | null
+    | undefined,
+) {
+  if (!profile || typeof profile !== 'object') return null;
+  const avatarPublic = profile.visibility_settings?.avatar === 'public';
+  return {
+    display_name: profile.display_name ?? null,
+    username: profile.username ?? null,
+    avatar_url: avatarPublic ? profile.avatar_url ?? null : null,
+  };
+}
+
+/**
  * GET /api/saved?limit=
  * Daftar postingan yang disimpan pengguna yang sedang login (terbaru dulu).
  * Balikan: { data: [...] } — postingan diperkaya likes_count/comments_count/liked.
@@ -53,10 +73,7 @@ export async function GET(request: NextRequest) {
       const joined = entry.posts;
       const post = (Array.isArray(joined) ? joined[0] : joined) as (Record<string, unknown> & { id?: unknown }) | null;
       if (!post || typeof post.id !== 'string') continue;
-      const profile = post.profiles as { visibility_settings?: { avatar?: string } } | null;
-      if (profile && profile.visibility_settings?.avatar !== 'public') {
-        post.profiles = { ...(profile as Record<string, unknown>), avatar_url: null };
-      }
+      post.profiles = toPublicProfile(post.profiles as Parameters<typeof toPublicProfile>[0]);
       const row: Record<string, unknown> & { id: string } = { ...post, id: post.id, saved_at: entry.created_at };
       rows.push(row);
     }

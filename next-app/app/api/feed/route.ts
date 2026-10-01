@@ -28,6 +28,26 @@ function decodeCursor(value: string | null, filter: FeedFilter): Cursor | null {
   return parsed as Cursor;
 }
 
+/**
+ * Profil publik yang aman untuk konsumsi klien: masking avatar dihitung
+ * server-side dari `visibility_settings`, lalu field internal
+ * `visibility_settings` DIBUANG agar tidak ikut di-serialize ke JSON.
+ */
+function toPublicProfile(
+  profile:
+    | { display_name?: unknown; username?: unknown; avatar_url?: unknown; visibility_settings?: { avatar?: string } }
+    | null
+    | undefined,
+) {
+  if (!profile || typeof profile !== 'object') return null;
+  const avatarPublic = profile.visibility_settings?.avatar === 'public';
+  return {
+    display_name: profile.display_name ?? null,
+    username: profile.username ?? null,
+    avatar_url: avatarPublic ? profile.avatar_url ?? null : null,
+  };
+}
+
 export async function GET(request: NextRequest) {
   // Fase 1.5: batasi 60 request/menit per IP untuk API publik.
   const limited = await checkRateLimit(request, 'api');
@@ -66,10 +86,7 @@ export async function GET(request: NextRequest) {
     const last = rows.at(-1);
     const endCursor = hasNextPage && last ? encodeCursor({ v: 1, filter, createdAt: String(last.created_at), id: String(last.id) }) : null;
     const safeRows = rows.map((row) => {
-      const profile = row.profiles as { visibility_settings?: { avatar?: string } } | null;
-      if (profile && profile.visibility_settings?.avatar !== 'public') {
-        row.profiles = { ...(row.profiles as Record<string, unknown>), avatar_url: null };
-      }
+      row.profiles = toPublicProfile(row.profiles as Parameters<typeof toPublicProfile>[0]);
       return row;
     });
     // P0-F1: tempelkan likes_count, comments_count, liked, following_author
