@@ -13,6 +13,16 @@ import { usePreferences } from '@/lib/preferences';
 const GOOGLE_OAUTH_GATEWAY_URL = process.env.NEXT_PUBLIC_GOOGLE_OAUTH_GATEWAY_URL || '';
 const MAX_SIGNUP_AVATAR_BYTES = 5 * 1024 * 1024;
 
+// TODO(launch): Tombol Login Facebook dikontrol feature flag — BUKAN hardcode.
+// Urutan penentu nilai: (1) prop `facebookLoginEnabled` dari halaman /login & /signup
+// (dibaca server-side dari site_settings via getFeatureFlags() — bisa diubah admin
+// dari /admin/settings TANPA deploy ulang); (2) fallback env
+// NEXT_PUBLIC_ENABLE_FACEBOOK_LOGIN (default di bawah = mati).
+// Provider Facebook belum di-enable di dashboard Supabase (butuh akun/app Facebook
+// bernama SUKI milik owner). Kode login Facebook TIDAK dihapus, hanya disembunyikan.
+// Untuk menyalakan: (1) enable provider Facebook di dashboard Supabase,
+// (2) nyalakan flag facebook_login_enabled di /admin/settings.
+
 function prepareSignupAvatar(file: File): Promise<File> {
   return new Promise((resolve, reject) => {
     const image = new Image();
@@ -82,7 +92,14 @@ function strength(password: string) {
 
 const fieldClass = 'auth-input h-12 w-full rounded-[14px] border border-[#dce8e3] bg-[#fbfdfc] pl-11 pr-4 text-[14px] font-medium text-[#173f39] outline-none transition placeholder:text-[#9aada8] hover:border-[#c5dad3] focus:border-[#188875] focus:bg-white focus:ring-4 focus:ring-[#188875]/10';
 
-export function AuthGate({ initialMode = 'login' }: { initialMode?: Mode }) {
+export function AuthGate({
+  initialMode = 'login',
+  facebookLoginEnabled = process.env.NEXT_PUBLIC_ENABLE_FACEBOOK_LOGIN === 'true',
+}: {
+  initialMode?: Mode;
+  /** Dikontrol server-side dari site_settings (admin) — lihat TODO di atas. */
+  facebookLoginEnabled?: boolean;
+}) {
   const router = useRouter();
   const params = useSearchParams();
   const [mode, setMode] = useState<Mode>(initialMode);
@@ -136,6 +153,12 @@ export function AuthGate({ initialMode = 'login' }: { initialMode?: Mode }) {
   }
 
   async function social(provider: 'google'|'facebook') {
+    // Guard: jangan pernah memicu OAuth Facebook selagi flag mati (provider belum
+    // di-enable di Supabase -> akan error "Unsupported provider").
+    if (provider === 'facebook' && !facebookLoginEnabled) {
+      setError('Login Facebook belum tersedia. Silakan masuk dengan Google atau email.');
+      return;
+    }
     setBusy(provider); setError('');
     const next = safeRedirect(params.get('redirect'));
     if (provider === 'google' && GOOGLE_OAUTH_GATEWAY_URL) {
@@ -247,14 +270,17 @@ export function AuthGate({ initialMode = 'login' }: { initialMode?: Mode }) {
             <p className="mt-2 text-[13px] leading-5 text-[#718983]">{t.sub}</p>
           </div>
 
-          <div className="mt-5 grid grid-cols-2 gap-2.5">
+          <div className={`mt-5 grid gap-2.5 ${facebookLoginEnabled ? 'grid-cols-2' : 'grid-cols-1'}`}>
             <button type="button" disabled={!!busy} onClick={() => void social('google')} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[13px] border border-[#dce8e3] bg-white px-2.5 text-[12px] font-extrabold text-[#38564f] transition hover:-translate-y-px hover:border-[#c6d9d2] hover:shadow-sm focus:outline-none focus:ring-4 focus:ring-[#188875]/10 disabled:cursor-wait disabled:opacity-50">
               <span className="grid h-5 w-5 place-items-center rounded-full border border-[#e5ebe8] bg-white text-[13px] font-black text-[#4285f4]">G</span>
               {busy === 'google' ? '...' : t.gmail}
             </button>
+            {/* Tombol Facebook disembunyikan bila flag facebookLoginEnabled mati — lihat TODO di atas. */}
+            {facebookLoginEnabled && (
             <button type="button" disabled={!!busy} onClick={() => void social('facebook')} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[13px] bg-[#1877f2] px-2.5 text-[12px] font-extrabold text-white transition hover:-translate-y-px hover:bg-[#166de0] focus:outline-none focus:ring-4 focus:ring-[#1877f2]/20 disabled:cursor-wait disabled:opacity-50">
               <Facebook size={16} fill="currentColor" /> {busy === 'facebook' ? '...' : 'Facebook'}
             </button>
+            )}
           </div>
 
           <div className="my-5 flex items-center gap-3 text-[10px] font-bold uppercase tracking-[.12em] text-[#a0b1ac]">
