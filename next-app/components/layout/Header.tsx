@@ -71,6 +71,7 @@ export function Header({ onCreate }: { onCreate?: (type?: 'post' | 'reel') => vo
   const { user, profile: sessionProfile } = useSessionProfile();
   const displayName = getProfileNickname(user, sessionProfile);
   const avatarUrl = sessionProfile?.avatar_url || '';
+  const profileHref = sessionProfile?.username ? `/profile/${sessionProfile.username}` : '/settings/account';
   const initials = displayName.split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase() || 'SK';
   const profileActive = pathname.startsWith('/profile');
 
@@ -168,7 +169,7 @@ export function Header({ onCreate }: { onCreate?: (type?: 'post' | 'reel') => vo
           <NotificationCenter />
         </div>
         <Link
-          href="/profile"
+          href={profileHref}
           className="skfb-mtab"
           aria-current={profileActive ? 'page' : undefined}
           aria-label="Profil saya"
