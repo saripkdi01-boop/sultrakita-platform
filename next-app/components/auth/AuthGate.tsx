@@ -9,6 +9,7 @@ import {
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import { usePreferences } from '@/lib/preferences';
+import { clearUtmCookie, readUtmFromCookie } from '@/lib/utm';
 
 const GOOGLE_OAUTH_GATEWAY_URL = process.env.NEXT_PUBLIC_GOOGLE_OAUTH_GATEWAY_URL || '';
 const MAX_SIGNUP_AVATAR_BYTES = 5 * 1024 * 1024;
@@ -184,8 +185,12 @@ export function AuthGate({
       }
       if (password !== confirm) { setError('Konfirmasi password belum cocok.'); setBusy(null); return; }
       if (score < 4) { setError('Gunakan password dengan 8+ karakter, huruf besar, angka, dan simbol.'); setBusy(null); return; }
+      const utm = readUtmFromCookie();
       const { data, error: authError } = await supabase.auth.signUp({
-        email, password, options: { data: { username, full_name: fullName } }
+        email, password, options: { data: {
+          username, full_name: fullName,
+          ...(utm ? { utm_source: utm.utm_source, utm_medium: utm.utm_medium, utm_campaign: utm.utm_campaign } : {}),
+        } }
       });
       if (authError) setError(authError.message);
       else if (data.session) {
@@ -193,6 +198,8 @@ export function AuthGate({
           try { await saveSignupAvatar(data.user.id, signupAvatar); }
           catch { setNotice('Akun berhasil dibuat. Foto belum tersimpan, kamu bisa menggantinya di Pengaturan Profil.'); }
         }
+        // Atribusi UTM sudah disalin trigger ke profiles → cookie boleh dihapus.
+        if (utm) clearUtmCookie();
         router.push('/');
       } else {
         setNotice(signupAvatar

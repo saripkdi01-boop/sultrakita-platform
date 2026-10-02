@@ -1,5 +1,6 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
+import { parseUtmCookieServer, UTM_COOKIE } from '@/lib/utm';
 
 function requestCookies(request: Request) {
   return request.headers.get('cookie')
@@ -49,6 +50,30 @@ export async function GET(request: Request) {
   const { error } = await supabase.auth.exchangeCodeForSession(code);
   if (error) {
     return NextResponse.redirect(new URL('/login?error=auth_callback', url.origin));
+  }
+
+  // Atribusi UTM first-touch untuk signup OAuth: salin dari cookie sk_utm ke
+  // profiles, hanya bila utm_source masih kosong (jangan timpa atribusi awal).
+  // Best-effort: kegagalan tidak menggagalkan login.
+  try {
+    const utm = parseUtmCookieServer(request.headers.get('cookie'));
+    if (utm?.utm_source) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.id) {
+        const { data: existing } = await supabase.from('profiles').select('utm_source').eq('id', user.id).maybeSingle();
+        if (existing && !existing.utm_source) {
+          await supabase.from('profiles').update({
+            utm_source: utm.utm_source,
+            utm_medium: utm.utm_medium,
+            utm_campaign: utm.utm_campaign,
+          }).eq('id', user.id).is('utm_source', null);
+        }
+        // Atribusi tercatat (atau sudah ada) → hapus cookie agar tidak dipakai ulang.
+        response.cookies.set(UTM_COOKIE, '', { path: '/', maxAge: 0, sameSite: 'lax' });
+      }
+    }
+  } catch {
+    // Abaikan — login tetap sukses tanpa atribusi UTM.
   }
 
   return response;

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Bell, BellOff, Building2, CheckCircle2, ChevronRight, FileText, Inbox, XCircle } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { toggleJobAlert, type JobAlert, type JobApplication } from '@/lib/actions/jobs';
+import { toggleJobAlert, withdrawApplication, type JobAlert, type JobApplication } from '@/lib/actions/jobs';
 
 // Tracker lamaran ala JobStreet/Glints/LinkedIn: status lamaran divisualkan
 // sebagai lini masa progres, plus kelola notifikasi lowongan (job alert).
@@ -48,13 +48,24 @@ export default function ApplicationsClient({ initialApps, initialAlerts }: {
   initialApps: { ok: boolean; applications: JobApplication[]; error?: string };
   initialAlerts: { ok: boolean; alerts: JobAlert[]; error?: string };
 }) {
+  const [apps, setApps] = useState<JobApplication[]>(initialApps.applications);
   const [alerts, setAlerts] = useState<JobAlert[]>(initialAlerts.alerts);
   const [notice, setNotice] = useState('');
+  const [withdrawingId, setWithdrawingId] = useState<string | null>(null);
   const loggedIn = initialApps.ok || initialAlerts.ok;
 
   async function toggleAlert(id: string) {
     const result = await toggleJobAlert(id);
     if (result.ok) setAlerts(current => current.map(alert => alert.id === id ? { ...alert, is_active: result.isActive } : alert));
+    else setNotice(result.error);
+  }
+
+  async function withdraw(id: string) {
+    if (!window.confirm('Tarik lamaran ini? Tindakan ini tidak dapat dibatalkan.')) return;
+    setWithdrawingId(id); setNotice('');
+    const result = await withdrawApplication(id);
+    setWithdrawingId(null);
+    if (result.ok) setApps(current => current.map(app => app.id === id ? { ...app, status: 'withdrawn' } : app));
     else setNotice(result.error);
   }
 
@@ -80,7 +91,7 @@ export default function ApplicationsClient({ initialApps, initialAlerts }: {
         <Link href="/jobs" className="mt-4 inline-block rounded-xl bg-sultra-teal px-5 py-2.5 text-sm font-bold text-white">Cari lowongan</Link>
       </div>}
       <div className="mt-4 space-y-4">
-        {initialApps.applications.map(app => <article key={app.id} className="rounded-3xl border border-gray-200 bg-white p-5 dark:border-sultra-forest/30 dark:bg-sultra-dark">
+        {apps.map(app => { const canWithdraw = ['submitted', 'viewed', 'screening', 'interview'].includes(app.status); return <article key={app.id} className="rounded-3xl border border-gray-200 bg-white p-5 dark:border-sultra-forest/30 dark:bg-sultra-dark">
           <div className="flex items-start justify-between gap-3">
             <div className="flex gap-3">
               <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-sultra-teal to-sultra-gold text-white"><Building2 size={22}/></div>
@@ -91,8 +102,9 @@ export default function ApplicationsClient({ initialApps, initialAlerts }: {
             <span className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-bold ${STATUS_COLOR[app.status] || STATUS_COLOR.submitted}`}>{STATUS_LABEL[app.status] || app.status}</span>
           </div>
           <ProgressBar status={app.status} />
+          {canWithdraw && <div className="mt-3"><button type="button" onClick={() => void withdraw(app.id)} disabled={withdrawingId === app.id} className="rounded-xl border border-red-200 px-4 py-2 text-xs font-bold text-red-600 transition hover:bg-red-50 disabled:opacity-50 dark:border-red-900/40 dark:text-red-400 dark:hover:bg-red-950/30" aria-label={`Tarik lamaran untuk ${app.job?.title || 'lowongan ini'}`}>{withdrawingId === app.id ? 'Menarik…' : 'Tarik lamaran'}</button></div>}
           {(app.status === 'rejected' || app.status === 'withdrawn') && <p className="mt-3 flex items-center gap-2 text-sm text-gray-500"><XCircle size={16}/> {app.status === 'rejected' ? 'Perekrut memilih kandidat lain. Tetap semangat, peluang lain menantimu.' : 'Lamaran ini sudah kamu tarik.'}</p>}
-        </article>)}
+        </article>; })}
       </div>
     </section>
 
