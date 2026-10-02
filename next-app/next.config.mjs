@@ -3,7 +3,8 @@ const securityHeaders = [
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
   { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
-  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+  // Fase 3: geolocation=(self) agar tombol "Lokasi saya" pada peta properti dapat memakai Geolocation API milik origin sendiri.
+  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(self)' },
   // HSTS: paksa HTTPS 1 tahun untuk domain + subdomain (item 19 audit 2026-10-02).
   // `preload` SENGAJA tidak dipakai dulu — sekali masuk daftar preload browser
   // praktis tidak bisa dibatalkan cepat; tambahkan setelah stabil beberapa bulan.

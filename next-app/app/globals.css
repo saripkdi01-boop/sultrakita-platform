@@ -3960,3 +3960,8 @@ html[data-theme='dark'] .beranda-v4-opportunity{background:linear-gradient(145de
   .chat-reply-touch{display:grid;place-items:center;width:23px;height:23px;border:1px solid var(--line);border-radius:50%;background:#fff;color:var(--muted)}
   .chat-message-meta{gap:5px}
 }
+
+/* Fase 3: pin harga properti ala Zillow pada peta Leaflet */
+.property-price-pin{display:inline-block;background:#0d9488;color:#fff;font:700 12px/1 system-ui,sans-serif;padding:7px 11px;border-radius:999px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35);white-space:nowrap;transform:translate(-50%,-100%);cursor:pointer;transition:transform .15s ease,background .15s ease}
+.property-price-pin:hover,.property-price-pin--hovered{background:#0f766e;transform:translate(-50%,-100%) scale(1.12);z-index:1000}
+@media(prefers-reduced-motion:reduce){.property-price-pin{transition:none}}

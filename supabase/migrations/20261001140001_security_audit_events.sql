@@ -4,7 +4,7 @@
 -- Desain:
 -- - actor_id TANPA foreign key ke auth.users: baris audit harus bertahan
 --   walau akun pelaku dihapus.
--- - RLS aktif. SELECT hanya untuk admin (profiles.role atau user_roles).
+-- - RLS aktif. SELECT hanya untuk admin (profiles.role).
 -- - SENGAJA tanpa policy INSERT/UPDATE/DELETE publik: penulisan hanya via
 --   service-role key (bypass RLS) dari server, lewat logAuditEvent().
 
@@ -41,13 +41,6 @@ create policy audit_events_admin_select
       from public.profiles p
       where p.id = auth.uid()
         and p.role in ('admin', 'super_admin')
-    )
-    or exists (
-      select 1
-      from public.user_roles ur
-      where ur.user_id = auth.uid()
-        and ur.role in ('admin', 'super_admin')
-        and ur.is_active
     )
   );
 

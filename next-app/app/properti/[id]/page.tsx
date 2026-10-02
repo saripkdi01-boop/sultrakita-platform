@@ -6,7 +6,9 @@ import type { Metadata } from 'next';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { getPublicPropertyById } from '@/lib/actions/property-public';
 import { getProperties } from '@/lib/actions/property';
+import { getNearbyProperties } from '@/lib/actions/property-geo';
 import { PropertyInquiryForm } from '@/components/property/PropertyInquiryForm';
+import PropertyMiniMapLazy from '@/components/property/PropertyMiniMapLazy';
 import PropertyCard from '@/components/property/PropertyCard';
 import MortgageCalculator from '@/components/property/MortgageCalculator';
 import { pricePerSqm } from '@/lib/property-format';
@@ -71,9 +73,100 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
   const sellerName = property.seller?.full_name || 'Seller SUKI';
   const location = locationOf(property);
   const centroid = centroids[property.district] || { lat: -3.99, lng: 122.52 };
+  // Fase 3: koordinat asli bila listing memilikinya; fallback centroid kecamatan berlabel jujur "perkiraan".
+  const propLat = Number(property.latitude);
+  const propLng = Number(property.longitude);
+  const hasCoords = Number.isFinite(propLat) && Number.isFinite(propLng) && propLat >= -90 && propLat <= 90 && propLng >= -180 && propLng <= 180;
+  const mapLat = hasCoords ? propLat : centroid.lat;
+  const mapLng = hasCoords ? propLng : centroid.lng;
+  const nearby = hasCoords ? await getNearbyProperties({ id: property.id, lat: propLat, lng: propLng, radiusKm: 10, limit: 6 }).catch(() => ({ ok: false as const, data: [] as any[] })) : { ok: false as const, data: [] as any[] };
+  // Fase 3: JSON-LD RealEstateListing — hanya field yang datanya benar-benar ada (tanpa info palsu).
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'RealEstateListing',
+    name: property.title,
+    url: `https://sukiapps.web.id/properti/${property.id}`,
+    ...(property.description ? { description: property.description } : {}),
+    ...(images[0] ? { image: images[0] } : {}),
+    offers: { '@type': 'Offer', price: Number(property.price), priceCurrency: 'IDR' },
+    address: { '@type': 'PostalAddress', addressLocality: location || undefined, addressRegion: 'Sulawesi Tenggara', addressCountry: 'ID' },
+    ...(hasCoords ? { geo: { '@type': 'GeoCoordinates', latitude: propLat, longitude: propLng } } : {}),
+  };
   const badges = [property.is_lelang && `Lelang${property.lelang_type ? `: ${label(property.lelang_type)}` : ''}`, property.takeover_status && `Takeover ${label(property.takeover_status)}`, property.can_kpr && 'Bisa KPR', property.certificate_type && `Sertifikat ${property.certificate_type}`].filter(Boolean) as string[];
   const perSqm = pricePerSqm(Number(property.price), property.land_area_sqm, property.building_area_sqm, property.price_type);
   const perSqmArea = property.land_area_sqm ? `LT ${property.land_area_sqm} m²` : property.building_area_sqm ? `LB ${property.building_area_sqm} m²` : '';
   const similar = await getSimilarProperties(property);
-  return <AppLayout><main className="platform-shell mx-auto max-w-6xl px-4 py-6 md:px-8"><Link href="/properti" className="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-sultra-teal hover:text-sultra-forest"><ArrowLeft size={16}/> Kembali ke properti</Link><div className="grid gap-6 lg:grid-cols-[1.15fr_.85fr]"><section><div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-sultra-mint to-sultra-sand">{images[0] ? <Image src={images[0]} alt={property.title} width={1200} height={900} priority sizes="(max-width: 1024px) 100vw, 58vw" className="aspect-[4/3] h-full w-full object-cover"/> : <div className="grid aspect-[4/3] place-items-center font-semibold text-sultra-forest">Hunian pilihan Sultra</div>}{property.is_demo && <span className="absolute left-4 top-4 rounded-full bg-slate-700/90 px-3 py-1.5 text-xs font-bold text-white">Demo</span>}{(property.is_bank_verified || property.is_admin_verified) && <span className="absolute right-4 top-4 inline-flex items-center gap-1 rounded-full bg-sultra-gold px-3 py-1.5 text-xs font-bold text-white"><CheckCircle2 size={14}/> Terverifikasi</span>}</div>{images.length > 1 && <div className="mt-3 grid grid-cols-4 gap-2">{images.slice(0, 4).map((image: string, index: number) => <Image key={image} src={image} alt={`${property.title}, foto ${index + 1}`} width={300} height={225} loading="lazy" sizes="(max-width: 640px) 25vw, 14vw" className="aspect-[4/3] w-full rounded-xl object-cover"/>)}</div>}<div className="mt-6 overflow-hidden rounded-3xl border border-sultra-mint bg-sultra-mint/30 p-5 dark:border-sultra-forest/30"><div className="flex items-center gap-2 text-sultra-forest dark:text-sultra-sand"><MapPin size={18}/><h2 className="font-bold">Peta lokasi perkiraan</h2></div><div className="relative mt-4 grid min-h-52 place-items-center overflow-hidden rounded-2xl bg-[radial-gradient(circle_at_50%_50%,#9ed8cb_1px,transparent_1px)] bg-[length:18px_18px] p-5 text-center"><div className="absolute h-36 w-64 rounded-[50%] border-2 border-sultra-teal/40"/><div className="relative grid h-11 w-11 place-items-center rounded-full bg-sultra-teal text-white shadow-lg"><MapPin size={22}/></div><div className="relative mt-2 rounded-xl bg-white/90 px-3 py-2 text-xs font-semibold text-sultra-forest shadow-sm">{location}<span className="mt-1 block text-[10px] font-normal text-slate-500">Titik tengah kecamatan · {centroid.lat.toFixed(3)}, {centroid.lng.toFixed(3)}</span></div></div></div></section><section className="rounded-3xl border border-sultra-mint bg-white p-6 shadow-soft dark:border-sultra-forest/30 dark:bg-sultra-dark"><p className="text-xs font-bold uppercase tracking-[.16em] text-sultra-teal">{label(property.category) || 'Properti'}</p><h1 className="mt-2 font-serif text-3xl font-bold text-sultra-forest dark:text-sultra-sand">{property.title}</h1><p className="mt-4 text-2xl font-bold text-sultra-forest dark:text-sultra-mint">{rupiah(Number(property.price))}<span className="text-sm font-normal text-sultra-teal">{formatPriceType(property.price_type)}</span></p>{perSqm && <p className="mt-1 text-sm font-semibold text-sultra-teal">{perSqm}{perSqmArea ? ` · ${perSqmArea}` : ''}</p>}<p className="mt-3 flex items-center gap-2 text-sm text-sultra-teal"><MapPin size={16}/> {location}</p><p className="mt-2 text-xs text-slate-500">{freshness(property.updated_at || property.created_at)} · ID listing {property.id}</p>{badges.length > 0 && <div className="mt-4 flex flex-wrap gap-2">{badges.map(badge => <span key={badge} className="rounded-full bg-sultra-mint px-3 py-1.5 text-xs font-bold text-sultra-forest"><ShieldCheck size={13} className="mr-1 inline"/>{badge}</span>)}</div>}<div className="mt-6 grid grid-cols-2 gap-3 text-sm text-sultra-forest dark:text-sultra-sand">{property.building_area_sqm && <span className="flex items-center gap-2"><Maximize size={16}/> {property.building_area_sqm} m²</span>}{property.bedrooms !== undefined && <span className="flex items-center gap-2"><Bed size={16}/> {property.bedrooms} kamar</span>}{property.bathrooms !== undefined && <span className="flex items-center gap-2"><Bath size={16}/> {property.bathrooms} kamar mandi</span>}<span className="flex items-center gap-2"><Eye size={16}/> {property.views_count || 0} dilihat</span></div><div className="mt-7 border-t border-sultra-mint pt-5 dark:border-sultra-forest/30"><p className="text-xs font-bold uppercase tracking-[.16em] text-sultra-teal">Seller</p><p className="mt-2 font-semibold text-sultra-forest dark:text-sultra-sand">{sellerName}</p></div><div className="mt-6 flex flex-wrap gap-3"><Link href={`/login?redirect=/properti/${id}`} aria-label="Simpan properti" className="inline-flex items-center gap-2 rounded-xl bg-sultra-teal px-4 py-3 text-sm font-semibold text-white"><Heart size={16}/> Simpan</Link><PropertyInquiryForm propertyId={id}/><ReportPropertyButton propertyId={String(id)}/></div>{/* T-ADS: slot sidebar detail properti (300×250) */}<div className="mt-6"><AdSlot placementId="properti-detail-sidebar" /></div></section></div><section className="mt-6 rounded-3xl border border-sultra-mint bg-white p-6 dark:border-sultra-forest/30 dark:bg-sultra-dark"><div className="flex items-center gap-2 text-sultra-forest dark:text-sultra-sand"><Building2 size={18}/><h2 className="text-lg font-bold">Deskripsi properti</h2></div><p className="mt-3 whitespace-pre-line text-sm leading-7 text-slate-600 dark:text-slate-300">{property.description || 'Deskripsi properti belum tersedia.'}</p></section><MortgageCalculator price={Number(property.price)} canKpr={property.can_kpr} priceType={property.price_type} />{similar.length > 0 && <section className="mt-6" aria-labelledby="similar-properties-title"><div className="flex items-end justify-between gap-3"><h2 id="similar-properties-title" className="text-lg font-bold text-sultra-forest dark:text-sultra-sand">Properti serupa</h2><Link href="/properti" className="text-sm font-semibold text-sultra-teal hover:text-sultra-forest">Lihat semua</Link></div><div className="mt-4 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">{similar.map((item: any) => <PropertyCard key={item.id} property={item} />)}</div></section>}</main></AppLayout>;
+  return (
+    <AppLayout>
+      <main className="platform-shell mx-auto max-w-6xl px-4 py-6 md:px-8">
+        <Link href="/properti" className="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-sultra-teal hover:text-sultra-forest"><ArrowLeft size={16} /> Kembali ke properti</Link>
+        <div className="grid gap-6 lg:grid-cols-[1.15fr_.85fr]">
+          <section>
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-sultra-mint to-sultra-sand">
+              {images[0] ? <Image src={images[0]} alt={property.title} width={1200} height={900} priority sizes="(max-width: 1024px) 100vw, 58vw" className="aspect-[4/3] h-full w-full object-cover" /> : <div className="grid aspect-[4/3] place-items-center font-semibold text-sultra-forest">Hunian pilihan Sultra</div>}
+              {property.is_demo && <span className="absolute left-4 top-4 rounded-full bg-slate-700/90 px-3 py-1.5 text-xs font-bold text-white">Demo</span>}
+              {(property.is_bank_verified || property.is_admin_verified) && <span className="absolute right-4 top-4 inline-flex items-center gap-1 rounded-full bg-sultra-gold px-3 py-1.5 text-xs font-bold text-white"><CheckCircle2 size={14} /> Terverifikasi</span>}
+            </div>
+            {images.length > 1 && <div className="mt-3 grid grid-cols-4 gap-2">{images.slice(0, 4).map((image: string, index: number) => <Image key={image} src={image} alt={`${property.title}, foto ${index + 1}`} width={300} height={225} loading="lazy" sizes="(max-width: 640px) 25vw, 14vw" className="aspect-[4/3] w-full rounded-xl object-cover" />)}</div>}
+            {/* Fase 3: mini-map Leaflet asli (fallback centroid kecamatan berlabel "perkiraan" bila tanpa koordinat) */}
+            <div className="mt-6 overflow-hidden rounded-3xl border border-sultra-mint bg-sultra-mint/30 p-5 dark:border-sultra-forest/30">
+              <div className="flex items-center gap-2 text-sultra-forest dark:text-sultra-sand"><MapPin size={18} /><h2 className="font-bold">{hasCoords ? 'Peta lokasi' : 'Peta lokasi perkiraan'}</h2></div>
+              <div className="relative mt-4 h-52 overflow-hidden rounded-2xl"><PropertyMiniMapLazy lat={mapLat} lng={mapLng} title={property.title} isEstimate={!hasCoords} /></div>
+              <p className="mt-2 text-xs text-slate-500">{hasCoords ? location : `Titik tengah kecamatan${property.district ? ` ${property.district}` : ''} · ${mapLat.toFixed(3)}, ${mapLng.toFixed(3)} — lokasi pasti dikonfirmasi seller`}</p>
+            </div>
+          </section>
+          <section className="rounded-3xl border border-sultra-mint bg-white p-6 shadow-soft dark:border-sultra-forest/30 dark:bg-sultra-dark">
+            <p className="text-xs font-bold uppercase tracking-[.16em] text-sultra-teal">{label(property.category) || 'Properti'}</p>
+            <h1 className="mt-2 font-serif text-3xl font-bold text-sultra-forest dark:text-sultra-sand">{property.title}</h1>
+            <p className="mt-4 text-2xl font-bold text-sultra-forest dark:text-sultra-mint">{rupiah(Number(property.price))}<span className="text-sm font-normal text-sultra-teal">{formatPriceType(property.price_type)}</span></p>
+            {perSqm && <p className="mt-1 text-sm font-semibold text-sultra-teal">{perSqm}{perSqmArea ? ` · ${perSqmArea}` : ''}</p>}
+            <p className="mt-3 flex items-center gap-2 text-sm text-sultra-teal"><MapPin size={16} /> {location}</p>
+            <p className="mt-2 text-xs text-slate-500">{freshness(property.updated_at || property.created_at)} · ID listing {property.id}</p>
+            {badges.length > 0 && <div className="mt-4 flex flex-wrap gap-2">{badges.map(badge => <span key={badge} className="rounded-full bg-sultra-mint px-3 py-1.5 text-xs font-bold text-sultra-forest"><ShieldCheck size={13} className="mr-1 inline" />{badge}</span>)}</div>}
+            <div className="mt-6 grid grid-cols-2 gap-3 text-sm text-sultra-forest dark:text-sultra-sand">
+              {property.building_area_sqm && <span className="flex items-center gap-2"><Maximize size={16} /> {property.building_area_sqm} m²</span>}
+              {property.bedrooms !== undefined && <span className="flex items-center gap-2"><Bed size={16} /> {property.bedrooms} kamar</span>}
+              {property.bathrooms !== undefined && <span className="flex items-center gap-2"><Bath size={16} /> {property.bathrooms} kamar mandi</span>}
+              <span className="flex items-center gap-2"><Eye size={16} /> {property.views_count || 0} dilihat</span>
+            </div>
+            <div className="mt-7 border-t border-sultra-mint pt-5 dark:border-sultra-forest/30">
+              <p className="text-xs font-bold uppercase tracking-[.16em] text-sultra-teal">Seller</p>
+              <p className="mt-2 font-semibold text-sultra-forest dark:text-sultra-sand">{sellerName}</p>
+            </div>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Link href={`/login?redirect=/properti/${id}`} aria-label="Simpan properti" className="inline-flex items-center gap-2 rounded-xl bg-sultra-teal px-4 py-3 text-sm font-semibold text-white"><Heart size={16} /> Simpan</Link>
+              <PropertyInquiryForm propertyId={id} />
+              <ReportPropertyButton propertyId={String(id)} />
+            </div>
+            {/* T-ADS: slot sidebar detail properti (300×250) */}
+            <div className="mt-6"><AdSlot placementId="properti-detail-sidebar" /></div>
+          </section>
+        </div>
+        <section className="mt-6 rounded-3xl border border-sultra-mint bg-white p-6 dark:border-sultra-forest/30 dark:bg-sultra-dark">
+          <div className="flex items-center gap-2 text-sultra-forest dark:text-sultra-sand"><Building2 size={18} /><h2 className="text-lg font-bold">Deskripsi properti</h2></div>
+          <p className="mt-3 whitespace-pre-line text-sm leading-7 text-slate-600 dark:text-slate-300">{property.description || 'Deskripsi properti belum tersedia.'}</p>
+        </section>
+        <MortgageCalculator price={Number(property.price)} canKpr={property.can_kpr} priceType={property.price_type} />
+        {/* Fase 3: properti di dekat lokasi (query geo; hanya bila listing punya koordinat) */}
+        {nearby.ok && nearby.data.length > 0 && (
+          <section className="mt-6" aria-labelledby="nearby-properties-title">
+            <div className="flex items-center gap-2 text-sultra-forest dark:text-sultra-sand"><MapPin size={18} /><h2 id="nearby-properties-title" className="text-lg font-bold">Serupa di dekat sini</h2></div>
+            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">{nearby.data.map((item: any) => <PropertyCard key={item.id} property={item} />)}</div>
+          </section>
+        )}
+        {/* Properti serupa (skor atribut ala 99.co) */}
+        {similar.length > 0 && (
+          <section className="mt-6" aria-labelledby="similar-properties-title">
+            <div className="flex items-end justify-between gap-3">
+              <h2 id="similar-properties-title" className="text-lg font-bold text-sultra-forest dark:text-sultra-sand">Properti serupa</h2>
+              <Link href="/properti" className="text-sm font-semibold text-sultra-teal hover:text-sultra-forest">Lihat semua</Link>
+            </div>
+            <div className="mt-4 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">{similar.map((item: any) => <PropertyCard key={item.id} property={item} />)}</div>
+          </section>
+        )}
+        {/* Fase 3: JSON-LD RealEstateListing jujur */}
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      </main>
+    </AppLayout>
+  );
 }
