@@ -3,13 +3,13 @@ import { z } from 'zod';
 import { getServerSupabase } from '@/lib/supabase/server';
 import { checkRateLimit, clientIp } from '@/lib/rate-limit';
 import { badRequest, forbidden, internalError, notFound, unauthorized } from '@/lib/api-error';
+import { verifyCsrfToken } from '@/lib/security/csrf';
 
 const UUID_RE = /^[a-zA-Z0-9_-]{1,120}$/;
 
+// Delegasi ke verifyCsrfToken waktu-konstan di lib/security/csrf.ts.
 function checkCsrf(request: NextRequest) {
-  const csrfHeader = request.headers.get('x-csrf-token');
-  const csrfCookie = request.cookies.get('suki_csrf')?.value;
-  return !!csrfHeader && !!csrfCookie && csrfHeader === csrfCookie;
+  return verifyCsrfToken(request);
 }
 
 const followSchema = z.object({

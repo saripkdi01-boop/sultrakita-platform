@@ -1,8 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createHash, randomUUID } from 'node:crypto';
+import { z } from 'zod';
 import { createClient } from '@supabase/supabase-js';
 import { getServerSupabase } from '@/lib/supabase/server';
 import { checkRateLimit } from '@/lib/rate-limit';
+import { csrfProtected } from '@/lib/security/csrf';
+import { parseOr400 } from '@/lib/security/validation';
+
+const REFERRAL_CODE_RE = /^SULTRA-[A-F0-9]{8}$/;
+
+const ReferralActionSchema = z.object({
+  action: z.enum(['visit', 'payout_transition', 'claim', 'qualified', 'redeem']).default('visit'),
+});
+
+const VisitSchema = z.object({
+  referral_code: z.string().trim().toUpperCase().regex(REFERRAL_CODE_RE, 'Kode referral belum valid.'),
+  source_channel: z.string().trim().toLowerCase().max(30, 'Channel sumber terlalu panjang.').default('direct'),
+});
+
+const PayoutTransitionSchema = z.object({
+  redemption_id: z.coerce.number().int('ID payout belum valid.').positive('ID payout belum valid.'),
+  to_status: z.enum(['approved', 'paid', 'rejected'], { message: 'Status payout belum valid.' }),
+  note: z.string().trim().max(500, 'Catatan maksimal 500 karakter.').default(''),
+  payment_reference: z.string().trim().max(160, 'Referensi pembayaran maksimal 160 karakter.').default(''),
+});
 
 const campaign = { name: 'Ajak Teman, Tumbuh Bersama', pointsPerQualifiedInvite: 100, pointsPerRupiah: 10, minimumRedemption: 1000, endDate: '2026-12-31' };
 
@@ -104,16 +125,21 @@ export async function GET(request: NextRequest) {
   } catch (error) { console.error('[referral-summary]', error instanceof Error ? error.message : 'unknown'); return referralError(error); }
 }
 
-export async function POST(request: NextRequest) {
+async function postHandler(request: NextRequest) {
   // Fase 1.5: batasi 60 request/menit per IP (endpoint sensitif: payout & klaim).
   const limited = await checkRateLimit(request, 'api');
   if (limited) return limited;
-  const body = await request.json().catch(() => ({})); const action = String(body.action || 'visit');
+  const body = await request.json().catch(() => ({}));
+  const actionParsed = parseOr400(ReferralActionSchema, body);
+  if (!actionParsed.ok) return bad('Action referral tidak dikenali.');
+  const action = actionParsed.data.action;
   try {
     const db = adminClient();
     if (action === 'visit') {
-      const code = String(body.referral_code || '').trim().toUpperCase(); const source = String(body.source_channel || 'direct').trim().toLowerCase().slice(0, 30);
-      if (!/^SULTRA-[A-F0-9]{8}$/.test(code)) return bad('Kode referral belum valid.');
+      const visitParsed = parseOr400(VisitSchema, body);
+      if (!visitParsed.ok) return visitParsed.response;
+      const code = visitParsed.data.referral_code;
+      const source = visitParsed.data.source_channel;
       const { data: owner, error: ownerError } = await db.from('referral_accounts').select('auth_user_id').eq('referral_code', code).maybeSingle();
       if (ownerError) throw ownerError;
       if (!owner) return bad('Kode referral tidak ditemukan.', 404);
@@ -124,12 +150,12 @@ export async function POST(request: NextRequest) {
     }
     const user = await currentUser(); if (!user) return bad('Sesi login diperlukan.', 401);
     if (action === 'payout_transition') {
-      const redemptionId = Number(body.redemption_id);
-      const toStatus = String(body.to_status || '').trim();
-      const note = String(body.note || '').trim().slice(0, 500);
-      const paymentReference = String(body.payment_reference || '').trim().slice(0, 160);
-      if (!Number.isSafeInteger(redemptionId) || redemptionId <= 0) return bad('ID payout belum valid.');
-      if (!['approved', 'paid', 'rejected'].includes(toStatus)) return bad('Status payout belum valid.');
+      const payoutParsed = parseOr400(PayoutTransitionSchema, body);
+      if (!payoutParsed.ok) return payoutParsed.response;
+      const redemptionId = payoutParsed.data.redemption_id;
+      const toStatus = payoutParsed.data.to_status;
+      const note = payoutParsed.data.note;
+      const paymentReference = payoutParsed.data.payment_reference;
       const sessionDb = await getServerSupabase();
       const { data, error } = await sessionDb.rpc('transition_referral_payout', {
         p_redemption_id: redemptionId,
@@ -165,3 +191,6 @@ export async function POST(request: NextRequest) {
     return bad('Action referral tidak dikenali.');
   } catch (error) { console.error('[referral-api]', error instanceof Error ? error.message : 'unknown'); return referralError(error); }
 }
+
+// CSRF double-submit: endpoint payout/klaim sensitif, wajib token valid.
+export const POST = csrfProtected(postHandler);
