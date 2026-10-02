@@ -1,6 +1,8 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
+import { createHash } from 'node:crypto';
 import { parseUtmCookieServer, UTM_COOKIE } from '@/lib/utm';
+import { parseReferralCookieServer, REF_COOKIE } from '@/lib/referral-attribution';
 
 function requestCookies(request: Request) {
   return request.headers.get('cookie')
@@ -74,6 +76,37 @@ export async function GET(request: Request) {
     }
   } catch {
     // Abaikan — login tetap sukses tanpa atribusi UTM.
+  }
+
+  // Klaim referral first-touch untuk signup OAuth: baca cookie sk_ref lalu
+  // panggil RPC claim_referral via service role (anti-fraud tetap jalan di DB).
+  // Best-effort: kegagalan tidak menggagalkan login; cookie dipertahankan agar
+  // klaim bisa dicoba lagi, kecuali statusnya terminal.
+  try {
+    const refCode = parseReferralCookieServer(request.headers.get('cookie'));
+    const adminKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (refCode && adminKey && supabaseUrl) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.id) {
+        const { createClient } = await import('@supabase/supabase-js');
+        const admin = createClient(supabaseUrl, adminKey, { auth: { persistSession: false, autoRefreshToken: false } });
+        const eventKey = createHash('sha256').update(`signup:${user.id}:${refCode}`).digest('hex');
+        const { error: claimError } = await admin.rpc('claim_referral', {
+          p_referred_user_id: user.id,
+          p_referral_code: refCode,
+          p_source_channel: 'oauth',
+          p_event_key: eventKey,
+          p_metadata: {},
+        });
+        const message = claimError?.message || '';
+        const terminal = !claimError || /already referred|not found|self referral|invalid referral claim|referral claim race/i.test(message);
+        if (terminal) {
+          response.cookies.set(REF_COOKIE, '', { path: '/', maxAge: 0, sameSite: 'lax' });
+        }
+      }
+    }
+  } catch {
+    // Abaikan — login tetap sukses tanpa klaim referral.
   }
 
   return response;
