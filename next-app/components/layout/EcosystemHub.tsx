@@ -11,6 +11,7 @@ import {
   SukiIconDaftarBisnis,
   SukiIconIklan,
   SukiIconJobs,
+  SukiIconKampung,
   SukiIconKomunitas,
   SukiIconLowongan,
   SukiIconMarketplace,
@@ -51,6 +52,7 @@ const SECTIONS: Section[] = [
       { key: 'komunitas', label: 'Komunitas', desc: 'Grup & komunitas warga', href: '/groups', Icon: SukiIconKomunitas, isActive: (p) => p.startsWith('/groups') },
       { key: 'berita', label: 'Portal Berita', desc: 'Kabar terkini media Indonesia', href: '/beranda#portal-berita', Icon: SukiIconBerita, badge: 'Baru', isActive: () => false },
       { key: 'Business', label: 'Direktori Bisnis', desc: 'UMKM & jasa terverifikasi', href: '/Business', Icon: SukiIconBisnis, isActive: (p) => p.startsWith('/Business') },
+      { key: 'kampung', label: 'SUKI Kampung', desc: 'Bangun kampung tropis virtual', href: '/kampung', Icon: SukiIconKampung, badge: 'Baru', isActive: (p) => p.startsWith('/kampung') },
     ],
   },
   {
@@ -81,7 +83,8 @@ function isHubActive(pathname: string): boolean {
     pathname.startsWith('/groups') ||
     pathname.startsWith('/properti') ||
     pathname.startsWith('/Business') ||
-    pathname.startsWith('/ajak-teman')
+    pathname.startsWith('/ajak-teman') ||
+    pathname.startsWith('/kampung')
   );
 }
 
