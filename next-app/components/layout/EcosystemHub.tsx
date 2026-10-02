@@ -2,30 +2,31 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { CSSProperties, useEffect, useId, useRef, useState } from 'react';
+import { CSSProperties, ComponentType, SVGProps, useEffect, useId, useRef, useState } from 'react';
+import { ArrowUpRight, LayoutGrid, X } from 'lucide-react';
 import {
-  ArrowUpRight,
-  Briefcase,
-  BriefcaseBusiness,
-  Building,
-  Building2,
-  Clapperboard,
-  Gift,
-  LayoutGrid,
-  MessageCircle,
-  Newspaper,
-  Store,
-  Tag,
-  Users,
-  X,
-} from 'lucide-react';
+  SukiIconAjakTeman,
+  SukiIconBerita,
+  SukiIconBisnis,
+  SukiIconDaftarBisnis,
+  SukiIconIklan,
+  SukiIconJobs,
+  SukiIconKomunitas,
+  SukiIconLowongan,
+  SukiIconMarketplace,
+  SukiIconPesan,
+  SukiIconProperti,
+  SukiIconReels,
+} from './SukiIcons';
+
+type SukiIcon = ComponentType<SVGProps<SVGSVGElement>>;
 
 type Tile = {
   key: string;
   label: string;
   desc: string;
   href: string;
-  Icon: typeof Store;
+  Icon: SukiIcon;
   badge?: string;
   isActive: (pathname: string) => boolean;
 };
@@ -44,12 +45,12 @@ const SECTIONS: Section[] = [
     hint: 'Layanan utama SUKI',
     accent: '#0b7567',
     tiles: [
-      { key: 'marketplace', label: 'Marketplace', desc: 'Jual beli barang & jasa lokal', href: '/marketplace', Icon: Store, isActive: (p) => p.startsWith('/marketplace') || p.startsWith('/suki-marketplace') },
-      { key: 'properti', label: 'Properti', desc: 'Sewa & jual properti lewat peta', href: '/properti', Icon: Building2, isActive: (p) => p.startsWith('/properti') },
-      { key: 'jobs', label: 'SUKI Jobs', desc: 'Lowongan kerja Sulawesi Tenggara', href: '/jobs', Icon: BriefcaseBusiness, isActive: (p) => p.startsWith('/jobs') },
-      { key: 'komunitas', label: 'Komunitas', desc: 'Grup & komunitas warga', href: '/groups', Icon: Users, isActive: (p) => p.startsWith('/groups') },
-      { key: 'berita', label: 'Portal Berita', desc: 'Kabar terkini media Indonesia', href: '/beranda#portal-berita', Icon: Newspaper, badge: 'Baru', isActive: () => false },
-      { key: 'Business', label: 'Direktori Bisnis', desc: 'UMKM & jasa terverifikasi', href: '/Business', Icon: Building, isActive: (p) => p.startsWith('/Business') },
+      { key: 'marketplace', label: 'Marketplace', desc: 'Jual beli barang & jasa lokal', href: '/marketplace', Icon: SukiIconMarketplace, isActive: (p) => p.startsWith('/marketplace') || p.startsWith('/suki-marketplace') },
+      { key: 'properti', label: 'Properti', desc: 'Sewa & jual properti lewat peta', href: '/properti', Icon: SukiIconProperti, isActive: (p) => p.startsWith('/properti') },
+      { key: 'jobs', label: 'SUKI Jobs', desc: 'Lowongan kerja Sulawesi Tenggara', href: '/jobs', Icon: SukiIconJobs, isActive: (p) => p.startsWith('/jobs') },
+      { key: 'komunitas', label: 'Komunitas', desc: 'Grup & komunitas warga', href: '/groups', Icon: SukiIconKomunitas, isActive: (p) => p.startsWith('/groups') },
+      { key: 'berita', label: 'Portal Berita', desc: 'Kabar terkini media Indonesia', href: '/beranda#portal-berita', Icon: SukiIconBerita, badge: 'Baru', isActive: () => false },
+      { key: 'Business', label: 'Direktori Bisnis', desc: 'UMKM & jasa terverifikasi', href: '/Business', Icon: SukiIconBisnis, isActive: (p) => p.startsWith('/Business') },
     ],
   },
   {
@@ -57,9 +58,9 @@ const SECTIONS: Section[] = [
     hint: 'Mulai bertransaksi hari ini',
     accent: '#b8860b',
     tiles: [
-      { key: 'jual', label: 'Pasang Iklan', desc: 'Jual barang di Marketplace', href: '/marketplace/create', Icon: Tag, isActive: (p) => p === '/marketplace/create' },
-      { key: 'daftar-Business', label: 'Daftarkan Bisnis', desc: 'Tampilkan usahamu ke warga', href: '/Business/daftar', Icon: Store, isActive: (p) => p.startsWith('/Business/daftar') },
-      { key: 'loker', label: 'Pasang Lowongan', desc: 'Rekrut talenta lokal', href: '/jobs/create', Icon: Briefcase, isActive: (p) => p === '/jobs/create' },
+      { key: 'jual', label: 'Pasang Iklan', desc: 'Jual barang di Marketplace', href: '/marketplace/create', Icon: SukiIconIklan, isActive: (p) => p === '/marketplace/create' },
+      { key: 'daftar-Business', label: 'Daftarkan Bisnis', desc: 'Tampilkan usahamu ke warga', href: '/Business/daftar', Icon: SukiIconDaftarBisnis, isActive: (p) => p.startsWith('/Business/daftar') },
+      { key: 'loker', label: 'Pasang Lowongan', desc: 'Rekrut talenta lokal', href: '/jobs/create', Icon: SukiIconLowongan, isActive: (p) => p === '/jobs/create' },
     ],
   },
   {
@@ -67,9 +68,9 @@ const SECTIONS: Section[] = [
     hint: 'Akun & kebersamaan',
     accent: '#6d4fc2',
     tiles: [
-      { key: 'ajak', label: 'Ajak Teman', desc: 'Kumpulkan Star tiap ajakan', href: '/ajak-teman', Icon: Gift, badge: 'Reward', isActive: (p) => p.startsWith('/ajak-teman') },
-      { key: 'reels', label: 'Reels', desc: 'Video pendek warga Sultra', href: '/reels', Icon: Clapperboard, isActive: (p) => p.startsWith('/reels') },
-      { key: 'chat', label: 'Pesan', desc: 'Ngobrol dengan penjual & teman', href: '/chat', Icon: MessageCircle, isActive: (p) => p.startsWith('/chat') },
+      { key: 'ajak', label: 'Ajak Teman', desc: 'Kumpulkan Star tiap ajakan', href: '/ajak-teman', Icon: SukiIconAjakTeman, badge: 'Reward', isActive: (p) => p.startsWith('/ajak-teman') },
+      { key: 'reels', label: 'Reels', desc: 'Video pendek warga Sultra', href: '/reels', Icon: SukiIconReels, isActive: (p) => p.startsWith('/reels') },
+      { key: 'chat', label: 'Pesan', desc: 'Ngobrol dengan penjual & teman', href: '/chat', Icon: SukiIconPesan, isActive: (p) => p.startsWith('/chat') },
     ],
   },
 ];
@@ -201,7 +202,7 @@ export function EcosystemHub({ variant }: { variant: 'tab' | 'mtab' }) {
 
             <Link href="/ajak-teman" className="skfb-hub-foot" onClick={() => setOpen(false)}>
               <span className="skfb-hub-foot-icon" aria-hidden="true">
-                <Gift size={20} />
+                <SukiIconAjakTeman />
               </span>
               <span className="skfb-hub-foot-text">
                 <strong>Ajak teman ke SUKI, kumpulkan Star</strong>
