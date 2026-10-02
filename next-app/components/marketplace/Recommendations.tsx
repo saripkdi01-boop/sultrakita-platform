@@ -1,6 +1,7 @@
 import { ArrowRight, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import type { MarketplaceListing } from './MarketplaceCard';
+import { discountPercent } from './promo';
 
 function rupiah(value: number) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(value); }
 
@@ -14,14 +15,17 @@ export function Recommendations({ items, query, onQuickView }: { items: Marketpl
         <Link href="/marketplace">Jelajahi lebih banyak <ArrowRight size={14} aria-hidden="true" /></Link>
       </div>
       <div className="fbm-reco-grid">
-        {recommendations.map(item => (
-          <button key={item.id} type="button" className="fbm-reco-card" onClick={() => onQuickView?.(item)} aria-label={`Lihat ${item.title}`}>
-            <span className="fbm-reco-art">{item.images?.[0] ? <img src={item.images[0]} alt="" loading="lazy" /> : <b aria-hidden="true">{item.title.slice(0, 1)}</b>}</span>
-            <strong>{item.title}</strong>
-            <span>{rupiah(Number(item.price))}</span>
-            <small>{item.district || item.city || 'Sultra'}</small>
-          </button>
-        ))}
+        {recommendations.map(item => {
+          const discount = discountPercent(item);
+          return (
+            <button key={item.id} type="button" className="fbm-reco-card" onClick={() => onQuickView?.(item)} aria-label={`Lihat ${item.title}`}>
+              <span className="fbm-reco-art">{item.images?.[0] ? <img src={item.images[0]} alt="" loading="lazy" /> : <b aria-hidden="true">{item.title.slice(0, 1)}</b>}</span>
+              <strong>{item.title}</strong>
+              <span>{rupiah(Number(item.price))}{discount > 0 && <span className="fbm-badge fbm-badge-discount" aria-label={`Diskon ${discount} persen`}>-{discount}%</span>}</span>
+              <small>{item.district || item.city || 'Sultra'}</small>
+            </button>
+          );
+        })}
       </div>
     </section>
   );
