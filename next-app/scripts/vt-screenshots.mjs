@@ -3,7 +3,8 @@
  * Pakai: node scripts/vt-screenshots.mjs <baseUrl> <outDir> <tag>
  * Contoh: node scripts/vt-screenshots.mjs http://localhost:3000 /tmp/vt-shots before
  */
-const { chromium } = require('@playwright/test');
+import { chromium } from '@playwright/test';
+import fs from 'node:fs';
 
 const routes = [
   { name: 'home', path: '/' },
@@ -27,7 +28,6 @@ async function main() {
     console.error('Pakai: node scripts/vt-screenshots.mjs <baseUrl> <outDir> <tag>');
     process.exit(1);
   }
-  const fs = require('fs');
   fs.mkdirSync(outDir, { recursive: true });
   const browser = await chromium.launch();
   const results = [];

@@ -27,6 +27,7 @@ html[data-theme='dark'] .dn-kicker { color: var(--dn-teal-200, #7fe3d2); }
 /* ---------- HERO: ilustrasi Digital Nusantara berlapis ---------- */
 .dn-hero-art {
   position: relative;
+  width: min(100%, 620px);
   border-radius: 28px;
   overflow: hidden;
   aspect-ratio: 4 / 3.4;
@@ -200,6 +201,14 @@ html[data-theme='dark'] .dn-band-cream { background: #101d18; }
   .dn-eco-card:hover .dn-eco-art svg { transform: none; }
   .dn-eco-link svg { transition: none; }
   .dn-eco-card:hover .dn-eco-link svg { transform: none; }
+}
+
+/* ---------- Perbaikan bug pre-existing: panel kiri login ---------- */
+/* globals.css memiliki `.hidden{display:none!important}` yang mematikan
+   `lg:block` Tailwind — panel kiri AuthGate (dirancang tampil di desktop)
+   tidak pernah tampil. Kembalikan perilaku yang dimaksud, khusus panel ini. */
+@media (min-width: 1024px) {
+  .auth-shell > div > section.hidden { display: block !important; }
 }
 
 /* ---------- Cegah overflow horizontal ---------- */

@@ -103,3 +103,45 @@ Log rinci per slice: `docs/slices/SLICE-*.md`.
   WORK_LOG hilang (diterapkan ulang); file lain selamat. Commit eksplisit per-file
   untuk proteksi. JANGAN `git add -A` (ada file milik sesi lain: lib/env.ts,
   lib/rate-limit.ts, lib/support/).
+
+## 2026-10-03 ~07:15 WITA — INSIDEN working tree + recovery
+- Sesi lain (`fitur/ai-customer-service`, berbagi working tree yang sama) melakukan
+  `checkout` + `reset origin/main` di 06:38–06:39: append docs LAUNCH_AUDIT /
+  IMPLEMENTATION_PLAN / WORK_LOG hilang (diterapkan ulang manual).
+- Sesi lain kemudian memindah branch aktif ke `fitur/ai-customer-service` TANPA
+  sepengetahuan; commit `[visual-v1]` 0e165f7 sempat mendarat di branch mereka.
+  Recovery: `git branch -f fitur/visual-transformation-v1 0e165f7` +
+  `git reset --mixed 136e46c` (branch mereka) + stash pathspec + checkout kembali.
+  Hasil: commit 0e165f7 kini benar di `fitur/visual-transformation-v1`;
+  branch mereka kembali ke 136e46c; file uncommitted mereka
+  (lib/env.ts, lib/rate-limit.ts, lib/support/) UTUH tidak tersentuh.
+- Pelajaran: di working tree bersama, commit dengan path eksplisit SEGERA setelah
+  perubahan penting; verifikasi `git branch --show-current` sebelum commit.
+- Catatan: origin/main kini 8cb2681 (PR #53 SUKI Kampung merge). Branch ini tetap
+  berbasis 136e46c sesuai mandat; TIDAK rebase (keputusan sadar).
+
+## 2026-10-03 ~07:20 WITA — Build dengan perubahan: GAGAL karena file sesi lain
+- `npm run build` di working tree utama GAGAL: type error di
+  `next-app/lib/rate-limit.ts` (milik sesi ai-customer-service, uncommitted):
+  `Property 'aichat' is missing in type ... required in type
+  'Record<RateLimitPreset, RegionRatelimit>'` — mereka menambah preset tanpa
+  entri limiter. BUKAN kesalahan program ini (tsc/lint milik program lolos).
+- Solusi: build ulang di worktree bersih `/tmp/vt-clean` (detached di 0e165f7,
+  node_modules di-symlink) agar hasil QC murni milik program ini.
+
+## 2026-10-03 ~08:00 WITA — QC FASE 12 SELESAI
+- `tsc --noEmit`: 0 error. `npm run lint`: exit 0 (warning pre-existing saja).
+- `npm run build`: LOLOS di worktree bersih /tmp/vt-clean (BUILD_EXIT:0).
+  (Build di working tree utama sempat gagal oleh type error milik sesi lain di
+  lib/rate-limit.ts — bukan bagian program ini.)
+- Screenshot Playwright (Chromium, desktop 1440 + mobile 390, 8 rute):
+  before (136e46c) vs after (0e165f7) — 16/16 sukses; smoke 16/16 HTTP 200.
+- Bug QC → fixed: (1) hero art collapse → width min(100%,620px);
+  (2) panel kiri login tak tampil (`.hidden{display:none!important}` pre-existing)
+  → override surgical khusus AuthGate; (3) skrip screenshot ESM require→import.
+- Verifikasi visual: hero Digital Nusantara tampil (light+dark), 4 kartu ruang,
+  EcosystemMap relokasi OK, empty state 4 ruang berilustrasi, login panel OK,
+  overflow horizontal 0px. Arsip: ~/workspace/your_files/suki-visual-v1-qc/.
+- Klasifikasi: fixed 3 / known limitation (kunci dummy, butuh browser live utk
+  device fisik+Lighthouse) / blocked: tidak ada / release blocker: tidak ada.
+- Laporan QC: docs/VISUAL-V1-QC-REPORT.md.
