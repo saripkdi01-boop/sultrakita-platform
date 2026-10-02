@@ -11,12 +11,12 @@ import {
   MessageCircle,
   Search,
   Store,
-  Users,
   X,
 } from 'lucide-react';
 import { useUIStore } from '@/store/ui';
 import { BrandLogo } from './BrandLogo';
 import { CreateMenu } from './CreateMenu';
+import { EcosystemHub } from './EcosystemHub';
 import { NotificationCenter } from './NotificationCenter';
 import { ProfileHub } from '@/components/profile/ProfileHub';
 import { getProfileNickname, useSessionProfile } from '@/hooks/useSessionProfile';
@@ -30,12 +30,11 @@ type TabDef = {
   isActive: (pathname: string) => boolean;
 };
 
-/** Tab tengah ala facebook.com — 5 destinasi utama SUKI. */
+/** Tab tengah ala facebook.com — ikon; tab Komunitas digantikan launcher Ekosistem. */
 const CENTER_TABS: TabDef[] = [
   { key: 'home', label: 'Beranda', href: '/beranda', Icon: Home, isActive: (p) => p === '/' || p === '/beranda' },
   { key: 'reels', label: 'Jelajah', href: '/reels', Icon: Clapperboard, isActive: (p) => p.startsWith('/reels') },
   { key: 'marketplace', label: 'Marketplace', href: '/marketplace', Icon: Store, isActive: (p) => p.startsWith('/marketplace') || p.startsWith('/suki-marketplace') },
-  { key: 'groups', label: 'Komunitas', href: '/groups', Icon: Users, isActive: (p) => p.startsWith('/groups') },
   { key: 'jobs', label: 'SUKI Jobs', href: '/jobs', Icon: BriefcaseBusiness, isActive: (p) => p.startsWith('/jobs') },
 ];
 
@@ -117,9 +116,26 @@ export function Header({ onCreate }: { onCreate?: (type?: 'post' | 'reel') => vo
           )}
         </div>
 
-        {/* Tab tengah (desktop + tablet) */}
+        {/* Tab tengah (desktop + tablet).
+            Launcher Ekosistem menggantikan tab Komunitas di posisi yang sama. */}
         <nav className="skfb-tabs" aria-label="Navigasi utama">
-          {CENTER_TABS.map((tab) => {
+          {CENTER_TABS.slice(0, 3).map((tab) => {
+            const active = tab.isActive(pathname);
+            return (
+              <Link
+                key={tab.key}
+                href={tab.href}
+                className="skfb-tab"
+                aria-current={active ? 'page' : undefined}
+                aria-label={tab.label}
+                title={tab.label}
+              >
+                <tab.Icon aria-hidden="true" />
+              </Link>
+            );
+          })}
+          <EcosystemHub variant="tab" />
+          {CENTER_TABS.slice(3).map((tab) => {
             const active = tab.isActive(pathname);
             return (
               <Link
@@ -149,9 +165,10 @@ export function Header({ onCreate }: { onCreate?: (type?: 'post' | 'reel') => vo
         </div>
       </div>
 
-      {/* Baris 2 (mobile): tab bar icon-only ala aplikasi Facebook */}
+      {/* Baris 2 (mobile): tab bar icon-only ala aplikasi Facebook.
+          Launcher Ekosistem menggantikan tab Komunitas di posisi yang sama. */}
       <nav className="skfb-mtabs" aria-label="Navigasi utama">
-        {CENTER_TABS.slice(0, 4).map((tab) => {
+        {CENTER_TABS.slice(0, 3).map((tab) => {
           const active = tab.isActive(pathname);
           return (
             <Link
@@ -165,6 +182,7 @@ export function Header({ onCreate }: { onCreate?: (type?: 'post' | 'reel') => vo
             </Link>
           );
         })}
+        <EcosystemHub variant="mtab" />
         <div className="skfb-mtab" role="presentation">
           <NotificationCenter />
         </div>
