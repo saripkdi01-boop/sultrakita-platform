@@ -5,6 +5,7 @@ import { useState, type MouseEvent } from 'react';
 import Link from 'next/link';
 import { menuSections } from '@/config/navigation';
 import { MenuItem } from '@/components/ui/MenuItem';
+import { AdSlot } from '@/components/ads/AdSlot';
 import { LANGUAGES, usePreferences } from '@/lib/preferences';
 import { getLabels } from '@/lib/i18n';
 import { useUIStore } from '@/store/ui';
@@ -35,6 +36,8 @@ export function SidebarDesktop() {
       {menuSections.map((section) => { const isExpandable = collapsedByDefault.has(section.title); const isOpen = expanded[section.title] ?? !isExpandable; return <div className="menu-section" key={section.title}>{isExpandable ? <button className="menu-title menu-title-button" onClick={() => setExpanded((current) => ({ ...current, [section.title]: !isOpen }))}><span>{section.title}</span>{!collapsed && <ChevronDown className={isOpen ? 'rotate-180' : ''} size={14} />}</button> : <span className="menu-title">{section.title}</span>}{(!isExpandable || isOpen) && section.items.map((item) => <MenuItem key={item.label} item={item} label={translatedLabel(item.label)} onClick={preferenceClick(item.label)} />)}</div>; })}
       {!collapsed && languageOpen && <div className="sidebar-language-panel"><label><Languages size={14} /> {labels.chooseLanguage}</label><select value={language} onChange={(event) => setLanguage(event.target.value as typeof language)} aria-label={labels.chooseLanguage}>{LANGUAGES.map(([code, name]) => <option key={code} value={code}>{name}</option>)}</select></div>}
       {!collapsed && <div className="sidebar-preference-row"><button onClick={toggleTheme} aria-label={theme === 'dark' ? labels.lightMode : labels.darkMode}><span className="preference-icon">{theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}</span><span>{theme === 'dark' ? labels.lightMode : labels.darkMode}</span><i className={`theme-switch ${theme}`} /></button><button onClick={() => setLanguageOpen((open) => !open)} aria-label={labels.language}><Languages size={14} /><span>{labels.language}</span><b>{language.toUpperCase()}</b></button></div>}
+      {/* T-ADS: slot iklan sidebar desktop (AdSlot me-return null di /admin|/billing|/checkout) */}
+      {!collapsed && <div style={{ margin: '12px 0', padding: '0 12px' }}><AdSlot placementId="sidebar-desktop" /></div>}
       {!collapsed && <div className="sidebar-footer"><Link className="side-upgrade" href="/dashboard"><Crown size={16} /><span><strong>{labels.premium}</strong><small>Bangun eksistensi publik</small></span></Link>{user ? <button className="side-logout" onClick={() => void signOutAndRedirect()}><LogOut size={16} /><span>Keluar dari akun</span></button> : <Link className="side-login" href="/login"><UserRound size={16} /><span>Masuk / Daftar</span></Link>}<small>© 2026 SUKI Platforms · SultraKita</small></div>}
     </div><button className="collapse-toggle" onClick={toggleCollapsed} aria-label={collapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}>{collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}</button>
   </aside>;

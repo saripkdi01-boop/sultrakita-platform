@@ -1,0 +1,143 @@
+/* T-ADS · Gaya slot iklan SUKI Apps.
+   Prinsip: reserve ruang via min-height SEBELUM load (zero CLS),
+   lazy via IntersectionObserver (di AdSlot), label "Iklan"/"Bersponsor"
+   selalu tampil saat ada konten, hormati dark mode & reduced motion.
+   Token warna memakai --suki-theme-* sehingga otomatis mengikuti tema. */
+
+.skad-slot {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--suki-radius-md, 12px);
+  background: transparent;
+}
+
+/* Reserve ruang per placement (data-placement diset AdSlot.tsx) */
+.skad-slot[data-placement='feed-infeed'] { min-height: 140px; }
+.skad-slot[data-placement='marketplace-leaderboard'] { min-height: 90px; }
+.skad-slot[data-placement='sidebar-desktop'] { min-height: 250px; }
+.skad-slot[data-placement='marketplace-grid'] { min-height: 160px; }
+.skad-slot[data-placement='mobile-banner'] { min-height: 50px; }
+.skad-slot[data-placement='properti-detail-sidebar'] { min-height: 250px; }
+.skad-slot[data-placement='jobs-list'] { min-height: 150px; }
+
+/* Visibilitas responsif: leaderboard & sidebar hanya desktop, mobile banner hanya mobile */
+@media (max-width: 1023px) {
+  .skad-slot[data-placement='marketplace-leaderboard'],
+  .skad-slot[data-placement='sidebar-desktop'] { display: none; }
+}
+@media (min-width: 781px) {
+  .skad-slot[data-placement='mobile-banner'] { display: none; }
+}
+
+/* Shimmer halus saat menunggu konten (dimatikan bila reduced-motion) */
+.skad-loading {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    100deg,
+    color-mix(in srgb, var(--suki-theme-surface-muted) 55%, transparent) 40%,
+    color-mix(in srgb, var(--suki-theme-surface) 90%, transparent) 50%,
+    color-mix(in srgb, var(--suki-theme-surface-muted) 55%, transparent) 60%
+  );
+  background-size: 200% 100%;
+  animation: skad-shimmer 1.6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .skad-loading { animation: none; }
+}
+@keyframes skad-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Label kebijakan AdSense: selalu di atas unit iklan */
+.skad-label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--suki-theme-text-subtle);
+}
+
+/* Unit AdSense */
+.skad-unit { width: 100%; }
+.skad-unit ins.adsbygoogle { display: block; width: 100%; }
+
+/* House ad (sponsor langsung) */
+.skad-house {
+  display: block;
+  width: 100%;
+  border: 1px solid var(--suki-theme-border);
+  border-radius: var(--suki-radius-md, 12px);
+  overflow: hidden;
+  background: var(--suki-theme-surface);
+  text-decoration: none;
+  transition: transform var(--suki-duration-fast, 160ms) var(--suki-ease-out, ease-out);
+}
+.skad-house:hover { transform: translateY(-1px); }
+@media (prefers-reduced-motion: reduce) {
+  .skad-house:hover { transform: none; }
+}
+.skad-house-media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: var(--suki-theme-surface-muted);
+}
+.skad-house-media[data-ratio='1:1'] { aspect-ratio: 1 / 1; }
+.skad-house-media[data-ratio='728:90'],
+.skad-house-media[data-ratio='970:90'] { aspect-ratio: 728 / 90; }
+.skad-house-media[data-ratio='320:50'] { aspect-ratio: 320 / 50; }
+.skad-house-media[data-ratio='320:100'] { aspect-ratio: 320 / 100; }
+.skad-house-media[data-ratio='300:250'] { aspect-ratio: 300 / 250; }
+.skad-house-media[data-ratio='300:600'] { aspect-ratio: 300 / 600; }
+.skad-house-media img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.skad-house-body { padding: 10px 12px 12px; }
+.skad-house-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--suki-theme-text);
+}
+.skad-house-cta {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--suki-theme-primary);
+}
+
+/* Tombol tutup untuk mobile banner (dismissible, tidak sticky) */
+.skad-close {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--suki-theme-border);
+  border-radius: 999px;
+  background: var(--suki-theme-surface);
+  color: var(--suki-theme-text-muted);
+  cursor: pointer;
+}
+.skad-close:hover { color: var(--suki-theme-text); }
+
+/* Pembungkus sidebar desktop agar tidak menekan menu */
+.skad-sidebar-wrap {
+  margin: 12px 0;
+  padding: 0 12px;
+}

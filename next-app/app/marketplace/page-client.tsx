@@ -16,6 +16,7 @@ import { CompareBar } from '@/components/marketplace/CompareBar';
 import { ComparePanel } from '@/components/marketplace/ComparePanel';
 import { Recommendations } from '@/components/marketplace/Recommendations';
 import { LoginSheet } from '@/components/marketplace/LoginSheet';
+import { AdSlot } from '@/components/ads/AdSlot';
 import { useWishlist } from '@/components/marketplace/useWishlist';
 import { useSessionProfile } from '@/hooks/useSessionProfile';
 import { deleteSavedSearch, listSavedSearches, saveSearchAlert, setSearchAlertEnabled } from '@/lib/actions/marketplace';
@@ -184,6 +185,8 @@ export default function MarketplacePageClient({ initialItems, initialFilters, in
         </aside>
 
         <div className="fbm-main">
+          {/* T-ADS: mobile banner (hanya ≤780px via CSS, dismissible, tidak sticky) */}
+          {!showWishlistOnly && <AdSlot placementId="mobile-banner" />}
           {/* Tab Telusuri | Pembelian | Penjualan ala FB */}
           <nav className="fbm-tabs" aria-label="Navigasi marketplace">
             <button type="button" className="fbm-tab" aria-selected={!showWishlistOnly} onClick={() => setShowWishlistOnly(false)}>
@@ -210,6 +213,9 @@ export default function MarketplacePageClient({ initialItems, initialFilters, in
               )}
             </p>
           )}
+
+          {/* T-ADS: leaderboard desktop (hanya ≥1024px via CSS) di atas hasil pencarian */}
+          {!showWishlistOnly && <AdSlot placementId="marketplace-leaderboard" eager />}
 
           {/* Toolbar: jumlah hasil + sort + aksi */}
           <div className="fbm-toolbar">
@@ -291,16 +297,23 @@ export default function MarketplacePageClient({ initialItems, initialFilters, in
               </div>
             ) : (
               <div className="fbm-grid">
-                {visibleItems.map((item, index) => (
-                  <MarketplaceCard
-                    key={String(item.id)}
-                    listing={item}
-                    index={index}
-                    saved={wishlist.savedIds.includes(String(item.id))}
-                    onToggleWishlist={() => { void wishlist.toggle(String(item.id)); }}
-                    onQuickView={() => openQuickView(item)}
-                  />
-                ))}
+                {visibleItems.flatMap((item, index) => {
+                  const card = (
+                    <MarketplaceCard
+                      key={String(item.id)}
+                      listing={item}
+                      index={index}
+                      saved={wishlist.savedIds.includes(String(item.id))}
+                      onToggleWishlist={() => { void wishlist.toggle(String(item.id)); }}
+                      onQuickView={() => openQuickView(item)}
+                    />
+                  );
+                  // T-ADS: interstitial native setelah kartu ke-9
+                  if (index === 8) {
+                    return [card, <div key={`skad-grid-${index}`}><AdSlot placementId="marketplace-grid" /></div>];
+                  }
+                  return [card];
+                })}
               </div>
             )}
           </section>
