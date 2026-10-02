@@ -3945,3 +3945,18 @@ html[data-theme='dark'] .beranda-v4-opportunity{background:linear-gradient(145de
   .suki-business-profile-layout{display:grid;grid-template-columns:1.6fr 1fr;gap:20px;align-items:start}
 }
 @media(prefers-reduced-motion:reduce){.suki-business-scope *,.suki-business-page .suki-business-card{transition:none!important;animation:none!important}}
+
+/* --- Pola chat ala WhatsApp/Telegram: balasan, centang dibaca, presence (slice 5) --- */
+.chat-reply-quote{display:grid;gap:2px;margin-bottom:6px;padding:7px 9px;border-left:3px solid var(--teal);border-radius:6px;background:rgba(26,77,62,.07);font-size:10px;line-height:1.45}
+.chat-bubble.mine .chat-reply-quote{background:rgba(255,255,255,.16);border-left-color:rgba(255,255,255,.75)}
+.chat-reply-quote strong{display:flex;align-items:center;gap:4px;font-size:9px;opacity:.85}
+.chat-reply-quote p{margin:0;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow-wrap:anywhere}
+.chat-tick-read{color:#53bdeb!important;opacity:1!important}
+.chat-tick-sent{opacity:.7}
+.chat-conversation-title span.chat-presence-off::before{background:#b9c9c3}
+.chat-conversation-title span.chat-presence-unknown::before{display:none}
+.chat-reply-touch{display:none}
+@media(max-width:780px){
+  .chat-reply-touch{display:grid;place-items:center;width:23px;height:23px;border:1px solid var(--line);border-radius:50%;background:#fff;color:var(--muted)}
+  .chat-message-meta{gap:5px}
+}
