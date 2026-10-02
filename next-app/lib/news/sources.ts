@@ -29,9 +29,10 @@
 //   404  https://www.brin.go.id/rss & https://brin.go.id/rss → tidak ada feed publik
 //   404  https://sains.kompas.com/rss                     → tidak ada feed publik
 
-export type NewsCategory = 'teknologi' | 'umum' | 'politik' | 'global' | 'riset' | 'komunitas';
+export type NewsCategory = 'semua' | 'teknologi' | 'umum' | 'politik' | 'global' | 'riset' | 'komunitas';
 
 export const NEWS_CATEGORY_LABELS: Record<NewsCategory, string> = {
+  semua: 'Semua',
   teknologi: 'Teknologi',
   umum: 'Umum',
   politik: 'Politik',
@@ -40,7 +41,7 @@ export const NEWS_CATEGORY_LABELS: Record<NewsCategory, string> = {
   komunitas: 'Komunitas',
 };
 
-export const NEWS_CATEGORIES: NewsCategory[] = ['teknologi', 'umum', 'politik', 'global', 'riset', 'komunitas'];
+export const NEWS_CATEGORIES: NewsCategory[] = ['semua', 'teknologi', 'umum', 'politik', 'global', 'riset', 'komunitas'];
 
 export interface NewsSource {
   /** id unik, stabil — dipakai sebagai key cache & dedup */
@@ -113,5 +114,9 @@ export const NEWS_SOURCES: NewsSource[] = [
 
 /** Daftar sumber untuk satu kategori (hanya yang terverifikasi). */
 export function sourcesForCategory(category: NewsCategory): NewsSource[] {
+  if (category === 'semua') {
+    // Semua sumber terverifikasi (komunitas tidak punya sumber → otomatis terlewat).
+    return NEWS_SOURCES;
+  }
   return NEWS_SOURCES.filter((s) => s.categories.includes(category));
 }

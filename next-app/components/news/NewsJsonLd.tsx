@@ -18,7 +18,7 @@ function siteUrlFor(sourceId: string): string {
 export async function NewsJsonLd() {
   let items: Awaited<ReturnType<typeof getNews>>['items'] = [];
   try {
-    const result = await getNews('teknologi');
+    const result = await getNews('semua');
     items = result.items;
   } catch {
     return null;
@@ -28,7 +28,7 @@ export async function NewsJsonLd() {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
-    name: 'Portal Berita Teknologi — SUKI Apps',
+    name: 'Portal Berita — SUKI Apps',
     description: 'Headline teknologi terkini dari media Indonesia yang diagregasi SUKI Apps.',
     url: `${siteUrl}/beranda`,
     numberOfItems: items.length,

@@ -16,6 +16,8 @@ interface ApiNewsItem {
   publishedAt: string | null;
   /** URL gambar dari field feed (enclosure/media:*), null bila tidak ada. */
   image: string | null;
+  /** Kategori kanal asal item — untuk badge saat tab "Semua". */
+  category: Exclude<NewsCategory, 'semua' | 'komunitas'>;
 }
 
 interface ApiNewsSource {
@@ -107,7 +109,7 @@ function NewsThumb({ src, alt, category }: { src: string; alt: string; category:
  * Slot iklan native tiap 6 kartu memakai infra AdSlot (house ads / AdSense-ready).
  */
 export function NewsPortal() {
-  const [category, setCategory] = useState<NewsCategory>('teknologi');
+  const [category, setCategory] = useState<NewsCategory>('semua');
   const [status, setStatus] = useState<Status>('loading');
   const [data, setData] = useState<ApiResponse | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
@@ -213,12 +215,14 @@ export function NewsPortal() {
             {items.map((item, index) => (
               <Fragment key={item.id}>
                 <li>
-                  <article className={styles.newsCard} data-category={category}>
+                  {/* data-category pakai kategori ASAL item (bukan tab) agar badge
+                      berwarna benar saat tab "Semua" mencampur banyak kategori. */}
+                  <article className={styles.newsCard} data-category={item.category}>
                     {item.image ? (
-                      <NewsThumb src={item.image} alt={item.title} category={category} />
+                      <NewsThumb src={item.image} alt={item.title} category={item.category} />
                     ) : (
                       <div className={`${styles.newsThumb} ${styles.newsThumbFallback} ${styles.newsThumbTextOnly}`}>
-                        <CategoryBadge category={category} />
+                        <CategoryBadge category={item.category} />
                       </div>
                     )}
                     <h3>
