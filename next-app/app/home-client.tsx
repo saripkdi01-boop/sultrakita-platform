@@ -514,7 +514,8 @@ export default function HomeClient() {
             <nav className="suki-overhaul-footer-links" aria-label="Tautan footer">
               <div><b>Jelajahi</b><Link href="/beranda">Beranda</Link><Link href="/marketplace">Marketplace</Link><Link href="/properti">Properti</Link><Link href="/jobs">Jobs</Link></div>
               <div><b>Terhubung</b><Link href="/groups">Komunitas</Link><Link href="/Business">Untuk bisnis</Link><Link href="/help-center">Panduan</Link></div>
-              <div><b>Legal</b><Link href="/legal/privacy">Privasi</Link><Link href="/legal/terms">Syarat &amp; Ketentuan</Link></div>
+              <div><b>Bantuan</b><Link href="/bantuan/faq">FAQ</Link><Link href="/kontak">Kontak</Link><Link href="/support">Laporkan masalah</Link></div>
+              <div><b>Legal</b><Link href="/legal/kebijakan-privasi">Kebijakan Privasi</Link><Link href="/legal/syarat-ketentuan">Syarat &amp; Ketentuan</Link><Link href="/security-center">Keamanan</Link></div>
             </nav>
           </div>
           <div className="suki-overhaul-footer-bottom">
