@@ -35,6 +35,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { supabase } from '@/lib/supabase/client';
 import { csrfFetch } from '@/lib/security/csrf-client';
 import { createListingMediaUpload } from '@/lib/actions/marketplace';
+import { EcosystemMarketplace } from '@/components/illustrations';
 import {
   CREATE_ALLOWED_PHOTO_TYPES,
   CREATE_CATEGORY_LABELS,
@@ -508,7 +509,7 @@ export default function CreateListingForm() {
           <header className="fbmc-hero">
             <span className="fbmc-hero-icon"><Store size={26} /></span>
             <div>
-              <p className="fbmc-kicker">Marketplace Sultra</p>
+              <p className="dn-kicker">Marketplace Sultra</p>
               <h1>Jual barang & jasa lokal</h1>
               <p className="fbmc-hero-sub">
                 {sessionState === 'authed'
@@ -528,6 +529,7 @@ export default function CreateListingForm() {
 
           {sessionState === 'guest' && (
             <section className="fbmc-card fbmc-gate" aria-label="Perlu masuk">
+              <span className="dn-empty-art" aria-hidden="true"><EcosystemMarketplace /></span>
               <span className="fbmc-gate-icon"><Lock size={30} /></span>
               <h2>Masuk dulu untuk mulai menjual</h2>
               <p>
