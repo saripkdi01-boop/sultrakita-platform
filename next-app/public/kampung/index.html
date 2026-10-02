@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0E6258">
+<title>SUKI KAMPUNG — Main bersama. Bangun bersama. Tumbuh bersama.</title>
+<meta name="description" content="SUKI KAMPUNG: game simulasi kampung tropis dari SUKI Apps. Bangun kampungmu, selesaikan misi, mainkan Kuis Sultra.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --teal:#0E6258; --teal-dark:#0A4A43; --teal-soft:#E3F0ED;
+  --gold:#D4AF37; --gold-soft:#FAF3DC;
+  --cream:#FAF9F6; --ink:#1C1917; --ink-soft:#57534E;
+  --grass1:#7CB342; --grass2:#6FA038;
+  --danger:#B3261E; --ok:#2E7D32;
+  --radius:14px; --nav-h:68px;
+  --shadow:0 2px 10px rgba(28,25,23,.12);
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:"Plus Jakarta Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  background:var(--cream); color:var(--ink); font-size:15px; line-height:1.55;
+  max-width:640px; margin:0 auto; min-height:100vh; position:relative;
+  padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom));
+}
+button{font-family:inherit; cursor:pointer;}
+/* ===== Demo banner ===== */
+.demo-banner{background:var(--teal-dark);color:#fff;font-size:12px;text-align:center;padding:7px 12px;font-weight:600;letter-spacing:.2px;}
+.demo-banner b{color:var(--gold);}
+/* ===== Header ===== */
+.game-header{background:var(--cream);border-bottom:1px solid #E7E2D9;position:sticky;top:0;z-index:40;}
+.brand-row{display:flex;align-items:center;gap:10px;padding:10px 14px 4px;}
+.brand-row .logo{width:38px;height:38px;flex:0 0 38px;}
+.brand-row .logo svg{width:100%;height:100%;display:block;}
+.brand-row h1{font-size:17px;margin:0;font-weight:800;letter-spacing:.3px;}
+.brand-row h1 small{display:block;font-size:11px;font-weight:600;color:var(--ink-soft);letter-spacing:.4px;}
+.back-link{margin-left:auto;font-size:12px;font-weight:700;color:var(--teal);text-decoration:none;border:1.5px solid var(--teal);border-radius:999px;padding:7px 12px;white-space:nowrap;min-height:36px;display:inline-flex;align-items:center;}
+.player-card{margin:8px 12px 10px;background:#fff;border:1px solid #EDE8DD;border-radius:var(--radius);padding:10px 12px;box-shadow:var(--shadow);}
+.player-row{display:flex;align-items:center;gap:10px;}
+.avatar{width:44px;height:44px;border-radius:50%;background:var(--teal);color:#fff;font-weight:800;font-size:19px;display:flex;align-items:center;justify-content:center;flex:0 0 44px;border:2px solid var(--gold);}
+.player-meta{flex:1;min-width:0;}
+.player-meta .pname{font-weight:800;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.player-meta .vname{font-size:12px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.coin-chip{background:var(--gold-soft);border:1.5px solid var(--gold);color:var(--ink);font-weight:800;font-size:14px;border-radius:999px;padding:7px 12px;white-space:nowrap;}
+.coin-chip .c-ico{margin-right:4px;}
+.level-row{display:flex;align-items:center;gap:8px;margin-top:9px;}
+.level-badge{background:var(--teal);color:#fff;font-size:11.5px;font-weight:800;border-radius:999px;padding:4px 10px;white-space:nowrap;}
+.xp-track{flex:1;height:10px;background:#EDE8DD;border-radius:999px;overflow:hidden;}
+.xp-fill{height:100%;background:linear-gradient(90deg,var(--teal),#14957f);border-radius:999px;transition:width .5s ease;}
+.xp-text{font-size:11px;color:var(--ink-soft);font-weight:600;white-space:nowrap;}
+/* ===== Views ===== */
+.view{display:none;padding:12px 12px 20px;animation:fadeIn .25s ease;}
+.view.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+.section-title{font-size:16px;font-weight:800;margin:6px 2px 10px;display:flex;align-items:center;gap:8px;}
+.section-title .hint{font-size:11.5px;font-weight:600;color:var(--ink-soft);}
+/* ===== Map ===== */
+.map-toolbar{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+.btn{border:none;border-radius:12px;font-weight:700;font-size:14px;padding:12px 16px;min-height:46px;display:inline-flex;align-items:center;justify-content:center;gap:8px;}
+.btn-teal{background:var(--teal);color:#fff;}
+.btn-teal:active{background:var(--teal-dark);}
+.btn-gold{background:var(--gold);color:var(--ink);}
+.btn-ghost{background:#fff;border:1.5px solid #D8D2C4;color:var(--ink);}
+.btn-danger{background:#fff;border:1.5px solid var(--danger);color:var(--danger);}
+.btn:disabled{opacity:.45;cursor:not-allowed;}
+.btn-block{width:100%;}
+.btn-sm{min-height:40px;padding:8px 12px;font-size:13px;}
+.map-wrap{background:linear-gradient(160deg,#8BC34A,#689F38);border-radius:18px;padding:10px;box-shadow:var(--shadow);border:1px solid #5c8f31;}
+#map{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;}
+.tile{aspect-ratio:1/1;border-radius:9px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.18);position:relative;display:flex;align-items:center;justify-content:center;transition:transform .12s ease, box-shadow .2s ease;}
+.tile:nth-child(16n+1),.tile:nth-child(16n+3),.tile:nth-child(16n+5),.tile:nth-child(16n+7),
+.tile:nth-child(16n+10),.tile:nth-child(16n+12),.tile:nth-child(16n+14),.tile:nth-child(16n+16){background:rgba(0,0,0,.06);}
+.tile.placemode{cursor:pointer;background:rgba(255,255,255,.30);}
+.tile.placemode:active{transform:scale(.94);}
+.tile .bart{width:88%;height:88%;position:relative;filter:drop-shadow(0 3px 3px rgba(0,0,0,.28));}
+.tile .bart svg{width:100%;height:100%;display:block;}
+.tile .lvl{position:absolute;top:2px;right:3px;background:var(--ink);color:#fff;font-size:9.5px;font-weight:800;border-radius:999px;padding:1px 6px;line-height:1.5;}
+.tile.ready{box-shadow:0 0 0 2.5px var(--gold),0 0 12px rgba(212,175,55,.85);animation:glow 1.6s ease-in-out infinite;}
+@keyframes glow{0%,100%{box-shadow:0 0 0 2.5px var(--gold),0 0 6px rgba(212,175,55,.6);}50%{box-shadow:0 0 0 2.5px var(--gold),0 0 14px rgba(212,175,55,.95);}}
+.tile.ready::after{content:"\25CF";position:absolute;bottom:1px;left:50%;transform:translateX(-50%);color:var(--gold);font-size:13px;text-shadow:0 0 4px #fff;}
+.map-legend{font-size:12px;color:#fff;margin-top:8px;text-align:center;font-weight:600;text-shadow:0 1px 2px rgba(0,0,0,.3);}
+/* ===== Bottom nav ===== */
+.bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:50;background:#fff;border-top:1px solid #E7E2D9;display:flex;max-width:640px;margin:0 auto;padding-bottom:env(safe-area-inset-bottom);}
+.nav-btn{flex:1;border:none;background:none;padding:9px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--ink-soft);font-size:10.5px;font-weight:700;min-height:var(--nav-h);}
+.nav-btn .n-ico{font-size:21px;line-height:1;}
+.nav-btn.active{color:var(--teal);}
+.nav-btn.active .n-ico{transform:scale(1.12);}
+/* ===== Sheets & modals ===== */
+.sheet-backdrop{position:fixed;inset:0;background:rgba(28,25,23,.5);z-index:60;display:none;align-items:flex-end;justify-content:center;}
+.sheet-backdrop.open{display:flex;}
+.sheet{background:var(--cream);border-radius:20px 20px 0 0;width:100%;max-width:640px;max-height:84vh;overflow-y:auto;padding:14px 14px calc(20px + env(safe-area-inset-bottom));animation:slideUp .25s ease;}
+@keyframes slideUp{from{transform:translateY(40px);opacity:.6;}to{transform:none;opacity:1;}}
+.sheet-handle{width:44px;height:5px;border-radius:999px;background:#D8D2C4;margin:0 auto 10px;}
+.sheet h2{font-size:17px;margin:0 0 4px;font-weight:800;}
+.sheet .sub{font-size:12.5px;color:var(--ink-soft);margin:0 0 12px;}
+.modal-backdrop{position:fixed;inset:0;background:rgba(28,25,23,.55);z-index:70;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-backdrop.open{display:flex;}
+.modal{background:#fff;border-radius:18px;padding:20px;max-width:420px;width:100%;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.25);animation:pop .25s ease;}
+@keyframes pop{from{transform:scale(.92);opacity:0;}to{transform:scale(1);opacity:1;}}
+.modal h2{margin:0 0 8px;font-size:19px;}
+.modal p{font-size:14px;color:var(--ink-soft);margin:0 0 14px;}
+.modal .big-emoji{font-size:52px;line-height:1;margin-bottom:8px;}
+/* ===== Build cards ===== */
+.build-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.build-card{background:#fff;border:1.5px solid #EDE8DD;border-radius:14px;padding:10px;text-align:left;display:flex;flex-direction:column;gap:6px;min-height:44px;}
+.build-card .b-art{height:56px;display:flex;align-items:center;justify-content:center;}
+.build-card .b-art svg{height:100%;width:auto;max-width:100%;}
+.build-card .b-name{font-weight:800;font-size:13.5px;}
+.build-card .b-cost{font-size:12px;font-weight:700;color:var(--teal);}
+.build-card .b-desc{font-size:11.5px;color:var(--ink-soft);flex:1;}
+.build-card .b-lock{font-size:11.5px;font-weight:700;color:#8a8478;}
+.build-card.selected{border-color:var(--teal);box-shadow:0 0 0 2px var(--teal-soft);}
+.build-card.locked{opacity:.62;}
+/* ===== Quest list ===== */
+.quest-card{background:#fff;border:1px solid #EDE8DD;border-radius:14px;padding:12px;margin-bottom:10px;box-shadow:var(--shadow);}
+.quest-card .q-title{font-weight:800;font-size:14px;}
+.quest-card .q-reward{font-size:12px;color:var(--teal);font-weight:700;margin-top:2px;}
+.q-progress{display:flex;align-items:center;gap:8px;margin:8px 0;}
+.q-track{flex:1;height:8px;background:#EFEAE0;border-radius:999px;overflow:hidden;}
+.q-fill{height:100%;background:var(--gold);border-radius:999px;transition:width .4s ease;}
+.q-count{font-size:12px;font-weight:700;white-space:nowrap;}
+.q-actions{display:flex;gap:8px;}
+.q-actions .btn{flex:1;}
+.quest-done{border-color:var(--teal);background:#F2F9F7;}
+.quest-skipped{opacity:.6;}
+.countdown{background:var(--teal-soft);border:1px solid #BFD9D2;color:var(--teal-dark);font-size:12.5px;font-weight:700;border-radius:12px;padding:9px 12px;margin-bottom:12px;text-align:center;}
+/* ===== Quiz ===== */
+.quiz-wrap{background:#fff;border-radius:16px;padding:16px;box-shadow:var(--shadow);border:1px solid #EDE8DD;}
+.diff-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:10px 0;}
+.diff-card{border:2px solid #EDE8DD;border-radius:12px;padding:12px 6px;text-align:center;background:#fff;}
+.diff-card .d-name{font-weight:800;font-size:13px;}
+.diff-card .d-sub{font-size:11px;color:var(--ink-soft);}
+.diff-card.unlocked{border-color:var(--teal);}
+.diff-card.locked{opacity:.5;}
+.quiz-overlay{position:fixed;inset:0;background:var(--cream);z-index:80;display:none;flex-direction:column;max-width:640px;margin:0 auto;}
+.quiz-overlay.open{display:flex;}
+.quiz-top{background:var(--teal);color:#fff;padding:12px 14px;}
+.quiz-top .q-meta{display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:8px;}
+.timer-track{height:8px;background:rgba(255,255,255,.25);border-radius:999px;overflow:hidden;}
+.timer-fill{height:100%;background:var(--gold);border-radius:999px;transition:width 1s linear;}
+.quiz-body{flex:1;overflow-y:auto;padding:16px 14px;}
+.quiz-q{font-size:18px;font-weight:800;margin:6px 0 16px;}
+.quiz-opts{display:grid;gap:10px;}
+.quiz-opt{background:#fff;border:2px solid #E2DCCF;border-radius:14px;padding:15px;font-size:15px;font-weight:600;text-align:left;min-height:56px;color:var(--ink);}
+.quiz-opt.correct{border-color:var(--ok);background:#EAF5EA;color:#1B5E20;}
+.quiz-opt.wrong{border-color:var(--danger);background:#FDECEA;color:#7F1D1D;}
+.quiz-opt:disabled{opacity:1;}
+.quiz-feedback{margin-top:14px;font-size:14px;font-weight:700;text-align:center;min-height:24px;}
+/* ===== Reward center / tabs ===== */
+.tabs{display:flex;gap:8px;margin-bottom:12px;}
+.tab{flex:1;border:1.5px solid #D8D2C4;background:#fff;border-radius:999px;padding:10px;font-weight:700;font-size:13px;color:var(--ink-soft);min-height:44px;}
+.tab.active{background:var(--teal);border-color:var(--teal);color:#fff;}
+.ledger-item{background:#fff;border:1px solid #EDE8DD;border-radius:12px;padding:10px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;}
+.ledger-item .l-reason{font-weight:600;}
+.ledger-item .l-time{font-size:11px;color:var(--ink-soft);}
+.ledger-item .l-amt{font-weight:800;white-space:nowrap;}
+.l-amt.plus{color:var(--teal);} .l-amt.minus{color:var(--danger);}
+.empty-state{background:#fff;border:1.5px dashed #CFC8B8;border-radius:14px;padding:22px 16px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+.empty-state .e-ico{font-size:34px;margin-bottom:8px;}
+.empty-state b{color:var(--ink);}
+/* ===== Achievements ===== */
+.ach-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.ach-card{background:#fff;border:1px solid #EDE8DD;border-radius:14px;padding:12px;text-align:center;}
+.ach-card .a-ico{font-size:32px;}
+.ach-card .a-name{font-weight:800;font-size:12.5px;margin-top:4px;}
+.ach-card .a-desc{font-size:11px;color:var(--ink-soft);}
+.ach-card.locked{opacity:.45;filter:grayscale(.7);}
+/* ===== Profile ===== */
+.profile-hero{background:linear-gradient(150deg,var(--teal),var(--teal-dark));color:#fff;border-radius:18px;padding:18px;text-align:center;margin-bottom:12px;}
+.profile-hero .avatar{margin:0 auto 8px;width:64px;height:64px;font-size:27px;background:rgba(255,255,255,.16);border-color:var(--gold);}
+.profile-hero h2{margin:0;font-size:19px;}
+.profile-hero p{margin:2px 0 0;font-size:12.5px;opacity:.85;}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+.stat-card{background:#fff;border:1px solid #EDE8DD;border-radius:12px;padding:10px;text-align:center;}
+.stat-card .s-num{font-size:19px;font-weight:800;color:var(--teal);}
+.stat-card .s-lbl{font-size:11px;color:var(--ink-soft);font-weight:600;}
+.list-card{background:#fff;border:1px solid #EDE8DD;border-radius:14px;padding:4px 14px;margin-bottom:12px;}
+.list-row{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #F0EBE0;font-size:14px;font-weight:600;}
+.list-row:last-child{border-bottom:none;}
+.list-row .grow{flex:1;}
+.list-row .chev{color:#B9B2A2;}
+input[type=text]{width:100%;border:1.5px solid #D8D2C4;border-radius:12px;padding:12px;font-size:15px;font-family:inherit;min-height:48px;}
+.field{margin-bottom:12px;}
+.field label{display:block;font-size:12.5px;font-weight:700;margin-bottom:6px;}
+/* ===== Toast ===== */
+#toasts{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:100;display:flex;flex-direction:column;gap:8px;width:min(92%,480px);}
+.toast{background:var(--ink);color:#fff;border-radius:12px;padding:11px 14px;font-size:13.5px;font-weight:600;box-shadow:0 6px 20px rgba(0,0,0,.3);display:flex;gap:10px;align-items:center;animation:toastIn .25s ease;}
+.toast.gold{background:#3A2F08;border:1px solid var(--gold);}
+.toast.teal{background:var(--teal-dark);}
+@keyframes toastIn{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:none;}}
+/* ===== Onboarding ===== */
+.onboard{position:fixed;inset:0;background:rgba(28,25,23,.72);z-index:90;display:none;align-items:center;justify-content:center;padding:22px;}
+.onboard.open{display:flex;}
+.onboard-card{background:#fff;border-radius:20px;padding:24px;max-width:400px;text-align:center;}
+.onboard-card .o-ico{font-size:54px;margin-bottom:10px;}
+.onboard-card h2{margin:0 0 8px;font-size:19px;}
+.onboard-card p{font-size:14px;color:var(--ink-soft);margin:0 0 16px;}
+.o-dots{display:flex;gap:6px;justify-content:center;margin-bottom:16px;}
+.o-dots span{width:8px;height:8px;border-radius:999px;background:#D8D2C4;}
+.o-dots span.on{background:var(--teal);}
+/* ===== Misc ===== */
+.kicker{font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--teal);margin:14px 2px 8px;}
+.notice{background:var(--gold-soft);border:1px solid var(--gold);border-radius:12px;padding:10px 12px;font-size:12.5px;margin-bottom:12px;}
+.hidden{display:none!important;}
+.tile-panel-info{display:flex;gap:12px;align-items:center;margin-bottom:12px;}
+.tile-panel-info .b-art{width:72px;height:72px;flex:0 0 72px;}
+.tile-panel-info .b-art svg{width:100%;height:100%;}
+.tile-panel-info h3{margin:0;font-size:16px;}
+.tile-panel-info p{margin:2px 0 0;font-size:12.5px;color:var(--ink-soft);}
+.benefit-line{font-size:13px;background:var(--teal-soft);border-radius:10px;padding:8px 10px;margin-bottom:12px;font-weight:600;color:var(--teal-dark);}
+.panel-actions{display:grid;gap:8px;}
+.referral-code{background:var(--ink);color:var(--gold);font-size:22px;font-weight:800;letter-spacing:3px;text-align:center;border-radius:12px;padding:14px;margin:10px 0;font-family:ui-monospace,monospace;}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001s!important;transition-duration:.001s!important;}
+  .tile.ready{animation:none;}
+}
+@media (min-width:560px){
+  .build-grid{grid-template-columns:1fr 1fr 1fr;}
+}
+</style>
+</head>
+<body>
+<noscript><div style="padding:24px;text-align:center;font-weight:700;">SUKI KAMPUNG membutuhkan JavaScript untuk dimainkan. Mohon aktifkan JavaScript di browser Anda.</div></noscript>
+<div class="demo-banner">MODE DEMO — Progres tersimpan <b>di perangkat ini</b>, bukan di akun SUKI. Tanpa backend/server.</div>
+
+<header class="game-header">
+  <div class="brand-row">
+    <span class="logo" aria-hidden="true">
+      <!-- Logo resmi SUKI Apps 2026 (diambil verbatim dari next-app/public/brand/suki-logo-mark.svg — TIDAK digambar ulang) -->
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="SUKI Apps"><g><rect x="32" y="32" width="448" height="448" rx="100" fill="#0E6258"/><path transform="translate(129.52 400.36) scale(0.47018 -0.47018)" d="M269 -12Q179 -12 112.5 30.5Q46 73 22 145L132 197Q153 153 189.0 128.0Q225 103 269 103Q301 103 318.0 116.0Q335 129 335 152Q335 164 329.0 172.5Q323 181 311.0 188.0Q299 195 281 200L188 226Q121 245 85.0 287.5Q49 330 49 388Q49 439 75.0 477.0Q101 515 148.0 536.5Q195 558 256 558Q336 558 396.5 520.5Q457 483 482 415L371 363Q359 397 327.5 417.5Q296 438 256 438Q227 438 210.5 426.0Q194 414 194 393Q194 382 200.0 373.0Q206 364 219.5 357.0Q233 350 253 344L340 318Q408 298 444.0 257.5Q480 217 480 158Q480 107 453.5 69.0Q427 31 380.0 9.5Q333 -12 269 -12Z" fill="#FFFFFF"/><circle cx="388" cy="130" r="30" fill="#D4AF37"/></g></svg>
+    </span>
+    <h1>SUKI KAMPUNG<small>Platform Digital Milik Kita</small></h1>
+    <a class="back-link" href="https://sukiapps.web.id" target="_blank" rel="noopener">&#8592; SUKI Apps</a>
+  </div>
+  <div class="player-card">
+    <div class="player-row">
+      <div class="avatar" id="avatar" aria-hidden="true">S</div>
+      <div class="player-meta">
+        <div class="pname" id="playerName">Warga SUKI</div>
+        <div class="vname" id="villageName">&#127969; Kampung Teluk Damai</div>
+      </div>
+      <div class="coin-chip" title="Koin SUKI (virtual, bukan uang asli)"><span class="c-ico">&#129689;</span><span id="coinBalance">600</span></div>
+    </div>
+    <div class="level-row">
+      <span class="level-badge" id="levelBadge">Lv 1</span>
+      <div class="xp-track" role="progressbar" aria-label="Progress XP"><div class="xp-fill" id="xpFill" style="width:0%"></div></div>
+      <span class="xp-text" id="xpText">0/100 XP</span>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <!-- ============ VIEW: KAMPUNG ============ -->
+  <section class="view active" id="view-kampung" aria-label="Kampung saya">
+    <div class="map-toolbar">
+      <button class="btn btn-teal" id="btnBuild">&#127960; Bangun</button>
+      <button class="btn btn-gold" id="btnHarvestAll">&#129689; Panen Semua</button>
+    </div>
+    <div class="map-wrap">
+      <div id="map" role="grid" aria-label="Peta kampung 8 kali 8"></div>
+      <div class="map-legend" id="mapHint">Ketuk <b>Bangun</b>, pilih bangunan, lalu ketuk petak kosong.</div>
+    </div>
+    <p class="kicker">Kampungku</p>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="s-num" id="statBuildings">0</div><div class="s-lbl">Bangunan</div></div>
+      <div class="stat-card"><div class="s-num" id="statHarvest">0</div><div class="s-lbl">Total Panen</div></div>
+      <div class="stat-card"><div class="s-num" id="statQuests">0</div><div class="s-lbl">Misi Selesai</div></div>
+    </div>
+  </section>
+
+  <!-- ============ VIEW: MISI ============ -->
+  <section class="view" id="view-misi" aria-label="Misi harian">
+    <h2 class="section-title">&#127919; Misi Harian <span class="hint">— segarkan tiap hari</span></h2>
+    <div class="countdown" id="questCountdown">Memuat jadwal reset&hellip;</div>
+    <div id="questList"></div>
+  </section>
+
+  <!-- ============ VIEW: MAIN (minigame) ============ -->
+  <section class="view" id="view-main" aria-label="Permainan">
+    <h2 class="section-title">&#127918; Arena Main</h2>
+    <div class="quiz-wrap">
+      <div class="kicker" style="margin-top:0;">Kuis Sultra</div>
+      <p style="font-size:13.5px;color:var(--ink-soft);margin:0 0 6px;">Uji pengetahuanmu tentang Sulawesi Tenggara! Jawab 5 soal secepat & setepat mungkin. Skor = <b>100 per jawaban benar + bonus kecepatan</b>.</p>
+      <div class="diff-grid" id="diffGrid"></div>
+      <button class="btn btn-teal btn-block" id="btnStartQuiz">&#9654; Mulai Kuis</button>
+      <p style="font-size:12px;color:var(--ink-soft);margin:10px 0 0;">Skor terbaikmu: <b id="bestScore">belum ada</b></p>
+    </div>
+    <div class="notice" style="margin-top:12px;">&#128161; Minigame lain (teka pola, susun gambar) direncanakan di Fase berikutnya. Punya ide? Sampaikan lewat SUKI Apps!</div>
+  </section>
+
+  <!-- ============ VIEW: HADIAH ============ -->
+  <section class="view" id="view-hadiah" aria-label="Pusat hadiah">
+    <h2 class="section-title">&#127873; Pusat Hadiah</h2>
+    <div class="tabs" role="tablist">
+      <button class="tab active" data-tab="virtual" role="tab">Virtual</button>
+      <button class="tab" data-tab="sponsor" role="tab">Sponsor</button>
+      <button class="tab" data-tab="kampanye" role="tab">Kampanye</button>
+    </div>
+    <div id="tab-virtual">
+      <p class="kicker">Riwayat Perolehan</p>
+      <div id="ledgerList"></div>
+    </div>
+    <div id="tab-sponsor" class="hidden">
+      <div class="empty-state"><div class="e-ico">&#129309;</div><b>Belum ada reward sponsor.</b><br>Reward sponsor (voucher/diskon usaha lokal) hanya tampil setelah ada <b>kemitraan resmi yang disetujui</b>. Tidak ada voucher aktif saat ini.</div>
+    </div>
+    <div id="tab-kampanye" class="hidden">
+      <div class="empty-state"><div class="e-ico">&#128203;</div><b>Belum ada kampanye aktif.</b><br>Kampanye insentif masa depan tetap <b>nonaktif</b> sampai ada tinjauan kepatuhan, persetujuan bisnis tertulis, dan integrasi pembayaran yang aman.</div>
+    </div>
+  </section>
+
+  <!-- ============ VIEW: PROFIL ============ -->
+  <section class="view" id="view-profil" aria-label="Profil">
+    <div class="profile-hero">
+      <div class="avatar" id="avatarBig">S</div>
+      <h2 id="profileName">Warga SUKI</h2>
+      <p id="profileVillage">Kampung Teluk Damai &middot; Kode: <span id="refCodeHero">-</span></p>
+    </div>
+    <p class="kicker">Pencapaian</p>
+    <div class="ach-grid" id="achGrid"></div>
+    <p class="kicker">Teman &amp; Referral</p>
+    <div class="list-card">
+      <div class="list-row"><span class="grow">Kode referral saya (demo)</span></div>
+    </div>
+    <div class="referral-code" id="refCode">-</div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <button class="btn btn-ghost" id="btnCopyRef" style="flex:1;">&#128203; Salin</button>
+      <button class="btn btn-teal" id="btnShareRef" style="flex:1;">&#128228; Bagikan</button>
+    </div>
+    <div class="empty-state" style="margin-bottom:12px;"><div class="e-ico">&#128101;</div><b>Belum ada teman terhubung.</b><br>Mode demo: daftar teman membutuhkan server. Kode di atas hanya contoh lokal.</div>
+    <p class="kicker">Pengaturan</p>
+    <div class="list-card">
+      <div class="list-row"><span class="grow">Nama pemain</span></div>
+      <div style="padding:0 0 12px;"><input type="text" id="inputName" maxlength="24" placeholder="Nama pemain"></div>
+      <div class="list-row"><span class="grow">Nama kampung</span></div>
+      <div style="padding:0 0 12px;"><input type="text" id="inputVillage" maxlength="30" placeholder="Nama kampung"></div>
+      <div class="list-row"><span class="grow">Simpan perubahan</span><button class="btn btn-teal btn-sm" id="btnSaveProfile">Simpan</button></div>
+      <div class="list-row"><span class="grow">Mainkan ulang tutorial</span><button class="btn btn-ghost btn-sm" id="btnReplayOnboard">Putar</button></div>
+      <div class="list-row"><span class="grow" style="color:var(--danger);">Hapus semua progres demo</span><button class="btn btn-danger btn-sm" id="btnReset">Hapus</button></div>
+    </div>
+    <div class="notice">&#9432; Koin SUKI di game ini adalah <b>aset virtual</b>, bukan uang dan tidak dapat diuangkan.</div>
+  </section>
+</main>
+
+<!-- Bottom nav -->
+<nav class="bottom-nav" aria-label="Navigasi utama">
+  <button class="nav-btn active" data-view="kampung"><span class="n-ico">&#127969;</span>Kampung</button>
+  <button class="nav-btn" data-view="misi"><span class="n-ico">&#127919;</span>Misi</button>
+  <button class="nav-btn" data-view="main"><span class="n-ico">&#127918;</span>Main</button>
+  <button class="nav-btn" data-view="hadiah"><span class="n-ico">&#127873;</span>Hadiah</button>
+  <button class="nav-btn" data-view="profil"><span class="n-ico">&#128100;</span>Profil</button>
+</nav>
+
+<!-- Build sheet -->
+<div class="sheet-backdrop" id="buildSheet">
+  <div class="sheet" role="dialog" aria-label="Menu bangun">
+    <div class="sheet-handle"></div>
+    <h2>&#127960; Bangun</h2>
+    <p class="sub" id="buildHint">Pilih bangunan, lalu ketuk petak kosong di peta.</p>
+    <div class="build-grid" id="buildGrid"></div>
+    <div style="margin-top:12px;"><button class="btn btn-ghost btn-block" id="btnCloseBuild">Tutup</button></div>
+  </div>
+</div>
+
+<!-- Tile panel sheet -->
+<div class="sheet-backdrop" id="tileSheet">
+  <div class="sheet" role="dialog" aria-label="Info bangunan">
+    <div class="sheet-handle"></div>
+    <div id="tilePanelBody"></div>
+    <div style="margin-top:12px;"><button class="btn btn-ghost btn-block" id="btnCloseTile">Tutup</button></div>
+  </div>
+</div>
+
+<!-- Quiz overlay -->
+<div class="quiz-overlay" id="quizOverlay" role="dialog" aria-label="Kuis Sultra">
+  <div class="quiz-top">
+    <div class="q-meta"><span id="quizRound">Soal 1/5</span><span id="quizScoreLive">Skor: 0</span><button id="btnQuitQuiz" class="btn btn-sm" style="background:rgba(255,255,255,.2);color:#fff;border:none;">Keluar</button></div>
+    <div class="timer-track"><div class="timer-fill" id="timerFill" style="width:100%"></div></div>
+  </div>
+  <div class="quiz-body">
+    <div id="quizIntro">
+      <h2 style="margin:4px 0 8px;">&#129518; Kuis Sultra</h2>
+      <p style="font-size:14px;color:var(--ink-soft);"><b>Cara main:</b> jawab 5 soal tentang Sulawesi Tenggara. Tiap soal dibatasi <b id="quizTimeLabel">15 detik</b>. Jawaban benar = <b>100 poin + bonus kecepatan</b> (10 poin per detik tersisa). Tanpa poin untuk jawaban salah — murni kemampuan!</p>
+      <div class="notice">&#9989; Semua soal adalah pengetahuan umum yang dapat diverifikasi. Tidak ada unsur untung-untungan.</div>
+      <button class="btn btn-teal btn-block" id="btnBeginQuiz">&#9654; Mulai Ronde</button>
+    </div>
+    <div id="quizPlay" class="hidden">
+      <div class="quiz-q" id="quizQuestion"></div>
+      <div class="quiz-opts" id="quizOpts"></div>
+      <div class="quiz-feedback" id="quizFeedback"></div>
+    </div>
+    <div id="quizResult" class="hidden" style="text-align:center;">
+      <div style="font-size:56px;">&#127942;</div>
+      <h2 style="margin:8px 0;">Ronde Selesai!</h2>
+      <p id="quizResultDetail" style="font-size:15px;"></p>
+      <div style="display:grid;gap:8px;margin-top:14px;">
+        <button class="btn btn-teal btn-block" id="btnQuizAgain">Main Lagi</button>
+        <button class="btn btn-ghost btn-block" id="btnQuizClose">Kembali ke Arena</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Generic modal -->
+<div class="modal-backdrop" id="modalBack"><div class="modal" role="alertdialog"><div class="big-emoji" id="modalEmoji">&#127881;</div><h2 id="modalTitle"></h2><p id="modalMsg"></p><div id="modalActions" style="display:grid;gap:8px;"></div></div></div>
+
+<!-- Onboarding -->
+<div class="onboard" id="onboard"><div class="onboard-card">
+  <div class="o-ico" id="obIco">&#127960;</div>
+  <h2 id="obTitle"></h2><p id="obText"></p>
+  <div class="o-dots" id="obDots"><span></span><span></span><span></span></div>
+  <div style="display:flex;gap:8px;">
+    <button class="btn btn-ghost" id="btnObSkip" style="flex:1;">Lewati</button>
+    <button class="btn btn-teal" id="btnObNext" style="flex:2;">Lanjut</button>
+  </div>
+</div></div>
+
+<div id="toasts" aria-live="polite"></div>
+
+<script id="sk-core">
+/* ============================================================
+   SUKI KAMPUNG — core logic (murni, tanpa DOM).
+   Blok ini sengaja bebas DOM agar bisa diuji di Node.
+   ============================================================ */
+(function(global){
+"use strict";
+
+var SAVE_KEY = "sukikampung_v1";
+var SAVE_VERSION = 1;
+var GRID = 8;
+var START_COINS = 600;
+
+/* ---------- Util ---------- */
+function hashStr(s){var h=2166136261;for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
+function mulberry32(seed){var a=seed>>>0;return function(){a|=0;a=(a+0x6D2B79F5)|0;var t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;};}
+function clamp(n,a,b){return Math.max(a,Math.min(b,n));}
+function todayStr(d){d=d||new Date();var m=("0"+(d.getMonth()+1)).slice(-2),day=("0"+d.getDate()).slice(-2);return d.getFullYear()+"-"+m+"-"+day;}
+function uid(){return "p"+Date.now().toString(36)+Math.floor(Math.random()*1e6).toString(36);}
+
+/* ---------- Ikon SVG bangunan (orisinil, nuansa tropis) ---------- */
+var SVG_OPEN = '<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img">';
+var ICONS = {
+rumah: SVG_OPEN+
+ '<rect x="14" y="30" width="36" height="22" rx="2" fill="#C98B5E"/>'+
+ '<path d="M8 32 L32 14 L56 32 Z" fill="#0E6258"/>'+
+ '<rect x="28" y="40" width="8" height="12" fill="#5C3A21"/>'+
+ '<rect x="18" y="34" width="7" height="7" fill="#FAF9F6"/>'+
+ '<rect x="39" y="34" width="7" height="7" fill="#FAF9F6"/>'+
+ '<rect x="16" y="52" width="4" height="8" fill="#5C3A21"/><rect x="44" y="52" width="4" height="8" fill="#5C3A21"/>'+
+ '<circle cx="54" cy="12" r="5" fill="#D4AF37"/></svg>',
+kebun: SVG_OPEN+
+ '<rect x="6" y="10" width="52" height="44" rx="6" fill="#7CB342"/>'+
+ '<g fill="#4E7A27"><rect x="12" y="16" width="40" height="4" rx="2"/><rect x="12" y="26" width="40" height="4" rx="2"/><rect x="12" y="36" width="40" height="4" rx="2"/></g>'+
+ '<g fill="#2E7D32"><circle cx="18" cy="16" r="4"/><circle cx="30" cy="16" r="4"/><circle cx="42" cy="16" r="4"/><circle cx="24" cy="26" r="4"/><circle cx="36" cy="26" r="4"/><circle cx="48" cy="26" r="4"/><circle cx="18" cy="36" r="4"/><circle cx="30" cy="36" r="4"/><circle cx="42" cy="36" r="4"/></g>'+
+ '<circle cx="52" cy="48" r="6" fill="#D4AF37"/></svg>',
+pasar: SVG_OPEN+
+ '<rect x="10" y="26" width="44" height="26" rx="2" fill="#E8DCC3"/>'+
+ '<path d="M6 26 L14 12 H50 L58 26 Z" fill="#D4AF37"/>'+
+ '<path d="M6 26 L14 12 H22 L14 26 Z M30 12 H38 L30 26 L22 26 Z M46 12 H50 L58 26 H50 Z" fill="#0E6258" opacity=".85"/>'+
+ '<rect x="26" y="36" width="12" height="16" fill="#8A5A33"/>'+
+ '<circle cx="18" cy="34" r="4" fill="#C62828"/><circle cx="46" cy="34" r="4" fill="#EF6C00"/></svg>',
+balai: SVG_OPEN+
+ '<rect x="12" y="28" width="40" height="24" rx="2" fill="#FAF9F6" stroke="#0E6258" stroke-width="3"/>'+
+ '<path d="M6 30 L32 12 L58 30 Z" fill="#0E6258"/>'+
+ '<rect x="28" y="38" width="8" height="14" fill="#0E6258"/>'+
+ '<rect x="17" y="34" width="6" height="8" fill="#D4AF37"/><rect x="41" y="34" width="6" height="8" fill="#D4AF37"/>'+
+ '<rect x="8" y="52" width="48" height="4" fill="#0E6258"/></svg>',
+warung: SVG_OPEN+
+ '<rect x="16" y="30" width="32" height="24" rx="3" fill="#A9713F"/>'+
+ '<path d="M10 30 L16 16 H48 L54 30 Z" fill="#5C3A21"/>'+
+ '<path d="M24 8 q3 -4 6 0 q3 4 6 0" stroke="#B0BEC5" stroke-width="2.5" fill="none" stroke-linecap="round"/>'+
+ '<rect x="22" y="36" width="20" height="4" rx="2" fill="#FAF9F6"/>'+
+ '<circle cx="32" cy="22" r="6" fill="#FAF9F6"/><rect x="29" y="19" width="6" height="6" fill="#6D4C41"/></svg>',
+taman: SVG_OPEN+
+ '<rect x="6" y="10" width="52" height="44" rx="20" fill="#81C784"/>'+
+ '<ellipse cx="32" cy="38" rx="16" ry="10" fill="#4FC3F7"/>'+
+ '<rect x="30" y="18" width="4" height="16" fill="#5C3A21"/><circle cx="32" cy="16" r="9" fill="#2E7D32"/><circle cx="24" cy="20" r="6" fill="#388E3C"/><circle cx="40" cy="20" r="6" fill="#388E3C"/>'+
+ '<circle cx="50" cy="14" r="4" fill="#D4AF37"/></svg>',
+perpus: SVG_OPEN+
+ '<rect x="12" y="18" width="40" height="34" rx="2" fill="#0E6258"/>'+
+ '<g><rect x="17" y="24" width="7" height="22" fill="#D4AF37"/><rect x="26" y="24" width="7" height="22" fill="#C62828"/><rect x="35" y="24" width="7" height="22" fill="#FAF9F6"/><rect x="44" y="24" width="4" height="22" fill="#EF6C00"/></g>'+
+ '<rect x="12" y="46" width="40" height="4" fill="#0A4A43"/>'+
+ '<circle cx="52" cy="12" r="5" fill="#D4AF37"/></svg>',
+ruko: SVG_OPEN+
+ '<rect x="10" y="14" width="44" height="40" rx="2" fill="#F5EFE0" stroke="#0E6258" stroke-width="2.5"/>'+
+ '<rect x="10" y="14" width="44" height="12" fill="#0E6258"/>'+
+ '<rect x="16" y="32" width="12" height="10" fill="#90CAF9"/><rect x="36" y="32" width="12" height="10" fill="#90CAF9"/>'+
+ '<rect x="26" y="42" width="12" height="12" fill="#5C3A21"/>'+
+ '<rect x="14" y="17" width="36" height="6" rx="3" fill="#D4AF37"/></svg>'
+};
+
+/* ---------- Katalog bangunan ---------- */
+var BUILDINGS = [
+ {id:"rumah",  name:"Rumah Panggung",   icon:"rumah",  unlock:1, cost:100, interval:60,  yield:8,  desc:"Rumah panggung khas pesisir. Penghuni membayar iuran kampung tiap menit.", benefit:"+8 Koin per panen (tiap 60 dtk)"},
+ {id:"kebun",  name:"Kebun Tropis",      icon:"kebun",  unlock:1, cost:80,  interval:60,  yield:10, desc:"Kebun sayur & buah tropis. Hasil panen dijual ke Pasar SUKI.", benefit:"+10 Koin per panen (tiap 60 dtk)"},
+ {id:"warung", name:"Warung Kopi",       icon:"warung", unlock:2, cost:200, interval:75,  yield:18, desc:"Tempat warga nongkrong. Kopi robusta Konawe bikin ramai.", benefit:"+18 Koin per panen (tiap 75 dtk)"},
+ {id:"taman",  name:"Taman Teluk",       icon:"taman",  unlock:2, cost:150, interval:60,  yield:12, desc:"Taman hijau tepi teluk. Warga bahagia, kampung asri.", benefit:"+12 Koin per panen + 5 XP saat dibangun"},
+ {id:"pasar",  name:"Pasar SUKI",        icon:"pasar",  unlock:3, cost:350, interval:90,  yield:30, desc:"Pusat jual beli warga kampung. Ramai = rezeki.", benefit:"+30 Koin per panen (tiap 90 dtk)"},
+ {id:"balai",  name:"Balai Warga",       icon:"balai",  unlock:4, cost:400, interval:120, yield:20, desc:"Tempat musyawarah & gotong royong. Semangat kebersamaan.", benefit:"+20 Koin per panen & +20% XP misi"},
+ {id:"perpus", name:"Perpustakaan Mini", icon:"perpus", unlock:5, cost:450, interval:120, yield:16, desc:"Sudut baca anak kampung. Ilmu = bekal masa depan.", benefit:"+16 Koin per panen & +25% hadiah kuis"},
+ {id:"ruko",   name:"Ruko UMKM",         icon:"ruko",   unlock:6, cost:600, interval:120, yield:55, desc:"Ruang usaha untuk UMKM lokal. Motor ekonomi kampung.", benefit:"+55 Koin per panen (tiap 120 dtk)"}
+];
+function buildingDef(id){for(var i=0;i<BUILDINGS.length;i++)if(BUILDINGS[i].id===id)return BUILDINGS[i];return null;}
+function yieldAt(def,level){return Math.round(def.yield*Math.pow(1.6,level-1));}
+function upgradeCost(def,level){return def.cost*level;} /* Lv1->2 = cost*1, Lv2->3 = cost*2 */
+function sellRefund(invested){return Math.floor(invested*0.5);}
+function hasBalai(grid){for(var k in grid){if(grid[k].type==="balai")return true;}return false;}
+function hasPerpus(grid){for(var k in grid){if(grid[k].type==="perpus")return true;}return false;}
+
+/* ---------- XP & level ---------- */
+function xpForLevel(level){return Math.round(100*Math.pow(level,1.5));}
+
+/* ---------- State ---------- */
+function newGameState(name){
+  var st={
+    v:SAVE_VERSION, id:uid(),
+    player:{name:name||"Warga SUKI", village:"Kampung Teluk Damai", xp:0, level:1, coins:START_COINS},
+    grid:{},
+    quests:{date:"", items:[]},
+    achievements:{}, ledger:[],
+    quiz:{unlocked:1, best:0, plays:0},
+    referral:("SK-"+Math.random().toString(36).slice(2,7).toUpperCase()),
+    onboarded:false,
+    stats:{built:0, harvested:0, questsDone:0, quizzes:0, perfectQuiz:0, upgrades:0, earnedCoins:0}
+  };
+  addLedger(st,"coin",START_COINS,"Modal awal kampung");
+  return st;
+}
+function addLedger(st,kind,amount,reason){
+  st.ledger.unshift({ts:Date.now(),kind:kind,amount:amount,reason:reason});
+  if(st.ledger.length>120)st.ledger.length=120;
+}
+function gainCoins(st,amount,reason){
+  st.player.coins+=amount;
+  if(amount>0)st.stats.earnedCoins+=amount;
+  addLedger(st,"coin",amount,reason);
+}
+function gainXP(st,amount,reason){
+  var events={leveledUp:false,unlocks:[]};
+  if(hasBalai(st.grid) && /misi|quest/i.test(reason))amount=Math.round(amount*1.2);
+  st.player.xp+=amount;
+  st._xpToday=(st._xpToday||0)+amount;
+  addLedger(st,"xp",amount,reason);
+  var before=st.player.level;
+  while(st.player.xp>=xpForLevel(st.player.level)){st.player.xp-=xpForLevel(st.player.level);st.player.level++;}
+  if(st.player.level>before){
+    events.leveledUp=true;
+    for(var i=0;i<BUILDINGS.length;i++){
+      if(BUILDINGS[i].unlock>before&&BUILDINGS[i].unlock<=st.player.level)events.unlocks.push(BUILDINGS[i]);
+    }
+    gainCoins(st,50*st.player.level,"Bonus naik level "+st.player.level);
+  }
+  return events;
+}
+
+/* ---------- Placement ---------- */
+function tileKey(x,y){return x+","+y;}
+function inBounds(x,y){return x>=0&&x<GRID&&y>=0&&y<GRID;}
+function canPlace(st,typeId,x,y){
+  var def=buildingDef(typeId);
+  if(!def)return{ok:false,reason:"Bangunan tidak dikenal."};
+  if(!inBounds(x,y))return{ok:false,reason:"Di luar peta."};
+  if(st.grid[tileKey(x,y)])return{ok:false,reason:"Petak sudah terisi."};
+  if(st.player.level<def.unlock)return{ok:false,reason:"Butuh level "+def.unlock+"."};
+  if(st.player.coins<def.cost)return{ok:false,reason:"Koin kurang (butuh "+def.cost+")."};
+  return{ok:true};
+}
+function placeBuilding(st,typeId,x,y){
+  var chk=canPlace(st,typeId,x,y);
+  if(!chk.ok)return chk;
+  var def=buildingDef(typeId);
+  gainCoins(st,-def.cost,"Membangun "+def.name);
+  st.grid[tileKey(x,y)]={type:typeId,level:1,placedAt:Date.now(),lastHarvest:Date.now(),invested:def.cost};
+  st.stats.built++;
+  var ev=gainXP(st,25,"Membangun "+def.name);
+  if(typeId==="taman")gainXP(st,5,"Bonus Taman Teluk");
+  ev.placed={type:typeId,x:x,y:y};
+  return{ok:true,events:ev};
+}
+function harvestReady(b,now){
+  var def=buildingDef(b.type);
+  return (now-b.lastHarvest)>=def.interval*1000;
+}
+function harvest(st,key,now){
+  var b=st.grid[key];
+  if(!b)return{ok:false,reason:"Tidak ada bangunan."};
+  if(!harvestReady(b,now||Date.now()))return{ok:false,reason:"Belum siap panen."};
+  var def=buildingDef(b.type);
+  var amt=yieldAt(def,b.level);
+  b.lastHarvest=now||Date.now();
+  gainCoins(st,amt,"Panen "+def.name+" (Lv "+b.level+")");
+  st.stats.harvested++;
+  var ev=gainXP(st,5,"Panen "+def.name);
+  return{ok:true,amount:amt,events:ev};
+}
+function harvestAll(st,now){
+  now=now||Date.now();var total=0,n=0,evs=[];
+  for(var k in st.grid){var r=harvest(st,k,now);if(r.ok){total+=r.amount;n++;evs.push(r.events);}}
+  return{count:n,total:total};
+}
+function upgradeBuilding(st,key){
+  var b=st.grid[key];
+  if(!b)return{ok:false,reason:"Tidak ada bangunan."};
+  if(b.level>=3)return{ok:false,reason:"Sudah level maksimal."};
+  var def=buildingDef(b.type);
+  var cost=upgradeCost(def,b.level);
+  if(st.player.coins<cost)return{ok:false,reason:"Koin kurang (butuh "+cost+")."};
+  gainCoins(st,-cost,"Upgrade "+def.name+" ke Lv "+(b.level+1));
+  b.level++;b.invested+=cost;st.stats.upgrades++;
+  var ev=gainXP(st,30,"Upgrade "+def.name);
+  return{ok:true,events:ev};
+}
+function sellBuilding(st,key){
+  var b=st.grid[key];
+  if(!b)return{ok:false,reason:"Tidak ada bangunan."};
+  var def=buildingDef(b.type);
+  var refund=sellRefund(b.invested);
+  gainCoins(st,refund,"Menjual "+def.name);
+  delete st.grid[key];
+  return{ok:true,refund:refund};
+}
+function moveBuilding(st,fromKey,tx,ty){
+  var b=st.grid[fromKey];
+  if(!b)return{ok:false,reason:"Tidak ada bangunan."};
+  if(!inBounds(tx,ty))return{ok:false,reason:"Di luar peta."};
+  if(st.grid[tileKey(tx,ty)])return{ok:false,reason:"Petak tujuan terisi."};
+  delete st.grid[fromKey];
+  st.grid[tileKey(tx,ty)]=b;
+  return{ok:true};
+}
+
+/* ---------- Misi harian (deterministik per tanggal) ---------- */
+var QUEST_POOL=[
+ {id:"build2",   title:"Bangun 2 bangunan",        target:2, stat:"built",     reward:{xp:40,coins:60}},
+ {id:"build4",   title:"Bangun 4 bangunan",        target:4, stat:"built",     reward:{xp:70,coins:100}},
+ {id:"harvest3", title:"Panen 3 kali",             target:3, stat:"harvested", reward:{xp:40,coins:60}},
+ {id:"harvest8", title:"Panen 8 kali",             target:8, stat:"harvested", reward:{xp:60,coins:90}},
+ {id:"quiz1",    title:"Mainkan Kuis Sultra 1x",   target:1, stat:"quizzes",   reward:{xp:50,coins:40}},
+ {id:"quizbest", title:"Raih skor kuis 250+",      target:1, stat:"quizBest250", reward:{xp:60,coins:70}},
+ {id:"xp150",    title:"Raih 150 XP hari ini",     target:150,stat:"xpToday",   reward:{xp:60,coins:80}},
+ {id:"upgrade1", title:"Upgrade 1 bangunan",       target:1, stat:"upgrades",  reward:{xp:50,coins:70}}
+];
+function dailyQuests(dateStr){
+  var rng=mulberry32(hashStr("sukikampung-quest-"+dateStr));
+  var pool=QUEST_POOL.slice(),out=[];
+  for(var i=0;i<5&&pool.length;i++){
+    var idx=Math.floor(rng()*pool.length);
+    var q=pool.splice(idx,1)[0];
+    out.push({id:q.id+"-"+dateStr,title:q.title,target:q.target,stat:q.stat,
+      reward:{xp:q.reward.xp,coins:q.reward.coins},progress:0,claimed:false,skipped:false});
+  }
+  return out;
+}
+function questProgressValue(st,stat){
+  if(stat==="xpToday")return st._xpToday||0;
+  if(stat==="quizBest250")return (st.quiz.bestToday>=250)?1:0;
+  return st.stats[stat]||0;
+}
+function refreshQuestProgress(st){
+  var changed=false;
+  for(var i=0;i<st.quests.items.length;i++){
+    var q=st.quests.items[i];
+    var base=st.quests["base_"+q.id]||0;
+    var v=questProgressValue(st,q.stat)-base;
+    v=clamp(v,0,q.target);
+    if(v!==q.progress){q.progress=v;changed=true;}
+  }
+  return changed;
+}
+function claimQuest(st,questId){
+  for(var i=0;i<st.quests.items.length;i++){
+    var q=st.quests.items[i];
+    if(q.id!==questId)continue;
+    if(q.claimed)return{ok:false,reason:"Sudah diklaim."};
+    if(q.skipped)return{ok:false,reason:"Misi dilewati."};
+    if(q.progress<q.target)return{ok:false,reason:"Belum selesai."};
+    q.claimed=true;
+    gainXP(st,q.reward.xp,"Misi: "+q.title);
+    gainCoins(st,q.reward.coins,"Misi: "+q.title);
+    st.stats.questsDone++;
+    return{ok:true,events:checkAchievements(st)};
+  }
+  return{ok:false,reason:"Misi tidak ditemukan."};
+}
+function skipQuest(st,questId){
+  for(var i=0;i<st.quests.items.length;i++){
+    if(st.quests.items[i].id===questId){st.quests.items[i].skipped=true;return{ok:true};}
+  }
+  return{ok:false};
+}
+
+/* ---------- Kuis Sultra: 26 soal terverifikasi (pengetahuan umum) ---------- */
+var QUESTIONS=[
+ {d:1,q:"Apa ibu kota Provinsi Sulawesi Tenggara?",o:["Kendari","Makassar","Palu","Manado"],a:0},
+ {d:1,q:"Teluk yang menjadi ikon Kota Kendari adalah…",o:["Teluk Kendari","Teluk Tomini","Teluk Bone","Teluk Palu"],a:0},
+ {d:1,q:"Kepulauan di Sultra yang terkenal sebagai surga menyelam adalah…",o:["Wakatobi","Bangka","Karimunjawa","Derawan"],a:0},
+ {d:1,q:"Tarian penyambutan tamu khas Sulawesi Tenggara adalah Tari…",o:["Lulo","Saman","Kecak","Tor-Tor"],a:0},
+ {d:1,q:"Suku terbesar di Sulawesi Tenggara adalah suku…",o:["Tolaki","Bugis","Toraja","Dani"],a:0},
+ {d:1,q:"Satwa endemik Sulawesi yang bertubuh seperti kerbau kecil adalah…",o:["Anoa","Komodo","Orangutan","Bekantan"],a:0},
+ {d:1,q:"Sambal segar khas Kendari yang terkenal pedas adalah…",o:["Colo-colo","Dabu-dabu","Sambal matah","Sambal terasi"],a:0},
+ {d:1,q:"Kota terbesar kedua di Sulawesi Tenggara setelah Kendari adalah…",o:["Baubau","Kolaka","Unaaha","Raha"],a:0},
+ {d:2,q:"Wakatobi adalah singkatan dari pulau…",o:["Wangi-Wangi, Kaledupa, Tomia, Binongko","Waikelo, Katobu, Tomia, Binongko","Wangi-Wangi, Kabaena, Tomia, Buton","Wawonii, Kaledupa, Tomia, Binongko"],a:0},
+ {d:2,q:"Jembatan yang membentang di atas Teluk Kendari bernama…",o:["Jembatan Bahteramas","Jembatan Suramadu","Jembatan Ampera","Jembatan Barelang"],a:0},
+ {d:2,q:"Bandara utama yang melayani Kota Kendari adalah Bandara…",o:["Haluoleo","Hasanuddin","Mutiara","Sam Ratulangi"],a:0},
+ {d:2,q:"Julukan Provinsi Sulawesi Tenggara adalah…",o:["Bumi Anoa","Bumi Cenderawasih","Bumi Rafflesia","Bumi Laskar Pelangi"],a:0},
+ {d:2,q:"Benteng yang konon terluas di dunia terletak di kota…",o:["Baubau","Kendari","Makassar","Ternate"],a:0},
+ {d:2,q:"Pulau di Sultra yang terkenal dengan tambang aspal alam adalah Pulau…",o:["Buton","Muna","Kabaena","Wawonii"],a:0},
+ {d:2,q:"Makanan pokok tradisional Sultra berbahan sagu disebut…",o:["Sinonggi","Papeda Maluku","Tinutuan","Kapurung"],a:1},
+ {d:2,q:"Masjid agung yang menjadi ikon Kota Kendari adalah Masjid…",o:["Al-Kautsar","Istiqlal","Al-Akbar","Baiturrahman"],a:0},
+ {d:3,q:"Taman nasional di Sultra yang menjadi habitat anoa dan maleo adalah…",o:["Rawa Aopa Watumohai","Lore Lindu","Bogani Nani Wartabone","Wasur"],a:0},
+ {d:3,q:"Burung endemik Sulawesi yang mengubur telurnya di pasir hangat adalah…",o:["Maleo","Cenderawasih","Jalak Bali","Elang Jawa"],a:0},
+ {d:3,q:"Provinsi yang berbatasan langsung di sebelah utara Sulawesi Tenggara adalah…",o:["Sulawesi Tengah","Sulawesi Selatan","Sulawesi Barat","Gorontalo"],a:0},
+ {d:3,q:"Pulau terbesar di Provinsi Sulawesi Tenggara adalah Pulau…",o:["Buton","Muna","Kabaena","Wawonii"],a:0},
+ {d:3,q:"Komoditas tambang utama Sulawesi Tenggara adalah…",o:["Nikel","Batu bara","Emas","Timah"],a:0},
+ {d:3,q:"Pantai yang populer di kalangan warga Kendari untuk bersantai adalah Pantai…",o:["Nambo","Kuta","Parangtritis","Losari"],a:0},
+ {d:3,q:"Kain tenun tradisional khas suku Tolaki disebut Tenun…",o:["Tolaki","Ulos","Songket Palembang","Ikat Sumba"],a:0},
+ {d:3,q:"Rawa Aopa Watumohai sebagian besar berada di Kabupaten…",o:["Konawe Selatan","Kolaka","Bombana","Buton"],a:0},
+ {d:3,q:"Bahasa daerah yang dituturkan suku Tolaki adalah Bahasa…",o:["Tolaki","Muna","Wolio","Bugis"],a:0},
+ {d:3,q:"Taman Nasional Wakatobi ditetapkan terutama karena kekayaan…",o:["Terumbu karang","Hutan pinus","Gurun pasir","Danau vulkanik"],a:0}
+];
+var QUIZ_DIFFS=[
+ {level:1,name:"Pemula",time:20,desc:"Soal ringan"},
+ {level:2,name:"Warga",time:15,desc:"Butuh level kuis 2"},
+ {level:3,name:"Tetua Adat",time:12,desc:"Butuh level kuis 3"}
+];
+function quizRound(diffLevel,rng){
+  rng=rng||Math.random;
+  var pool=QUESTIONS.filter(function(q){return q.d===diffLevel;});
+  if(pool.length<5)pool=QUESTIONS.slice();
+  var idxs=pool.map(function(_,i){return i;});
+  for(var i=idxs.length-1;i>0;i--){var j=Math.floor(rng()*(i+1));var t=idxs[i];idxs[i]=idxs[j];idxs[j]=t;}
+  return idxs.slice(0,5).map(function(i){return pool[i];});
+}
+function quizScore(correct,timeLeft){return correct?100+timeLeft*10:0;}
+function finishQuiz(st,diffLevel,results){
+  /* results: [{correct:bool,timeLeft:int}] */
+  var correct=0,score=0;
+  for(var i=0;i<results.length;i++){if(results[i].correct){correct++;score+=quizScore(true,results[i].timeLeft);}}
+  var diff=QUIZ_DIFFS[diffLevel-1]||QUIZ_DIFFS[0];
+  var coinReward=Math.round(score/10),xpReward=Math.round(score/5);
+  if(hasPerpus(st.grid)){coinReward=Math.round(coinReward*1.25);xpReward=Math.round(xpReward*1.25);}
+  st.quiz.plays++;st.stats.quizzes++;
+  var perfect=correct===results.length&&results.length>0;
+  if(perfect)st.stats.perfectQuiz++;
+  if(score>st.quiz.best)st.quiz.best=score;
+  st.quiz.bestToday=Math.max(st.quiz.bestToday||0,score);
+  if(correct>=3&&st.quiz.unlocked<3&&st.quiz.unlocked===diffLevel)st.quiz.unlocked=diffLevel+1;
+  gainCoins(st,coinReward,"Kuis Sultra (skor "+score+")");
+  var ev=gainXP(st,xpReward,"Kuis Sultra (skor "+score+")");
+  ev.quiz={correct:correct,total:results.length,score:score,coins:coinReward,xp:xpReward,perfect:perfect};
+  var ach=checkAchievements(st);
+  ev.achievements=(ev.achievements||[]).concat(ach.achievements||[]);
+  return ev;
+}
+
+/* ---------- Pencapaian ---------- */
+var ACHIEVEMENTS=[
+ {id:"fondasi",   name:"Fondasi Kampung", icon:"\uD83E\uDDF1", desc:"Bangun bangunan pertama", check:function(st){return st.stats.built>=1;}},
+ {id:"berkembang",name:"Kampung Berkembang",icon:"\uD83C\uDFD8\uFE0F",desc:"Miliki 5 bangunan", check:function(st){return Object.keys(st.grid).length>=5;}},
+ {id:"level3",    name:"Warga Teladan",   icon:"\u2B50", desc:"Capai level 3", check:function(st){return st.player.level>=3;}},
+ {id:"level5",    name:"Tetua Kampung",   icon:"\uD83D\uDC51", desc:"Capai level 5", check:function(st){return st.player.level>=5;}},
+ {id:"panen10",   name:"Tangan Rajin",    icon:"\uD83C\uDF3E", desc:"Panen 10 kali", check:function(st){return st.stats.harvested>=10;}},
+ {id:"misi5",     name:"Penuntun Misi",   icon:"\uD83C\uDFAF", desc:"Selesaikan 5 misi", check:function(st){return st.stats.questsDone>=5;}},
+ {id:"kuis1",     name:"Penjelajah Ilmu", icon:"\uD83D\uDCDA", desc:"Mainkan Kuis Sultra", check:function(st){return st.stats.quizzes>=1;}},
+ {id:"kuisSempurna",name:"Bintang Sultra",icon:"\uD83C\uDF1F", desc:"Skor sempurna di kuis (5/5)", check:function(st){return st.stats.perfectQuiz>=1;}},
+ {id:"kolektor",  name:"Kolektor Kampung",icon:"\uD83C\uDFE1", desc:"Miliki kedelapan tipe bangunan", check:function(st){var seen={};for(var k in st.grid)seen[st.grid[k].type]=1;return Object.keys(seen).length>=8;}},
+ {id:"sultan",    name:"Lumbung Penuh",   icon:"\uD83D\uDCB0", desc:"Miliki 2.000 Koin SUKI", check:function(st){return st.player.coins>=2000;}}
+];
+function checkAchievements(st){
+  var fresh=[];
+  for(var i=0;i<ACHIEVEMENTS.length;i++){
+    var a=ACHIEVEMENTS[i];
+    if(!st.achievements[a.id]&&a.check(st)){st.achievements[a.id]=Date.now();fresh.push(a);}
+  }
+  for(var j=0;j<fresh.length;j++){gainXP(st,20,"Pencapaian: "+fresh[j].name);}
+  return{achievements:fresh};
+}
+
+/* ---------- Reset harian ---------- */
+function ensureDaily(st){
+  var t=todayStr();
+  if(st.quests.date!==t){
+    var oldBase={};
+    for(var s in st.stats)oldBase[s]=st.stats[s];
+    st.quests={date:t,items:dailyQuests(t)};
+    st.quests._base=oldBase;
+    st._xpToday=0;
+    st.quiz.bestToday=0;
+    for(var i=0;i<st.quests.items.length;i++){
+      var q=st.quests.items[i];
+      st.quests["base_"+q.id]=questProgressValue(st,q.stat);
+    }
+  }
+  refreshQuestProgress(st);
+}
+
+/* ---------- Ekspor ---------- */
+global.SK={
+  SAVE_KEY:SAVE_KEY,GRID:GRID,START_COINS:START_COINS,
+  BUILDINGS:BUILDINGS,QUESTIONS:QUESTIONS,QUIZ_DIFFS:QUIZ_DIFFS,ACHIEVEMENTS:ACHIEVEMENTS,QUEST_POOL:QUEST_POOL,ICONS:ICONS,
+  hashStr:hashStr,mulberry32:mulberry32,clamp:clamp,todayStr:todayStr,uid:uid,
+  buildingDef:buildingDef,yieldAt:yieldAt,upgradeCost:upgradeCost,sellRefund:sellRefund,hasBalai:hasBalai,hasPerpus:hasPerpus,
+  xpForLevel:xpForLevel,
+  newGameState:newGameState,addLedger:addLedger,gainCoins:gainCoins,gainXP:gainXP,
+  tileKey:tileKey,inBounds:inBounds,canPlace:canPlace,placeBuilding:placeBuilding,
+  harvestReady:harvestReady,harvest:harvest,harvestAll:harvestAll,
+  upgradeBuilding:upgradeBuilding,sellBuilding:sellBuilding,moveBuilding:moveBuilding,
+  dailyQuests:dailyQuests,questProgressValue:questProgressValue,refreshQuestProgress:refreshQuestProgress,
+  claimQuest:claimQuest,skipQuest:skipQuest,ensureDaily:ensureDaily,
+  quizRound:quizRound,quizScore:quizScore,finishQuiz:finishQuiz,
+  checkAchievements:checkAchievements
+};
+})(typeof window!=="undefined"?window:globalThis);
+</script>
+
+<script id="sk-app">
+/* ============================================================
+   SUKI KAMPUNG — lapisan aplikasi (DOM).
+   ============================================================ */
+(function(){
+"use strict";
+var SK=window.SK;
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function fmt(n){return Number(n).toLocaleString("id-ID");}
+
+/* ---------- State: muat / simpan ---------- */
+var state=null;
+function loadState(){
+  try{
+    var raw=localStorage.getItem(SK.SAVE_KEY);
+    if(raw){
+      var s=JSON.parse(raw);
+      if(s&&s.v===1&&s.player&&s.grid){state=s;return;}
+    }
+  }catch(e){console.warn("gagal memuat simpanan",e);}
+  state=SK.newGameState("Warga SUKI");
+}
+function saveState(){
+  try{localStorage.setItem(SK.SAVE_KEY,JSON.stringify(state));}
+  catch(e){toast("Penyimpanan penuh — progres mungkin tidak tersimpan.","teal");}
+}
+
+/* ---------- Toast & modal ---------- */
+function toast(msg,kind){
+  var box=$("toasts");
+  var el=document.createElement("div");
+  el.className="toast"+(kind?" "+kind:"");
+  el.textContent=msg;
+  box.appendChild(el);
+  setTimeout(function(){el.style.opacity="0";el.style.transition="opacity .4s";setTimeout(function(){el.remove();},450);},3200);
+  while(box.children.length>3)box.firstChild.remove();
+}
+function showModal(emoji,title,msg,actions){
+  $("modalEmoji").textContent=emoji;
+  $("modalTitle").textContent=title;
+  $("modalMsg").textContent=msg;
+  var box=$("modalActions");box.innerHTML="";
+  actions.forEach(function(a){
+    var b=document.createElement("button");
+    b.className="btn "+(a.style||"btn-teal")+" btn-block";
+    b.textContent=a.label;
+    b.onclick=function(){hideModal();if(a.onClick)a.onClick();};
+    box.appendChild(b);
+  });
+  $("modalBack").classList.add("open");
+}
+function hideModal(){$("modalBack").classList.remove("open");}
+$("modalBack").addEventListener("click",function(e){if(e.target===$("modalBack"))hideModal();});
+
+/* ---------- Header ---------- */
+function renderHeader(){
+  var p=state.player;
+  $("playerName").textContent=p.name;
+  $("avatar").textContent=(p.name||"S").trim().charAt(0).toUpperCase();
+  $("avatarBig").textContent=(p.name||"S").trim().charAt(0).toUpperCase();
+  $("profileName").textContent=p.name;
+  $("villageName").innerHTML="&#127969; "+esc(p.village);
+  $("profileVillage").innerHTML=esc(p.village);
+  $("coinBalance").textContent=fmt(p.coins);
+  $("levelBadge").textContent="Lv "+p.level;
+  var need=SK.xpForLevel(p.level);
+  $("xpFill").style.width=Math.min(100,Math.round(p.xp/need*100))+"%";
+  $("xpText").textContent=fmt(p.xp)+"/"+fmt(need)+" XP";
+  $("refCode").textContent=state.referral;
+  $("refCodeHero").textContent=state.referral;
+}
+
+/* ---------- Peta ---------- */
+var tiles=[]; // tiles[y][x] -> element
+function buildMap(){
+  var map=$("map");map.innerHTML="";tiles=[];
+  for(var y=0;y<SK.GRID;y++){
+    tiles[y]=[];
+    for(var x=0;x<SK.GRID;x++){
+      (function(x,y){
+        var t=document.createElement("div");
+        t.className="tile";t.setAttribute("role","gridcell");
+        t.setAttribute("aria-label","Petak "+(x+1)+","+(y+1));
+        t.dataset.x=x;t.dataset.y=y;
+        t.addEventListener("click",function(){onTileTap(x,y);});
+        map.appendChild(t);tiles[y][x]=t;
+      })(x,y);
+    }
+  }
+}
+function renderMap(){
+  var now=Date.now(),count=0;
+  for(var y=0;y<SK.GRID;y++)for(var x=0;x<SK.GRID;x++){
+    (function(x,y){
+      var t=tiles[y][x],key=SK.tileKey(x,y),b=state.grid[key];
+      t.classList.toggle("placemode",!!placeMode);
+      if(b){
+        count++;
+        var def=SK.buildingDef(b.type);
+        var ready=SK.harvestReady(b,now);
+        t.classList.toggle("ready",ready);
+        t.innerHTML='<span class="bart">'+SK.ICONS[def.icon]+'</span><span class="lvl">Lv'+b.level+"</span>";
+        t.setAttribute("aria-label",def.name+" level "+b.level+(ready?", siap panen":""));
+      }else{
+        t.classList.remove("ready");
+        t.innerHTML="";
+        t.setAttribute("aria-label","Petak kosong "+(x+1)+","+(y+1));
+      }
+    })(x,y);
+  }
+  $("statBuildings").textContent=count;
+  $("statHarvest").textContent=fmt(state.stats.harvested);
+  $("statQuests").textContent=fmt(state.stats.questsDone);
+}
+
+/* ---------- Mode bangun / pindah ---------- */
+var placeMode=null;   // {type} saat memilih bangunan
+var moveMode=null;    // {fromKey} saat memindahkan
+function openBuildSheet(){
+  var g=$("buildGrid");g.innerHTML="";
+  SK.BUILDINGS.forEach(function(def){
+    var card=document.createElement("button");
+    var locked=state.player.level<def.unlock;
+    var afford=state.player.coins>=def.cost;
+    card.className="build-card"+(locked?" locked":"")+(placeMode&&placeMode.type===def.id?" selected":"");
+    card.innerHTML='<span class="b-art">'+SK.ICONS[def.icon]+"</span>"+
+      '<span class="b-name">'+esc(def.name)+"</span>"+
+      '<span class="b-cost">&#129689; '+fmt(def.cost)+" Koin</span>"+
+      '<span class="b-desc">'+esc(def.desc)+"</span>"+
+      (locked?'<span class="b-lock">&#128274; Terbuka di Lv '+def.unlock+"</span>"
+             :(!afford?'<span class="b-lock">Koin belum cukup</span>':'<span class="b-lock" style="color:var(--teal)">&#10003; '+esc(def.benefit)+"</span>"));
+    card.disabled=locked||!afford;
+    card.addEventListener("click",function(){
+      placeMode={type:def.id};moveMode=null;
+      closeSheets();renderMap();
+      $("mapHint").innerHTML="Ketuk petak kosong untuk membangun <b>"+esc(def.name)+"</b>. Ketuk lagi peta untuk batal.";
+      toast("Mode bangun: "+def.name+" — ketuk petak kosong.","teal");
+    });
+    g.appendChild(card);
+  });
+  $("buildSheet").classList.add("open");
+}
+function closeSheets(){$("buildSheet").classList.remove("open");$("tileSheet").classList.remove("open");}
+$("buildSheet").addEventListener("click",function(e){if(e.target===$("buildSheet"))closeSheets();});
+$("tileSheet").addEventListener("click",function(e){if(e.target===$("tileSheet"))closeSheets();});
+$("btnCloseBuild").addEventListener("click",closeSheets);
+$("btnCloseTile").addEventListener("click",closeSheets);
+$("btnBuild").addEventListener("click",function(){placeMode=null;moveMode=null;openBuildSheet();});
+
+function onTileTap(x,y){
+  var key=SK.tileKey(x,y);
+  if(moveMode){
+    var r=SK.moveBuilding(state,moveMode.fromKey,x,y);
+    if(r.ok){toast("Bangunan dipindahkan.");moveMode=null;}
+    else toast(r.reason,"teal");
+    renderMap();saveState();return;
+  }
+  if(placeMode){
+    var res=SK.placeBuilding(state,placeMode.type,x,y);
+    if(res.ok){
+      var def=SK.buildingDef(placeMode.type);
+      toast(def.name+" dibangun! +25 XP");
+      window.SKAPP.afterEvents(res.events);
+      placeMode=null;
+      $("mapHint").innerHTML='Ketuk <b>Bangun</b>, pilih bangunan, lalu ketuk petak kosong.';
+    }else{
+      toast(res.reason,"teal");
+    }
+    renderHeader();renderMap();saveState();return;
+  }
+  var b=state.grid[key];
+  if(b)openTilePanel(key,b);
+}
+
+function openTilePanel(key,b){
+  var def=SK.buildingDef(b.type);
+  var now=Date.now();
+  var ready=SK.harvestReady(b,now);
+  var amt=SK.yieldAt(def,b.level);
+  var upCost=b.level<3?SK.upgradeCost(def,b.level):null;
+  var refund=SK.sellRefund(b.invested);
+  var secsLeft=Math.max(0,Math.ceil(def.interval-(now-b.lastHarvest)/1000));
+  $("tilePanelBody").innerHTML=
+    '<div class="tile-panel-info"><span class="b-art">'+SK.ICONS[def.icon]+"</span>"+
+    "<div><h3>"+esc(def.name)+' <span class="level-badge">Lv '+b.level+"</span></h3>"+
+    "<p>"+esc(def.desc)+"</p></div></div>"+
+    '<div class="benefit-line">&#129689; Hasil: <b>'+fmt(amt)+' Koin</b> tiap '+def.interval+' dtk &middot; '+esc(def.benefit)+"</div>"+
+    '<div class="panel-actions">'+
+    '<button class="btn btn-gold btn-block" id="tpHarvest" '+(ready?"":"disabled")+">"+(ready?"&#129689; Panen +"+fmt(amt)+" Koin":"&#9200; Panen siap dalam "+secsLeft+" dtk")+"</button>"+
+    (upCost?'<button class="btn btn-teal btn-block" id="tpUpgrade" '+(state.player.coins>=upCost?"":"disabled")+'>&#11014; Upgrade ke Lv '+(b.level+1)+" (&#129689; "+fmt(upCost)+")</button>"
+           :'<button class="btn btn-ghost btn-block" disabled>&#11014; Level maksimal</button>')+
+    '<button class="btn btn-ghost btn-block" id="tpMove">&#8646; Pindahkan</button>'+
+    '<button class="btn btn-danger btn-block" id="tpSell">&#128465; Jual (kembali &#129689; '+fmt(refund)+")</button>"+
+    "</div>";
+  $("tileSheet").classList.add("open");
+  var h=$("tpHarvest");
+  if(h&&ready)h.addEventListener("click",function(){
+    var r=SK.harvest(state,key,Date.now());
+    if(r.ok){toast("Panen +"+fmt(r.amount)+" Koin!");window.SKAPP.afterEvents(r.events);closeSheets();}
+    renderHeader();renderMap();saveState();rq();
+  });
+  var u=$("tpUpgrade");
+  if(u&&upCost)u.addEventListener("click",function(){
+    var r=SK.upgradeBuilding(state,key);
+    if(r.ok){toast(def.name+" naik ke Lv "+state.grid[key].level+"!");window.SKAPP.afterEvents(r.events);}
+    else toast(r.reason,"teal");
+    closeSheets();renderHeader();renderMap();saveState();rq();
+  });
+  $("tpMove").addEventListener("click",function(){
+    moveMode={fromKey:key};placeMode=null;closeSheets();renderMap();
+    $("mapHint").innerHTML="Ketuk petak kosong tujuan untuk memindahkan <b>"+esc(def.name)+"</b>.";
+    toast("Mode pindah — ketuk petak tujuan.","teal");
+  });
+  $("tpSell").addEventListener("click",function(){
+    showModal("\uD83D\uDEE0\uFE0F","Jual "+def.name+"?",
+      "Kamu akan menerima "+fmt(refund)+" Koin SUKI (50% dari total investasi). Lanjutkan?",
+      [{label:"Ya, jual",style:"btn-danger",onClick:function(){
+        var r=SK.sellBuilding(state,key);
+        if(r.ok)toast(def.name+" terjual (+"+fmt(r.refund)+" Koin).");
+        renderHeader();renderMap();saveState();
+      }},{label:"Batal",style:"btn-ghost"}]);
+  });
+}
+
+$("btnHarvestAll").addEventListener("click",function(){
+  var r=SK.harvestAll(state,Date.now());
+  if(r.count===0){toast("Belum ada panen yang siap.","teal");return;}
+  toast("Panen "+r.count+" bangunan: +"+fmt(r.total)+" Koin!");
+  var ach=SK.checkAchievements(state);
+  if(ach.achievements.length)na(ach.achievements);
+  renderHeader();renderMap();saveState();rq();
+});
+
+/* ---------- Jembatan antar blok skrip ---------- */
+function rq(){var h=window.SKAPP&&window.SKAPP.hooks;if(h&&h.renderQuests)h.renderQuests();}
+function na(list){var h=window.SKAPP&&window.SKAPP.hooks;if(h&&h.notifyAchievements)h.notifyAchievements(list);}
+window.SKAPP={
+  loadState:loadState,saveState:saveState,buildMap:buildMap,
+  renderHeader:renderHeader,renderMap:renderMap,toast:toast,showModal:showModal,
+  getState:function(){return state;},
+  afterEvents:function(ev){if(window.SKAPP._afterEvents)window.SKAPP._afterEvents(ev);},
+  hooks:{}
+};
+})();
+</script>
+
+<script id="sk-app2">
+/* Lanjutan lapisan aplikasi: misi, kuis, hadiah, profil, onboarding, init. */
+(function(){
+"use strict";
+var SK=window.SK;
+var state=null; /* menunjuk ke objek state yang sama dengan blok sk-app (diisi saat init) */
+function saveState(){window.SKAPP.saveState();}
+function toast(m,k){window.SKAPP.toast(m,k);}
+function showModal(e,t,m,a){window.SKAPP.showModal(e,t,m,a);}
+function $(id){return document.getElementById(id);}
+/* Lanjutan: misi, kuis, hadiah, profil, onboarding, init. */
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function fmt(n){return Number(n).toLocaleString("id-ID");}
+
+/* ---------- Misi ---------- */
+function renderQuests(){
+  SK.ensureDaily(state);SK.refreshQuestProgress(state);
+  var box=$("questList");box.innerHTML="";
+  state.quests.items.forEach(function(q){
+    var done=q.progress>=q.target;
+    var card=document.createElement("div");
+    card.className="quest-card"+(done&&!q.claimed?" quest-done":"")+(q.skipped?" quest-skipped":"");
+    card.innerHTML='<div class="q-title">'+esc(q.title)+"</div>"+
+      '<div class="q-reward">Hadiah: +'+q.reward.xp+" XP &middot; +"+fmt(q.reward.coins)+" Koin</div>"+
+      '<div class="q-progress"><div class="q-track"><div class="q-fill" style="width:'+Math.round(q.progress/q.target*100)+'%"></div></div>'+
+      '<span class="q-count">'+q.progress+"/"+q.target+"</span></div>"+
+      '<div class="q-actions"></div>';
+    var acts=card.querySelector(".q-actions");
+    if(q.claimed){
+      var s=document.createElement("span");s.style.cssText="font-size:13px;font-weight:700;color:var(--teal);";s.textContent="\u2713 Hadiah diklaim";acts.appendChild(s);
+    }else if(q.skipped){
+      var s2=document.createElement("span");s2.style.cssText="font-size:13px;color:var(--ink-soft);";s2.textContent="Dilewati — tidak ada penalti";acts.appendChild(s2);
+    }else{
+      var bK=document.createElement("button");bK.className="btn btn-teal btn-sm";bK.textContent=done?"Klaim Hadiah":"Belum selesai";bK.disabled=!done;
+      bK.addEventListener("click",function(){
+        var r=SK.claimQuest(state,q.id);
+        if(r.ok){toast("Misi selesai! +"+q.reward.xp+" XP, +"+fmt(q.reward.coins)+" Koin","gold");afterEvents(r.events);}
+        else toast(r.reason,"teal");
+        renderHeader();saveState();renderQuests();renderLedger();
+      });
+      var bS=document.createElement("button");bS.className="btn btn-ghost btn-sm";bS.textContent="Lewati";
+      bS.addEventListener("click",function(){SK.skipQuest(state,q.id);toast("Misi dilewati. Santai saja!");saveState();renderQuests();});
+      acts.appendChild(bK);acts.appendChild(bS);
+    }
+    box.appendChild(card);
+  });
+  saveState();
+}
+function tickCountdown(){
+  var now=new Date(),mid=new Date(now);mid.setHours(24,0,0,0);
+  var s=Math.floor((mid-now)/1000);
+  var h=Math.floor(s/3600),m=Math.floor(s%3600/60),ss=s%60;
+  $("questCountdown").innerHTML="\u23F0; Misi baru dalam <b>"+h+" jam "+m+" mnt "+ss+" dtk</b>";
+}
+
+/* ---------- Kuis Sultra ---------- */
+var quiz={diff:1,questions:[],idx:0,score:0,correct:0,results:[],timer:null,timeLeft:0,lock:false};
+function renderDiffs(){
+  var g=$("diffGrid");g.innerHTML="";
+  SK.QUIZ_DIFFS.forEach(function(d){
+    var un=state.quiz.unlocked>=d.level;
+    var el=document.createElement("button");
+    el.className="diff-card "+(un?"unlocked":"locked");
+    el.innerHTML='<div class="d-name">'+esc(d.name)+"</div><div class=\"d-sub\">"+esc(d.desc)+"<br>"+d.time+" dtk/soal</div>";
+    el.disabled=!un;
+    if(quiz.diff===d.level)el.style.boxShadow="0 0 0 2px var(--gold)";
+    el.addEventListener("click",function(){quiz.diff=d.level;renderDiffs();});
+    g.appendChild(el);
+  });
+  $("bestScore").textContent=state.quiz.best>0?fmt(state.quiz.best)+" poin":"belum ada";
+  $("quizTimeLabel").textContent=SK.QUIZ_DIFFS[quiz.diff-1].time+" detik";
+}
+function openQuiz(){
+  $("quizOverlay").classList.add("open");
+  $("quizIntro").classList.remove("hidden");
+  $("quizPlay").classList.add("hidden");
+  $("quizResult").classList.add("hidden");
+  renderDiffs();
+}
+function closeQuiz(){stopTimer();$("quizOverlay").classList.remove("open");}
+$("btnStartQuiz").addEventListener("click",openQuiz);
+$("btnQuizClose").addEventListener("click",closeQuiz);
+$("btnQuitQuiz").addEventListener("click",function(){
+  showModal("\uD83D\uDEA9","Keluar dari kuis?","Progres ronde ini akan hilang.",[
+    {label:"Ya, keluar",style:"btn-danger",onClick:closeQuiz},
+    {label:"Lanjut main",style:"btn-ghost",onClick:openQuizKeep}
+  ]);
+});
+function openQuizKeep(){$("quizOverlay").classList.add("open");}
+$("btnBeginQuiz").addEventListener("click",startQuizRound);
+$("btnQuizAgain").addEventListener("click",function(){
+  $("quizResult").classList.add("hidden");$("quizIntro").classList.remove("hidden");
+});
+function startQuizRound(){
+  quiz.questions=SK.quizRound(quiz.diff);
+  quiz.idx=0;quiz.score=0;quiz.correct=0;quiz.results=[];
+  $("quizIntro").classList.add("hidden");
+  $("quizResult").classList.add("hidden");
+  $("quizPlay").classList.remove("hidden");
+  showQuestion();
+}
+function showQuestion(){
+  quiz.lock=false;
+  var q=quiz.questions[quiz.idx];
+  var diff=SK.QUIZ_DIFFS[quiz.diff-1];
+  $("quizRound").textContent="Soal "+(quiz.idx+1)+"/"+quiz.questions.length+" \u00B7 "+diff.name;
+  $("quizScoreLive").textContent="Skor: "+fmt(quiz.score);
+  $("quizQuestion").textContent=q.q;
+  $("quizFeedback").textContent="";
+  var box=$("quizOpts");box.innerHTML="";
+  // acak urutan opsi, lacak jawaban benar
+  var order=q.o.map(function(_,i){return i;});
+  for(var i=order.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=order[i];order[i]=order[j];order[j]=t;}
+  order.forEach(function(oi){
+    var b=document.createElement("button");
+    b.className="quiz-opt";b.textContent=q.o[oi];
+    b.addEventListener("click",function(){answer(oi,b);});
+    box.appendChild(b);
+  });
+  startTimer(diff.time);
+}
+function startTimer(secs){
+  stopTimer();
+  quiz.timeLeft=secs;
+  var total=secs;
+  $("timerFill").style.transition="none";$("timerFill").style.width="100%";
+  void $("timerFill").offsetWidth;
+  $("timerFill").style.transition="width 1s linear";
+  quiz.timer=setInterval(function(){
+    quiz.timeLeft--;
+    $("timerFill").style.width=Math.max(0,quiz.timeLeft/total*100)+"%";
+    if(quiz.timeLeft<=0){stopTimer();answer(-1,null);}
+  },1000);
+}
+function stopTimer(){if(quiz.timer){clearInterval(quiz.timer);quiz.timer=null;}}
+function answer(pick,btn){
+  if(quiz.lock)return;quiz.lock=true;stopTimer();
+  var q=quiz.questions[quiz.idx];
+  var correct=pick===q.a;
+  var pts=SK.quizScore(correct,Math.max(0,quiz.timeLeft));
+  quiz.score+=pts;if(correct)quiz.correct++;
+  quiz.results.push({correct:correct,timeLeft:Math.max(0,quiz.timeLeft)});
+  var opts=$("quizOpts").children;
+  for(var i=0;i<opts.length;i++){
+    opts[i].disabled=true;
+    if(opts[i].textContent===q.o[q.a])opts[i].classList.add("correct");
+  }
+  if(btn&&!correct)btn.classList.add("wrong");
+  $("quizScoreLive").textContent="Skor: "+fmt(quiz.score);
+  $("quizFeedback").textContent=correct?("\u2713 Benar! +"+pts+" poin"):("\u2717 Kurang tepat. Jawaban: "+q.o[q.a]);
+  $("quizFeedback").style.color=correct?"var(--ok)":"var(--danger)";
+  setTimeout(function(){
+    quiz.idx++;
+    if(quiz.idx<quiz.questions.length)showQuestion();
+    else finishQuizRound();
+  },1400);
+}
+function finishQuizRound(){
+  var ev=SK.finishQuiz(state,quiz.diff,quiz.results);
+  var qz=ev.quiz;
+  $("quizPlay").classList.add("hidden");
+  $("quizResult").classList.remove("hidden");
+  $("quizResultDetail").innerHTML="Benar <b>"+qz.correct+"/"+qz.total+"</b> &middot; Skor <b>"+fmt(qz.score)+"</b><br>"+
+    "Hadiah: <b>+"+qz.xp+" XP</b> &middot; <b>+"+fmt(qz.coins)+" Koin SUKI</b>"+
+    (qz.perfect?'<br>\uD83C\uDF1F <b>Sempurna!</b> Pencapaian Bintang Sultra terbuka.':"");
+  toast("Kuis selesai: "+qz.correct+"/"+qz.total+" benar","teal");
+  afterEvents(ev);
+  renderHeader();saveState();renderQuests();renderLedger();renderDiffs();
+}
+
+/* ---------- Pencapaian ---------- */
+function renderAchievements(){
+  var g=$("achGrid");g.innerHTML="";
+  SK.ACHIEVEMENTS.forEach(function(a){
+    var un=!!state.achievements[a.id];
+    var el=document.createElement("div");
+    el.className="ach-card"+(un?"":" locked");
+    el.innerHTML='<div class="a-ico">'+a.icon+"</div>"+
+      '<div class="a-name">'+esc(a.name)+"</div>"+
+      '<div class="a-desc">'+esc(a.desc)+"</div>";
+    g.appendChild(el);
+  });
+}
+
+/* ---------- Reward Center: ledger ---------- */
+function renderLedger(){
+  var box=$("ledgerList");box.innerHTML="";
+  if(!state.ledger.length){box.innerHTML='<div class="empty-state">Belum ada riwayat.</div>';return;}
+  state.ledger.slice(0,40).forEach(function(e){
+    var el=document.createElement("div");el.className="ledger-item";
+    var t=new Date(e.ts);
+    var timeStr=("0"+t.getDate()).slice(-2)+"/"+("0"+(t.getMonth()+1)).slice(-2)+" "+("0"+t.getHours()).slice(-2)+":"+("0"+t.getMinutes()).slice(-2);
+    var amt=e.kind==="coin"?((e.amount>=0?"+":"")+fmt(e.amount)+" Koin"):((e.amount>=0?"+":"")+fmt(e.amount)+" XP");
+    el.innerHTML='<div><div class="l-reason">'+esc(e.reason)+'</div><div class="l-time">'+timeStr+"</div></div>"+
+      '<div class="l-amt '+(e.amount>=0?"plus":"minus")+'">'+amt+"</div>";
+    box.appendChild(el);
+  });
+}
+document.querySelectorAll(".tab").forEach(function(tab){
+  tab.addEventListener("click",function(){
+    document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active");});
+    tab.classList.add("active");
+    ["virtual","sponsor","kampanye"].forEach(function(k){
+      $("tab-"+k).classList.toggle("hidden",k!==tab.dataset.tab);
+    });
+  });
+});
+
+/* ---------- Referral ---------- */
+$("btnCopyRef").addEventListener("click",function(){
+  var code=state.referral;
+  function done(){toast("Kode "+code+" disalin!","teal");}
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(code).then(done,function(){fallbackCopy(code);done();});
+  }else fallbackCopy(code),done();
+});
+function fallbackCopy(text){
+  var ta=document.createElement("textarea");ta.value=text;document.body.appendChild(ta);ta.select();
+  try{document.execCommand("copy");}catch(e){}
+  ta.remove();
+}
+$("btnShareRef").addEventListener("click",function(){
+  var data={title:"SUKI KAMPUNG",text:"Ayo bangun kampung bersamaku di SUKI KAMPUNG! Kode referral demo-ku: "+state.referral,url:"https://sukiapps.web.id"};
+  if(navigator.share){navigator.share(data).catch(function(){});}
+  else{fallbackCopy(data.text+" "+data.url);toast("Tautan disalin — bagikan lewat aplikasi favoritmu!","teal");}
+});
+
+/* ---------- Profil ---------- */
+$("btnSaveProfile").addEventListener("click",function(){
+  var n=$("inputName").value.trim(),v=$("inputVillage").value.trim();
+  if(n)state.player.name=n.slice(0,24);
+  if(v)state.player.village=v.slice(0,30);
+  saveState();renderHeader();
+  toast("Profil disimpan.","teal");
+});
+$("btnReset").addEventListener("click",function(){
+  showModal("\u26A0\uFE0F","Hapus semua progres?","Seluruh kampung, koin, XP, dan misi demo akan dihapus permanen dari perangkat ini.",[
+    {label:"Ya, hapus",style:"btn-danger",onClick:function(){
+      try{localStorage.removeItem(SK.SAVE_KEY);}catch(e){}
+      location.reload();
+    }},
+    {label:"Batal",style:"btn-ghost"}
+  ]);
+});
+$("btnReplayOnboard").addEventListener("click",function(){startOnboarding(true);});
+
+/* ---------- Navigasi ---------- */
+document.querySelectorAll(".nav-btn").forEach(function(btn){
+  btn.addEventListener("click",function(){
+    document.querySelectorAll(".nav-btn").forEach(function(b){b.classList.remove("active");});
+    btn.classList.add("active");
+    document.querySelectorAll(".view").forEach(function(v){v.classList.remove("active");});
+    $("view-"+btn.dataset.view).classList.add("active");
+    window.scrollTo(0,0);
+    if(btn.dataset.view==="misi")renderQuests();
+    if(btn.dataset.view==="hadiah")renderLedger();
+    if(btn.dataset.view==="profil"){renderAchievements();}
+  });
+});
+
+/* ---------- Onboarding ---------- */
+var OB_STEPS=[
+ {ico:"\uD83C\uDFD7\uFE0F",title:"Selamat datang di SUKI KAMPUNG!",text:"Kamu punya sebidang tanah kosong di tepi teluk. Ketuk tombol Bangun, pilih bangunan, lalu ketuk petak kosong untuk membangun."},
+ {ico:"\uD83E\uDE99",title:"Panen koin dari bangunanmu",text:"Tiap bangunan menghasilkan Koin SUKI. Saat petak berdenyut emas, ketuk bangunannya lalu tekan Panen. Koin dipakai untuk membangun & upgrade."},
+ {ico:"\uD83C\uDFAF",title:"Selesaikan misi & mainkan kuis",text:"Buka tab Misi untuk quest harian dan tab Main untuk Kuis Sultra. Kumpulkan XP, naik level, dan buka bangunan baru. Main bersama. Bangun bersama. Tumbuh bersama!"}
+];
+var obIdx=0;
+function startOnboarding(replay){
+  if(state.onboarded&&!replay)return;
+  obIdx=0;renderObStep();$("onboard").classList.add("open");
+}
+function renderObStep(){
+  var s=OB_STEPS[obIdx];
+  $("obIco").textContent=s.ico;$("obTitle").textContent=s.title;$("obText").textContent=s.text;
+  var dots=$("obDots").children;
+  for(var i=0;i<dots.length;i++)dots[i].classList.toggle("on",i===obIdx);
+  $("btnObNext").textContent=obIdx===OB_STEPS.length-1?"Mulai Bermain":"Lanjut";
+}
+function endOnboarding(){state.onboarded=true;saveState();$("onboard").classList.remove("open");}
+$("btnObNext").addEventListener("click",function(){
+  if(obIdx<OB_STEPS.length-1){obIdx++;renderObStep();}
+  else endOnboarding();
+});
+$("btnObSkip").addEventListener("click",endOnboarding);
+
+/* ---------- Event pasca-aksi: level up, unlock, achievement ---------- */
+function afterEvents(ev){
+  if(!ev)return;
+  window.SKAPP.renderHeader();
+  var h=window.SKAPP.hooks;if(h&&h.renderQuests)h.renderQuests();
+  if(ev.leveledUp){
+    var names=(ev.unlocks||[]).map(function(b){return b.name;}).join(", ");
+    window.SKAPP.showModal("\uD83C\uDF89;","Naik ke Level "+state.player.level+"!",
+      "Hebat! Bonus "+fmt(50*state.player.level)+" Koin SUKI."+(names?" Bangunan baru terbuka: "+names+".":""),
+      [{label:"Lanjutkan",style:"btn-teal"}]);
+  }else if(ev.unlocks&&ev.unlocks.length){
+    window.SKAPP.toast("Terbuka: "+ev.unlocks.map(function(b){return b.name;}).join(", "),"gold");
+  }
+  var ach=SK.checkAchievements(state);
+  if(ach.achievements.length)notifyAchievements(ach.achievements);
+  if(ev.achievements&&ev.achievements.length)notifyAchievements(ev.achievements);
+}
+function notifyAchievements(list){
+  list.forEach(function(a){window.SKAPP.toast("\uD83C\uDFC6 Pencapaian: "+a.name,"gold");});
+  renderAchievements();
+}
+if(window.SKAPP){
+  window.SKAPP._afterEvents=afterEvents;
+  window.SKAPP.hooks.renderQuests=renderQuests;
+  window.SKAPP.hooks.notifyAchievements=notifyAchievements;
+}
+
+/* ---------- Init ---------- */
+function init(){
+  /* State dimuat & dimiliki oleh blok sk-app; blok ini memakai objek yang sama. */
+  window.SKAPP.loadState();
+  state=window.SKAPP.getState();
+  window.SKAPP.buildMap();
+  SK.ensureDaily(state);
+  SK.checkAchievements(state);
+  $("inputName").value=state.player.name;
+  $("inputVillage").value=state.player.village;
+  window.SKAPP.renderHeader();window.SKAPP.renderMap();
+  renderQuests();renderAchievements();renderLedger();renderDiffs();
+  tickCountdown();setInterval(tickCountdown,1000);
+  // tandai petak siap panen secara berkala
+  setInterval(function(){renderMap();},5000);
+  startOnboarding(false);
+  // simpan berkala agar aman
+  setInterval(saveState,15000);
+  window.addEventListener("beforeunload",saveState);
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);
+else init();
+})();
+</script>
+</body>
+</html>
