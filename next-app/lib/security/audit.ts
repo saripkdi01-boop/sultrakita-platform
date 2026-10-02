@@ -52,6 +52,10 @@ export const AUDIT_ACTIONS = {
   SETTINGS_UPDATE: 'settings.update',
   BANNER_PUBLISH: 'banner.publish',
   PROPERTY_VERIFY: 'property.verify',
+  BUSINESS_APPROVE: 'business.approve',
+  BUSINESS_REJECT: 'business.reject',
+  BUSINESS_FEATURE: 'business.feature',
+  BUSINESS_VERIFY: 'business.verify',
 } as const;
 
 /** Singleton client service-role untuk penulisan audit (dibuat sekali per proses). */
