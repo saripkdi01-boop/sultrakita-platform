@@ -54,7 +54,7 @@ export function NotificationCenter() {
       const id = userIdOverride || auth.user?.id || null;
       setUserId(id);
       if (!id) { setNotifications([]); return; }
-      const { data, error } = await supabase.from('notifications').select('id,type,title,body,link,is_read,created_at').eq('profile_id', id).order('created_at', { ascending: false }).limit(30);
+      const { data, error } = await supabase.from('notifications').select('id,type,title,body,link,is_read,created_at').eq('user_id', id).order('created_at', { ascending: false }).limit(30);
       if (!error) setNotifications(((data || []) as NotificationRow[]).map(present));
       else setNotifications([]);
     } catch {
@@ -75,9 +75,39 @@ export function NotificationCenter() {
   useEffect(() => {
     if (!supabase || !userId) return;
     const client = supabase;
-    if (channelRef.current) client.removeChannel(channelRef.current);
-    channelRef.current = client.channel(`notifications:${userId}`).on('postgres_changes', { event: '*', schema: 'public', table: 'notifications', filter: `profile_id=eq.${userId}` }, () => { void load(userId); }).subscribe();
-    return () => { if (channelRef.current) { client.removeChannel(channelRef.current); channelRef.current = null; } };
+    // Realtime adalah enhancement, bukan kebutuhan inti. Seluruh siklus
+    // dibungkus try/catch agar kegagalan realtime TIDAK PERNAH merusak halaman
+    // (insiden /beranda 2026-10-02: error ".on() after .subscribe()" lolos ke
+    // error boundary). Channel memakai nama unik per effect-run sehingga tidak
+    // pernah me-reuse objek channel yang sudah subscribe.
+    const previous = channelRef.current;
+    channelRef.current = null;
+    if (previous) {
+      try { void client.removeChannel(previous); } catch { /* abaikan */ }
+    }
+    let channel: RealtimeChannel | null = null;
+    try {
+      channel = client.channel(`notifications:${userId}:${Math.random().toString(36).slice(2, 10)}`);
+      channel.on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` },
+        () => { void load(userId); },
+      );
+      void channel.subscribe();
+      channelRef.current = channel;
+    } catch {
+      if (channel) {
+        try { void client.removeChannel(channel); } catch { /* abaikan */ }
+      }
+      channelRef.current = null;
+    }
+    return () => {
+      const current = channelRef.current;
+      channelRef.current = null;
+      if (current) {
+        try { void client.removeChannel(current); } catch { /* abaikan */ }
+      }
+    };
   }, [userId]);
 
   useEffect(() => {
@@ -92,7 +122,7 @@ export function NotificationCenter() {
   async function markRead(ids: string[]) {
     if (!supabase || !userId || !ids.length) return;
     setNotifications((current) => current.map((item) => ids.includes(item.id) ? { ...item, unread: false, is_read: true } : item));
-    await supabase.from('notifications').update({ is_read: true }).eq('profile_id', userId).in('id', ids);
+    await supabase.from('notifications').update({ is_read: true }).eq('user_id', userId).in('id', ids);
   }
   function openNotification(item: NotificationItem) { void markRead([item.id]); setOpen(false); if (item.href !== pathname) router.push(item.href); }
   function markAllAsRead() { void markRead(notifications.filter((item) => item.unread).map((item) => item.id)); }

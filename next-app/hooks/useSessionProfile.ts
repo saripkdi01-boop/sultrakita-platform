@@ -40,15 +40,13 @@ export function useSessionProfile() {
     setUser(nextUser);
     if (!nextUser || !supabase) { setProfile(null); setNotificationCount(0); return; }
     try {
-      const [{ data: nextProfile }, profileNotificationQuery] = await Promise.all([
-        supabase.from('profiles').select('id,full_name,display_name,username,avatar_url,role,bio,district,visibility_settings').eq('id', nextUser.id).maybeSingle(),
-        supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('profile_id', nextUser.id).eq('is_read', false),
-      ]);
-      const notificationQuery = profileNotificationQuery.error
-        ? await supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('recipient_id', nextUser.id).is('read_at', null)
-        : profileNotificationQuery;
+      // Skema production: notifications memakai user_id (bukan profile_id /
+      // recipient_id seperti draf lama yang tak pernah teraplikasi).
+      const { data: nextProfile, error: profileError } = await supabase.from('profiles').select('id,full_name,display_name,username,avatar_url,role,bio,district,visibility_settings').eq('id', nextUser.id).maybeSingle();
+      if (profileError) throw profileError;
+      const { count } = await supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('user_id', nextUser.id).eq('is_read', false);
       setProfile(nextProfile as SessionProfile | null);
-      setNotificationCount(notificationQuery.count || 0);
+      setNotificationCount(count || 0);
     } catch {
       setProfile(null);
       setNotificationCount(0);

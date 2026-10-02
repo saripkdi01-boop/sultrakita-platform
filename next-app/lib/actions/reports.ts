@@ -2,18 +2,10 @@
 
 import { getServerSupabase } from '@/lib/supabase/server';
 import { trackEvent } from '@/lib/analytics/events';
+import { REPORT_REASON_LABELS, isValidReportReason } from '@/lib/report-reasons';
 
-// Alasan laporan terkontrol (bukan teks bebas) — sesuai kontrak event
-// report_content di lib/analytics/events.ts.
-const REASONS = ['spam', 'konten_menyesatkan', 'ujaran_kebencian', 'konten_tidak_pantas', 'lainnya'] as const;
-export type ReportReason = (typeof REASONS)[number];
-export const REPORT_REASON_LABELS: Record<ReportReason, string> = {
-  spam: 'Spam atau promosi mengganggu',
-  konten_menyesatkan: 'Konten menyesatkan',
-  ujaran_kebencian: 'Ujaran kebencian',
-  konten_tidak_pantas: 'Konten tidak pantas',
-  lainnya: 'Lainnya',
-};
+// Definisi alasan & label tinggal di lib/report-reasons.ts (modul biasa)
+// karena file 'use server' dilarang mengekspor selain fungsi async.
 
 const ID_RE = /^[a-zA-Z0-9_-]{1,120}$/;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -48,10 +40,6 @@ async function insertModerationQueue(input: {
   }
 }
 
-function validReason(reason: string): reason is ReportReason {
-  return (REASONS as readonly string[]).includes(reason);
-}
-
 /**
  * Mencatat laporan konten ke tabel analytics_events (event report_content)
  * untuk ditinjau tim moderasi. Server action — CSRF ditangani Next.js.
@@ -59,7 +47,7 @@ function validReason(reason: string): reason is ReportReason {
  */
 export async function reportPost(postId: string, reason: string): Promise<{ ok: boolean; message: string }> {
   if (!ID_RE.test(postId)) return { ok: false, message: 'Postingan tidak valid.' };
-  if (!validReason(reason)) return { ok: false, message: 'Alasan laporan tidak valid.' };
+  if (!isValidReportReason(reason)) return { ok: false, message: 'Alasan laporan tidak valid.' };
   try {
     const supabase = await getServerSupabase();
     const { data: { user } } = await supabase.auth.getUser();
@@ -94,7 +82,7 @@ export async function reportListing(
   reportedUserId?: string,
 ): Promise<{ ok: boolean; message: string }> {
   if (!ID_RE.test(listingId)) return { ok: false, message: 'Listing tidak valid.' };
-  if (!validReason(reason)) return { ok: false, message: 'Alasan laporan tidak valid.' };
+  if (!isValidReportReason(reason)) return { ok: false, message: 'Alasan laporan tidak valid.' };
   try {
     const supabase = await getServerSupabase();
     const { data: { user } } = await supabase.auth.getUser();
@@ -121,7 +109,7 @@ export async function reportProperty(
   reason: string,
 ): Promise<{ ok: boolean; message: string }> {
   if (!ID_RE.test(propertyId)) return { ok: false, message: 'Properti tidak valid.' };
-  if (!validReason(reason)) return { ok: false, message: 'Alasan laporan tidak valid.' };
+  if (!isValidReportReason(reason)) return { ok: false, message: 'Alasan laporan tidak valid.' };
   try {
     const supabase = await getServerSupabase();
     const { data: { user } } = await supabase.auth.getUser();
