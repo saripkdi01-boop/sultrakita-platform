@@ -55,6 +55,27 @@ for (const route of routes) {
       await page.goto(route.path, { waitUntil: 'domcontentloaded' });
       await page.waitForTimeout(500);
       await page.evaluate(() => document.fonts?.ready);
+      // Font utama dimuat via Google Fonts (eksternal). fonts.ready saja tidak
+      // cukup: bila stylesheet font belum tiba, tidak ada font pending sehingga
+      // ready langsung resolve dan screenshot memakai fallback → text-wrap
+      // berbeda antar runner (flake Business-light-mobile: test light jalan
+      // pertama saat font belum ada, test dark lolos karena font sudah ke-cache).
+      // Polling hingga font benar-benar tersedia (atau timeout 10 dtk).
+      await page.evaluate(async () => {
+        const deadline = Date.now() + 10000;
+        for (;;) {
+          try {
+            await Promise.all([
+              document.fonts.load('800 46px "Plus Jakarta Sans"'),
+              document.fonts.load('700 16px "Plus Jakarta Sans"'),
+              document.fonts.load('400 16px "Plus Jakarta Sans"'),
+            ]);
+            if (document.fonts.check('800 46px "Plus Jakarta Sans"')) break;
+          } catch { /* coba lagi hingga deadline */ }
+          if (Date.now() >= deadline) break;
+          await new Promise((r) => setTimeout(r, 250));
+        }
+      });
       await assertThemeContract(page, theme);
       await expect(page).toHaveScreenshot(`${route.name}-${theme}.png`, {
         // Full-page height varies with seeded/API-backed content between the
