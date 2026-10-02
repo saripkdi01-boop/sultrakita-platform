@@ -1,10 +1,11 @@
 'use client';
 
-import { ArrowRight, BadgeCheck, Check, ChevronLeft, ChevronRight, Heart, MapPin, Scale, Store, X } from 'lucide-react';
+import { ArrowRight, BadgeCheck, Check, ChevronLeft, ChevronRight, Heart, MapPin, MessageCircle, Scale, Store, X } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import type { PublicListing } from '@/lib/listings-query';
 import { sellerRatingText, sellerTier } from '@/lib/seller-trust';
+import { siteUrl, sukiWaLink } from '@/lib/whatsapp';
 import { reportListing } from '@/lib/actions/reports';
 import { ReportButton } from '@/components/moderation/ReportButton';
 import { SafeImage } from './SafeImage';
@@ -56,6 +57,12 @@ export function QuickViewModal({ listing, saved = false, inCompare = false, onTo
   const priceText = price > 0 ? rupiah(price) : 'Harga hubungi penjual';
   const discount = discountPercent(listing);
   const original = originalPriceValue(listing);
+  // Chat WhatsApp: inquiry diteruskan ke WA Business resmi SUKI (bukan nomor
+  // pribadi seller — privasi seller terjaga). Tombol hanya muncul bila
+  // NEXT_PUBLIC_SUKI_WA_NUMBER dikonfigurasi.
+  const waHref = sukiWaLink(
+    `Halo SUKI, saya tertarik dengan listing "${listing.title}" (${priceText}) di SUKI Marketplace: ${siteUrl()}/marketplace?listing=${encodeURIComponent(String(listing.id))}`
+  );
   // Stok jujur: tampilkan hanya bila kolom stock_quantity tersedia di DB.
   // Tanpa klaim "Stok tersedia" bila datanya tidak ada.
   const stock = typeof listing.stock_quantity === 'number' ? Math.trunc(listing.stock_quantity) : null;
@@ -119,6 +126,11 @@ export function QuickViewModal({ listing, saved = false, inCompare = false, onTo
                 <Store size={15} aria-hidden="true" /> Kunjungi toko <ArrowRight size={15} aria-hidden="true" />
               </Link>
             ) : null}
+            {waHref && (
+              <a href={waHref} target="_blank" rel="noopener noreferrer" className="fbm-qv-secondary fbm-qv-wa" aria-label={`Tanya tentang ${listing.title} via WhatsApp`}>
+                <MessageCircle size={16} aria-hidden="true" /> WhatsApp
+              </a>
+            )}
             {onToggleWishlist && (
               <button type="button" className={`fbm-qv-secondary${saved ? ' saved' : ''}`} onClick={onToggleWishlist} aria-pressed={saved} aria-label={saved ? 'Hapus dari wishlist' : 'Simpan ke wishlist'}>
                 <Heart size={16} aria-hidden="true" fill={saved ? 'currentColor' : 'none'} /> {saved ? 'Tersimpan' : 'Simpan'}

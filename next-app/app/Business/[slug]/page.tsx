@@ -16,6 +16,7 @@ import {
   type PublicBusiness,
 } from '@/lib/businesses-query';
 import InquiryForm from './inquiry-form';
+import { toWaDigits, waLink } from '@/lib/whatsapp';
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -102,7 +103,9 @@ export default async function BusinessProfilePage({ params }: Params) {
   const hours = parseHours(business.hours);
   const location = [business.city, business.province].filter(Boolean).join(', ');
   const website = normalizeWebsite(business.website);
-  const waDigits = (business.whatsapp || '').replace(/\D/g, '');
+  const waDigits = toWaDigits(business.whatsapp);
+  // Pesan terisi otomatis supaya inquiry dari SUKI langsung jelas konteksnya.
+  const waHref = waDigits ? waLink(waDigits, `Halo ${business.name}, saya menemukan bisnis Anda di SUKI (sukiapps.web.id) dan ingin bertanya.`) : null;
   const lat = typeof business.latitude === 'number' ? business.latitude : null;
   const lng = typeof business.longitude === 'number' ? business.longitude : null;
   const mapHref =
@@ -265,9 +268,9 @@ export default async function BusinessProfilePage({ params }: Params) {
                   </span>
                 </a>
               )}
-              {waDigits && (
+              {waHref && (
                 <a
-                  href={`https://wa.me/${waDigits}`}
+                  href={waHref}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="suki-business-contact-btn"
