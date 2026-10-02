@@ -23,6 +23,49 @@ async function setTheme(page: Page, theme: Theme) {
   }, { theme });
 }
 
+/**
+ * Tunggu webfont Plus Jakarta Sans benar-benar tiba (bukan sekadar
+ * document.fonts.ready yang bisa resolve sebelum stylesheet Google Fonts
+ * selesai diunduh — penyebab flakiness screenshot CI).
+ * Promise.race dengan timeout agar tidak menggantung selamanya.
+ */
+async function waitForWebfont(page: Page) {
+  await page.evaluate(() => {
+    const load = async () => {
+      try {
+        // Muat weight yang dipakai UI: regular, bold, extrabold.
+        await Promise.all([
+          document.fonts.load('400 16px "Plus Jakarta Sans"'),
+          document.fonts.load('700 16px "Plus Jakarta Sans"'),
+          document.fonts.load('800 16px "Plus Jakarta Sans"'),
+        ]);
+      } catch {
+        // Abaikan — fallback font tetap deterministik untuk screenshot.
+      }
+      await document.fonts.ready;
+    };
+    return Promise.race([
+      load(),
+      new Promise((resolve) => setTimeout(resolve, 10000)),
+    ]);
+  });
+}
+
+/**
+ * Tunggu EcosystemSlider keluar dari state loading (kartu kosong 176px)
+ * agar screenshot tidak menangkap placeholder. Maksimum 8 detik.
+ */
+async function waitForSliderReady(page: Page) {
+  try {
+    await page.waitForFunction(
+      () => !document.querySelector('.ecosystem-slider-loading'),
+      { timeout: 8000 }
+    );
+  } catch {
+    // Slider mungkin tidak ada di rute ini — lanjutkan saja.
+  }
+}
+
 async function assertThemeContract(page: Page, theme: Theme) {
   const state = await page.evaluate(() => {
     const root = document.documentElement;
@@ -54,7 +97,10 @@ for (const route of routes) {
       await setTheme(page, theme);
       await page.goto(route.path, { waitUntil: 'domcontentloaded' });
       await page.waitForTimeout(500);
-      await page.evaluate(() => document.fonts?.ready);
+      // Determinism: webfont eksplisit + slider keluar dari loading
+      // sebelum screenshot — cegah flakiness CI.
+      await waitForWebfont(page);
+      await waitForSliderReady(page);
       await assertThemeContract(page, theme);
       await expect(page).toHaveScreenshot(`${route.name}-${theme}.png`, {
         // Full-page height varies with seeded/API-backed content between the
