@@ -377,4 +377,8 @@ main()
         }, 5000);
       });
     }
-  });
+  })
+  // Keluar eksplisit: jangan biarkan proses menggantung bila ada handle
+  // yang masih hidup (mis. child `next start` yang tidak mati oleh SIGTERM
+  // karena dibungkus npx). Tanpa ini CI bisa hang setelah semua PASS.
+  .then(() => process.exit(process.exitCode || 0));
