@@ -3821,3 +3821,127 @@ html[data-theme='dark'] .beranda-v4-opportunity{background:linear-gradient(145de
 .toko-empty{text-align:center;color:#66736f;border:1px dashed var(--suki-line);border-radius:14px;padding:40px 16px}
 @media(max-width:640px){.toko-page{padding:16px 14px 50px}.toko-header{padding:16px}.toko-avatar{width:60px;height:60px;font-size:24px}.toko-header-copy h1{font-size:18px}}
 @media(prefers-reduced-motion:reduce){.mp-card,.mp-card-gallery-nav,.login-sheet,.quick-view,.save-search-dialog,.marketplace-sort-chip,.mp-card-action{transition:none!important;animation:none!important}}
+
+/* ===== SUKI Business — halaman publik: landing dinamis, direktori & profil (append-only, 2026-10-02) ===== */
+.suki-business-scope{--sb-ink:#12211f;--sb-forest:#0e6258;--sb-teal:#138a7d;--sb-mint:#e7f3ef;--sb-sand:#f8f6f1;--sb-gold:#c78b45;--sb-line:#dce8e3;--sb-muted:#55635e;--sb-content:1180px;background:var(--sb-sand);color:var(--sb-ink);font-family:'Plus Jakarta Sans',sans-serif;min-height:100vh}
+.suki-business-scope a{color:inherit}
+.suki-business-scope :is(a,button,input,select,textarea,summary,[tabindex]):focus-visible{outline:2.5px solid var(--sb-teal);outline-offset:2px;border-radius:6px}
+.suki-business-page .suki-business-card-link:focus-visible{outline:2.5px solid var(--sb-teal);outline-offset:3px;border-radius:14px}
+
+/* Statistik live di hero landing */
+.suki-business-stats{display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin:22px 0 0;color:#55635e;font-size:12px}
+.suki-business-stats strong{color:#0e6258;font-size:15px}
+
+/* Section bisnis unggulan (landing) */
+.suki-business-featured{width:min(var(--sb-content,1180px),calc(100% - 30px));margin:0 auto;padding:96px 0;border-top:1px solid var(--sb-line)}
+.suki-business-featured-grid{display:grid;gap:12px;margin:36px 0 28px;grid-template-columns:1fr}
+
+/* Kartu bisnis (dipakai landing & direktori) */
+.suki-business-card{background:#fff;border:1px solid var(--sb-line);border-radius:16px;transition:transform .18s ease,box-shadow .18s ease}
+.suki-business-card:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(18,33,31,.08)}
+.suki-business-card-link{display:flex;gap:14px;align-items:flex-start;padding:16px;text-decoration:none}
+.suki-business-card-initial{flex:none;display:grid;place-items:center;width:48px;height:48px;border-radius:14px;background:#0e6258;color:#fff;font:600 24px Georgia,serif}
+.suki-business-card-body{display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-width:0}
+.suki-business-card-name{font-size:15px;font-weight:800;letter-spacing:-.01em;color:#12211f}
+.suki-business-card-meta{font-size:12px;color:#55635e}
+.suki-business-badge-verified{display:inline-flex;align-items:center;gap:5px;margin-top:6px;padding:4px 9px;border-radius:999px;background:#e7f3ef;color:#0e6258;font-size:11px;font-weight:800}
+
+/* Empty state jujur */
+.suki-business-empty{margin:36px 0;padding:44px 24px;border:1.5px dashed var(--sb-line);border-radius:18px;background:#fff;text-align:center;color:#55635e;font-size:13px;line-height:1.7}
+.suki-business-empty strong{display:block;margin-bottom:8px;color:#12211f;font-size:16px;letter-spacing:-.01em}
+.suki-business-empty .suki-business-cta-row{margin-top:20px}
+.suki-business-empty-cta{display:inline-flex;text-decoration:none;max-width:320px;margin:0 auto}
+
+/* Subnav halaman direktori & profil */
+.suki-business-subnav{position:sticky;top:0;z-index:20;background:rgba(248,246,241,.94);backdrop-filter:blur(10px);border-bottom:1px solid var(--sb-line)}
+.suki-business-subnav-inner{width:min(var(--sb-content),calc(100% - 30px));margin:0 auto;height:64px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.suki-business-subnav-brand{display:flex;align-items:center;gap:10px;text-decoration:none;line-height:1}
+.suki-business-subnav-brand strong{display:block;font-size:15px;letter-spacing:.16em}
+.suki-business-subnav-brand small{display:block;margin-top:5px;color:#138a7d;font-size:9px;letter-spacing:.18em;text-transform:uppercase}
+.suki-business-subnav-cta{display:inline-flex;align-items:center;min-height:42px;padding:0 16px;border-radius:11px;background:#0e6258;color:#fff!important;font-size:12px;font-weight:800;text-decoration:none}
+.suki-business-subnav-cta:hover{background:#0b4f47}
+
+/* Link kembali */
+.suki-business-back-link{display:inline-flex;align-items:center;gap:6px;margin-bottom:22px;color:#0e6258;font-size:12px;font-weight:800;text-decoration:none}
+.suki-business-back-link:hover{text-decoration:underline;text-underline-offset:4px}
+
+/* Kicker di dalam scope */
+.suki-business-scope .suki-business-kicker{display:flex;align-items:center;gap:9px;color:#138a7d;font-size:9px;font-weight:900;letter-spacing:.18em;text-transform:uppercase}
+.suki-business-scope .suki-business-kicker span{display:inline-block;width:7px;height:7px;border-radius:50%;background:#c78b45;box-shadow:0 0 0 5px rgba(199,139,69,.12)}
+
+/* Halaman direktori */
+.suki-business-dir{width:min(var(--sb-content),calc(100% - 30px));margin:0 auto;padding:28px 0 90px}
+.suki-business-dir-head h1{margin:14px 0 8px;font-size:clamp(30px,5vw,44px);letter-spacing:-.05em;line-height:1.05}
+.suki-business-dir-head>p{max-width:560px;margin:0 0 26px;color:#55635e;font-size:13px;line-height:1.75}
+.suki-business-dir-filters{display:grid;gap:10px;background:#fff;border:1px solid var(--sb-line);border-radius:18px;padding:16px;margin-bottom:24px}
+.suki-business-dir-field{display:grid;gap:6px}
+.suki-business-dir-field>span{font-size:11px;font-weight:800;color:#55635e;text-transform:uppercase;letter-spacing:.06em}
+.suki-business-dir-field input,.suki-business-dir-field select{min-height:46px;width:100%;border:1px solid var(--sb-line);border-radius:12px;padding:0 14px;font-size:14px;font-family:inherit;background:#fff;color:#12211f}
+.suki-business-dir-submit{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;border:0;border-radius:12px;background:#0e6258;color:#fff;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer;padding:0 22px}
+.suki-business-dir-submit:hover{background:#0b4f47}
+.suki-business-dir-count{margin:0 0 16px;color:#55635e;font-size:13px}
+.suki-business-dir-grid{display:grid;gap:12px;grid-template-columns:1fr}
+.suki-business-pagination{display:flex;align-items:center;justify-content:center;gap:18px;margin-top:34px;font-size:13px;color:#55635e}
+.suki-business-pagination a,.suki-business-pagination .is-disabled{display:inline-flex;align-items:center;gap:6px;padding:10px 16px;border:1px solid var(--sb-line);border-radius:12px;background:#fff;font-weight:700;text-decoration:none;white-space:nowrap}
+.suki-business-pagination a{color:#0e6258}
+.suki-business-pagination .is-disabled{color:#9aa7a2;background:transparent;cursor:not-allowed}
+
+/* Halaman profil bisnis */
+.suki-business-profile{width:min(var(--sb-content),calc(100% - 30px));margin:0 auto;padding:28px 0 90px}
+.suki-business-profile-cover{display:block;width:100%;aspect-ratio:16/7;object-fit:cover;border-radius:20px;border:1px solid var(--sb-line);background:#e7f3ef}
+.suki-business-profile-head{display:flex;gap:16px;align-items:flex-start;margin:24px 0 4px}
+.suki-business-profile-logo{flex:none;width:88px;height:88px;border-radius:22px;object-fit:cover;border:1px solid var(--sb-line);background:#0e6258;color:#fff;display:grid;place-items:center;font:600 40px Georgia,serif}
+.suki-business-profile-name{margin:0;font-size:clamp(24px,4.5vw,36px);letter-spacing:-.04em;line-height:1.1}
+.suki-business-profile-sub{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px;font-size:13px;color:#55635e}
+.suki-business-profile-location{display:inline-flex;align-items:center;gap:5px}
+.suki-business-profile-address{display:flex;gap:8px;align-items:flex-start;max-width:640px;margin:16px 0 0;font-size:13px;color:#55635e;line-height:1.65}
+.suki-business-profile-address svg{flex:none;margin-top:2px;color:#138a7d}
+.suki-business-map-link{display:inline-flex;align-items:center;gap:8px;margin-top:14px;color:#0e6258;font-size:13px;font-weight:800;text-decoration:none}
+.suki-business-map-link:hover{text-decoration:underline;text-underline-offset:4px}
+.suki-business-profile-layout{margin-top:28px}
+.suki-business-profile-section{margin:0 0 20px;background:#fff;border:1px solid var(--sb-line);border-radius:18px;padding:22px}
+.suki-business-profile-section>h2{margin:0 0 14px;font-size:17px;letter-spacing:-.02em}
+.suki-business-profile-desc{margin:0;font-size:14px;line-height:1.8;color:#2c3b38;white-space:pre-line}
+.suki-business-inquiry-lead{margin-bottom:16px!important}
+
+/* Jam operasional */
+.suki-business-hours-list{margin:0;display:grid}
+.suki-business-hours-row{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:10px 0;border-bottom:1px solid var(--sb-line);font-size:13px}
+.suki-business-hours-row:last-child{border-bottom:0}
+.suki-business-hours-row dt{margin:0;font-weight:700;color:#12211f}
+.suki-business-hours-row dd{margin:0;color:#55635e}
+.suki-business-hours-closed{color:#8a3b2a!important;font-weight:700}
+
+/* Tombol kontak */
+.suki-business-contact-grid{display:grid;gap:10px}
+.suki-business-contact-btn{display:flex;align-items:center;gap:12px;min-height:52px;padding:12px 16px;border-radius:14px;border:1px solid var(--sb-line);background:#fff;text-decoration:none;font-size:14px;font-weight:700;color:#12211f}
+.suki-business-contact-btn svg{flex:none;color:#138a7d}
+.suki-business-contact-btn small{display:block;margin-top:2px;font-weight:400;font-size:12px;color:#55635e;word-break:break-all}
+.suki-business-contact-btn.is-primary{background:#0e6258;border-color:#0e6258;color:#fff}
+.suki-business-contact-btn.is-primary svg{color:#fff}
+.suki-business-contact-btn.is-primary small{color:#d7e8e3}
+
+/* Formulir pertanyaan */
+.suki-business-inquiry-form{display:grid;gap:14px;margin-top:4px}
+.suki-business-inquiry-form label{display:grid;gap:7px;font-size:13px;font-weight:700;color:#12211f}
+.suki-business-inquiry-form input,.suki-business-inquiry-form textarea{width:100%;min-height:48px;border:1px solid var(--sb-line);border-radius:12px;padding:12px 14px;font-size:14px;font-family:inherit;color:#12211f;background:#fff}
+.suki-business-inquiry-form textarea{min-height:120px;resize:vertical;line-height:1.6}
+.suki-business-inquiry-submit{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:50px;border:0;border-radius:12px;background:#0e6258;color:#fff;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer}
+.suki-business-inquiry-submit:hover:not(:disabled){background:#0b4f47}
+.suki-business-inquiry-submit:disabled{opacity:.65;cursor:wait}
+.suki-business-form-status{margin:0;padding:12px 14px;border-radius:12px;font-size:13px;line-height:1.65}
+.suki-business-form-status.is-success{background:#e7f3ef;color:#0e6258}
+.suki-business-form-status.is-error{background:#fbeeea;color:#8a3b2a}
+
+@media(min-width:640px){
+  .suki-business-featured-grid{grid-template-columns:repeat(2,1fr)}
+  .suki-business-dir-grid{grid-template-columns:repeat(2,1fr)}
+  .suki-business-dir-filters{grid-template-columns:1fr 1fr 1fr auto;align-items:end}
+  .suki-business-contact-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(min-width:1024px){
+  .suki-business-featured-grid{grid-template-columns:repeat(3,1fr)}
+  .suki-business-dir-grid{grid-template-columns:repeat(3,1fr)}
+  .suki-business-profile-layout{display:grid;grid-template-columns:1.6fr 1fr;gap:20px;align-items:start}
+}
+@media(prefers-reduced-motion:reduce){.suki-business-scope *,.suki-business-page .suki-business-card{transition:none!important;animation:none!important}}
