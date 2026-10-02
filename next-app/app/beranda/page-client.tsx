@@ -10,27 +10,21 @@ import { RightSidebar } from '@/components/beranda/RightSidebar';
 import { AdSlot } from '@/components/ads/AdSlot';
 import { NewsPortal } from '@/components/news/NewsPortal';
 import { StoriesSection } from '@/components/beranda/StoriesSection';
-import { useInfiniteFeed, type FeedFilter, type FeedTab } from '@/hooks/useInfiniteFeed';
+import { useInfiniteFeed, type FeedTab } from '@/hooks/useInfiniteFeed';
 import { supabase } from '@/lib/supabase/client';
 import styles from '@/components/beranda/feed.module.css';
 
-const filters: Array<{ value: FeedFilter; label: string }> = [
-  { value: 'recommended', label: 'Untuk Anda' },
-  { value: 'following', label: 'Mengikuti' },
-  { value: 'latest', label: 'Terbaru' },
-  { value: 'property', label: 'Properti' },
-  { value: 'video', label: 'Video' },
-];
-
-// /beranda adalah feed sosial content-first: komposer + filter + infinite scroll.
+// /beranda adalah feed sosial content-first: komposer + infinite scroll.
 // Hero marketing, section explore/produk/event, dan baris kategori mati
 // dihapus (2026-10-01) agar halaman menjadi jantung sosial, bukan landing page.
+// Header "Cerita warga Sultra" + filter pil (2026-10-02) dihapus atas
+// permintaan pemilik: feed langsung mengalir tanpa interupsi visual.
 export default function BerandaPage() {
   // ?tab=saved (dari nav "Tersimpan") → tampilkan daftar simpanan, bukan feed.
   const [initialTab] = useState<FeedTab>(() =>
     typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('tab') === 'saved' ? 'saved' : 'feed',
   );
-  const { filter, setFilter, tab, items, loading, error, hasNextPage, loadMore, reload, savedIds, toggleLike, toggleSave, toggleFollow, bumpComments } = useInfiniteFeed('recommended', initialTab);
+  const { tab, items, loading, error, hasNextPage, loadMore, reload, savedIds, toggleLike, toggleSave, toggleFollow, bumpComments } = useInfiniteFeed('recommended', initialTab);
   const isSavedTab = tab === 'saved';
   const [notice, setNotice] = useState('');
   const [composerOpen, setComposerOpen] = useState(false);
@@ -66,36 +60,13 @@ export default function BerandaPage() {
             <CreatePostInput onCreate={openComposer}/>
             {notice && <div className={`beranda-notice ${styles.noticeBar}`} role="status" aria-live="polite"><span>{notice}</span><button type="button" onClick={() => setNotice('')}>Tutup</button></div>}
 
-            <section className={styles.feedHead} aria-labelledby="feed-title">
-              <div>
-                {isSavedTab ? (
-                  <>
-                    <h1 id="feed-title">Tersimpan</h1>
-                    <p>Postingan yang kamu simpan — hanya kamu yang bisa melihat daftar ini.</p>
-                  </>
-                ) : (
-                  <>
-                    <h1 id="feed-title">Cerita warga Sultra</h1>
-                    <p>Kabar dan percakapan terbaru dari orang-orang di sekitarmu.</p>
-                  </>
-                )}
-              </div>
-            </section>
-
-            {!isSavedTab && (
-              <div className={styles.filterBar} role="group" aria-label="Filter cerita">
-                {filters.map((item) => (
-                  <button
-                    key={item.value}
-                    type="button"
-                    className={`${styles.filterBtn} ${filter === item.value ? styles.isActive : ''}`}
-                    aria-pressed={filter === item.value}
-                    onClick={() => setFilter(item.value)}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
+            {isSavedTab && (
+              <section className={styles.feedHead} aria-labelledby="feed-title">
+                <div>
+                  <h1 id="feed-title">Tersimpan</h1>
+                  <p>Postingan yang kamu simpan — hanya kamu yang bisa melihat daftar ini.</p>
+                </div>
+              </section>
             )}
 
             {error && (
@@ -127,11 +98,7 @@ export default function BerandaPage() {
                 ) : (
                   <>
                     <strong>Belum ada cerita di sini.</strong>
-                    <span>
-                      {filter === 'following'
-                        ? 'Kamu belum mengikuti siapa pun, atau yang kamu ikuti belum berbagi cerita.'
-                        : 'Coba filter lain, atau bagikan cerita pertama dari wargamu.'}
-                    </span>
+                    <span>Bagikan cerita pertama dari wargamu.</span>
                   </>
                 )}
               </div>
