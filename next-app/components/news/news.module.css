@@ -1,5 +1,7 @@
 /* T-NEWS · Portal Berita — selaras design system --sk-* (Teluk & Tenun).
-   Text-first: tanpa hotlink gambar pihak ketiga. Mobile-first. */
+   Kartu bergambar bila feed menyediakan <enclosure>/<media:*> (milik
+   penerbit, dari CDN resmi mereka; lazy + no-referrer + fallback
+   text-first). Mobile-first. */
 
 .newsSection {
   margin-top: 40px;
@@ -125,6 +127,24 @@
   border-color: var(--sk-teal);
   box-shadow: 0 12px 28px rgba(14, 98, 88, 0.1);
   transform: translateY(-2px);
+}
+
+/* Thumbnail dari field feed: aspect-ratio fixed cegah CLS, cover penuh. */
+.newsThumb {
+  margin: -16px -16px 0;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: var(--sk-r-lg) var(--sk-r-lg) 0 0;
+  background: var(--sk-surface-2);
+}
+.newsThumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+@media (prefers-reduced-motion: reduce) {
+  .newsThumb img { transform: none; }
 }
 
 .newsMeta {

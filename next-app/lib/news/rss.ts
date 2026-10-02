@@ -7,8 +7,11 @@
 // - Cache in-memory 20 menit per kategori agar sopan ke server sumber
 //   (tidak menghantam penerbit setiap request). Bila fetch gagal tetapi
 //   cache basi tersedia → sajikan cache basi + flag `stale` (jujur).
-// - TIDAK menyimpan gambar pihak ketiga; excerpt adalah teks polos
-//   ≤180 karakter dari <description>.
+// - Gambar diambil HANYA dari field feed itu sendiri: <enclosure url>
+//   (type image/*), <media:content url> (medium="image"), atau
+//   <media:thumbnail url>. TIDAK scraping halaman artikel. Gambar adalah
+//   milik penerbit dan dimuat dari CDN resmi mereka (lihat docs/NEWS-PORTAL.md).
+// - Excerpt adalah teks polos ≤180 karakter dari <description>.
 
 import { NEWS_SOURCES, sourcesForCategory, type NewsCategory, type NewsSource } from './sources';
 
@@ -24,6 +27,12 @@ export interface NewsItem {
   sourceName: string;
   /** ISO-8601 atau null bila feed tidak memberi tanggal valid */
   publishedAt: string | null;
+  /**
+   * URL gambar dari field feed itu sendiri (enclosure/media:content/
+   * media:thumbnail), atau null bila feed tidak menyediakannya.
+   * Gambar milik penerbit — dimuat dari CDN resmi mereka.
+   */
+  image: string | null;
 }
 
 export interface NewsResult {
@@ -79,6 +88,41 @@ function tagText(block: string, tag: string): string {
   return v.trim();
 }
 
+/** Ambil nilai atribut dari sebuah tag, mis. url="…". */
+function attrValue(tag: string, name: string): string {
+  const m = tag.match(new RegExp(`${name}\\s*=\\s*(['"])(.*?)\\1`, 'i'));
+  return m ? m[2] : '';
+}
+
+/**
+ * Ekstrak URL gambar HANYA dari field feed itu sendiri (tanpa scraping
+ * halaman artikel). Urutan: <media:content medium="image"> →
+ * <enclosure type="image/*"> → <media:thumbnail>. URL harus http(s);
+ * entitas HTML (&amp;) di-decode. Return null bila tidak ada yang valid.
+ */
+function imageOf(block: string): string | null {
+  const candidates: string[] = [];
+  for (const tag of block.match(/<media:content\b[^>]*>/gi) || []) {
+    const url = attrValue(tag, 'url');
+    if (url && (attrValue(tag, 'medium') === 'image' || /^image\//i.test(attrValue(tag, 'type')))) {
+      candidates.push(url);
+    }
+  }
+  for (const tag of block.match(/<enclosure\b[^>]*>/gi) || []) {
+    const url = attrValue(tag, 'url');
+    if (url && /^image\//i.test(attrValue(tag, 'type'))) candidates.push(url);
+  }
+  for (const tag of block.match(/<media:thumbnail\b[^>]*>/gi) || []) {
+    const url = attrValue(tag, 'url');
+    if (url) candidates.push(url);
+  }
+  for (const raw of candidates) {
+    const url = decodeEntities(raw.trim());
+    if (/^https?:\/\//i.test(url)) return url;
+  }
+  return null;
+}
+
 function hashId(s: string): string {
   let h = 5381;
   for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0;
@@ -113,6 +157,7 @@ function parseRss(xml: string, source: NewsSource): NewsItem[] {
       sourceId: source.id,
       sourceName: source.name,
       publishedAt,
+      image: imageOf(block),
     });
     if (items.length >= MAX_ITEMS * 2) break; // batasi parse per feed
   }

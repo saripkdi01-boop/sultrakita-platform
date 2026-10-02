@@ -16,14 +16,18 @@ const querySchema = z.object({
 /**
  * GET /api/news?category=teknologi&limit=12
  *
- * Agregasi headline teknologi dari feed RSS publik terverifikasi
- * (baca: lib/news/sources.ts). Kategori non-teknologi mengembalikan
- * items kosong + comingSoon:true (jujur — feed-nya memang belum ada).
+ * Agregasi headline dari feed RSS publik terverifikasi
+ * (baca: lib/news/sources.ts). Kategori tanpa sumber terverifikasi
+ * (mis. komunitas) mengembalikan items kosong + comingSoon:true
+ * (jujur — feed-nya memang belum ada).
  *
  * Balikan sukses:
  *   { ok:true, category, categoryLabel, items:[{id,title,link,excerpt,
- *     sourceId,sourceName,publishedAt}], sources:[{id,name,siteUrl}],
+ *     sourceId,sourceName,publishedAt,image}], sources:[{id,name,siteUrl}],
  *     stale, fetchedAt, comingSoon? }
+ * `image` = URL gambar dari field feed (enclosure/media:content/
+ * media:thumbnail), null bila feed tidak menyediakannya. Gambar milik
+ * penerbit dan dimuat dari CDN resmi mereka.
  */
 export async function GET(request: NextRequest) {
   const limited = await checkRateLimit(request, 'api');
