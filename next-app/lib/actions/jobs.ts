@@ -84,3 +84,23 @@ export async function toggleJobAlert(id: string) {
     return { ok: true as const, isActive: !existing.is_active };
   } catch (error) { return { ok: false as const, error: friendly(error) }; }
 }
+
+const WITHDRAWABLE_STATUSES = ['submitted', 'viewed', 'screening', 'interview'];
+
+/**
+ * Menarik lamaran milik sendiri (status -> 'withdrawn').
+ * Hanya untuk lamaran yang masih bisa ditarik; butuh policy RLS
+ * applications_own_withdraw (migrasi 20261002203000_job_application_withdraw.sql).
+ */
+export async function withdrawApplication(id: string) {
+  try {
+    const { supabase, user } = await requireServerUser();
+    const { data: existing } = await supabase.from('job_applications').select('id,status').eq('id', id).eq('applicant_id', user.id).maybeSingle();
+    if (!existing) return { ok: false as const, error: 'Lamaran tidak ditemukan.' };
+    if (!WITHDRAWABLE_STATUSES.includes(existing.status as string)) return { ok: false as const, error: 'Lamaran ini sudah tidak dapat ditarik.' };
+    const { error } = await supabase.from('job_applications').update({ status: 'withdrawn' }).eq('id', id).eq('applicant_id', user.id);
+    if (error) throw error;
+    revalidatePath('/jobs/applications');
+    return { ok: true as const };
+  } catch (error) { return { ok: false as const, error: friendly(error) }; }
+}
