@@ -1,7 +1,7 @@
 'use server';
 
 import { getServerSupabase, requireServerUser } from '@/lib/supabase/server';
-import { getGroupMembership } from '@/lib/dal';
+import { canModerateGroup, getGroupMembership } from '@/lib/dal';
 
 const REACTION_TYPES = ['like', 'support', 'insight'] as const;
 type ReactionType = (typeof REACTION_TYPES)[number];
@@ -10,6 +10,16 @@ function message(error: unknown) { return error instanceof Error ? error.message
 function slugify(value: string) { return value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 70); }
 function validUuid(value: string) { return /^[0-9a-f-]{20,}$/i.test(value); }
 function isReactionType(value: string): value is ReactionType { return (REACTION_TYPES as readonly string[]).includes(value); }
+// Slice 4: tidak ada FK group_* → profiles di production (PGRST200), jadi profil
+// di-resolve dua langkah: ambil baris dulu, lalu batch-fetch profiles.
+async function fetchProfileMap(supabase: any, userIds: string[]) {
+  const ids = Array.from(new Set(userIds.filter(Boolean))).slice(0, 500);
+  if (!ids.length) return new Map<string, any>();
+  const { data, error } = await supabase.from('profiles').select('id,display_name,username,avatar_url').in('id', ids);
+  if (error || !data) return new Map<string, any>();
+  return new Map<string, any>(data.map((profile: any) => [profile.id, profile]));
+}
+function displayName(profile: any) { return profile?.display_name || profile?.username || 'Anggota SUKI'; }
 function isMissingInteractionTable(error: any) { return error?.code === '42P01' || error?.code === 'PGRST205' || /group_post_(comments|reactions)/i.test(error?.message || ''); }
 
 async function requireActiveGroupMember(supabase: any, groupId: string, userId: string) {
@@ -36,21 +46,22 @@ export async function getGroupFeed(groupId: string) {
   try {
     const supabase = await getServerSupabase();
     const { data: { user } } = await supabase.auth.getUser();
-    const { data: posts, error } = await supabase.from('group_posts').select('id,group_id,author_id,body,post_type,is_pinned,created_at,profiles(display_name,username,avatar_url)').eq('group_id', groupId).order('is_pinned', { ascending: false }).order('created_at', { ascending: false }).limit(30);
+    const { data: posts, error } = await supabase.from('group_posts').select('id,group_id,author_id,body,post_type,is_pinned,created_at').eq('group_id', groupId).order('is_pinned', { ascending: false }).order('created_at', { ascending: false }).limit(30);
     if (error) throw error;
     const ids = (posts || []).map((post: any) => post.id);
     if (!ids.length) return { ok: true as const, data: [] };
     const [{ data: comments, error: commentsError }, { data: reactions, error: reactionsError }] = await Promise.all([
-      supabase.from('group_post_comments').select('id,group_id,post_id,author_id,body,created_at,profiles(display_name,username,avatar_url)').in('post_id', ids).order('created_at', { ascending: true }),
+      supabase.from('group_post_comments').select('id,group_id,post_id,author_id,body,created_at').in('post_id', ids).order('created_at', { ascending: true }),
       supabase.from('group_post_reactions').select('post_id,user_id,reaction_type').in('post_id', ids),
     ]);
     if ((commentsError && !isMissingInteractionTable(commentsError)) || (reactionsError && !isMissingInteractionTable(reactionsError))) throw commentsError || reactionsError;
+    const profiles = await fetchProfileMap(supabase, [...(posts || []).map((post: any) => post.author_id), ...(comments || []).map((comment: any) => comment.author_id)]);
     return {
       ok: true as const,
       data: (posts || []).map((post: any) => {
-        const postComments = (comments || []).filter((comment: any) => comment.post_id === post.id);
+        const postComments = (comments || []).filter((comment: any) => comment.post_id === post.id).map((comment: any) => ({ ...comment, profiles: profiles.get(comment.author_id) || null }));
         const postReactions = (reactions || []).filter((reaction: any) => reaction.post_id === post.id);
-        return { ...post, comments: postComments, reaction_counts: REACTION_TYPES.reduce((counts, type) => ({ ...counts, [type]: postReactions.filter((reaction: any) => reaction.reaction_type === type).length }), {} as Record<ReactionType, number>), viewer_reactions: user ? postReactions.filter((reaction: any) => reaction.user_id === user.id).map((reaction: any) => reaction.reaction_type) : [] };
+        return { ...post, profiles: profiles.get(post.author_id) || null, comments: postComments, reaction_counts: REACTION_TYPES.reduce((counts, type) => ({ ...counts, [type]: postReactions.filter((reaction: any) => reaction.reaction_type === type).length }), {} as Record<ReactionType, number>), viewer_reactions: user ? postReactions.filter((reaction: any) => reaction.user_id === user.id).map((reaction: any) => reaction.reaction_type) : [] };
       }),
     };
   } catch (error) { return { ok: false as const, data: [], error: message(error) }; }
@@ -106,9 +117,10 @@ export async function createGroupPost(groupId: string, body: string, postType: '
     await requireActiveGroupMember(supabase, groupId, user.id);
     const clean = body.trim();
     if (!clean || clean.length > 4000) return { ok: false as const, error: 'Posting komunitas harus 1–4.000 karakter.' };
-    const { data, error } = await supabase.from('group_posts').insert({ group_id: groupId, author_id: user.id, body: clean, post_type: postType }).select('id,group_id,author_id,body,post_type,is_pinned,created_at,profiles(display_name,username,avatar_url)').single();
+    const { data, error } = await supabase.from('group_posts').insert({ group_id: groupId, author_id: user.id, body: clean, post_type: postType }).select('id,group_id,author_id,body,post_type,is_pinned,created_at').single();
     if (error) throw error;
-    return { ok: true as const, data: { ...data, comments: [], reaction_counts: { like: 0, support: 0, insight: 0 }, viewer_reactions: [] } };
+    const profiles = await fetchProfileMap(supabase, [user.id]);
+    return { ok: true as const, data: { ...data, profiles: profiles.get(user.id) || null, comments: [], reaction_counts: { like: 0, support: 0, insight: 0 }, viewer_reactions: [] } };
   } catch (error) { return { ok: false as const, error: message(error) }; }
 }
 
@@ -121,9 +133,10 @@ export async function createGroupComment(groupId: string, postId: string, body: 
     const { data: post, error: postError } = await supabase.from('group_posts').select('id').eq('id', postId).eq('group_id', groupId).maybeSingle();
     if (postError) throw postError;
     if (!post) return { ok: false as const, error: 'Posting tidak ditemukan di komunitas ini.' };
-    const { data, error } = await supabase.from('group_post_comments').insert({ group_id: groupId, post_id: postId, author_id: user.id, body: clean }).select('id,group_id,post_id,author_id,body,created_at,profiles(display_name,username,avatar_url)').single();
+    const { data, error } = await supabase.from('group_post_comments').insert({ group_id: groupId, post_id: postId, author_id: user.id, body: clean }).select('id,group_id,post_id,author_id,body,created_at').single();
     if (error) throw error;
-    return { ok: true as const, data };
+    const profiles = await fetchProfileMap(supabase, [user.id]);
+    return { ok: true as const, data: { ...data, profiles: profiles.get(user.id) || null } };
   } catch (error) { return { ok: false as const, error: message(error) }; }
 }
 
@@ -165,4 +178,52 @@ export async function deleteGroupComment(groupId: string, commentId: string) {
     if (error) throw error;
     return { ok: true as const, moderator: isModerator && !isAuthor };
   } catch (error) { return { ok: false as const, error: message(error) }; }
+}
+
+// Slice 4: status moderasi viewer (untuk menampilkan tombol semat/anggota).
+export async function getGroupStaffStatus(groupId: string) {
+  try {
+    const { user } = await requireServerUser();
+    if (!validUuid(groupId)) return { ok: false as const, error: 'Komunitas tidak valid.' };
+    const canModerate = await canModerateGroup(groupId, user.id);
+    return { ok: true as const, canModerate };
+  } catch (error) { return { ok: false as const, error: message(error) }; }
+}
+
+// Slice 4: roster anggota aktif dengan badge peran (pola Facebook Groups).
+// Resolusi profil dua langkah agar tidak bergantung pada FK (belum ada di production).
+export async function getGroupMembers(groupId: string) {
+  try {
+    const { supabase } = await requireServerUser();
+    if (!validUuid(groupId)) return { ok: false as const, data: [], error: 'Komunitas tidak valid.' };
+    const { data, error } = await supabase.from('group_members').select('user_id,role,joined_at').eq('group_id', groupId).eq('status', 'active').order('joined_at', { ascending: true }).limit(200);
+    if (error) throw error;
+    const profiles = await fetchProfileMap(supabase, (data || []).map((member: any) => member.user_id));
+    const roleRank: Record<string, number> = { owner: 0, moderator: 1, admin: 2, member: 3 };
+    const members = (data || []).map((member: any) => { const profile = profiles.get(member.user_id); return { user_id: member.user_id, role: String(member.role || 'member'), joined_at: member.joined_at, display_name: displayName(profile), avatar_url: profile?.avatar_url || null }; });
+    members.sort((a, b) => (roleRank[a.role] ?? 3) - (roleRank[b.role] ?? 3));
+    return { ok: true as const, data: members };
+  } catch (error) { return { ok: false as const, data: [], error: message(error) }; }
+}
+
+// Slice 4: semat/lepas pin postingan oleh pemilik/moderator/admin grup (pola grup ternama).
+// JUJUR: butuh policy RLS `group_posts_moderate_pin_update` (migrasi
+// 20261002170000_group_staff_policies.sql). Sampai migrasi diterapkan,
+// toggle pada postingan orang lain gagal dengan pesan jujur di bawah.
+export async function toggleGroupPostPin(groupId: string, postId: string) {
+  try {
+    const { supabase, user } = await requireServerUser();
+    if (!validUuid(groupId) || !validUuid(postId)) return { ok: false as const, error: 'Data komunitas tidak valid.' };
+    if (!(await canModerateGroup(groupId, user.id))) return { ok: false as const, error: 'Akses ditolak: hanya pemilik, moderator, atau admin grup yang dapat menyematkan postingan.' };
+    const { data: post, error: postError } = await supabase.from('group_posts').select('id,is_pinned').eq('id', postId).eq('group_id', groupId).maybeSingle();
+    if (postError) throw postError;
+    if (!post) return { ok: false as const, error: 'Posting tidak ditemukan di komunitas ini.' };
+    const { error } = await supabase.from('group_posts').update({ is_pinned: !post.is_pinned }).eq('id', postId).eq('group_id', groupId);
+    if (error) throw error;
+    return { ok: true as const, is_pinned: !post.is_pinned };
+  } catch (error) {
+    const msg = message(error);
+    if (/permission|not allowed|policy|42501|PGRST/i.test(msg)) return { ok: false as const, error: 'Menyematkan postingan membutuhkan persetujuan skema database (migrasi 20261002170000 belum diterapkan).' };
+    return { ok: false as const, error: msg };
+  }
 }
