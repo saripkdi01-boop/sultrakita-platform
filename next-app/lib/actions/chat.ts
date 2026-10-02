@@ -47,7 +47,7 @@ export async function startConversation(listingId: number, sellerId: string, ini
   } catch (error) { return { ok: false as const, error: friendly(error) }; }
 }
 
-export async function sendMessage(conversationId: string, content: string) {
+export async function sendMessage(conversationId: string, content: string, replyToMessageId?: string | null) {
   try {
     if (!conversationId || !content.trim()) return { ok: false as const, error: 'Pesan tidak boleh kosong.' };
     const { supabase, user } = await requireServerUser();
@@ -55,12 +55,63 @@ export async function sendMessage(conversationId: string, content: string) {
     const { data: conversation, error: conversationError } = await supabase.from('suki_chat_conversations').select('id,listing_id,seller_id,buyer_id').eq('id', conversationId).maybeSingle();
     if (conversationError) throw conversationError;
     if (!conversation || ![conversation.buyer_id, conversation.seller_id].includes(user.id)) return { ok: false as const, error: 'Kamu tidak memiliki akses ke percakapan ini.' };
-    const { data: message, error } = await supabase.from('suki_chat_messages').insert({ conversation_id: conversationId, sender_id: user.id, content: text }).select('id,conversation_id,sender_id,content,is_read,created_at').single();
+    let replyTo: string | null = null;
+    if (replyToMessageId) {
+      const { data: target, error: targetError } = await supabase.from('suki_chat_messages').select('id,conversation_id,deleted').eq('id', replyToMessageId).maybeSingle();
+      if (targetError) throw targetError;
+      if (!target || target.conversation_id !== conversationId || target.deleted) return { ok: false as const, error: 'Pesan yang dibalas tidak ditemukan.' };
+      replyTo = target.id;
+    }
+    const { data: message, error } = await supabase.from('suki_chat_messages').insert({ conversation_id: conversationId, sender_id: user.id, content: text, reply_to_message_id: replyTo }).select('id,conversation_id,sender_id,content,message_type,media_url,reply_to_message_id,edited,deleted,is_read,created_at').single();
     if (error) throw error;
+    const withQuote = (await attachReplyQuotes(supabase, [message]))[0] || message;
     await supabase.from('suki_chat_conversations').update({ last_message: text, last_message_at: new Date().toISOString() }).eq('id', conversationId);
     if (user.id !== conversation.seller_id) await sendWhatsAppNotice(supabase, conversation.listing_id, conversation.seller_id, text, user.id);
-    return { ok: true as const, data: message };
+    return { ok: true as const, data: withQuote };
   } catch (error) { return { ok: false as const, error: friendly(error) }; }
+}
+
+type ReplyQuote = { id: string; content: string | null; sender_id: string; deleted: boolean };
+
+async function attachReplyQuotes(supabase: Awaited<ReturnType<typeof requireServerUser>>['supabase'], rows: Record<string, unknown>[]) {
+  const ids = Array.from(new Set(rows.map((row) => row.reply_to_message_id).filter((value): value is string => typeof value === 'string' && value.length > 0)));
+  const withQuotes: Record<string, unknown>[] = rows.map((row) => ({ ...row }));
+  if (!ids.length) return withQuotes;
+  const { data, error } = await supabase.from('suki_chat_messages').select('id,content,sender_id,deleted').in('id', ids);
+  if (error || !data) return withQuotes;
+  const quoteById = new Map(data.map((quote) => [quote.id as string, { id: quote.id as string, content: quote.content as string | null, sender_id: quote.sender_id as string, deleted: Boolean(quote.deleted) } as ReplyQuote]));
+  for (const row of withQuotes) {
+    row.reply_to = typeof row.reply_to_message_id === 'string' && row.reply_to_message_id ? quoteById.get(row.reply_to_message_id) || null : null;
+  }
+  return withQuotes;
+}
+
+export async function getMessageQuote(messageId: string) {
+  const { supabase, user } = await requireServerUser();
+  const { data: target, error } = await supabase.from('suki_chat_messages').select('id,conversation_id,content,sender_id,deleted').eq('id', messageId).maybeSingle();
+  if (error) return { ok: false as const, error: friendly(error) };
+  if (!target || target.deleted) return { ok: false as const, error: 'Pesan tidak ditemukan.' };
+  const { data: member } = await supabase.from('suki_chat_participants').select('id').eq('conversation_id', target.conversation_id).eq('user_id', user.id).maybeSingle();
+  if (!member) return { ok: false as const, error: 'Kamu bukan anggota percakapan ini.' };
+  return { ok: true as const, data: { id: target.id, content: target.content, sender_id: target.sender_id, deleted: target.deleted } };
+}
+
+export async function getConversationPresence(conversationId: string) {
+  const { supabase, user } = await requireServerUser();
+  const { data: member } = await supabase.from('suki_chat_participants').select('id').eq('conversation_id', conversationId).eq('user_id', user.id).maybeSingle();
+  if (!member) return { ok: false as const, error: 'Kamu bukan anggota percakapan ini.', data: [] };
+  const { data: participants } = await supabase.from('suki_chat_participants').select('user_id,last_read_at').eq('conversation_id', conversationId).neq('user_id', user.id).limit(20);
+  const others = participants || [];
+  if (!others.length) return { ok: true as const, data: [] };
+  const { data: presenceRows } = await supabase.from('suki_chat_presence').select('user_id,is_online,last_seen').in('user_id', others.map((participant) => participant.user_id));
+  const presenceByUser = new Map((presenceRows || []).map((row) => [row.user_id as string, row]));
+  return {
+    ok: true as const,
+    data: others.map((participant) => {
+      const presence = presenceByUser.get(participant.user_id as string);
+      return { user_id: participant.user_id as string, is_online: Boolean(presence?.is_online), last_seen: (presence?.last_seen as string) || null, last_read_at: (participant.last_read_at as string) || null };
+    }),
+  };
 }
 
 async function sendWhatsAppNotice(supabase: Awaited<ReturnType<typeof requireServerUser>>['supabase'], listingId: number, sellerId: string, content: string, buyerId: string) {
@@ -88,13 +139,18 @@ export async function getChatMessages(conversationId: string, before?: string) {
   const { data, error } = await query;
   if (error) return { ok: false as const, error: friendly(error), data: [] };
   const rows = data || [];
-  return { ok: true as const, data: rows.reverse(), hasMore: rows.length === 50 };
+  const withQuotes = await attachReplyQuotes(supabase, rows as Record<string, unknown>[]);
+  return { ok: true as const, data: withQuotes.reverse(), hasMore: rows.length === 50 };
 }
 
 export async function markChatRead(conversationId: string) {
   const { supabase, user } = await requireServerUser();
   const { error } = await supabase.from('suki_chat_participants').update({ last_read_at: new Date().toISOString() }).eq('conversation_id', conversationId).eq('user_id', user.id);
-  return error ? { ok: false as const, error: friendly(error) } : { ok: true as const };
+  if (error) return { ok: false as const, error: friendly(error) };
+  // Best-effort: tandai pesan lawan bicara sebagai dibaca (RLS hanya mengizinkan bila pembaca pengirim/admin).
+  // UI juga menghitung status dibaca dari last_read_at peserta lain, jadi centang biru tetap akurat.
+  await supabase.from('suki_chat_messages').update({ is_read: true }).eq('conversation_id', conversationId).neq('sender_id', user.id).eq('is_read', false).eq('deleted', false);
+  return { ok: true as const };
 }
 
 export async function setMessageReaction(messageId: string, emoji: string) {
