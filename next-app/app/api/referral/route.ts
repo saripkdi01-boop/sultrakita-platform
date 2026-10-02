@@ -9,6 +9,17 @@ import { parseOr400 } from '@/lib/security/validation';
 
 const REFERRAL_CODE_RE = /^SULTRA-[A-F0-9]{8}$/;
 
+// Kanal atribusi resmi — nilai di luar daftar dinormalisasi menjadi 'other'
+// agar analytics tetap konsisten dan tidak bisa diisi string sembarang.
+const REFERRAL_CHANNELS = new Set([
+  'website', 'whatsapp', 'telegram', 'x', 'facebook', 'instagram', 'tiktok',
+  'qr', 'community', 'email', 'oauth', 'direct', 'other',
+]);
+function normalizeChannel(value: unknown): string {
+  const clean = String(value || '').trim().toLowerCase().slice(0, 30);
+  return REFERRAL_CHANNELS.has(clean) ? clean : 'other';
+}
+
 const ReferralActionSchema = z.object({
   action: z.enum(['visit', 'payout_transition', 'claim', 'qualified', 'redeem']).default('visit'),
 });
@@ -96,7 +107,8 @@ export async function GET(request: NextRequest) {
       const { data: accounts, error: accountsError } = await db.from('referral_accounts').select('auth_user_id,total_points').in('auth_user_id', ids);
       if (accountsError) throw accountsError;
       const rows = (accounts || []).map(account => ({ id: account.auth_user_id, qualified_referrals: counts.get(account.auth_user_id) || 0, total_points: account.total_points || 0 })).sort((a, b) => b.qualified_referrals - a.qualified_referrals || b.total_points - a.total_points).slice(0, 50);
-      return json(rows.map((row, index) => ({ rank: index + 1, name: `Affiliator ${createHash('sha256').update(row.id).digest('hex').slice(0, 4).toUpperCase()}`, qualified_referrals: row.qualified_referrals, total_points: row.total_points })));
+      const me = await currentUser().catch(() => null);
+      return json(rows.map((row, index) => ({ rank: index + 1, name: `Affiliator ${createHash('sha256').update(row.id).digest('hex').slice(0, 4).toUpperCase()}`, qualified_referrals: row.qualified_referrals, total_points: row.total_points, you: !!me && row.id === me.id })));
     }
     const user = await currentUser(); if (!user) return bad('Sesi login diperlukan.', 401);
     const code = codeFor(user.id);
@@ -121,7 +133,9 @@ export async function GET(request: NextRequest) {
       db.from('referral_account_events').select('event_type,source_channel,created_at').eq('referrer_id', user.id).order('id', { ascending: false }).limit(10),
     ]);
     if (accountReadError || countError || activityError) throw accountReadError || countError || activityError;
-    return json({ campaign, referral_code: account?.referral_code || code, total_points: account?.total_points || 0, lifetime_points: account?.lifetime_points || 0, qualified_referrals: count || 0, recent_activity: activity || [] });
+    // user_id disertakan agar klien bisa berlangganan realtime event milik sendiri
+    // (difilter referrer_id=eq.<user_id>); tidak ada data orang lain yang bocor.
+    return json({ campaign, user_id: user.id, referral_code: account?.referral_code || code, total_points: account?.total_points || 0, lifetime_points: account?.lifetime_points || 0, qualified_referrals: count || 0, recent_activity: activity || [] });
   } catch (error) { console.error('[referral-summary]', error instanceof Error ? error.message : 'unknown'); return referralError(error); }
 }
 
@@ -139,12 +153,14 @@ async function postHandler(request: NextRequest) {
       const visitParsed = parseOr400(VisitSchema, body);
       if (!visitParsed.ok) return visitParsed.response;
       const code = visitParsed.data.referral_code;
-      const source = visitParsed.data.source_channel;
+      const source = normalizeChannel(visitParsed.data.source_channel);
       const { data: owner, error: ownerError } = await db.from('referral_accounts').select('auth_user_id').eq('referral_code', code).maybeSingle();
       if (ownerError) throw ownerError;
       if (!owner) return bad('Kode referral tidak ditemukan.', 404);
       const eventKey = createHash('sha256').update(`${code}:${source}:${request.headers.get('user-agent') || ''}`).digest('hex');
-      const { error } = await db.from('referral_account_events').upsert({ referrer_id: owner.auth_user_id, referral_code: code, event_type: 'link_visit', source_channel: source, event_key: eventKey }, { onConflict: 'event_key', ignoreDuplicates: true });
+      // Simpan sidik perangkat ke metadata: dipakai rantai anti-fraud
+      // (claim_referral menandai signup yang berbagi fingerprint).
+      const { error } = await db.from('referral_account_events').upsert({ referrer_id: owner.auth_user_id, referral_code: code, event_type: 'link_visit', source_channel: source, event_key: eventKey, metadata: requestMetadata(request) }, { onConflict: 'event_key', ignoreDuplicates: true });
       if (error) throw error;
       return json({ tracked: true });
     }
@@ -171,7 +187,7 @@ async function postHandler(request: NextRequest) {
     if (action === 'claim') {
       if (!/^SULTRA-[A-F0-9]{8}$/.test(code)) return bad('Kode referral belum valid.');
       const eventKey = createHash('sha256').update(`signup:${user.id}:${code}`).digest('hex');
-      const { data, error } = await db.rpc('claim_referral', { p_referred_user_id: user.id, p_referral_code: code, p_source_channel: String(body.source_channel || 'direct').slice(0, 30), p_event_key: eventKey, p_metadata: requestMetadata(request) });
+      const { data, error } = await db.rpc('claim_referral', { p_referred_user_id: user.id, p_referral_code: code, p_source_channel: normalizeChannel(body.source_channel), p_event_key: eventKey, p_metadata: requestMetadata(request) });
       if (error) throw error;
       return json(data?.[0] || { claimed: true, duplicate: false, risk_flagged: false });
     }

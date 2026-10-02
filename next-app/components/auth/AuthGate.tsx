@@ -10,6 +10,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import { usePreferences } from '@/lib/preferences';
 import { clearUtmCookie, readUtmFromCookie } from '@/lib/utm';
+import { claimReferralBestEffort } from '@/lib/referral-claim-client';
 
 const GOOGLE_OAUTH_GATEWAY_URL = process.env.NEXT_PUBLIC_GOOGLE_OAUTH_GATEWAY_URL || '';
 const MAX_SIGNUP_AVATAR_BYTES = 5 * 1024 * 1024;
@@ -200,6 +201,9 @@ export function AuthGate({
         }
         // Atribusi UTM sudah disalin trigger ke profiles → cookie boleh dihapus.
         if (utm) clearUtmCookie();
+        // Klaim referral first-touch (best-effort, idempoten): cookie sk_ref
+        // dihapus hanya bila klaim mencapai status terminal.
+        claimReferralBestEffort();
         router.push('/');
       } else {
         setNotice(signupAvatar
@@ -209,7 +213,12 @@ export function AuthGate({
     } else {
       const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
       if (authError) setError(authError.message);
-      else router.push(safeRedirect(params.get('redirect')));
+      else {
+        // Pengguna yang login via link referral namun belum terklaim (mis. signup
+        // butuh verifikasi email): coba klaim sekarang, best-effort.
+        claimReferralBestEffort();
+        router.push(safeRedirect(params.get('redirect')));
+      }
     }
     setBusy(null);
   }
