@@ -8,6 +8,7 @@ import { CreatePostModal } from '@/components/beranda/CreatePostModal';
 import { FeedPost, FeedPostSkeleton } from '@/components/beranda/FeedPost';
 import { RightSidebar } from '@/components/beranda/RightSidebar';
 import { AdSlot } from '@/components/ads/AdSlot';
+import { NewsPortal } from '@/components/news/NewsPortal';
 import { StoriesSection } from '@/components/beranda/StoriesSection';
 import { useInfiniteFeed, type FeedFilter, type FeedTab } from '@/hooks/useInfiniteFeed';
 import { supabase } from '@/lib/supabase/client';
@@ -193,6 +194,10 @@ export default function BerandaPage() {
             <RightSidebar />
           </aside>
         </div>
+
+        {/* T-NEWS: Portal Berita — gateway berita dalam ekosistem SUKI Apps,
+            full-width di bawah layout feed. Hanya di tab feed (bukan Tersimpan). */}
+        {!isSavedTab && <NewsPortal />}
       </div>
     </main>
     <CreatePostModal open={composerOpen} initialType={composerType} onClose={() => setComposerOpen(false)} onCreated={(message) => { setNotice(message); reload(); }} />
