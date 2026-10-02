@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { CheckCircle2, Flag } from 'lucide-react';
-import { REPORT_REASON_LABELS, type ReportReason } from '@/lib/actions/reports';
+import { REPORT_REASON_LABELS, type ReportReason } from '@/lib/report-reasons';
 
 // Tombol "Laporkan" generik: menampilkan daftar alasan lalu memanggil
 // server action yang diberikan. Dipakai di marketplace (QuickView),

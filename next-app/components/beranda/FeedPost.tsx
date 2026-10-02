@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Bookmark, Flag, Globe2, Heart, Link2, MessageCircle, MoreHorizontal, Users } from 'lucide-react';
 import { CommentThread } from './CommentThread';
-import { reportPost, REPORT_REASON_LABELS, type ReportReason } from '@/lib/actions/reports';
+import { reportPost } from '@/lib/actions/reports';
+import { REPORT_REASON_LABELS, type ReportReason } from '@/lib/report-reasons';
 import type { MutationResult } from '@/hooks/useInfiniteFeed';
 import styles from './feed.module.css';
 
