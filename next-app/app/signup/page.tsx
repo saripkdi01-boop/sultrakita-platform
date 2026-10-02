@@ -3,6 +3,11 @@ import { AuthGate } from '@/components/auth/AuthGate';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { isFacebookLoginEnabled } from '@/lib/settings/feature-flags';
 
+// Halaman membaca feature flag runtime dari DB (site_settings) —
+// WAJIB dynamic: jangan pernah prerender statis / di-cache edge,
+// kalau tidak perubahan flag oleh admin tidak terlihat tanpa deploy ulang.
+export const dynamic = 'force-dynamic';
+
 export default async function SignupPage() {
   // Flag dibaca server-side dari site_settings (admin dapat mengubahnya dari
   // /admin/settings tanpa deploy ulang); fallback ke env bila DB tak terbaca.
