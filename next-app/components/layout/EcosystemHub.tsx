@@ -1,0 +1,217 @@
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { CSSProperties, useEffect, useId, useRef, useState } from 'react';
+import {
+  ArrowUpRight,
+  Briefcase,
+  BriefcaseBusiness,
+  Building,
+  Building2,
+  Clapperboard,
+  Gift,
+  LayoutGrid,
+  MessageCircle,
+  Newspaper,
+  Store,
+  Tag,
+  Users,
+  X,
+} from 'lucide-react';
+
+type Tile = {
+  key: string;
+  label: string;
+  desc: string;
+  href: string;
+  Icon: typeof Store;
+  badge?: string;
+  isActive: (pathname: string) => boolean;
+};
+
+type Section = {
+  title: string;
+  hint: string;
+  accent: string;
+  tiles: Tile[];
+};
+
+/** Seluruh destinasi ekosistem SUKI — rute nyata yang sudah live, tanpa tautan palsu. */
+const SECTIONS: Section[] = [
+  {
+    title: 'Jelajahi',
+    hint: 'Layanan utama SUKI',
+    accent: '#0b7567',
+    tiles: [
+      { key: 'marketplace', label: 'Marketplace', desc: 'Jual beli barang & jasa lokal', href: '/marketplace', Icon: Store, isActive: (p) => p.startsWith('/marketplace') || p.startsWith('/suki-marketplace') },
+      { key: 'properti', label: 'Properti', desc: 'Sewa & jual properti lewat peta', href: '/properti', Icon: Building2, isActive: (p) => p.startsWith('/properti') },
+      { key: 'jobs', label: 'SUKI Jobs', desc: 'Lowongan kerja Sulawesi Tenggara', href: '/jobs', Icon: BriefcaseBusiness, isActive: (p) => p.startsWith('/jobs') },
+      { key: 'komunitas', label: 'Komunitas', desc: 'Grup & komunitas warga', href: '/groups', Icon: Users, isActive: (p) => p.startsWith('/groups') },
+      { key: 'berita', label: 'Portal Berita', desc: 'Kabar terkini media Indonesia', href: '/beranda#portal-berita', Icon: Newspaper, badge: 'Baru', isActive: () => false },
+      { key: 'Business', label: 'Direktori Bisnis', desc: 'UMKM & jasa terverifikasi', href: '/Business', Icon: Building, isActive: (p) => p.startsWith('/Business') },
+    ],
+  },
+  {
+    title: 'Buat & Hasilkan',
+    hint: 'Mulai bertransaksi hari ini',
+    accent: '#b8860b',
+    tiles: [
+      { key: 'jual', label: 'Pasang Iklan', desc: 'Jual barang di Marketplace', href: '/marketplace/create', Icon: Tag, isActive: (p) => p === '/marketplace/create' },
+      { key: 'daftar-Business', label: 'Daftarkan Bisnis', desc: 'Tampilkan usahamu ke warga', href: '/Business/daftar', Icon: Store, isActive: (p) => p.startsWith('/Business/daftar') },
+      { key: 'loker', label: 'Pasang Lowongan', desc: 'Rekrut talenta lokal', href: '/jobs/create', Icon: Briefcase, isActive: (p) => p === '/jobs/create' },
+    ],
+  },
+  {
+    title: 'SUKI Saya',
+    hint: 'Akun & kebersamaan',
+    accent: '#6d4fc2',
+    tiles: [
+      { key: 'ajak', label: 'Ajak Teman', desc: 'Kumpulkan Star tiap ajakan', href: '/ajak-teman', Icon: Gift, badge: 'Reward', isActive: (p) => p.startsWith('/ajak-teman') },
+      { key: 'reels', label: 'Reels', desc: 'Video pendek warga Sultra', href: '/reels', Icon: Clapperboard, isActive: (p) => p.startsWith('/reels') },
+      { key: 'chat', label: 'Pesan', desc: 'Ngobrol dengan penjual & teman', href: '/chat', Icon: MessageCircle, isActive: (p) => p.startsWith('/chat') },
+    ],
+  },
+];
+
+/** Rute yang "dimiliki" hub — indikator aktif launcher menyala di halaman-halaman ini. */
+function isHubActive(pathname: string): boolean {
+  return (
+    pathname.startsWith('/groups') ||
+    pathname.startsWith('/properti') ||
+    pathname.startsWith('/Business') ||
+    pathname.startsWith('/ajak-teman')
+  );
+}
+
+export function EcosystemHub({ variant }: { variant: 'tab' | 'mtab' }) {
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+  const panelId = useId();
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const active = isHubActive(pathname);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false);
+    };
+    const onPointer = (event: PointerEvent) => {
+      const el = event.target as HTMLElement | null;
+      if (panelRef.current && el && !panelRef.current.contains(el) && !triggerRef.current?.contains(el)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    document.addEventListener('pointerdown', onPointer);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('pointerdown', onPointer);
+    };
+  }, [open ]);
+
+  // Tutup panel saat berpindah halaman; kembalikan fokus ke pemicu saat ditutup.
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  const close = () => {
+    setOpen(false);
+    triggerRef.current?.focus();
+  };
+
+  return (
+    <>
+      <button
+        ref={triggerRef}
+        type="button"
+        className={variant === 'tab' ? 'skfb-tab skfb-hub-trigger' : 'skfb-mtab skfb-hub-trigger'}
+        aria-expanded={open}
+        aria-haspopup="dialog"
+        aria-controls={panelId}
+        aria-current={active ? 'page' : undefined}
+        aria-label="Ekosistem SUKI — semua layanan"
+        title="Ekosistem SUKI"
+        onClick={() => setOpen((value) => !value)}
+      >
+        <LayoutGrid aria-hidden="true" />
+      </button>
+
+      {open && (
+        <>
+          <div className="skfb-hub-backdrop" aria-hidden="true" onClick={() => setOpen(false)} />
+          <div
+            ref={panelRef}
+            id={panelId}
+            role="dialog"
+            aria-label="Ekosistem SUKI — semua layanan"
+            className="skfb-hub-panel"
+          >
+            <div className="skfb-hub-head">
+              <div>
+                <p className="skfb-hub-eyebrow">SUKI Apps</p>
+                <h2 className="skfb-hub-title">Ekosistem SUKI</h2>
+                <p className="skfb-hub-sub">Semua layanan dalam satu genggaman</p>
+              </div>
+              <button type="button" className="skfb-hub-close" onClick={close} aria-label="Tutup menu ekosistem">
+                <X size={20} aria-hidden="true" />
+              </button>
+            </div>
+
+            {SECTIONS.map((section) => (
+              <section
+                key={section.title}
+                aria-label={section.title}
+                className="skfb-hub-section"
+                style={{ '--hub-accent': section.accent } as CSSProperties}
+              >
+                <div className="skfb-hub-section-head">
+                  <h3 className="skfb-hub-section-title">{section.title}</h3>
+                  <span className="skfb-hub-section-hint">{section.hint}</span>
+                </div>
+                <div className="skfb-hub-grid">
+                  {section.tiles.map((tile) => {
+                    const tileActive = tile.isActive(pathname);
+                    return (
+                      <Link
+                        key={tile.key}
+                        href={tile.href}
+                        className="skfb-hub-tile"
+                        aria-current={tileActive ? 'page' : undefined}
+                        onClick={() => setOpen(false)}
+                      >
+                        <span className="skfb-hub-tile-icon" aria-hidden="true">
+                          <tile.Icon />
+                        </span>
+                        <span className="skfb-hub-tile-text">
+                          <span className="skfb-hub-tile-label">
+                            {tile.label}
+                            {tile.badge && <em className="skfb-hub-badge">{tile.badge}</em>}
+                          </span>
+                          <span className="skfb-hub-tile-desc">{tile.desc}</span>
+                        </span>
+                        <ArrowUpRight size={16} aria-hidden="true" className="skfb-hub-tile-go" />
+                      </Link>
+                    );
+                  })}
+                </div>
+              </section>
+            ))}
+
+            <Link href="/ajak-teman" className="skfb-hub-foot" onClick={() => setOpen(false)}>
+              <span className="skfb-hub-foot-icon" aria-hidden="true">
+                <Gift size={20} />
+              </span>
+              <span className="skfb-hub-foot-text">
+                <strong>Ajak teman ke SUKI, kumpulkan Star</strong>
+                <span>Tukarkan Star jadi saldo & benefit ekosistem</span>
+              </span>
+              <ArrowUpRight size={18} aria-hidden="true" />
+            </Link>
+          </div>
+        </>
+      )}
+    </>
+  );
+}

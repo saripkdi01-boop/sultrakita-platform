@@ -116,7 +116,7 @@ export function NewsPortal() {
   const comingSoon = data?.comingSoon === true;
 
   return (
-    <section className={styles.newsSection} aria-labelledby="news-portal-title">
+    <section id="portal-berita" className={styles.newsSection} aria-labelledby="news-portal-title">
       <div className={styles.newsHead}>
         <div>
           <span className={styles.newsEyebrow}>
