@@ -261,3 +261,52 @@ export function breadcrumbJsonLd(items: BreadcrumbItemInput[]): Record<string, J
 export function serializeJsonLd(data: Record<string, JsonValue>): string {
   return JSON.stringify(data).replace(/</g, '\\u003c');
 }
+
+export interface OrganizationJsonLdInput {
+  name: string;
+  url: string;
+  logo?: string | ImageInput;
+  description?: string;
+  /** Tautan profil resmi (website/media sosial), hanya yang terverifikasi. */
+  sameAs?: string[];
+  email?: string;
+  address?: PostalAddressInput;
+}
+
+/** schema.org/Organization — identitas organisasi/brand SUKI Apps. */
+export function organizationJsonLd(input: OrganizationJsonLdInput): Record<string, JsonValue> {
+  return compact({
+    '@context': JSONLD_CONTEXT,
+    '@type': 'Organization',
+    name: input.name,
+    url: input.url,
+    logo: input.logo === undefined ? undefined : toImageObject(input.logo),
+    description: input.description,
+    sameAs: input.sameAs,
+    email: input.email,
+    address: input.address ? postalAddressJsonLd(input.address) : undefined,
+  });
+}
+
+export interface WebSiteJsonLdInput {
+  name: string;
+  url: string;
+  alternateName?: string;
+  /** Kode bahasa, default "id-ID". */
+  inLanguage?: string;
+  /** Nama organisasi penerbit situs. */
+  publisher?: string;
+}
+
+/** schema.org/WebSite — situs web SUKI Apps. */
+export function webSiteJsonLd(input: WebSiteJsonLdInput): Record<string, JsonValue> {
+  return compact({
+    '@context': JSONLD_CONTEXT,
+    '@type': 'WebSite',
+    name: input.name,
+    alternateName: input.alternateName,
+    url: input.url,
+    inLanguage: input.inLanguage ?? 'id-ID',
+    publisher: input.publisher ? { '@type': 'Organization', name: input.publisher } : undefined,
+  });
+}

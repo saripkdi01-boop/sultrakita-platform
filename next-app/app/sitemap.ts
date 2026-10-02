@@ -1,10 +1,12 @@
 import type { MetadataRoute } from 'next';
 import { getServerSupabase } from '@/lib/supabase/server';
+import { KENDARI_SLUGS } from '@/lib/seo/lokal-kendari';
 
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://sukiapps.web.id').replace(/\/$/, '');
 
 // Fase 1.2: sitemap lengkap — halaman area statis + detail properti, lowongan,
 // dan listing marketplace dinamis dengan lastModified asli dari database.
+// T3 launch: + /launch dan halaman SEO lokal /kendari/[slug] (10 kategori).
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
@@ -18,6 +20,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${siteUrl}/security-center`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.4 },
     { url: `${siteUrl}/legal/privacy`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.3 },
     { url: `${siteUrl}/legal/terms`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.3 },
+    { url: `${siteUrl}/launch`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.9 },
+    { url: `${siteUrl}/kendari`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.7 },
+    ...KENDARI_SLUGS.map((slug) => ({
+      url: `${siteUrl}/kendari/${slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.7,
+    })),
   ];
   try {
     const supabase = await getServerSupabase();
