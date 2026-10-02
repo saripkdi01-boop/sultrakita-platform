@@ -15,6 +15,8 @@ import { QuickViewModal } from '@/components/marketplace/QuickViewModal';
 import { CompareBar } from '@/components/marketplace/CompareBar';
 import { ComparePanel } from '@/components/marketplace/ComparePanel';
 import { Recommendations } from '@/components/marketplace/Recommendations';
+import { RecentlyViewed } from '@/components/marketplace/RecentlyViewed';
+import { useRecentlyViewed, type RecentListing } from '@/components/marketplace/useRecentlyViewed';
 import { LoginSheet } from '@/components/marketplace/LoginSheet';
 import { AdSlot } from '@/components/ads/AdSlot';
 import { useWishlist } from '@/components/marketplace/useWishlist';
@@ -46,6 +48,7 @@ export default function MarketplacePageClient({ initialItems, initialFilters, in
   const [isPending, startTransition] = useTransition();
   const { user } = useSessionProfile();
   const wishlist = useWishlist();
+  const { recent, record: recordRecent } = useRecentlyViewed();
   const [items, setItems] = useState<PublicListing[]>(initialItems);
   const [filters, setFilters] = useState<MarketplaceFilters>(initialFilters);
   const [notice, setNotice] = useState(initialNotice);
@@ -140,9 +143,52 @@ export default function MarketplacePageClient({ initialItems, initialFilters, in
   }, [filters, update]);
 
   const resultsCount = visibleItems.length;
-  const openQuickView = useCallback((item: PublicListing) => setQuickView(item), []);
+  // Slice 1: catat setiap listing yang dibuka ke "Terakhir dilihat" (lokal).
+  const openQuickView = useCallback((item: PublicListing) => { recordRecent(item); setQuickView(item); }, [recordRecent]);
   const openSaveSearch = useCallback(() => { if (!user) { wishlist.setLoginSheetOpen(true); return; } setSaveOpen(true); }, [user, wishlist]);
   const openWishlistTab = useCallback(() => { if (!user) { wishlist.setLoginSheetOpen(true); return; } setShowWishlistOnly(true); }, [user, wishlist]);
+
+  // Slice 1: "Produk serupa" ala Shopee/Amazon untuk quick view — skor dari
+  // data yang sudah dimuat (tanpa fetch tambahan): kategori sama (+3),
+  // distrik sama (+2), rentang harga dekat (+1), penjual sama (+1).
+  const similarItems = useMemo(() => {
+    if (!quickView) return [];
+    const currentCat = categoryLabelOf(quickView);
+    const currentDistrict = typeof quickView.district === 'string' ? quickView.district : '';
+    const currentPrice = Math.trunc(Number(quickView.price) || 0);
+    const currentSeller = quickView.seller?.id != null ? String(quickView.seller.id) : '';
+    return items
+      .filter((item) => String(item.id) !== String(quickView.id))
+      .map((item) => {
+        let score = 0;
+        const cat = categoryLabelOf(item);
+        if (cat && currentCat && cat === currentCat) score += 3;
+        const district = typeof item.district === 'string' ? item.district : '';
+        if (district && currentDistrict && district === currentDistrict) score += 2;
+        const price = Math.trunc(Number(item.price) || 0);
+        if (currentPrice > 0 && price > 0 && Math.min(price, currentPrice) / Math.max(price, currentPrice) >= 0.7) score += 1;
+        const seller = item.seller?.id != null ? String(item.seller.id) : '';
+        if (seller && currentSeller && seller === currentSeller) score += 1;
+        return { item, score };
+      })
+      .filter((row) => row.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 8)
+      .map((row) => row.item);
+  }, [quickView, items, categoryLabelOf]);
+
+  // Rail "Terakhir dilihat": sembunyikan yang sudah tampil di grid saat ini.
+  const recentRailItems = useMemo(() => {
+    const inGrid = new Set(items.map((item) => String(item.id)));
+    return recent.filter((entry) => !inGrid.has(entry.id)).slice(0, 8);
+  }, [recent, items]);
+
+  const openRecentItem = useCallback((entry: RecentListing) => {
+    const full = items.find((item) => String(item.id) === entry.id);
+    if (full) { openQuickView(full); return; }
+    // Fallback: snapshot minimal dari riwayat lokal (tanpa klaim data baru).
+    openQuickView({ id: entry.id, title: entry.title, price: entry.price, images: entry.thumbnail ? [entry.thumbnail] : [] });
+  }, [items, openQuickView]);
 
   const breadcrumbCategory = filters.category || '';
   const filterProps = { filters, update, categoryCounts, districtCounts, conditionCounts, onClearAll: () => pushFilters(clearFilters()) };
@@ -273,6 +319,8 @@ export default function MarketplacePageClient({ initialItems, initialFilters, in
 
           {!showWishlistOnly && <DealOfTheDay items={items} onQuickView={openQuickView} />}
 
+          {!showWishlistOnly && <RecentlyViewed items={recentRailItems} onOpen={openRecentItem} />}
+
           <section aria-live="polite" aria-busy={isPending} aria-label={showWishlistOnly ? 'Wishlist saya' : 'Hasil pencarian'}>
             {isPending ? (
               <div className="fbm-grid" aria-hidden="true">
@@ -355,6 +403,8 @@ export default function MarketplacePageClient({ initialItems, initialFilters, in
         onToggleWishlist={quickView ? () => { void wishlist.toggle(String(quickView.id)); } : undefined}
         onToggleCompare={quickView ? () => toggleCompare(String(quickView.id)) : undefined}
         onClose={() => setQuickView(null)}
+        similar={similarItems}
+        onSelectSimilar={openQuickView}
       />
 
       <SaveSearchDialog open={saveOpen} onClose={() => setSaveOpen(false)} filters={filters} />
