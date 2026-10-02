@@ -1,31 +1,16 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getServerSupabase } from '@/lib/supabase/server';
+import { BUSINESS_CATEGORIES, isValidBusinessCategory } from '@/lib/business-categories';
 
 // Kueri direktori bisnis /Business — lapisan lib untuk SSR publik & API.
 // Pola mengikuti lib/listings-query.ts: satu sumber kebenaran agar filter
 // server & API selalu konsisten. Semua teks UI dalam Bahasa Indonesia.
 
-// ---------------------------------------------------------------------
-// Kategori bisnis
-// ---------------------------------------------------------------------
-export const BUSINESS_CATEGORIES: Array<{ value: string; label: string }> = [
-  { value: 'kuliner', label: 'Kuliner' },
-  { value: 'fashion', label: 'Fesyen' },
-  { value: 'kerajinan', label: 'Kerajinan' },
-  { value: 'jasa', label: 'Jasa' },
-  { value: 'properti', label: 'Properti' },
-  { value: 'teknologi', label: 'Teknologi' },
-  { value: 'kesehatan', label: 'Kesehatan' },
-  { value: 'pendidikan', label: 'Pendidikan' },
-  { value: 'otomotif', label: 'Otomotif' },
-  { value: 'pertanian', label: 'Pertanian' },
-  { value: 'pariwisata', label: 'Pariwisata' },
-  { value: 'lainnya', label: 'Lainnya' },
-];
+// Re-export agar pemakai lama tetap jalan tanpa perubahan impor.
+export { BUSINESS_CATEGORIES, businessCategoryLabel, isValidBusinessCategory } from '@/lib/business-categories';
 
-function isValidCategory(value: string): boolean {
-  return BUSINESS_CATEGORIES.some((entry) => entry.value === value);
-}
+// Alias kompatibel untuk pemakaian internal lama.
+const isValidCategory = isValidBusinessCategory;
 
 // ---------------------------------------------------------------------
 // Tipe

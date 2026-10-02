@@ -13,6 +13,7 @@ const adminModules = [
   { href: '/admin/support-tickets', title: 'Support tickets', description: 'Triage, respons, dan lifecycle tiket dukungan.', tone: 'bg-[#e9f7f2]' },
   { href: '/admin/ecosystem-banners', title: 'Ecosystem banners', description: 'Kelola banner lintas Marketplace, Jobs, dan SUKI Suits.', tone: 'bg-[#fff5dc]' },
   { href: '/admin/property-verification', title: 'Property verification', description: 'Tinjau dokumen dan status verifikasi properti.', tone: 'bg-[#eaf1ff]' },
+  { href: '/admin/businesses', title: 'Moderasi bisnis', description: 'Tinjau pengajuan direktori bisnis: setujui, tolak, kelola unggulan & verifikasi.', tone: 'bg-[#e9f7f2]' },
   { href: '/admin/affiliate-rewards', title: 'Affiliate rewards', description: 'Review dan rekonsiliasi antrean payout affiliate.', tone: 'bg-[#f7edff]' },
   { href: '/admin/launch', title: 'Checklist launch', description: 'Daftar verifikasi pra-launch dari data/launch-checklist.json — status lolos/gagal/belum diperiksa.', tone: 'bg-[#eaf1ff]' },
 ] as const;
