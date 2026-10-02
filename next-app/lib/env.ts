@@ -24,6 +24,13 @@ const serverEnvSchema = z.object({
   SUKI_BILLING_PROVIDER: z.string().min(1).optional(),
   SUKI_BILLING_WEBHOOK_SECRET: z.string().min(1).optional(),
   SUKI_BILLING_CURRENCY: z.string().min(1).optional(),
+  // --- Billing MIDTRANS (server-only; JANGAN pernah prefix NEXT_PUBLIC_) ---
+  MIDTRANS_SERVER_KEY: z.string().min(1).optional(),
+  MIDTRANS_CLIENT_KEY: z.string().min(1).optional(),
+  // 'true' = pakai endpoint production Midtrans. Default (kosong/lainnya) = sandbox.
+  MIDTRANS_IS_PRODUCTION: z.string().optional(),
+  // 'true' = izinkan kunci PRODUCTION dipakai. Tanpa ini, scaffold menolak kunci live.
+  SUKI_BILLING_ALLOW_LIVE: z.string().optional(),
   NEXT_PUBLIC_CHAT_WS_URL: z.string().min(1).optional(),
   FEED_CURSOR_SECRET: z.string().min(1).optional(),
   ALLOW_DEMO_DATA: z.string().optional(),
@@ -40,6 +47,7 @@ const featureRequirements: Array<{ feature: string; vars: string[]; hint: string
   { feature: 'OTP WhatsApp', vars: ['N8N_WHATSAPP_WEBHOOK_URL', 'N8N_WEBHOOK_SECRET'], hint: 'OTP WhatsApp via webhook n8n tidak akan terkirim.' },
   { feature: 'Rate limit lintas instance', vars: ['UPSTASH_REDIS_REST_URL', 'UPSTASH_REDIS_REST_TOKEN'], hint: 'Rate limiting memakai memori per-instance (tidak sinkron antar instance).' },
   { feature: 'Billing/monetisasi', vars: ['SUKI_BILLING_PROVIDER', 'SUKI_BILLING_WEBHOOK_SECRET'], hint: 'Mode sandbox; pembayaran nyata berstatus not_configured.' },
+  { feature: 'Billing Midtrans (nyata)', vars: ['MIDTRANS_SERVER_KEY'], hint: 'SUKI_BILLING_PROVIDER=midtrans akan 503 not_configured; butuh juga MIDTRANS_IS_PRODUCTION + SUKI_BILLING_ALLOW_LIVE=true untuk production.' },
 ];
 
 let validated = false;
