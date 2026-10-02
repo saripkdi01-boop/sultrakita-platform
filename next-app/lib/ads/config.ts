@@ -13,7 +13,8 @@ export type PlacementId =
   | 'marketplace-grid'
   | 'mobile-banner'
   | 'properti-detail-sidebar'
-  | 'jobs-list';
+  | 'jobs-list'
+  | 'news-infeed';
 
 export interface PlacementSpec {
   /** id unik placement */
@@ -104,6 +105,16 @@ export const AD_PLACEMENTS: Record<PlacementId, PlacementSpec> = {
     minHeight: 150,
     templates: ['native-16:9', 'native-1:1'],
     policyNote: 'Native; label wajib.',
+  },
+  'news-infeed': {
+    id: 'news-infeed',
+    title: 'Portal Berita In-Feed (native)',
+    description: 'Iklan native di antara kartu berita Portal Berita /beranda.',
+    sizes: ['FLUID responsif', 'AdSense data-ad-format="auto" + data-full-width-responsive="true"'],
+    frequency: 'Tiap 6 kartu berita (~16% densitas)',
+    minHeight: 140,
+    templates: ['native-16:9', 'native-1:1'],
+    policyNote: 'Native menyerupai konten; label "Iklan"/"Bersponsor" wajib. AdSense-ready: aktif otomatis bila placement dikonfigurasi provider=adsense di ad_placements + NEXT_PUBLIC_ADSENSE_CLIENT_ID terisi.',
   },
 };
 
