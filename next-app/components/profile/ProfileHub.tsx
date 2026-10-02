@@ -14,6 +14,7 @@ import { PrivacyCheckupWizard } from '@/components/security/PrivacyCheckupWizard
 import { ProfileVisibilitySettings } from '@/components/security/ProfileVisibilitySettings';
 import { SellerAnalyticsCard } from '@/components/analytics/SellerAnalyticsCard';
 import { getProfileNickname, useSessionProfile } from '@/hooks/useSessionProfile';
+import { csrfFetch } from '@/lib/security/csrf-client';
 import { supabase } from '@/lib/supabase/client';
 import { signOutAndRedirect } from '@/lib/auth/logout';
 
@@ -86,7 +87,8 @@ function ProfileEditForm({ userId }: { userId?: string }) {
     setPreviewUrl((current) => { if (current) URL.revokeObjectURL(current); return nextPreviewUrl; });
     setUploading(true);
     const formData = new FormData(); formData.append('avatar', file);
-    const response = await fetch('/api/profile/avatar', { method: 'POST', body: formData, credentials: 'include' });
+    // CSRF: route /api/profile/avatar dilindungi csrfProtected (server).
+    const response = await csrfFetch('/api/profile/avatar', { method: 'POST', body: formData });
     const payload = await response.json().catch(() => ({}));
     setUploading(false);
     if (!response.ok || !payload.ok) { setError(apiErrorMessage(payload, 'Foto gagal diproses. Periksa environment R2 dan coba lagi.')); return; }
