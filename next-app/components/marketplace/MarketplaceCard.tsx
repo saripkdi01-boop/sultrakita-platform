@@ -5,6 +5,7 @@ import Link from 'next/link';
 import type { PublicListing } from '@/lib/listings-query';
 import { sellerRatingText, sellerTier } from '@/lib/seller-trust';
 import { SafeImage } from './SafeImage';
+import { discountPercent } from './promo';
 
 // Tipe kanonis listing publik — diimpor komponen marketplace lain dari sini.
 export type MarketplaceListing = PublicListing;
@@ -46,11 +47,14 @@ export function MarketplaceCard({ listing, index = 0, saved = false, onToggleWis
   const district = typeof listing.district === 'string' ? listing.district : '';
   const createdAt = typeof listing.created_at === 'string' ? new Date(listing.created_at) : null;
   const sellerId = listing.seller?.id != null ? String(listing.seller.id) : '';
+  // Badge promo "-X%" ala Shopee — hanya dari original_price nyata.
+  const discount = discountPercent(listing);
 
   const media = (
     <>
       {image ? <SafeImage src={image} alt={listing.title} priority={index < 4} /> : <div className="fbm-card-empty" aria-hidden="true">📦</div>}
       <div className="fbm-card-badges">
+        {discount > 0 && <span className="fbm-badge fbm-badge-discount" aria-label={`Diskon ${discount} persen`}>-{discount}%</span>}
         {listing.condition && conditionLabels[listing.condition] && <span className="fbm-badge fbm-badge-condition">{conditionLabels[listing.condition]}</span>}
         {listing.is_featured ? <span className="fbm-badge fbm-badge-featured">Pilihan SUKI</span> : null}
       </div>

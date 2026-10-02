@@ -33,6 +33,10 @@ export type PublicListing = {
   title: string;
   description?: string | null;
   price: number;
+  // Slice 1 (program 4-jam): kolom promo — dibaca dari DB hanya bila kolomnya
+  // tersedia (lihat hasPromoColumns di bawah). NULL/absen = tidak ada promo.
+  original_price?: number | null;
+  stock_quantity?: number | null;
   district?: string | null;
   city?: string | null;
   condition?: string | null;
@@ -121,6 +125,25 @@ async function fetchMediaMap(client: NonNullable<ReturnType<typeof getListingsCl
   return map;
 }
 
+// Slice 1 (program 4-jam): kolom original_price & stock_quantity dideklarasikan
+// di migrasi lama tetapi BELUM ada di production (terverifikasi via REST
+// 2026-10-02). Probe sekali per instance server; bila kolom belum ada,
+// select utama tidak menyertakannya agar query tidak 400. Setelah migrasi
+// 20261002141000_listings_promo_columns.sql diterapkan, badge promo & stok
+// jujur aktif otomatis tanpa perubahan kode.
+let promoColumnsAvailable: boolean | null = null;
+type PromoProbeClient = { from(table: string): { select(columns: string): { limit(n: number): PromiseLike<{ error: unknown }> } } };
+async function hasPromoColumns(client: PromoProbeClient): Promise<boolean> {
+  if (promoColumnsAvailable !== null) return promoColumnsAvailable;
+  try {
+    const { error } = await client.from('listings').select('original_price,stock_quantity').limit(1);
+    promoColumnsAvailable = !error;
+  } catch {
+    promoColumnsAvailable = false;
+  }
+  return promoColumnsAvailable;
+}
+
 export async function fetchPublicListings(filters: ListingFilters): Promise<ListingsQueryResult> {
   const queryText = filters.q?.trim();
   const district = filters.district?.trim();
@@ -134,6 +157,7 @@ export async function fetchPublicListings(filters: ListingFilters): Promise<List
   const filterSummary = { q: queryText || '', district: district || '', category: category || '', condition: condition || '' };
   try {
     const client = getListingsClient() || await getServerSupabase();
+    const promoColumns = await hasPromoColumns(client as unknown as PromoProbeClient);
     let query = client.from('listings').select('id,title,description,price,image_url,images,district,city,condition,is_featured,is_demo,provenance,created_at,seller_id,owner_id').in('status', ['published', 'active']).or('is_demo.is.null,is_demo.eq.false');
     // Fase 2.1: sort server-side agar konsisten antara SSR & API.
     if (sort === 'termurah') query = query.order('price', { ascending: true }).order('created_at', { ascending: false });
@@ -175,6 +199,27 @@ export async function fetchPublicListings(filters: ListingFilters): Promise<List
       const images = dedupeUrls([...(mediaMap.get(String(item.id)) || []), ...rowImages, typeof item.image_url === 'string' ? item.image_url : null]);
       return { ...item, images, thumbnail_url: images[0] || (typeof item.image_url === 'string' ? item.image_url : null), seller: item.seller_id ? sellerMap.get(Number(item.seller_id)) || null : null };
     });
+    // Slice 1: gabungkan kolom promo (original_price, stock_quantity) bila
+    // tersedia di DB — query terpisah agar select utama tetap stabil secara tipe.
+    if (promoColumns && items.length > 0) {
+      try {
+        const { data: promoRows } = await client.from('listings').select('id,original_price,stock_quantity').in('id', items.map((item) => item.id));
+        const promoMap = new Map<string, { original_price: unknown; stock_quantity: unknown }>();
+        for (const row of (promoRows || []) as Array<{ id: unknown; original_price: unknown; stock_quantity: unknown }>) {
+          promoMap.set(String(row.id), row);
+        }
+        for (const item of items) {
+          const promo = promoMap.get(String(item.id));
+          if (!promo) continue;
+          const original = Number(promo.original_price);
+          if (Number.isFinite(original) && original > 0) item.original_price = original;
+          const stock = Number(promo.stock_quantity);
+          if (Number.isFinite(stock) && stock >= 0) item.stock_quantity = Math.trunc(stock);
+        }
+      } catch {
+        // Kolom promo belum bisa dibaca — badge promo & stok jujur nonaktif aman.
+      }
+    }
     return { ok: true, items, filters: filterSummary };
   } catch {
     return { ok: false, error: 'Listing sementara belum tersedia.' };

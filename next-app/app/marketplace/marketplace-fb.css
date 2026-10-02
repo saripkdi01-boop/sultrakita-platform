@@ -2007,3 +2007,125 @@ html[data-theme="dark"] .fbm-qv-close {
   background: rgba(16, 41, 35, 0.94);
   color: var(--ink, #f1faf7);
 }
+
+/* ===== Slice 1 (program 4-jam): badge promo, harga coret, produk serupa, terakhir dilihat ===== */
+
+/* Badge diskon ala Shopee — merah tegas, hanya dirender dari original_price nyata */
+.fbm-badge-discount {
+  background: #ee4d2d;
+  color: #fff;
+}
+
+/* Harga coret di quick view */
+.fbm-qv-discount {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 10px;
+  vertical-align: middle;
+}
+
+.fbm-qv-original {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted, #66736f);
+}
+
+.fbm-qv-outofstock {
+  color: #b91c1c;
+  font-weight: 700;
+}
+
+/* Rail "Produk serupa" di dalam quick view (pola Shopee/Amazon) */
+.fbm-qv-similar {
+  border-top: 1px solid var(--line, #e7e5e4);
+  padding-top: 12px;
+  margin-top: 4px;
+}
+
+.fbm-qv-similar h3 {
+  font-size: 14px;
+  margin: 0 0 8px;
+  letter-spacing: -0.01em;
+}
+
+.fbm-qv-similar-rail {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.fbm-qv-similar-card {
+  flex: 0 0 112px;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0;
+  border: 1px solid var(--line, #e7e5e4);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--paper, #fff);
+  cursor: pointer;
+  text-align: left;
+}
+
+.fbm-qv-similar-card:hover {
+  border-color: var(--teal, #0e6258);
+}
+
+.fbm-qv-similar-art {
+  aspect-ratio: 1;
+  background: var(--wash, #f1f5f4);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.fbm-qv-similar-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.fbm-qv-similar-card strong {
+  font-size: 12px;
+  font-weight: 800;
+  padding: 0 8px;
+  color: var(--ink, #1c1917);
+}
+
+.fbm-qv-similar-title {
+  font-size: 11px;
+  color: var(--muted, #66736f);
+  padding: 0 8px 8px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Rail "Terakhir dilihat" — memakai gaya rail deal yang sudah ada */
+.fbm-recent {
+  margin: 4px 0 0;
+}
+
+.fbm-recent-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 11px;
+  color: var(--muted, #66736f);
+}
+
+/* Mode gelap */
+html[data-theme="dark"] .fbm-qv-similar-card {
+  background: var(--paper, #102923);
+}
+
+html[data-theme="dark"] .fbm-qv-outofstock {
+  color: #f87171;
+}
