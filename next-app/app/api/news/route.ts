@@ -9,7 +9,7 @@ import { getNews } from '@/lib/news/rss';
 export const dynamic = 'force-dynamic';
 
 const querySchema = z.object({
-  category: z.enum(NEWS_CATEGORIES as [NewsCategory, ...NewsCategory[]]).default('teknologi'),
+  category: z.enum(NEWS_CATEGORIES as [NewsCategory, ...NewsCategory[]]).default('semua'),
   limit: z.coerce.number().int().min(1).max(12).default(12),
 });
 

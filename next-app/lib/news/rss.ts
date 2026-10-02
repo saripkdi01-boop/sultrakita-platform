@@ -33,6 +33,11 @@ export interface NewsItem {
    * Gambar milik penerbit — dimuat dari CDN resmi mereka.
    */
   image: string | null;
+  /**
+   * Kategori kanal asal item (kategori primer sumbernya).
+   * Dipakai badge label saat tab "Semua" mencampur banyak kategori.
+   */
+  category: Exclude<NewsCategory, 'semua' | 'komunitas'>;
 }
 
 export interface NewsResult {
@@ -134,6 +139,8 @@ function hashId(s: string): string {
 function parseRss(xml: string, source: NewsSource): NewsItem[] {
   const items: NewsItem[] = [];
   const blocks = xml.match(/<item[\s>][\s\S]*?<\/item>/gi) || [];
+  // Kategori primer sumber (untuk badge saat tab "Semua" mencampur kategori).
+  const primaryCategory = (source.categories.find((c) => c !== 'semua' && c !== 'komunitas') ?? 'teknologi') as NewsItem['category'];
   for (const block of blocks) {
     const title = stripHtml(tagText(block, 'title')).slice(0, 220);
     const guid = stripHtml(tagText(block, 'guid'));
@@ -158,6 +165,7 @@ function parseRss(xml: string, source: NewsSource): NewsItem[] {
       sourceName: source.name,
       publishedAt,
       image: imageOf(block),
+      category: primaryCategory,
     });
     if (items.length >= MAX_ITEMS * 2) break; // batasi parse per feed
   }
