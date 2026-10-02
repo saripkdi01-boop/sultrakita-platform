@@ -64,17 +64,37 @@ function NewsSkeleton() {
 }
 
 /**
+ * Badge label kategori kanal — overlay di kiri atas thumbnail (posisi ideal:
+ * titik baca pertama LTR, pola standar portal berita Indonesia).
+ * Warna gradien per kategori via [data-category] di kartu induk.
+ */
+function CategoryBadge({ category }: { category: NewsCategory }) {
+  return (
+    <span className={styles.newsCategoryBadge} aria-label={`Kanal ${NEWS_CATEGORY_LABELS[category]}`}>
+      {NEWS_CATEGORY_LABELS[category]}
+    </span>
+  );
+}
+
+/**
  * Thumbnail dari field feed (milik penerbit, CDN resmi mereka).
  * lazy + aspect-ratio fixed (zero CLS) + referrerPolicy no-referrer.
- * Gagal dimuat → hilang diam-diam, kartu kembali text-first (jujur).
+ * Gagal dimuat → badge kategori tetap tampil di placeholder, kartu text-first.
  */
-function NewsThumb({ src, alt }: { src: string; alt: string }) {
+function NewsThumb({ src, alt, category }: { src: string; alt: string; category: NewsCategory }) {
   const [failed, setFailed] = useState(false);
-  if (failed) return null;
+  if (failed) {
+    return (
+      <div className={`${styles.newsThumb} ${styles.newsThumbFallback}`}>
+        <CategoryBadge category={category} />
+      </div>
+    );
+  }
   return (
     <div className={styles.newsThumb}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={src} alt={alt} loading="lazy" referrerPolicy="no-referrer" onError={() => setFailed(true)} />
+      <CategoryBadge category={category} />
     </div>
   );
 }
@@ -193,8 +213,14 @@ export function NewsPortal() {
             {items.map((item, index) => (
               <Fragment key={item.id}>
                 <li>
-                  <article className={styles.newsCard}>
-                    {item.image && <NewsThumb src={item.image} alt={item.title} />}
+                  <article className={styles.newsCard} data-category={category}>
+                    {item.image ? (
+                      <NewsThumb src={item.image} alt={item.title} category={category} />
+                    ) : (
+                      <div className={`${styles.newsThumb} ${styles.newsThumbFallback} ${styles.newsThumbTextOnly}`}>
+                        <CategoryBadge category={category} />
+                      </div>
+                    )}
                     <h3>
                       <a href={item.link} target="_blank" rel="noopener noreferrer" title={`Baca di ${item.sourceName}`}>
                         {item.title}

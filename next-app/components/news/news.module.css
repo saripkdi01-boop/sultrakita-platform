@@ -115,6 +115,10 @@
 }
 
 .newsCard {
+  --news-accent-1: var(--sk-teal);
+  --news-accent-2: var(--sk-teal);
+  --news-glow: rgba(14, 98, 88, 0.14);
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -123,30 +127,124 @@
   border: 1px solid var(--sk-line);
   border-radius: var(--sk-r-lg);
   background: var(--sk-surface);
+  overflow: hidden;
   transition: border-color var(--sk-d-base) var(--sk-ease), box-shadow var(--sk-d-base) var(--sk-ease), transform var(--sk-d-base) var(--sk-ease);
 }
+/* Aksen gradien kategori: garis hidup di tepi atas kartu (3px). */
+.newsCard::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--news-accent-1), var(--news-accent-2));
+  opacity: 0.9;
+}
+/* Sistem warna per kanal — badge, aksen, dan glow mengikuti kategori. */
+.newsCard[data-category="teknologi"] {
+  --news-accent-1: #0ea5e9;
+  --news-accent-2: #2563eb;
+  --news-glow: rgba(14, 165, 233, 0.18);
+}
+.newsCard[data-category="umum"] {
+  --news-accent-1: #f59e0b;
+  --news-accent-2: #ea580c;
+  --news-glow: rgba(245, 158, 11, 0.18);
+}
+.newsCard[data-category="politik"] {
+  --news-accent-1: #f43f5e;
+  --news-accent-2: #dc2626;
+  --news-glow: rgba(244, 63, 94, 0.18);
+}
+.newsCard[data-category="global"] {
+  --news-accent-1: #8b5cf6;
+  --news-accent-2: #6d28d9;
+  --news-glow: rgba(139, 92, 246, 0.18);
+}
+.newsCard[data-category="riset"] {
+  --news-accent-1: #10b981;
+  --news-accent-2: #059669;
+  --news-glow: rgba(16, 185, 129, 0.18);
+}
+.newsCard[data-category="komunitas"] {
+  --news-accent-1: #ec4899;
+  --news-accent-2: #db2777;
+  --news-glow: rgba(236, 72, 153, 0.18);
+}
 .newsCard:hover {
-  border-color: var(--sk-teal);
-  box-shadow: 0 12px 28px rgba(14, 98, 88, 0.1);
-  transform: translateY(-2px);
+  border-color: var(--news-accent-1);
+  box-shadow: 0 16px 36px var(--news-glow), 0 4px 12px rgba(0, 0, 0, 0.06);
+  transform: translateY(-3px);
+}
+
+/* Label kategori: badge overlay di kiri atas thumbnail (posisi ideal —
+   titik baca pertama, pola portal berita Indonesia). Gradien kategori +
+   glass shadow agar "melayang" di atas gambar, tidak flat. */
+.newsCategoryBadge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  border-radius: var(--sk-r-pill);
+  background: linear-gradient(135deg, var(--news-accent-1), var(--news-accent-2));
+  color: #fff;
+  font-family: var(--sk-font);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  transition: transform var(--sk-d-fast) var(--sk-ease), box-shadow var(--sk-d-fast) var(--sk-ease);
+}
+.newsCard:hover .newsCategoryBadge {
+  transform: translateY(-1px) scale(1.03);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 /* Thumbnail dari field feed: aspect-ratio fixed cegah CLS, cover penuh. */
 .newsThumb {
+  position: relative;
   margin: -16px -16px 0;
   aspect-ratio: 16 / 9;
   overflow: hidden;
   border-radius: var(--sk-r-lg) var(--sk-r-lg) 0 0;
   background: var(--sk-surface-2);
 }
+/* Depth: gradien gelap halus di dasar gambar agar kartu berdimensi. */
+.newsThumb::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 42%;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.28), transparent);
+  pointer-events: none;
+  opacity: 0.85;
+  transition: opacity var(--sk-d-base) var(--sk-ease);
+}
+.newsCard:hover .newsThumb::after { opacity: 1; }
 .newsThumb img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
+  transition: transform var(--sk-d-slow) var(--sk-ease);
 }
+.newsCard:hover .newsThumb img { transform: scale(1.06); }
+/* Fallback bila gambar gagal: placeholder gradien kategori, badge tetap ada. */
+.newsThumbFallback {
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--news-accent-1) 32%, var(--sk-surface-2)),
+    color-mix(in srgb, var(--news-accent-2) 22%, var(--sk-surface-2)));
+}
+.newsThumbFallback::after { display: none; }
+.newsThumbTextOnly { min-height: 0; aspect-ratio: 16 / 7; }
 @media (prefers-reduced-motion: reduce) {
-  .newsThumb img { transform: none; }
+  .newsThumb img { transform: none; transition: none; }
+  .newsCard:hover .newsThumb img { transform: none; }
 }
 
 .newsMeta {
@@ -185,8 +283,17 @@
 .newsCard h3 a {
   color: inherit;
   text-decoration: none;
+  background-image: linear-gradient(var(--news-accent-1), var(--news-accent-1));
+  background-size: 0% 2px;
+  background-repeat: no-repeat;
+  background-position: left calc(100% - 1px);
+  transition: background-size var(--sk-d-base) var(--sk-ease), color var(--sk-d-fast) var(--sk-ease);
+  padding-bottom: 2px;
 }
-.newsCard h3 a:hover { color: var(--sk-teal); }
+.newsCard h3 a:hover {
+  color: var(--news-accent-2);
+  background-size: 100% 2px;
+}
 .newsCard h3 a:focus-visible {
   outline: 2px solid var(--sk-focus);
   outline-offset: 2px;
