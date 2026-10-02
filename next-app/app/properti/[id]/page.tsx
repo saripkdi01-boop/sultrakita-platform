@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, Bath, Bed, Building2, CheckCircle2, Eye, Heart, MapPin, Maximize, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Bath, Bed, Building2, CheckCircle2, Eye, Heart, MapPin, Maximize, MessageCircle, ShieldCheck } from 'lucide-react';
 import type { Metadata } from 'next';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { getPublicPropertyById } from '@/lib/actions/property-public';
@@ -14,6 +14,7 @@ import MortgageCalculator from '@/components/property/MortgageCalculator';
 import { pricePerSqm } from '@/lib/property-format';
 import { AdSlot } from '@/components/ads/AdSlot';
 import { ReportPropertyButton } from '@/components/property/ReportPropertyButton';
+import { siteUrl, sukiWaLink } from '@/lib/whatsapp';
 
 function rupiah(value: number) { return `Rp ${new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(value)}`; }
 function formatPriceType(value?: string) { return !value || value === 'total' ? '' : ` / ${value.replace('per_', '')}`; }
@@ -96,6 +97,12 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
   const perSqm = pricePerSqm(Number(property.price), property.land_area_sqm, property.building_area_sqm, property.price_type);
   const perSqmArea = property.land_area_sqm ? `LT ${property.land_area_sqm} m²` : property.building_area_sqm ? `LB ${property.building_area_sqm} m²` : '';
   const similar = await getSimilarProperties(property);
+  // Chat WhatsApp: inquiry diteruskan ke WA Business resmi SUKI (bukan nomor
+  // pribadi seller — privasi seller terjaga). Tombol hanya muncul bila
+  // NEXT_PUBLIC_SUKI_WA_NUMBER dikonfigurasi.
+  const waHref = sukiWaLink(
+    `Halo SUKI, saya tertarik dengan properti "${property.title}" (${rupiah(Number(property.price))}) di SUKI: ${siteUrl()}/properti/${property.id}`
+  );
   return (
     <AppLayout>
       <main className="platform-shell mx-auto max-w-6xl px-4 py-6 md:px-8">
@@ -135,6 +142,9 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
             </div>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link href={`/login?redirect=/properti/${id}`} aria-label="Simpan properti" className="inline-flex items-center gap-2 rounded-xl bg-sultra-teal px-4 py-3 text-sm font-semibold text-white"><Heart size={16} /> Simpan</Link>
+              {waHref && (
+                <a href={waHref} target="_blank" rel="noopener noreferrer" aria-label={`Tanya tentang ${property.title} via WhatsApp`} className="inline-flex items-center gap-2 rounded-xl bg-[#25D366] px-4 py-3 text-sm font-semibold text-white"><MessageCircle size={16} /> WhatsApp</a>
+              )}
               <PropertyInquiryForm propertyId={id} />
               <ReportPropertyButton propertyId={String(id)} />
             </div>

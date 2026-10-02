@@ -1607,6 +1607,18 @@ a.fbm-card-shop:hover .fbm-shop-name {
   color: #fff;
 }
 
+/* Tombol chat WhatsApp — aksen hijau WA, tetap satu bahasa dengan tombol sekunder. */
+.fbm-qv-wa {
+  color: #15803d;
+  border-color: #86efac;
+  background: #f0fdf4;
+  text-decoration: none;
+}
+.fbm-qv-wa:hover {
+  background: #dcfce7;
+  border-color: #4ade80;
+}
+
 /* ---------- Dialog simpan pencarian ---------- */
 .fbm-save-dialog {
   position: relative;
