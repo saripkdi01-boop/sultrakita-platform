@@ -1,0 +1,165 @@
+/* ==========================================================================
+   DIGITAL NUSANTARA — lapisan token (namespace --dn-*)
+   Program VISUAL TRANSFORMATION V1.0 SukiApps.
+   Hidup BERDAMPINGAN dengan token lama (--suki-*, --sk-*) tanpa menimpa:
+   file ini hanya mendefinisikan variabel --dn-*, tidak menyentuh yang lain.
+   Tema gelap memakai atribut yang sama seperti token lama:
+   html[data-theme='dark'].
+   ========================================================================== */
+
+:root {
+  /* --- 1. Palet mentah Digital Nusantara --- */
+  --dn-forest: #123C35;      /* hijau hutan — warna primer */
+  --dn-teal: #13A89E;        /* teal tropis — aksen */
+  --dn-ocean: #243A58;       /* biru samudra — teks gelap alternatif */
+  --dn-gold: #F3B544;        /* emas hangat — aksen/CTA */
+  --dn-coral: #F17B51;       /* koral — aksen energik */
+  --dn-cream: #F7F3E8;       /* krem hangat — latar utama light */
+  --dn-brand-gold: #D4AF37;  /* emas brand SUKI 2026 — dipertahankan */
+
+  /* --- 2. Turunan: tint (campur putih) & shade (campur hitam) ---
+     100/200/300 = tint 88% / 72% / 52% putih; 700/800 = shade 35% / 55% hitam.
+     Nilai dihitung manual (interpolasi linear), dibulatkan ke hex terdekat. */
+
+  --dn-forest-100: #E3E8E7;
+  --dn-forest-200: #BDC8C6;
+  --dn-forest-300: #8DA19E;
+  --dn-forest-700: #0C2722;
+  --dn-forest-800: #0A1B1D;
+
+  --dn-teal-100: #E4F5F3;
+  --dn-teal-200: #BEE7E4;
+  --dn-teal-300: #8ED5D0;
+  --dn-teal-700: #0C6D67;
+  --dn-teal-800: #094C47;
+
+  --dn-ocean-100: #E5E7EB;
+  --dn-ocean-200: #C2C8D0;
+  --dn-ocean-300: #96A0AF;
+  --dn-ocean-700: #172639;
+  --dn-ocean-800: #101A28;
+
+  --dn-gold-100: #FEF6E9;
+  --dn-gold-200: #FCEACB;
+  --dn-gold-300: #F9DBA5;
+  --dn-gold-700: #9E762C;
+  --dn-gold-800: #6D511F;
+
+  --dn-coral-100: #FDEFEA;
+  --dn-coral-200: #FBDACE;
+  --dn-coral-300: #F8C0AB;
+  --dn-coral-700: #9D5035;
+  --dn-coral-800: #6C3724;
+
+  --dn-cream-100: #FEFEFC;
+  --dn-cream-200: #FDFCF9;
+  --dn-cream-300: #FBF9F4;
+  --dn-cream-700: #A19E97;
+  --dn-cream-800: #6F6D68;
+
+  --dn-brand-gold-100: #FAF5E7;
+  --dn-brand-gold-200: #F3E9C7;
+  --dn-brand-gold-300: #EAD99F;
+  --dn-brand-gold-700: #8A7224;
+  --dn-brand-gold-800: #5F4F19;
+
+  /* --- 3. Token semantik — tema terang --- */
+  --dn-bg: #F7F3E8;                 /* = --dn-cream */
+  --dn-surface: #FFFFFF;
+  --dn-surface-2: #FBF9F4;          /* = --dn-cream-300, sand lebih dalam */
+  --dn-text: #123C35;               /* = --dn-forest */
+  --dn-text-muted: #5A6B66;        /* teks sekunder — kontras ~5.1:1 di atas --dn-bg */
+  --dn-border: #DCD3BC;             /* hairline hangat */
+  --dn-primary: #123C35;            /* = --dn-forest */
+  --dn-primary-strong: #0C2722;     /* = --dn-forest-700, hover/active */
+  --dn-accent: #F3B544;             /* = --dn-gold */
+  --dn-on-primary: #FFFFFF;         /* teks di atas --dn-primary (~12.7:1) */
+
+  /* --- 4. Tipografi ---
+     Mewarisi font yang sudah dimuat proyek di app/layout.tsx
+     (Plus Jakarta Sans + Playfair Display). TIDAK menambah font baru. */
+  --dn-font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --dn-font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
+
+  /* Skala teks responsif (clamp): kecil di mobile, lega di desktop */
+  --dn-text-xs: 0.75rem;                                        /* 12px */
+  --dn-text-sm: 0.8125rem;                                      /* 13px */
+  --dn-text-base: clamp(0.9375rem, 0.9rem + 0.2vw, 1rem);       /* 15 → 16px */
+  --dn-text-lg: clamp(1.0625rem, 1rem + 0.3vw, 1.25rem);        /* 17 → 20px */
+  --dn-text-xl: clamp(1.375rem, 1.2rem + 0.9vw, 1.75rem);       /* 22 → 28px */
+  --dn-text-2xl: clamp(1.75rem, 1.4rem + 1.6vw, 2.5rem);        /* 28 → 40px */
+  --dn-display: clamp(2.5rem, 1.9rem + 3vw, 4.25rem);           /* 40 → 68px */
+
+  --dn-leading-tight: 1.1;
+  --dn-leading-snug: 1.25;
+  --dn-leading-normal: 1.5;
+  --dn-leading-relaxed: 1.65;
+
+  --dn-weight-regular: 400;
+  --dn-weight-medium: 500;
+  --dn-weight-semibold: 600;
+  --dn-weight-bold: 700;
+  --dn-weight-extrabold: 800;
+
+  /* --- 5. Spacing (skala 4px) --- */
+  --dn-space-1: 4px;
+  --dn-space-2: 8px;
+  --dn-space-3: 12px;
+  --dn-space-4: 16px;
+  --dn-space-5: 20px;
+  --dn-space-6: 24px;
+  --dn-space-8: 32px;
+  --dn-space-10: 40px;
+  --dn-space-12: 48px;
+  --dn-space-16: 64px;
+  --dn-space-20: 80px;
+
+  /* --- 6. Radius --- */
+  --dn-radius-sm: 8px;
+  --dn-radius-md: 12px;
+  --dn-radius-lg: 16px;
+  --dn-radius-xl: 24px;
+  --dn-radius-2xl: 32px;
+  --dn-radius-pill: 999px;
+
+  /* --- 7. Shadow (3 level, tint hangat kehijauan) --- */
+  --dn-shadow-sm: 0 1px 2px rgb(28 38 32 / 0.06), 0 4px 12px rgb(28 38 32 / 0.05);
+  --dn-shadow-md: 0 2px 6px rgb(28 38 32 / 0.07), 0 14px 34px rgb(28 38 32 / 0.09);
+  --dn-shadow-lg: 0 6px 16px rgb(28 38 32 / 0.10), 0 28px 60px rgb(28 38 32 / 0.14);
+
+  /* --- 8. Motion --- */
+  --dn-duration-instant: 100ms;
+  --dn-duration-fast: 160ms;
+  --dn-duration-normal: 240ms;
+  --dn-duration-slow: 480ms;
+  --dn-duration-slower: 800ms;
+  --dn-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dn-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dn-ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+/* --- 9. Token semantik — tema gelap (override) ---
+   Primer beralih ke emas agar tetap kontras di latar gelap. */
+html[data-theme='dark'] {
+  --dn-bg: #0C1411;
+  --dn-surface: #141F1B;
+  --dn-surface-2: #1C2A24;
+  --dn-text: #F2EFE3;
+  --dn-text-muted: #A7B3AC;        /* ~8.6:1 di atas --dn-bg */
+  --dn-border: #2A3831;
+  --dn-primary: #F3B544;           /* = --dn-gold, ~10.2:1 di atas --dn-bg */
+  --dn-primary-strong: #F9DBA5;    /* = --dn-gold-300 */
+  --dn-accent: #8ED5D0;            /* = --dn-teal-300 */
+  --dn-on-primary: #123C35;        /* = --dn-forest, ~7.0:1 di atas --dn-primary */
+}
+
+/* --- 10. Reduced motion: matikan semua durasi animasi --- */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dn-duration-instant: 1ms;
+    --dn-duration-fast: 1ms;
+    --dn-duration-normal: 1ms;
+    --dn-duration-slow: 1ms;
+    --dn-duration-slower: 1ms;
+  }
+}

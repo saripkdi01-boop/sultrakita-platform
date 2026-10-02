@@ -22,6 +22,7 @@ import { AdSlot } from '@/components/ads/AdSlot';
 import { useWishlist } from '@/components/marketplace/useWishlist';
 import { useSessionProfile } from '@/hooks/useSessionProfile';
 import { deleteSavedSearch, listSavedSearches, saveSearchAlert, setSearchAlertEnabled } from '@/lib/actions/marketplace';
+import { EcosystemMarketplace } from '@/components/illustrations';
 
 // Gaya Facebook Marketplace (basis) + pola Amazon (filter checkbox +
 // hitungan, rating bintang, kepadatan info) + Rakuten (identitas toko,
@@ -334,6 +335,7 @@ export default function MarketplacePageClient({ initialItems, initialFilters, in
               </div>
             ) : visibleItems.length === 0 ? (
               <div className="fbm-empty">
+                <span className="dn-empty-art" aria-hidden="true"><EcosystemMarketplace /></span>
                 <Search size={28} aria-hidden="true" />
                 <h3>{showWishlistOnly ? 'Wishlist masih kosong' : 'Tidak ada listing yang cocok'}</h3>
                 <p>{showWishlistOnly ? 'Ketuk ikon hati pada listing untuk menyimpannya di sini.' : 'Coba ubah kata kunci atau longgarkan filter pencarianmu.'}</p>

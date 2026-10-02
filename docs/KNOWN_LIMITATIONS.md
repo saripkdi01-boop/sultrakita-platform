@@ -37,3 +37,26 @@ Diperbarui: 2026-10-01.
 
 ## E2E browser
 - Playwright tersedia (`npm run e2e`) tapi belum dijalankan di sesi ini untuk slice baru (prioritas: tsc+lint). Dijadwalkan saat integrasi bila browser tersedia.
+
+---
+
+## Visual Transformation V1.0 (2026-10-03)
+
+- **KL-01 — Screenshot before/after lokal memakai kunci Supabase dummy.**
+  `next start` butuh `NEXT_PUBLIC_SUPABASE_URL`/`ANON_KEY`; kunci asli tidak
+  diambil dari vault (aturan kredensial). Screenshot memakai URL proyek asli +
+  `visual-qc-dummy-key` → fetch data gagal gracefully, halaman tampil dalam
+  state kosong/error. Perbandingan visual tetap valid untuk perubahan program
+  ini (hero, kartu, empty state, login) yang tidak bergantung data.
+- **KL-02 — `next start` (build baseline) mengembalikan 500 di semua rute**
+  dengan env dummy, sementara `next dev` 200. Penyebab belum dipastikan;
+  kemungkinan terkait prerender produksi + env dummy. Perlu investigasi bila
+  akan dipakai untuk smoke test produksi-lokal. Build `next build` sendiri
+  tidak terdampak (baseline sukses).
+- **KL-03 — Verifikasi visual aktual butuh browser live (delegasi ke parent).**
+  Screenshot Playwright lokal menutupi: layout desktop/mobile, tanpa overflow,
+  render ilustrasi SVG. Tidak menutupi: tampilan di device fisik, performa
+  Lighthouse, perilaku di browser non-Chromium.
+- **KL-04 — Temuan audit P0 di luar cakupan visual tidak diperbaiki:**
+  data lokasi properti salah massal; counter "0 bisnis terdaftar"; /marketplace
+  tanpa SSR; 35× "0 dilihat · 0 disimpan". Diteruskan sebagai rekomendasi.

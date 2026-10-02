@@ -1,0 +1,216 @@
+/* ==========================================================================
+   SUKI Apps — Visual Transformation V1.0 "Digital Nusantara"
+   Lapisan gaya baru (namespace dn-*). Hidup BERDAMPINGAN dengan
+   suki-overhaul.css / tokens lama — tidak menimpa apa pun.
+   Token warna diambil dari design-system/tokens-nusantara.css (--dn-*).
+   Mobile-first. Hormati prefers-reduced-motion. Tanpa horizontal overflow.
+   ========================================================================== */
+
+:root {
+  --dn-tenun-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72'%3E%3Cpath d='M36 16 L56 36 L36 56 L16 36 Z' fill='none' stroke='%23F3B544' stroke-opacity='0.28' stroke-width='1.5'/%3E%3Ccircle cx='36' cy='36' r='2.5' fill='%23F3B544' fill-opacity='0.28'/%3E%3C/svg%3E");
+}
+
+/* ---------- Utilitas section ---------- */
+.dn-section { padding: clamp(56px, 8vw, 96px) 0; }
+.dn-container { width: min(1200px, 100% - 40px); margin-inline: auto; }
+.dn-kicker {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 12px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--dn-teal-700, #0e7f75);
+}
+.dn-kicker::before {
+  content: ""; width: 22px; height: 3px; border-radius: 2px;
+  background: linear-gradient(90deg, var(--dn-gold, #f3b544), var(--dn-coral, #f17b51));
+}
+html[data-theme='dark'] .dn-kicker { color: var(--dn-teal-200, #7fe3d2); }
+
+/* ---------- HERO: ilustrasi Digital Nusantara berlapis ---------- */
+.dn-hero-art {
+  position: relative;
+  width: min(100%, 620px);
+  border-radius: 28px;
+  overflow: hidden;
+  aspect-ratio: 4 / 3.4;
+  background:
+    radial-gradient(120% 90% at 50% 0%, var(--dn-cream, #f7f3e8) 0%, #f3ecdc 55%, #eddfc4 100%);
+  border: 1px solid color-mix(in srgb, var(--dn-gold, #f3b544) 35%, transparent);
+  box-shadow: var(--dn-shadow-lg, 0 18px 42px rgb(15 41 34 / 0.12));
+  isolation: isolate;
+}
+html[data-theme='dark'] .dn-hero-art {
+  background:
+    radial-gradient(120% 90% at 50% 0%, #1d3a33 0%, #14302a 55%, #0e211c 100%);
+  border-color: rgb(243 181 68 / 0.22);
+}
+/* Pola tenun halus di atas ilustrasi */
+.dn-hero-art::after {
+  content: ""; position: absolute; inset: 0; z-index: 5; pointer-events: none;
+  opacity: 0.5; mix-blend-mode: multiply;
+  background-image: var(--dn-tenun-tile, none);
+  background-size: 72px 72px;
+}
+html[data-theme='dark'] .dn-hero-art::after { mix-blend-mode: screen; opacity: 0.35; }
+.dn-hero-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.dn-hero-svg .dn-layer { transition: transform 0.25s ease-out; will-change: transform; }
+/* Hanyutan awan — hanya aktif bila ilustrator memakai class mengandung "cloud" */
+.dn-hero-art [class*="cloud"] { animation: dn-cloud-drift 26s ease-in-out infinite alternate; }
+.dn-hero-art [class*="cloud"]:nth-of-type(2n) { animation-duration: 34s; animation-delay: -8s; }
+@keyframes dn-cloud-drift {
+  from { transform: translateX(-14px); }
+  to { transform: translateX(18px); }
+}
+/* Badge melayang di atas hero */
+.dn-hero-badges { position: absolute; z-index: 6; inset: auto 16px 16px auto; display: flex; gap: 8px; }
+.dn-hero-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 12px; border-radius: 999px;
+  background: rgb(255 255 255 / 0.88); backdrop-filter: blur(6px);
+  border: 1px solid rgb(18 60 53 / 0.1);
+  font-size: 12px; font-weight: 700; color: var(--dn-forest, #123c35);
+  box-shadow: 0 6px 18px rgb(18 60 53 / 0.1);
+}
+html[data-theme='dark'] .dn-hero-badge { background: rgb(22 36 31 / 0.88); color: #e7f1ec; border-color: rgb(255 255 255 / 0.12); }
+.dn-hero-badge i { width: 8px; height: 8px; border-radius: 50%; background: var(--dn-teal, #13a89e); }
+
+/* ---------- Kartu 4 ruang ekosistem ---------- */
+.dn-eco-reveal { display: flex; }
+.dn-eco-reveal > a { flex: 1; }
+.dn-eco-grid {
+  display: grid; gap: 18px;
+  grid-template-columns: 1fr;
+  margin-top: 32px;
+}
+@media (min-width: 640px) { .dn-eco-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1024px) { .dn-eco-grid { grid-template-columns: repeat(4, 1fr); } }
+.dn-eco-card {
+  display: flex; flex-direction: column;
+  background: var(--dn-surface, #ffffff);
+  border: 1px solid var(--dn-border, #e5e0d2);
+  border-radius: 20px; overflow: hidden;
+  text-decoration: none; color: inherit;
+  transition: transform var(--dn-duration-normal, 220ms) var(--dn-ease-out, ease),
+    box-shadow var(--dn-duration-normal, 220ms) var(--dn-ease-out, ease);
+  min-height: 100%;
+}
+.dn-eco-card:hover { transform: translateY(-4px); box-shadow: var(--dn-shadow-lg, 0 18px 42px rgb(15 41 34 / 0.12)); }
+.dn-eco-card:focus-visible { outline: 3px solid var(--dn-teal, #13a89e); outline-offset: 3px; }
+.dn-eco-art { position: relative; aspect-ratio: 4 / 3; overflow: hidden; }
+.dn-eco-art svg { width: 100%; height: 100%; display: block; transition: transform 400ms ease; }
+.dn-eco-card:hover .dn-eco-art svg { transform: scale(1.03); }
+.dn-eco-art.accent-teal { background: linear-gradient(135deg, #dcf5ef, #f7f3e8); }
+.dn-eco-art.accent-ocean { background: linear-gradient(135deg, #dbe6f2, #f7f3e8); }
+.dn-eco-art.accent-gold { background: linear-gradient(135deg, #fbeed3, #f7f3e8); }
+.dn-eco-art.accent-coral { background: linear-gradient(135deg, #fbe3d7, #f7f3e8); }
+html[data-theme='dark'] .dn-eco-art.accent-teal { background: linear-gradient(135deg, #123b33, #16241f); }
+html[data-theme='dark'] .dn-eco-art.accent-ocean { background: linear-gradient(135deg, #1b2c44, #16241f); }
+html[data-theme='dark'] .dn-eco-art.accent-gold { background: linear-gradient(135deg, #3a2f14, #16241f); }
+html[data-theme='dark'] .dn-eco-art.accent-coral { background: linear-gradient(135deg, #3d241a, #16241f); }
+.dn-eco-body { display: flex; flex-direction: column; gap: 6px; padding: 18px 18px 20px; flex: 1; }
+.dn-eco-label { font-size: 11px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
+.accent-teal .dn-eco-label { color: #0e7f75; }
+.accent-ocean .dn-eco-label { color: #2f4d78; }
+.accent-gold .dn-eco-label { color: #a86e00; }
+.accent-coral .dn-eco-label { color: #cf5a30; }
+html[data-theme='dark'] .accent-teal .dn-eco-label { color: #7fe3d2; }
+html[data-theme='dark'] .accent-ocean .dn-eco-label { color: #9db9dd; }
+html[data-theme='dark'] .accent-gold .dn-eco-label { color: #f3c96b; }
+html[data-theme='dark'] .accent-coral .dn-eco-label { color: #f2a488; }
+.dn-eco-title { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -0.01em; color: var(--dn-text, #123c35); }
+html[data-theme='dark'] .dn-eco-title { color: #eef5f1; }
+.dn-eco-text { margin: 0; font-size: 14px; line-height: 1.6; color: var(--dn-text-muted, #5c6f68); flex: 1; }
+html[data-theme='dark'] .dn-eco-text { color: #a9bbb3; }
+.dn-eco-link {
+  display: inline-flex; align-items: center; gap: 8px; margin-top: 10px;
+  min-height: 44px; font-weight: 800; font-size: 14px; color: var(--dn-teal-700, #0e7f75);
+}
+html[data-theme='dark'] .dn-eco-link { color: #7fe3d2; }
+.dn-eco-link svg { transition: transform 200ms ease; }
+.dn-eco-card:hover .dn-eco-link svg { transform: translateX(4px); }
+
+/* ---------- RuangHeader (4 halaman ruang) ---------- */
+.dn-ruang { position: relative; overflow: hidden; border-bottom: 1px solid var(--dn-border, #e5e0d2); }
+.dn-ruang-inner {
+  width: min(1200px, 100% - 40px); margin-inline: auto;
+  display: grid; gap: 8px 32px; align-items: center;
+  padding: clamp(28px, 5vw, 56px) 0;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 768px) { .dn-ruang-inner { grid-template-columns: 1.1fr 0.9fr; } }
+.dn-ruang.accent-teal { background: linear-gradient(120deg, #e2f6f0 0%, #f7f3e8 70%); }
+.dn-ruang.accent-ocean { background: linear-gradient(120deg, #e0e9f4 0%, #f7f3e8 70%); }
+.dn-ruang.accent-gold { background: linear-gradient(120deg, #fbeed2 0%, #f7f3e8 70%); }
+.dn-ruang.accent-coral { background: linear-gradient(120deg, #fbe2d4 0%, #f7f3e8 70%); }
+html[data-theme='dark'] .dn-ruang.accent-teal { background: linear-gradient(120deg, #123b33, #101d18); }
+html[data-theme='dark'] .dn-ruang.accent-ocean { background: linear-gradient(120deg, #1b2c44, #101d18); }
+html[data-theme='dark'] .dn-ruang.accent-gold { background: linear-gradient(120deg, #3a2f14, #101d18); }
+html[data-theme='dark'] .dn-ruang.accent-coral { background: linear-gradient(120deg, #3d241a, #101d18); }
+.dn-ruang-label {
+  display: inline-block; font-size: 12px; font-weight: 800;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  padding: 6px 12px; border-radius: 999px; margin-bottom: 12px;
+  background: rgb(255 255 255 / 0.7); border: 1px solid rgb(18 60 53 / 0.12);
+  color: var(--dn-forest, #123c35);
+}
+html[data-theme='dark'] .dn-ruang-label { background: rgb(255 255 255 / 0.06); color: #e7f1ec; border-color: rgb(255 255 255 / 0.14); }
+.dn-ruang-title {
+  margin: 0 0 8px; font-size: clamp(30px, 4.6vw, 46px); font-weight: 800;
+  letter-spacing: -0.02em; line-height: 1.05; color: var(--dn-forest, #123c35);
+}
+html[data-theme='dark'] .dn-ruang-title { color: #f0f6f2; }
+.dn-ruang-text { margin: 0; font-size: 16px; line-height: 1.65; color: var(--dn-text-muted, #5c6f68); max-width: 46ch; }
+html[data-theme='dark'] .dn-ruang-text { color: #a9bbb3; }
+.dn-ruang-art { display: flex; justify-content: center; }
+.dn-ruang-svg { width: min(420px, 100%); height: auto; aspect-ratio: 4 / 3; }
+
+/* ---------- Ilustrasi empty-state tiap ruang ---------- */
+.dn-empty-art { display: block; width: min(240px, 72%); margin: 0 auto 8px; }
+.dn-empty-art svg { width: 100%; height: auto; display: block; }
+
+/* ---------- Pembatas ombak antar section ---------- */
+.dn-wave { display: block; width: 100%; height: 56px; margin-bottom: -1px; }
+.dn-wave path { fill: var(--dn-cream, #f7f3e8); }
+html[data-theme='dark'] .dn-wave path { fill: #101d18; }
+
+/* ---------- Sentuhan login ---------- */
+.dn-login-art {
+  margin-top: 28px; border-radius: 20px; overflow: hidden;
+  border: 1px solid rgb(18 60 53 / 0.1);
+  background: linear-gradient(135deg, #e2f6f0, #f7f3e8);
+  aspect-ratio: 16 / 9; max-width: 550px;
+}
+.dn-login-art svg { width: 100%; height: 100%; display: block; }
+
+/* ---------- Aksen section homepage (tanpa ubah struktur) ---------- */
+.dn-band-cream { background: var(--dn-cream, #f7f3e8); }
+html[data-theme='dark'] .dn-band-cream { background: #101d18; }
+.dn-band-forest { background: var(--dn-forest, #123c35); color: #f7f3e8; }
+.dn-band-forest .dn-kicker { color: var(--dn-gold, #f3b544); }
+
+/* ---------- Fokus & sentuh ---------- */
+.dn-home a:focus-visible, .dn-home button:focus-visible,
+.dn-eco-card:focus-visible, .dn-ruang a:focus-visible {
+  outline: 3px solid var(--dn-teal, #13a89e); outline-offset: 3px; border-radius: 6px;
+}
+.dn-eco-card { -webkit-tap-highlight-color: transparent; }
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .dn-hero-art [class*="cloud"] { animation: none; }
+  .dn-hero-svg .dn-layer { transition: none; }
+  .dn-eco-card, .dn-eco-card:hover { transform: none; }
+  .dn-eco-card:hover .dn-eco-art svg { transform: none; }
+  .dn-eco-link svg { transition: none; }
+  .dn-eco-card:hover .dn-eco-link svg { transform: none; }
+}
+
+/* ---------- Perbaikan bug pre-existing: panel kiri login ---------- */
+/* globals.css memiliki `.hidden{display:none!important}` yang mematikan
+   `lg:block` Tailwind — panel kiri AuthGate (dirancang tampil di desktop)
+   tidak pernah tampil. Kembalikan perilaku yang dimaksud, khusus panel ini. */
+@media (min-width: 1024px) {
+  .auth-shell > div > section.hidden { display: block !important; }
+}
+
+/* ---------- Cegah overflow horizontal ---------- */
+.dn-home, .dn-ruang, .dn-hero-art { max-width: 100%; overflow-x: clip; }
+.dn-hero-svg, .dn-ruang-svg, .dn-eco-art svg { max-width: 100%; }

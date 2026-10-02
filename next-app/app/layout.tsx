@@ -1,5 +1,6 @@
 import './globals.css';
 import './suki-overhaul.css';
+import './nusantara.css';
 import type { Metadata } from 'next';
 import { PreferencesProvider } from '@/lib/preferences';
 import { AdSenseScript } from '@/components/ads/AdSenseScript';

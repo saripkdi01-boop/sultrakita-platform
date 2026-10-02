@@ -51,3 +51,46 @@ Keputusan:
   (profiles.role + user_roles). Tidak di-refactor ulang untuk menghindari regresi halaman admin yang sudah jadi.
 - `lib/env.ts`: kunci billing `SUKI_BILLING_*` ditambahkan sebagai opsional + feature warning jujur.
 - `/admin/*`: header `X-Robots-Tag: noindex, nofollow` di next.config.mjs (temuan SEO_CHECKLIST Slice-D).
+
+---
+
+## Visual Transformation V1.0 (2026-10-03, branch `fitur/visual-transformation-v1`)
+
+### D-01 — Ilustrasi orisinal, bukan foto/stok
+Seluruh visual baru adalah SVG orisinal (`components/illustrations/`) — bukan foto
+Unsplash generik, bukan aset kompetitor. Gaya: editorial flat, stroke rounded 2px,
+palet Digital Nusantara. Alasan: ringan (tanpa HTTP request gambar), konsisten,
+dan bebas masalah lisensi/atribusi.
+
+### D-02 — Token `--dn-*` berdampingan, bukan menggantikan
+Token lama (`--suki-*`, `--sk-*`) tidak disentuh; lapisan `--dn-*` ditambah via
+`design-system/tokens-nusantara.css` + import di `globals.css`. Emas brand SUKI 2026
+(`#D4AF37`) dipertahankan sebagai `--dn-brand-gold`. Alasan: nol risiko regresi
+visual di halaman yang tidak disentuh program ini.
+
+### D-03 — Hero: EcosystemMap pindah ke section #ekosistem
+`EcosystemMap` (navigasi interaktif 4 ruang) dipindah dari hero ke section
+`#ekosistem`; hero diisi ilustrasi Digital Nusantara berlapis + parallax pointer.
+Alasan: master prompt menuntut hero sebagai area paling berkarakter; fungsi peta
+dipertahankan penuh (state `activeNode` tetap sinkron dengan kartu ilustrasi).
+
+### D-04 — Tanpa header-band ganda di 4 halaman ruang
+`RuangHeader` (dibuat lalu dihapus) DIBATALKAN: keempat page-client sudah punya
+header/hero masing-masing — band tambahan akan menduplikasi h1 dan merusak desain.
+Identitas visual tiap ruang diberikan lewat: (a) 4 kartu ilustrasi di homepage,
+(b) ilustrasi di empty-state tiap ruang (jujur, tanpa data palsu). Alasan: hormat
+pada desain yang sudah ada; perubahan terkecil yang mencapai tujuan.
+
+### D-05 — Tidak ada floating art di hero /jobs & /groups
+Dipertimbangkan lalu ditolak: hero kedua halaman sudah padat (form pencarian,
+CTA); ilustrasi melayang berisiko overlap di tablet. Empty-state ilustratif
+dinilai cukup sebagai identitas ruang.
+
+### D-06 — Parallax & animasi: transform/opacity saja, hormati reduced-motion
+Parallax hero memakai `translate3d` via rAF (pointermove, desktop); awan hanyut
+via CSS keyframes; semua nonaktif di `prefers-reduced-motion`. Tidak ada layout
+shift (tidak mengubah ukuran/posisi layout).
+
+### D-07 — Anti-sepi: tanpa angka/statistik di visual baru
+Tidak ada klaim jumlah listing/pengguna/testimoni di komponen baru. Empty state
+tetap jujur ("Tidak ada listing yang cocok" + ilustrasi), tidak dipoles seolah ramai.

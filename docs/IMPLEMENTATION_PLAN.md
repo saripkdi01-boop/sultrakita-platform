@@ -93,3 +93,39 @@ next-app/package.json  next-app/package-lock.json
 3. Playwright smoke (bila node_modules & browser siap).
 4. Gabungkan `docs/slices/*-LOG.md` → `docs/WORK_LOG.md`; tulis `DECISIONS.md`, `KNOWN_LIMITATIONS.md`, `LAUNCH_STATUS.md`.
 5. Laporan akhir 8 bagian ke parent.
+
+---
+
+## PROGRAM VISUAL TRANSFORMATION V1.0 (2026-10-03)
+
+**Branch:** `fitur/visual-transformation-v1` (basis `origin/main` 136e46c).
+**Cakupan:** visual saja. DILARANG: merge ke main, deploy production, migrasi DB live,
+ubah env/secrets, ubah kontrak data/API/auth/billing/cron/realtime/SEO.
+
+### Slice & status
+| # | Slice | Status |
+|---|---|---|
+| 1 | Audit situs live (P0/P1/P2/P3) | SELESAI → Appendix di LAUNCH_AUDIT.md |
+| 2 | Audit kode repo (peta file target) | SELESAI (subagen) |
+| 3 | Pustaka ilustrasi SVG Digital Nusantara (`components/illustrations/`) | SELESAI |
+| 4 | Design tokens `--dn-*` + komponen `Reveal` | SELESAI |
+| 5 | Creative direction doc | SELESAI (`docs/VISUAL-TRANSFORMATION-V1.md`) |
+| 6 | Redesign homepage: hero ilustrasi berlapis + 4 kartu ruang | SELESAI |
+| 7 | Ilustrasi empty-state 4 ruang (marketplace/properti/jobs/groups) | SELESAI |
+| 8 | Sentuhan Digital Nusantara di /login (AuthGate panel kiri) | SELESAI |
+| 9 | QC: tsc + lint + build + screenshot before/after + smoke | BERJALAN |
+| 10 | Commit final di branch (TANPA push) + laporan akhir | MENUNGGU |
+
+### Keputusan desain kunci (detail: DECISIONS.md D-01 s/d D-07)
+- Ilustrasi SVG orisinal; token `--dn-*` berdampingan (tanpa timpa token lama);
+  EcosystemMap pindah hero → #ekosistem; RuangHeader dibatalkan (hindari h1 ganda);
+  tanpa floating art di hero jobs/groups; animasi transform/opacity + reduced-motion;
+  anti-sepi (tanpa angka palsu).
+
+### Aturan git program ini
+- Kerja HANYA di branch `fitur/visual-transformation-v1`. Jangan sentuh
+  `fitur/news-card-labels-v2` (sesi lain), `fitur/kampung-scaffold` (PR #53),
+  `fitur/ai-customer-service` (sesi lain — berbagi working tree!).
+- Commit message prefix: `[visual-v1]`. DILARANG: push, merge ke main, rebase.
+- `git add` HANYA file milik program ini (path eksplisit). DILARANG `git add -A`.
+- Verifikasi sebelum commit final: `npx tsc --noEmit`, `npm run lint`, `npm run build`.
