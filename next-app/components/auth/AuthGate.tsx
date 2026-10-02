@@ -13,6 +13,13 @@ import { usePreferences } from '@/lib/preferences';
 const GOOGLE_OAUTH_GATEWAY_URL = process.env.NEXT_PUBLIC_GOOGLE_OAUTH_GATEWAY_URL || '';
 const MAX_SIGNUP_AVATAR_BYTES = 5 * 1024 * 1024;
 
+// TODO(launch): Tombol Login Facebook DISEMBUNYIKAN sementara — provider Facebook belum
+// di-enable di dashboard Supabase (butuh akun/app Facebook bernama SUKI milik owner,
+// belum tersedia dalam waktu dekat). Kode login Facebook TIDAK dihapus, hanya disembunyikan.
+// Untuk menyalakan lagi: (1) set NEXT_PUBLIC_ENABLE_FACEBOOK_LOGIN=true di environment,
+// (2) enable provider Facebook di dashboard Supabase.
+const ENABLE_FACEBOOK_LOGIN = process.env.NEXT_PUBLIC_ENABLE_FACEBOOK_LOGIN === 'true';
+
 function prepareSignupAvatar(file: File): Promise<File> {
   return new Promise((resolve, reject) => {
     const image = new Image();
@@ -136,6 +143,11 @@ export function AuthGate({ initialMode = 'login' }: { initialMode?: Mode }) {
   }
 
   async function social(provider: 'google'|'facebook') {
+    // Guard: jangan pernah memicu OAuth Facebook selagi provider belum di-enable (akan error "Unsupported provider").
+    if (provider === 'facebook' && !ENABLE_FACEBOOK_LOGIN) {
+      setError('Login Facebook belum tersedia. Silakan masuk dengan Google atau email.');
+      return;
+    }
     setBusy(provider); setError('');
     const next = safeRedirect(params.get('redirect'));
     if (provider === 'google' && GOOGLE_OAUTH_GATEWAY_URL) {
@@ -247,14 +259,17 @@ export function AuthGate({ initialMode = 'login' }: { initialMode?: Mode }) {
             <p className="mt-2 text-[13px] leading-5 text-[#718983]">{t.sub}</p>
           </div>
 
-          <div className="mt-5 grid grid-cols-2 gap-2.5">
+          <div className={`mt-5 grid gap-2.5 ${ENABLE_FACEBOOK_LOGIN ? 'grid-cols-2' : 'grid-cols-1'}`}>
             <button type="button" disabled={!!busy} onClick={() => void social('google')} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[13px] border border-[#dce8e3] bg-white px-2.5 text-[12px] font-extrabold text-[#38564f] transition hover:-translate-y-px hover:border-[#c6d9d2] hover:shadow-sm focus:outline-none focus:ring-4 focus:ring-[#188875]/10 disabled:cursor-wait disabled:opacity-50">
               <span className="grid h-5 w-5 place-items-center rounded-full border border-[#e5ebe8] bg-white text-[13px] font-black text-[#4285f4]">G</span>
               {busy === 'google' ? '...' : t.gmail}
             </button>
+            {/* TODO(launch): tombol Facebook disembunyikan sementara — lihat ENABLE_FACEBOOK_LOGIN di atas. */}
+            {ENABLE_FACEBOOK_LOGIN && (
             <button type="button" disabled={!!busy} onClick={() => void social('facebook')} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[13px] bg-[#1877f2] px-2.5 text-[12px] font-extrabold text-white transition hover:-translate-y-px hover:bg-[#166de0] focus:outline-none focus:ring-4 focus:ring-[#1877f2]/20 disabled:cursor-wait disabled:opacity-50">
               <Facebook size={16} fill="currentColor" /> {busy === 'facebook' ? '...' : 'Facebook'}
             </button>
+            )}
           </div>
 
           <div className="my-5 flex items-center gap-3 text-[10px] font-bold uppercase tracking-[.12em] text-[#a0b1ac]">
