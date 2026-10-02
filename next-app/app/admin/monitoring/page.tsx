@@ -25,7 +25,7 @@ interface CheckResult {
   detail?: string;
 }
 
-async function timed<T>(fn: () => Promise<T>): Promise<{ ms: number; value: T }> {
+async function timed<T>(fn: () => PromiseLike<T>): Promise<{ ms: number; value: T }> {
   const start = Date.now();
   const value = await fn();
   return { ms: Date.now() - start, value };
