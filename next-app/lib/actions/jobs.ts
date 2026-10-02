@@ -40,3 +40,47 @@ export async function toggleSavedJob(jobId: string) {
 export async function getSavedJobIds() { try { const { supabase, user } = await requireServerUser(); const { data, error } = await supabase.from('saved_jobs').select('job_id').eq('user_id', user.id); if (error) throw error; return { ok: true as const, ids: (data || []).map(row => row.job_id as string) }; } catch { return { ok: false as const, ids: [] as string[] }; } }
 
 export async function createJobAlert(input: { title: string; keywords?: string[]; locations?: string[]; frequency?: 'daily' | 'weekly' }) { try { const { supabase, user } = await requireServerUser(); const { data, error } = await supabase.from('job_alerts').insert({ user_id: user.id, title: input.title.trim(), keywords: input.keywords || [], locations: input.locations || [], frequency: input.frequency || 'daily' }).select('id,title,is_active,frequency').single(); if (error) throw error; return { ok: true as const, data }; } catch (error) { return { ok: false as const, error: friendly(error) }; } }
+
+export type JobApplication = { id: string; job_id: string; status: string; applied_at: string; job?: { id: string; title: string; location: string; city: string; job_type: string; work_type: string; company?: { name: string; is_verified?: boolean } } };
+
+export async function getAppliedJobIds() { try { const { supabase, user } = await requireServerUser(); const { data, error } = await supabase.from('job_applications').select('job_id').eq('applicant_id', user.id); if (error) throw error; return { ok: true as const, ids: (data || []).map(row => row.job_id as string) }; } catch { return { ok: false as const, ids: [] as string[] }; } }
+
+export async function getMyApplications() {
+  try {
+    const { supabase, user } = await requireServerUser();
+    const { data, error } = await supabase.from('job_applications')
+      .select('id,job_id,status,applied_at,job:jobs(id,title,location,city,job_type,work_type,company:companies(name,is_verified))')
+      .eq('applicant_id', user.id).order('applied_at', { ascending: false }).limit(50);
+    if (error) throw error;
+    const applications = ((data || []) as Array<Record<string, unknown>>).map(row => {
+      const rawJob = row.job as Record<string, unknown> | Array<Record<string, unknown>> | null;
+      const job = (Array.isArray(rawJob) ? rawJob[0] : rawJob) as JobApplication['job'] | undefined;
+      const rawCompany = job?.company as unknown;
+      const company = (Array.isArray(rawCompany) ? rawCompany[0] : rawCompany) as { name: string; is_verified?: boolean } | undefined;
+      return { id: row.id, job_id: row.job_id, status: row.status, applied_at: row.applied_at, job: job ? { ...job, company } : undefined } as JobApplication;
+    });
+    return { ok: true as const, applications };
+  } catch (error) { return { ok: false as const, applications: [] as JobApplication[], error: friendly(error) }; }
+}
+
+export type JobAlert = { id: string; title: string; keywords: string[]; locations: string[]; frequency: string; is_active: boolean; created_at: string };
+
+export async function getMyJobAlerts() {
+  try {
+    const { supabase, user } = await requireServerUser();
+    const { data, error } = await supabase.from('job_alerts').select('id,title,keywords,locations,frequency,is_active,created_at').eq('user_id', user.id).order('created_at', { ascending: false });
+    if (error) throw error;
+    return { ok: true as const, alerts: (data || []) as JobAlert[] };
+  } catch (error) { return { ok: false as const, alerts: [] as JobAlert[], error: friendly(error) }; }
+}
+
+export async function toggleJobAlert(id: string) {
+  try {
+    const { supabase, user } = await requireServerUser();
+    const { data: existing } = await supabase.from('job_alerts').select('id,is_active').eq('id', id).eq('user_id', user.id).maybeSingle();
+    if (!existing) return { ok: false as const, error: 'Notifikasi tidak ditemukan.' };
+    const { error } = await supabase.from('job_alerts').update({ is_active: !existing.is_active }).eq('id', id).eq('user_id', user.id);
+    if (error) throw error;
+    return { ok: true as const, isActive: !existing.is_active };
+  } catch (error) { return { ok: false as const, error: friendly(error) }; }
+}
