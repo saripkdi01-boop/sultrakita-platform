@@ -5,11 +5,18 @@
  * webhook_events.event_id. Selalu menjawab 200 { received: true }
  * agar pengirim tidak retry membabi-buta.
  *
- * Verifikasi:
- *  - Bila env SUKI_BILLING_WEBHOOK_SECRET diset: wajib header
- *    `x-signature` = HMAC-SHA256 hex dari raw body. Gagal -> 401.
- *  - Bila TIDAK diset: terima mode sandbox HANYA dengan header
- *    `x-sandbox: true`, dan payload ditandai sandbox:true.
+ * Verifikasi (fail-CLOSED):
+ *  - PRODUCTION (NODE_ENV=production): secret SUKI_BILLING_WEBHOOK_SECRET WAJIB
+ *    diset; setiap webhook tanpa header `x-signature` = HMAC-SHA256 hex dari
+ *    raw body yang valid ditolak 401. Bila secret kosong di production, SEMUA
+ *    webhook ditolak 401 — fallback `x-sandbox` TIDAK berlaku di production.
+ *  - NON-PRODUCTION: bila secret diset, verifikasi signature seperti production;
+ *    bila secret kosong, terima mode sandbox HANYA dengan header
+ *    `x-sandbox: true`.
+ *
+ * Anti-replay: payload wajib memuat `ts` (unix epoch detik; ditolak bila
+ * selisih > 5 menit dari waktu server) dan `nonce` unik (ditolak bila nonce
+ * sudah pernah tercatat di webhook_events).
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { createHmac, timingSafeEqual } from 'node:crypto';
@@ -27,7 +34,12 @@ const WebhookSchema = z.object({
   outcome: z.enum(['paid', 'failed']),
   providerRef: z.string().min(1, 'providerRef wajib diisi'),
   sandbox: z.boolean(),
+  ts: z.number().int('ts harus unix epoch dalam detik.').positive('ts tidak valid.'),
+  nonce: z.string().min(1, 'nonce wajib diisi.').max(120, 'nonce terlalu panjang.'),
 });
+
+// Toleransi anti-replay timestamp: ±5 menit dari waktu server.
+const WEBHOOK_TS_TOLERANCE_SEC = 5 * 60;
 
 function serviceClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -49,15 +61,29 @@ function verifySignature(rawBody: string, signature: string | null): boolean {
 export async function POST(request: NextRequest) {
   const rawBody = await request.text();
 
-  // --- Verifikasi ---
+  // --- Verifikasi (fail-CLOSED) ---
+  const isProd = process.env.NODE_ENV === 'production';
   const secretSet = Boolean(process.env.SUKI_BILLING_WEBHOOK_SECRET);
-  if (secretSet) {
+  if (isProd) {
+    // Production: secret WAJIB. Secret kosong -> tolak SEMUA webhook (401),
+    // bukan fallback sandbox. Fallback header x-sandbox TIDAK berlaku di sini.
+    if (!secretSet) {
+      return NextResponse.json(
+        { ok: false, error: 'Webhook billing belum dikonfigurasi.' },
+        { status: 401 },
+      );
+    }
+    const signature = request.headers.get('x-signature');
+    if (!verifySignature(rawBody, signature)) {
+      return NextResponse.json({ ok: false, error: 'Signature tidak valid.' }, { status: 401 });
+    }
+  } else if (secretSet) {
     const signature = request.headers.get('x-signature');
     if (!verifySignature(rawBody, signature)) {
       return NextResponse.json({ ok: false, error: 'Signature tidak valid.' }, { status: 401 });
     }
   } else {
-    // Mode sandbox tanpa secret: hanya terima bila header x-sandbox: true.
+    // Non-production tanpa secret: mode sandbox hanya dengan header x-sandbox: true.
     if (request.headers.get('x-sandbox') !== 'true') {
       return NextResponse.json(
         { ok: false, error: 'Webhook secret belum dikonfigurasi; mode sandbox memerlukan header x-sandbox: true.' },
@@ -82,11 +108,34 @@ export async function POST(request: NextRequest) {
   }
   const payload: SandboxWebhookPayload = parsed.data;
 
+  // --- Anti-replay: timestamp (toleransi ±5 menit dari waktu server) ---
+  const nowSec = Math.floor(Date.now() / 1000);
+  if (Math.abs(nowSec - payload.ts) > WEBHOOK_TS_TOLERANCE_SEC) {
+    return NextResponse.json(
+      { received: true, ok: false, error: 'Timestamp webhook kedaluwarsa (selisih > 5 menit).' },
+      { status: 200 },
+    );
+  }
+
   let admin;
   try {
     admin = serviceClient();
   } catch {
     return NextResponse.json({ received: true, ok: false, error: 'Layanan billing belum dikonfigurasi.' }, { status: 200 });
+  }
+
+  // --- Anti-replay: nonce unik (tolak duplikat) ---
+  const { data: nonceHit } = await admin
+    .from('webhook_events')
+    .select('id')
+    .eq('payload->>nonce', payload.nonce)
+    .maybeSingle();
+  if (nonceHit) {
+    await admin
+      .from('webhook_events')
+      .update({ status: 'duplicate', processed_at: new Date().toISOString() })
+      .eq('id', (nonceHit as { id: string }).id);
+    return NextResponse.json({ received: true, duplicate: true }, { status: 200 });
   }
 
   // --- Idempotency: cek webhook_events.event_id dulu ---

@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import type { PublicListing } from '@/lib/listings-query';
 import { sellerRatingText, sellerTier } from '@/lib/seller-trust';
+import { reportListing } from '@/lib/actions/reports';
+import { ReportButton } from '@/components/moderation/ReportButton';
 import { SafeImage } from './SafeImage';
 
 // Quick view — galeri multi-foto + info penjual jujur (tier dari data nyata
@@ -99,6 +101,10 @@ export function QuickViewModal({ listing, saved = false, inCompare = false, onTo
                 <Scale size={16} aria-hidden="true" /> {inCompare ? 'Dibandingkan' : 'Bandingkan'}
               </button>
             )}
+            <ReportButton
+              className="fbm-qv-secondary"
+              onReport={(reason) => reportListing(String(listing.id), reason, sellerId || undefined)}
+            />
           </div>
         </div>
       </section>

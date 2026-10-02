@@ -1,0 +1,98 @@
+# Uptime check — tiap 15 menit, via GitHub Actions (gratis, repo publik).
+#
+# Yang diperiksa:
+#   1. GET https://sukiapps.web.id/api/health  → harus HTTP 2xx/3xx
+#   2. GET https://sukiapps.web.id/             → harus HTTP 2xx/3xx
+#   GAGAL bila: status bukan 2xx/3xx, ATAU latency > 10 detik, ATAU curl timeout.
+#
+# Alert saat ini: membuat GitHub issue otomatis berlabel "uptime" memakai
+# GITHUB_TOKEN bawaan (tidak ada token yang di-hardcode). Dedup: issue baru
+# TIDAK dibuat bila sudah ada issue "uptime" yang masih terbuka.
+#
+# ── Cara menambah kanal notifikasi lain ──────────────────────────────────
+# 1. Telegram: tambahkan secret repo TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID
+#    (Settings → Secrets and variables → Actions), lalu tambah step:
+#      - name: Kirim alert Telegram
+#        if: failure()
+#        run: |
+#          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+#            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+#            -d text="🚨 Uptime sukiapps.web.id GAGAL — cek Actions."
+# 2. Email/Slack/PagerDuty: GitHub issue yang dibuat otomatis sudah mengirim
+#    notifikasi email ke watcher repo; untuk Slack/PagerDuty, teruskan via
+#    webhook di step `if: failure()` (simpan URL webhook sebagai secret repo).
+# 3. Status page publik: arahkan issue "uptime" ke integrasi status page
+#    (mis. Instatus) bila nanti dibutuhkan.
+# ─────────────────────────────────────────────────────────────────────────
+name: Uptime check
+
+on:
+  schedule:
+    # Tiap 15 menit (jadwal Actions memakai UTC)
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Probe /api/health dan halaman utama
+        id: probe
+        run: |
+          set -euo pipefail
+          fail=0
+          for path in "/api/health" "/"; do
+            url="https://sukiapps.web.id${path}"
+            start_ns=$(date +%s%N)
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 --connect-timeout 5 "$url" || echo "000")
+            end_ns=$(date +%s%N)
+            latency_ms=$(( (end_ns - start_ns) / 1000000 ))
+            echo "PROBE url=${url} http_code=${code} latency_ms=${latency_ms}"
+            if [ "$code" = "000" ] || [ "$code" -lt 200 ] || [ "$code" -ge 400 ]; then
+              echo "::error::GAGAL: ${url} → HTTP ${code} (ekspektasi 2xx/3xx)"
+              fail=1
+            fi
+            if [ "$latency_ms" -gt 10000 ]; then
+              echo "::error::GAGAL: ${url} lambat (${latency_ms}ms > 10000ms)"
+              fail=1
+            fi
+          done
+          echo "failed=${fail}" >> "$GITHUB_OUTPUT"
+          [ "$fail" -eq 0 ]
+
+      - name: Buat GitHub issue bila uptime gagal
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          open_count=$(gh issue list --label uptime --state open --json number --jq 'length')
+          if [ "$open_count" -gt 0 ]; then
+            echo "Sudah ada ${open_count} issue 'uptime' yang masih terbuka — tidak membuat duplikat."
+            exit 0
+          fi
+          timestamp_utc=$(date -u +"%Y-%m-%d %H:%M UTC")
+          gh issue create \
+            --title "🚨 Uptime check gagal — sukiapps.web.id (${timestamp_utc})" \
+            --label uptime \
+            --body "## Uptime check gagal
+
+          **Waktu:** ${timestamp_utc}
+          **Workflow:** ${{ github.workflow }} — run ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+          Probe yang gagal: \`GET https://sukiapps.web.id/api/health\` dan/atau \`GET https://sukiapps.web.id/\`
+          (status bukan 2xx/3xx, atau latency > 10 detik).
+
+          ## Langkah cepat (runbook 'production down')
+          1. Buka https://sukiapps.web.id/api/health — cek field \`ok\`, \`db\`, \`storage\`.
+          2. Bila down: Vercel Dashboard → Deployments → Promote deployment sehat terakhir ke Production.
+          3. Bila hanya lambat: cek Vercel Function Logs + Supabase Dashboard → Logs.
+          4. Catat temuan di issue ini, lalu tutup setelah pulih.
+
+          Detail: docs/OPERATIONS_RUNBOOK.md (bagian 5) dan docs/MONITORING.md."
+          echo "Issue uptime dibuat."

@@ -14,6 +14,10 @@ export interface SandboxWebhookPayload {
   outcome: 'paid' | 'failed';
   providerRef: string;
   sandbox: boolean;
+  /** Unix epoch (detik) saat payload dibuat — anti-replay (toleransi ±5 menit). */
+  ts: number;
+  /** Nilai unik per pengiriman — anti-replay, dicek ke tabel webhook_events. */
+  nonce: string;
 }
 
 export type WebhookDecision =

@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { NextRequest, NextResponse } from 'next/server';
+import { logError } from '@/lib/log-error';
 
 // Fase 1.4: format error API yang konsisten:
 //   { error: { code, message (Bahasa Indonesia, aman), requestId } }
@@ -47,6 +48,11 @@ export function serviceUnavailable(request: NextRequest, message = 'Layanan seme
   return apiError('SERVICE_UNAVAILABLE', message, 503, request);
 }
 
-export function internalError(request: NextRequest, message = 'Terjadi kesalahan. Silakan coba lagi nanti.') {
+export function internalError(request: NextRequest, message = 'Terjadi kesalahan. Silakan coba lagi nanti.', cause?: unknown) {
+  // Sentralisasi error tracking (T5c): catat penyebab ke log server bila tersedia.
+  // Respons ke client tetap generik — tidak membocorkan detail internal.
+  if (cause !== undefined) {
+    logError({ route: request.nextUrl.pathname, requestId: getRequestId(request) }, cause);
+  }
   return apiError('INTERNAL_ERROR', message, 500, request);
 }

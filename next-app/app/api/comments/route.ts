@@ -3,13 +3,13 @@ import { z } from 'zod';
 import { getServerSupabase } from '@/lib/supabase/server';
 import { checkRateLimit, clientIp } from '@/lib/rate-limit';
 import { badRequest, forbidden, internalError, notFound, unauthorized } from '@/lib/api-error';
+import { verifyCsrfToken } from '@/lib/security/csrf';
 
 const UUID_RE = /^[a-zA-Z0-9_-]{1,120}$/;
 
+// Delegasi ke verifyCsrfToken waktu-konstan di lib/security/csrf.ts.
 function checkCsrf(request: NextRequest) {
-  const csrfHeader = request.headers.get('x-csrf-token');
-  const csrfCookie = request.cookies.get('suki_csrf')?.value;
-  return !!csrfHeader && !!csrfCookie && csrfHeader === csrfCookie;
+  return verifyCsrfToken(request);
 }
 
 type Cursor = { createdAt: string; id: string };
@@ -27,11 +27,27 @@ function decodeCursor(value: string | null): Cursor | null {
   }
 }
 
+/**
+ * Masking avatar dihitung server-side dari `visibility_settings`, lalu field
+ * internal `visibility_settings` DIBUANG agar tidak ikut di-serialize ke JSON.
+ */
+function toPublicProfile(
+  profile:
+    | { display_name?: unknown; username?: unknown; avatar_url?: unknown; visibility_settings?: { avatar?: string } }
+    | null
+    | undefined,
+) {
+  if (!profile || typeof profile !== 'object') return null;
+  const avatarHidden = profile.visibility_settings?.avatar !== 'public';
+  return {
+    display_name: profile.display_name ?? null,
+    username: profile.username ?? null,
+    avatar_url: avatarHidden ? null : (profile.avatar_url ?? null),
+  };
+}
+
 function maskAvatar(row: Record<string, unknown>) {
-  const profile = row.profiles as { visibility_settings?: { avatar?: string } } | null;
-  if (profile && profile.visibility_settings?.avatar !== 'public') {
-    row.profiles = { ...(profile as Record<string, unknown>), avatar_url: null };
-  }
+  row.profiles = toPublicProfile(row.profiles as Parameters<typeof toPublicProfile>[0]);
   return row;
 }
 

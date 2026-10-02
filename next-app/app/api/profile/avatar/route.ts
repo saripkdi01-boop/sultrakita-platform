@@ -1,15 +1,26 @@
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import sharp from 'sharp';
 import { randomUUID } from 'node:crypto';
+import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireServerUser } from '@/lib/supabase/server';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { apiError } from '@/lib/api-error';
+import { csrfProtected } from '@/lib/security/csrf';
+import { parseOr400 } from '@/lib/security/validation';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 const MAX_BYTES = 5 * 1024 * 1024;
 const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
+
+// Validasi file upload via zod: wajib File, tipe & ukuran dibatasi server-side.
+const AvatarUploadSchema = z.object({
+  file: z
+    .instanceof(File, { message: 'Foto profil wajib dipilih.' })
+    .refine((f) => ALLOWED_TYPES.has(f.type), { message: 'Pilih JPG, PNG, WebP, atau GIF.' })
+    .refine((f) => f.size <= MAX_BYTES, { message: 'Foto profil maksimal 5 MB.' }),
+});
 
 type FocusBox = { x: number; y: number; width: number; height: number };
 
@@ -84,17 +95,16 @@ async function processAvatar(input: Buffer) {
   return { output, focusSource: focus ? 'gemini' : 'center' };
 }
 
-export async function POST(request: NextRequest) {
+async function postHandler(request: NextRequest) {
   try {
     const { user, supabase } = await requireServerUser();
     // Fase 1.5: upload dibatasi 10x/jam per user.
     const limited = await checkRateLimit(request, 'upload', user.id);
     if (limited) return limited;
     const form = await request.formData();
-    const file = form.get('avatar');
-    if (!(file instanceof File)) return jsonError(request, 'Foto profil wajib dipilih.', 422);
-    if (!ALLOWED_TYPES.has(file.type)) return jsonError(request, 'Pilih JPG, PNG, WebP, atau GIF.', 422);
-    if (file.size > MAX_BYTES) return jsonError(request, 'Foto profil maksimal 5 MB.', 413);
+    const uploadParsed = parseOr400(AvatarUploadSchema, { file: form.get('avatar') });
+    if (!uploadParsed.ok) return uploadParsed.response;
+    const file = uploadParsed.data.file;
     const input = Buffer.from(await file.arrayBuffer());
     const { output, focusSource } = await processAvatar(input);
     const config = getR2Config();
@@ -113,3 +123,6 @@ export async function POST(request: NextRequest) {
     return jsonError(request, 'Foto profil tidak dapat diproses saat ini.', 500);
   }
 }
+
+// CSRF double-submit: upload avatar mutasi profil user, wajib token valid.
+export const POST = csrfProtected(postHandler);

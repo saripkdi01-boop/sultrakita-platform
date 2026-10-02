@@ -18,6 +18,28 @@ export default function Error({ error, reset }: ErrorPageProps) {
   useEffect(() => {
     // Diagnostik internal saja; tidak dirender ke UI.
     console.error('[suki-apps] error boundary:', error.digest ?? '(tanpa digest)', error.message);
+    // T5(c): laporkan ke log server (fire-and-forget) agar error client
+    // tercatat di Vercel Runtime Logs via /api/log-error. Tanpa PII.
+    try {
+      const payload = JSON.stringify({
+        digest: error.digest ?? null,
+        message: String(error.message ?? '').slice(0, 500),
+        path: typeof window !== 'undefined' ? window.location.pathname.slice(0, 200) : null,
+      });
+      const blob = new Blob([payload], { type: 'application/json' });
+      if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+        navigator.sendBeacon('/api/log-error', blob);
+      } else {
+        fetch('/api/log-error', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: payload,
+          keepalive: true,
+        }).catch(() => {});
+      }
+    } catch {
+      // Abaikan — pelaporan tidak boleh mengganggu UI error.
+    }
   }, [error]);
 
   return (

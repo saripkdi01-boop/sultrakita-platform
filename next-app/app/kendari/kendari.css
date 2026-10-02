@@ -1,0 +1,275 @@
+/* Halaman SEO lokal Kendari — namespace kdr-*, token --sk-* (Teluk & Tenun).
+   Ringan & server-rendered: tanpa JS client, tanpa framework tambahan. */
+
+.kdr {
+  background: var(--sk-bg);
+  color: var(--sk-ink);
+  font-family: var(--sk-font);
+  min-height: 100vh;
+}
+
+.kdr-wrap {
+  width: min(880px, calc(100% - 40px));
+  margin: 0 auto;
+}
+
+.kdr-top {
+  border-bottom: 1px solid var(--sk-line);
+  background: var(--sk-surface);
+}
+
+.kdr-top-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 64px;
+}
+
+.kdr-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.kdr-brand-mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--sk-teal);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.kdr-brand strong { display: block; font-size: 14px; letter-spacing: 0.08em; }
+.kdr-brand small { display: block; font-size: 10px; color: var(--sk-muted); letter-spacing: 0.14em; }
+
+.kdr-top-cta {
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--sk-teal);
+  padding: 10px 16px;
+  border-radius: var(--sk-r-pill);
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.kdr-top-cta:hover { background: var(--sk-brand-hover); }
+
+.kdr-crumb {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  font-size: 13px;
+  color: var(--sk-muted);
+  padding: 20px 0 4px;
+}
+
+.kdr-crumb a { color: var(--sk-teal); text-decoration: none; }
+.kdr-crumb a:hover { text-decoration: underline; }
+
+.kdr-h1 {
+  font-size: clamp(30px, 5vw, 44px);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  margin: 12px 0 16px;
+}
+
+.kdr-intro p {
+  color: var(--sk-muted);
+  line-height: 1.75;
+  font-size: 15px;
+  margin: 0 0 14px;
+  max-width: 68ch;
+}
+
+.kdr-list { margin: 34px 0 8px; }
+
+.kdr-list h2 {
+  font-size: 21px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 0 0 16px;
+}
+
+.kdr-count {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--sk-teal);
+  background: var(--sk-teal-soft);
+  border-radius: var(--sk-r-pill);
+  padding: 4px 12px;
+}
+
+.kdr-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 640px) {
+  .kdr-grid { grid-template-columns: 1fr; }
+}
+
+.kdr-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--sk-surface);
+  border: 1px solid var(--sk-line);
+  border-radius: var(--sk-r-lg);
+  padding: 16px;
+  text-decoration: none;
+  color: inherit;
+  height: 100%;
+}
+
+.kdr-card:hover { border-color: var(--sk-teal); }
+
+.kdr-card strong { font-size: 15px; line-height: 1.4; }
+
+.kdr-price {
+  font-weight: 800;
+  color: var(--sk-teal);
+  font-size: 15px;
+}
+
+.kdr-district {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.5px;
+  color: var(--sk-muted);
+}
+
+.kdr-more {
+  margin-top: auto;
+  padding-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--sk-teal);
+}
+
+.kdr-empty {
+  background: var(--sk-surface);
+  border: 1px dashed var(--sk-line-strong);
+  border-radius: var(--sk-r-lg);
+  padding: 36px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.kdr-empty svg { color: var(--sk-faint); }
+.kdr-empty h3 { margin: 6px 0 0; font-size: 18px; }
+.kdr-empty p { margin: 0; color: var(--sk-muted); font-size: 14px; line-height: 1.7; max-width: 52ch; }
+
+.kdr-btn-primary {
+  margin-top: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--sk-teal);
+  color: #fff;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 12px 20px;
+  border-radius: var(--sk-r-pill);
+  min-height: 44px;
+}
+
+.kdr-btn-primary:hover { background: var(--sk-brand-hover); }
+
+.kdr-cta {
+  margin-top: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--sk-teal);
+  text-decoration: none;
+  min-height: 44px;
+}
+
+.kdr-cta:hover { text-decoration: underline; }
+
+.kdr-tips {
+  margin: 30px 0;
+  background: var(--sk-surface);
+  border: 1px solid var(--sk-line);
+  border-radius: var(--sk-r-lg);
+  padding: 20px 22px;
+}
+
+.kdr-tips h2 {
+  margin: 0 0 12px;
+  font-size: 17px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.kdr-tips h2 svg { color: var(--sk-teal); }
+
+.kdr-tips ul { margin: 0; padding-left: 20px; color: var(--sk-muted); font-size: 14px; line-height: 1.7; }
+.kdr-tips li { margin-bottom: 6px; }
+
+.kdr-related { margin: 8px 0 44px; }
+.kdr-related h2 { font-size: 17px; margin: 0 0 12px; }
+.kdr-related ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.kdr-related a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 1px solid var(--sk-line);
+  border-radius: var(--sk-r-pill);
+  background: var(--sk-surface);
+  color: var(--sk-ink);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.kdr-related a:hover { border-color: var(--sk-teal); color: var(--sk-teal); }
+
+.kdr-foot {
+  border-top: 1px solid var(--sk-line);
+  background: var(--sk-surface);
+  padding: 22px 0 30px;
+  font-size: 12.5px;
+  color: var(--sk-muted);
+}
+
+.kdr-foot p { margin: 6px 0; }
+.kdr-foot a { color: var(--sk-teal); text-decoration: none; }
+.kdr-foot a:hover { text-decoration: underline; }

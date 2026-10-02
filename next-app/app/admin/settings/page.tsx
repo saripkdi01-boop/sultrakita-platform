@@ -2,6 +2,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { getServerSupabase } from '@/lib/supabase/server';
 import { requireRole, redirectToLogin } from '@/lib/admin/guards';
 import { MaintenanceToggle, SettingEditor, NewSettingForm } from './SettingForms';
+import { FeatureFlagsSection, KNOWN_FLAGS } from './FeatureFlags';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,6 +31,17 @@ export default async function AdminSettingsPage() {
   const maintenance = rows.find((r) => r.key === 'maintenance_mode');
   const maintenanceOn = maintenance?.value === true;
   const others = rows.filter((r) => r.key !== 'maintenance_mode');
+  const flagKeys = new Set(KNOWN_FLAGS.map((f) => f.key));
+  const flagInitial: Record<string, { value: boolean; updated_at: string | null; exists: boolean }> = {};
+  for (const flag of KNOWN_FLAGS) {
+    const row = rows.find((r) => r.key === flag.key);
+    flagInitial[flag.key] = {
+      value: row ? row.value === true : flag.defaultValue,
+      updated_at: row?.updated_at ?? null,
+      exists: Boolean(row),
+    };
+  }
+  const genericSettings = others.filter((r) => !flagKeys.has(r.key));
 
   return (
     <AppLayout active="home">
@@ -44,6 +56,8 @@ export default async function AdminSettingsPage() {
 
         <div className="mt-8 grid gap-6">
           <MaintenanceToggle current={maintenanceOn} />
+
+          <FeatureFlagsSection initial={flagInitial} />
 
           <NewSettingForm />
 
@@ -62,7 +76,7 @@ export default async function AdminSettingsPage() {
               </p>
             )}
             <div className="grid gap-4 lg:grid-cols-2">
-              {others.map((row) => (
+              {genericSettings.map((row) => (
                 <SettingEditor
                   key={row.key}
                   rowKey={row.key}
