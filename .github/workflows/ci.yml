@@ -102,3 +102,10 @@ jobs:
       - name: Run light/dark visual regression
         working-directory: next-app
         run: npm run test:visual
+      - name: Upload visual failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-test-results
+          path: next-app/test-results/
+          retention-days: 7

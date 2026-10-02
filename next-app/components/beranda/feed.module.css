@@ -6,7 +6,7 @@
 .feedList {
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 12px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -58,18 +58,21 @@
   border-color: var(--sk-ink, #1c1917);
 }
 
-/* ---------- Postingan bezel-less: aliran flat, pemisah hairline ----------
- * Keputusan desain: bukan kartu berkotak — setiap postingan mengalir sebagai
- * baris penuh di atas latar halaman, dipisah hairline 1px yang sangat halus.
- * Pola ini (dipakai Threads/X) terlihat lebih premium dan content-first
- * dibanding kotak ber-border ala Facebook, konsisten di light & dark mode. */
+/* ---------- Kartu postingan ber-border: selaras dengan kartu Portal Berita ----------
+ * Keputusan desain (koreksi 2026-10-02): kartu post memakai treatment yang
+ * SAMA dengan .newsCard di components/news/news.module.css — border 1px
+ * var(--sk-line), radius var(--sk-r-lg), background var(--sk-surface), hover
+ * border teal + shadow lembut + lift. Bukan trade dress Facebook: tipografi
+ * content-first 16px/1.65, radius 16px khas SUKI, tanpa box tebal/shadow
+ * berat ala FB.
+ * Konsisten di light & dark mode via token --sk-* (dengan fallback harfiah). */
 .postCard {
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid var(--sk-line, #e7e5e4);
-  border-radius: 0;
+  background: var(--sk-surface, #fff);
+  border: 1px solid var(--sk-line, #e7e5e4);
+  border-radius: var(--sk-r-lg, 16px);
   box-shadow: none;
   padding: 20px 16px 12px;
+  transition: border-color var(--sk-d-base, 180ms) var(--sk-ease, ease), box-shadow var(--sk-d-base, 180ms) var(--sk-ease, ease), transform var(--sk-d-base, 180ms) var(--sk-ease, ease);
 }
 @media (min-width: 640px) {
   .postCard {
@@ -258,22 +261,16 @@
 }
 
 
-/* ---------- Media grid: full-bleed di mobile (tanpa bezel), rapi di desktop ----------
- * Di layar kecil media menepi ke tepi postingan (pola Instagram/Threads) —
- * terasa lapang dan premium. Di desktop media tetap terkungkung dengan radius. */
+/* ---------- Media grid: terkungkung di dalam kartu ber-border ----------
+ * Media mengikuti radius kartu (var(--sk-r-md)) di semua ukuran layar —
+ * selaras dengan .newsThumb yang bleed ke tepi KARTU-nya sendiri. */
 .mediaGrid {
-  margin: 12px -16px 0;
+  margin: 12px 0 0;
   display: grid;
   gap: 4px;
-  border-radius: 0;
+  border-radius: var(--sk-r-md, 12px);
   overflow: hidden;
   border: none;
-}
-@media (min-width: 640px) {
-  .mediaGrid {
-    margin: 12px 0 0;
-    border-radius: var(--sk-r-md, 12px);
-  }
 }
 .media1 { grid-template-columns: 1fr; }
 .media2 { grid-template-columns: 1fr 1fr; }
@@ -314,10 +311,7 @@
   font-size: 22px;
   font-weight: 700;
 }
-.videoWrap { margin: 12px -16px 0; border-radius: 0; overflow: hidden; border: none; background: #000; }
-@media (min-width: 640px) {
-  .videoWrap { margin: 12px 0 0; border-radius: var(--sk-r-md, 12px); }
-}
+.videoWrap { margin: 12px 0 0; border-radius: var(--sk-r-md, 12px); overflow: hidden; border: none; background: #000; }
 .videoWrap video { width: 100%; max-height: 480px; display: block; }
 
 /* ---------- Ringkasan + aksi ---------- */
@@ -472,12 +466,13 @@
 .threadError { font-size: 13px; color: var(--sk-danger, #b3261e); display: flex; align-items: center; gap: 8px; justify-content: center; }
 .threadError button { background: none; border: none; color: var(--sk-danger, #b3261e); font-weight: 600; text-decoration: underline; cursor: pointer; display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; }
 
-/* ---------- Skeleton menyerupai postingan flat ---------- */
+/* ---------- Skeleton menyerupai kartu postingan ber-border ----------
+ * Selaras dengan .newsSkeleton: border 1px var(--sk-line), radius
+ * var(--sk-r-lg), background var(--sk-surface). */
 .skCard {
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid var(--sk-line, #e7e5e4);
-  border-radius: 0;
+  background: var(--sk-surface, #fff);
+  border: 1px solid var(--sk-line, #e7e5e4);
+  border-radius: var(--sk-r-lg, 16px);
   padding: 20px 16px 12px;
   display: flex;
   flex-direction: column;
@@ -503,6 +498,7 @@
 @keyframes skShimmer { to { background-position: -200% 0; } }
 @media (prefers-reduced-motion: reduce) {
   .shimmer { animation: none; }
+  .postCard { transition: none; }
   .mediaItem img { transition: none; }
   .filterBtn, .followBtn, .menuBtn, .menuItem, .actionBtn,
   .btnPrimary, .btnGhost, .loadMoreBtn, .composerInput, .composerSend,
@@ -592,6 +588,11 @@
    Mencegah efek hover "lengket" setelah tap di layar sentuh. */
 @media (hover: hover) {
   .filterBtn:hover { color: var(--sk-ink, #1c1917); border-color: var(--sk-line-strong, #d6d3d1); }
+  .postCard:hover {
+    border-color: var(--sk-teal, #0e6258);
+    box-shadow: 0 12px 28px rgba(14, 98, 88, 0.1);
+    transform: translateY(-2px);
+  }
   a.authorName:hover { text-decoration: underline; }
   .followBtn:hover { background: var(--sk-surface-2, #f5eedb); }
   .menuBtn:hover { background: var(--sk-surface-2, #f5eedb); color: var(--sk-ink, #1c1917); }

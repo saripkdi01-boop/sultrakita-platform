@@ -293,16 +293,24 @@ async function main() {
   }
 
   // 5. Rate limit middleware: bombardir /api/* melebihi 60/menit → ada 429.
+  // Dikirim PARALEL (bukan sekuensial): pada runner yang lambat, request
+  // sekuensial ±1 dtk membuat sliding window 60/menit tidak pernah penuh
+  // sehingga 429 nyaris tidak terpicu (flake). Burst paralel benar-benar
+  // membombardir dalam satu window.
   {
     let count429 = 0;
     let sawRetryAfter = false;
     let sawLimitHeader = false;
-    for (let i = 0; i < BURST; i += 1) {
-      const { res } = await request('/api/csrf');
-      if (res.status === 429) {
-        count429 += 1;
-        if (res.headers.get('retry-after')) sawRetryAfter = true;
-        if (res.headers.get('x-ratelimit-limit') === '60') sawLimitHeader = true;
+    const CONCURRENCY = 30;
+    for (let i = 0; i < BURST; i += CONCURRENCY) {
+      const batch = Array.from({ length: Math.min(CONCURRENCY, BURST - i) }, () => request('/api/csrf'));
+      const results = await Promise.all(batch);
+      for (const { res } of results) {
+        if (res.status === 429) {
+          count429 += 1;
+          if (res.headers.get('retry-after')) sawRetryAfter = true;
+          if (res.headers.get('x-ratelimit-limit') === '60') sawLimitHeader = true;
+        }
       }
     }
     assert(
