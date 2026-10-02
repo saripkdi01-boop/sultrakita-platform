@@ -14,6 +14,8 @@ interface ApiNewsItem {
   sourceId: string;
   sourceName: string;
   publishedAt: string | null;
+  /** URL gambar dari field feed (enclosure/media:*), null bila tidak ada. */
+  image: string | null;
 }
 
 interface ApiNewsSource {
@@ -62,10 +64,27 @@ function NewsSkeleton() {
 }
 
 /**
+ * Thumbnail dari field feed (milik penerbit, CDN resmi mereka).
+ * lazy + aspect-ratio fixed (zero CLS) + referrerPolicy no-referrer.
+ * Gagal dimuat → hilang diam-diam, kartu kembali text-first (jujur).
+ */
+function NewsThumb({ src, alt }: { src: string; alt: string }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) return null;
+  return (
+    <div className={styles.newsThumb}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={src} alt={alt} loading="lazy" referrerPolicy="no-referrer" onError={() => setFailed(true)} />
+    </div>
+  );
+}
+
+/**
  * T-NEWS · Section "Portal Berita" di /beranda.
- * Agregasi headline teknologi dari media Indonesia (server-side RSS),
- * text-first tanpa hotlink gambar. Slot iklan native tiap 6 kartu
- * memakai infra AdSlot (house ads / AdSense-ready).
+ * Agregasi headline dari media Indonesia (server-side RSS).
+ * Kartu bergambar bila feed menyediakan <enclosure>/<media:*> —
+ * gambar milik penerbit dari CDN resmi mereka; fallback text-first.
+ * Slot iklan native tiap 6 kartu memakai infra AdSlot (house ads / AdSense-ready).
  */
 export function NewsPortal() {
   const [category, setCategory] = useState<NewsCategory>('teknologi');
@@ -175,18 +194,19 @@ export function NewsPortal() {
               <Fragment key={item.id}>
                 <li>
                   <article className={styles.newsCard}>
-                    <div className={styles.newsMeta}>
-                      <span className={styles.newsSource}>{item.sourceName}</span>
-                      {item.publishedAt && (
-                        <time dateTime={item.publishedAt}>{formatTime(item.publishedAt)}</time>
-                      )}
-                    </div>
+                    {item.image && <NewsThumb src={item.image} alt={item.title} />}
                     <h3>
                       <a href={item.link} target="_blank" rel="noopener noreferrer" title={`Baca di ${item.sourceName}`}>
                         {item.title}
                       </a>
                     </h3>
                     {item.excerpt && <p className={styles.newsExcerpt}>{item.excerpt}</p>}
+                    <div className={styles.newsMeta}>
+                      <span className={styles.newsSource}>{item.sourceName}</span>
+                      {item.publishedAt && (
+                        <time dateTime={item.publishedAt}>{formatTime(item.publishedAt)}</time>
+                      )}
+                    </div>
                     <a className={styles.newsReadMore} href={item.link} target="_blank" rel="noopener noreferrer">
                       Baca selengkapnya <ArrowUpRight size={13} aria-hidden="true" />
                     </a>
