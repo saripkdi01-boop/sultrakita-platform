@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { checkRateLimit } from '@/lib/rate-limit';
-import { apiError, badRequest } from '@/lib/api-error';
+import { apiError, badRequest, forbidden, internalError, unauthorized } from '@/lib/api-error';
+import { verifyCsrfToken } from '@/lib/security/csrf';
+import { getServerSupabase } from '@/lib/supabase/server';
 import { fetchPublicListings } from '@/lib/listings-query';
+import {
+  createListingPayloadSchema,
+  normalizeWhatsapp,
+  sanitizeText,
+} from '@/lib/marketplace-create';
 
 // Data contoh hanya untuk development lokal: tampil HANYA bila
 // ALLOW_DEMO_DATA=true DAN bukan production, dengan label jelas.
@@ -38,4 +45,143 @@ export async function GET(request: NextRequest) {
   }
   if ('warning' in result) return NextResponse.json({ ok: true, data: [], filters: result.filters, warning: result.warning });
   return NextResponse.json({ ok: true, data: result.items, filters: result.filters });
+}
+
+// ---- POST /api/listings: terbitkan listing marketplace ----
+//
+// Urutan pengaman (konsisten dengan route lain: comments, businesses):
+// rate limit -> CSRF -> auth -> validasi zod -> sanitasi -> insert.
+// RLS: server memakai anon key + cookie sesi, jadi policy "owners manage
+// listings" (auth.uid() = owner_id) yang berlaku — tanpa subquery ke tabel
+// listings sendiri sehingga bebas dari pola rekursi RLS.
+
+/** Dedupe double-submit: best-effort per instance (serverless) dengan TTL.
+ *  Jujur dicatat: ini BUKAN idempotency lintas instance — perlindungan utama
+ *  tetap guard di client (tombol disabled + in-flight guard). */
+const IDEMPOTENCY_TTL_MS = 10 * 60_000;
+const recentPublishes = new Map<string, { listingId: string; title: string; expiresAt: number }>();
+
+function checkDuplicate(userId: string, key: string): { listingId: string; title: string } | null {
+  const now = Date.now();
+  if (recentPublishes.size > 500) {
+    const now2 = Date.now();
+    recentPublishes.forEach((v, k) => { if (v.expiresAt <= now2) recentPublishes.delete(k); });
+  }
+  const mapKey = `${userId}:${key}`;
+  const hit = recentPublishes.get(mapKey);
+  if (!hit) return null;
+  if (hit.expiresAt <= now) { recentPublishes.delete(mapKey); return null; }
+  return { listingId: hit.listingId, title: hit.title };
+}
+
+function rememberPublish(userId: string, key: string, listingId: string, title: string) {
+  recentPublishes.set(`${userId}:${key}`, { listingId, title, expiresAt: Date.now() + IDEMPOTENCY_TTL_MS });
+}
+
+/** Petakan label kategori form (11 label UI) -> uuid tabel categories.
+ *  Gagal/tidak ada padanan -> null (listing tetap terbit & ditemukan via
+ *  pencarian teks + filter kota). */
+async function resolveCategoryUuid(
+  supabase: Awaited<ReturnType<typeof getServerSupabase>>,
+  label: string,
+): Promise<string | null> {
+  try {
+    const normalized = label.trim().toLowerCase();
+    const { data, error } = await supabase.from('categories').select('id,slug,name').eq('is_active', true);
+    if (error || !data) return null;
+    const match = data.find((row) => {
+      const slug = String(row.slug || '').toLowerCase();
+      const name = String(row.name || '').toLowerCase();
+      return slug === normalized || name === normalized;
+    });
+    return match ? String(match.id) : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function POST(request: NextRequest) {
+  const limited = await checkRateLimit(request, 'api');
+  if (limited) return limited;
+
+  if (!verifyCsrfToken(request)) {
+    return forbidden(request, 'Token keamanan tidak valid. Muat ulang halaman dan coba lagi.');
+  }
+
+  const supabase = await getServerSupabase();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return unauthorized(request, 'Masuk dulu untuk memasang listing.');
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return badRequest(request, 'Isi permintaan tidak valid.');
+  }
+
+  const parsed = createListingPayloadSchema.safeParse(body);
+  if (!parsed.success) {
+    const issues = parsed.error.issues.slice(0, 5).map((issue) => ({
+      field: issue.path.join('.') || 'form',
+      message: issue.message,
+    }));
+    return apiError('VALIDATION_ERROR', issues[0]?.message || 'Data listing tidak valid.', 422, request, { issues });
+  }
+  const input = parsed.data;
+
+  // Idempotency best-effort (lihat catatan di atas).
+  const idemKey = input.idempotencyKey?.trim();
+  if (idemKey) {
+    const dup = checkDuplicate(user.id, idemKey);
+    if (dup) {
+      return NextResponse.json({ ok: true, data: { id: dup.listingId, title: dup.title }, deduped: true });
+    }
+  }
+
+  let whatsapp: string | null = null;
+  try {
+    whatsapp = normalizeWhatsapp(input.whatsapp || '');
+  } catch (error) {
+    return apiError('VALIDATION_ERROR', error instanceof Error ? error.message : 'Nomor WhatsApp tidak valid.', 422, request);
+  }
+
+  const categoryId = await resolveCategoryUuid(supabase, input.category);
+  const title = sanitizeText(input.title, true);
+  const description = sanitizeText(input.description);
+  const imageUrls = input.photos.map((p) => p.url);
+
+  // Foto disimpan di listings.images (kolom yang dibaca kartu marketplace).
+  // listing_media TIDAK dipakai: skemanya cacat (bigint vs uuid).
+  const row = {
+    owner_id: user.id,
+    seller_id: user.id,
+    title,
+    description,
+    price: input.price,
+    currency: 'IDR',
+    mode: 'sale',
+    status: 'published',
+    location: input.district,
+    district: input.district,
+    city: input.district,
+    province: 'Sulawesi Tenggara',
+    category_id: categoryId,
+    images: imageUrls,
+    thumbnail_url: imageUrls[0] || null,
+    condition: input.condition,
+    stock_quantity: input.stock,
+    is_negotiable: input.negotiable,
+    specifications: whatsapp ? { whatsapp } : {},
+    published_at: new Date().toISOString(),
+  };
+
+  const { data, error } = await supabase.from('listings').insert(row).select('id,title').single();
+  if (error) {
+    // 42501 = ditolak RLS; 23505 = konflik unik — pesan aman, detail di log server.
+    if (error.code === '42501') return forbidden(request, 'Anda tidak memiliki izin memasang listing.');
+    return internalError(request, 'Listing gagal disimpan. Silakan coba lagi.', error);
+  }
+
+  if (idemKey && data) rememberPublish(user.id, idemKey, String(data.id), String(data.title));
+  return NextResponse.json({ ok: true, data: { id: data.id, title: data.title } }, { status: 201 });
 }
