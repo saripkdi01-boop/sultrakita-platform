@@ -90,3 +90,47 @@ Rekomendasi: audit cepat + perbaikan murah (lazy, sizes, font display).
 - Health endpoint `/api/health` (db + storage R2).
 - RLS: 32 migrasi mengandung policies.
 - Fase 0: data demo dihapus dari produksi, chat dinonaktifkan rapi, filter kategori marketplace tersambung backend.
+
+---
+
+## APPENDIX V1.0 — Audit Visual Live (2026-10-03, program Visual Transformation V1.0)
+
+**Metode:** fetch teks server (browser.open) ke https://sukiapps.web.id/ + 6 rute utama.
+**Batasan metode:** konten CSR tidak terlihat; tampilan visual aktual, mobile, dan
+interaksi butuh verifikasi browser live (dicatat sebagai butuh delegasi).
+
+### Temuan prioritas untuk transformasi visual
+
+**P0:**
+1. `/marketplace` tanpa SSR — blank untuk crawler & first paint.
+2. Data lokasi properti salah massal (", Kendari" ditempel ke kecamatan kota/kabupaten
+   lain: Betoambari, Wundulako, Unaaha, Wolio, Raha, Pomalaa) — merusak kredibilitas lokal.
+   → DI LUAR cakupan visual; diteruskan sebagai rekomendasi perbaikan data.
+3. `/Business` memajang "0 bisnis terdaftar · 0 kota" di halaman akuisisi partner.
+
+**P1:**
+1. Hero homepage: headline kuat tapi tanpa CTA terlihat di teks fetch.
+2. 35× "0 dilihat · 0 disimpan" di kartu properti menegaskan kesan sepi → sembunyikan
+   counter sampai ada angka bermakna (rekomendasi; di luar cakupan visual murni).
+3. 4 kartu "Empat ruang" tidak ter-render di teks server (risiko blank bila CSR).
+4. Kategori properti salah ("Rumah subsidi" utk harga 850jt) + foto Unsplash generik dipakai ulang.
+5. `/beranda` tak menunjukkan bukti aktivitas komunitas di SSR.
+6. `/Business/direktori` 100% kosong — butuh ilustrasi "coming soon" yang bermartabat.
+
+**P2:**
+1. Footer homepage tak terverifikasi di teks fetch. 2. Tiga section /Business repetitif.
+3. `/jobs` tanpa logo perusahaan/tanggal posting — daftar teks murni.
+4. `/login` generik tanpa identitas visual Sultra — kandidat sentuhan Digital Nusantara.
+5. Inkonsistensi tone ("Anda" vs "kamu"/"mu") lintas halaman.
+6. Search section tidak terlihat di homepage (teks fetch).
+
+**P3:** Label tombol OAuth tak terbaca di teks; detail kecil lain.
+
+### Butuh verifikasi browser live (delegasi ke parent)
+Screenshot visual aktual semua halaman; tampilan mobile/responsive; konten CSR
+(/marketplace, feed /beranda, kartu ekosistem, header/nav, footer, tombol OAuth);
+interaksi (filter, bottom-sheet, hover, animasi); kualitas foto listing; metadata
+lengkap (view-source); performa aktual/Lighthouse.
+
+**Catatan integritas:** fakta di atas dari teks ter-fetch server 2026-10-03 ~06:36 WITA.
+Tidak ada perubahan repo/situs saat audit. Tidak ada klaim kunjungan visual.

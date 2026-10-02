@@ -11,6 +11,7 @@ import { supabase } from '@/lib/supabase/client';
 import { usePreferences } from '@/lib/preferences';
 import { clearUtmCookie, readUtmFromCookie } from '@/lib/utm';
 import { claimReferralBestEffort } from '@/lib/referral-claim-client';
+import { NusantaraHero } from '@/components/illustrations';
 
 const GOOGLE_OAUTH_GATEWAY_URL = process.env.NEXT_PUBLIC_GOOGLE_OAUTH_GATEWAY_URL || '';
 const MAX_SIGNUP_AVATAR_BYTES = 5 * 1024 * 1024;
@@ -269,6 +270,11 @@ export function AuthGate({
             <div className="mt-8 flex items-center gap-2 text-xs font-semibold text-[#718b85]">
               <span className="grid h-7 w-7 place-items-center rounded-full bg-[#e3f4ed]"><ShieldCheck size={15} className="text-[#188875]" /></span>
               Akun dan sesi autentikasi diproses melalui alur aman SUKI Apps.
+            </div>
+
+            {/* Visual Transformation V1.0 — ilustrasi Digital Nusantara (dekoratif). */}
+            <div className="dn-login-art" aria-hidden="true">
+              <NusantaraHero />
             </div>
           </div>
         </section>

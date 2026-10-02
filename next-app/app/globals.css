@@ -1,6 +1,7 @@
 /* Font dimuat via <link> di app/layout.tsx (preconnect + non-blocking)
    agar tidak menjadi rantai render-blocking di dalam CSS. */
 @import '../design-system/tokens.css';
+@import '../design-system/tokens-nusantara.css';
 @import '../components/ui/ui-primitives.css';
 @import './uiux-review.css';
 @tailwind base; @tailwind components; @tailwind utilities;

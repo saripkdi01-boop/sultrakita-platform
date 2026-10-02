@@ -10,7 +10,6 @@ import {
   Check,
   ChevronRight,
   Compass,
-  Layers3,
   MapPin,
   Menu,
   Search,
@@ -24,6 +23,14 @@ import {
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { sukiMotion } from '@/lib/motion-tokens';
+import {
+  EcosystemJobs,
+  EcosystemKomunitas,
+  EcosystemMarketplace,
+  EcosystemProperti,
+  NusantaraHero,
+} from '@/components/illustrations';
+import { Reveal } from '@/components/ui/Reveal';
 
 type EcosystemKey = 'marketplace' | 'properti' | 'jobs' | 'groups';
 
@@ -49,6 +56,58 @@ const quickLinks = [
   { icon: Users, label: 'Gabung komunitas', href: '/groups' },
   { icon: Store, label: 'Untuk bisnis', href: '/Business' },
 ];
+
+// Visual Transformation V1.0 — ilustrasi tiap ruang + aksen warna khasnya.
+const ecosystemArt: Record<EcosystemKey, { Art: typeof EcosystemMarketplace; accent: string }> = {
+  marketplace: { Art: EcosystemMarketplace, accent: 'accent-teal' },
+  properti: { Art: EcosystemProperti, accent: 'accent-ocean' },
+  jobs: { Art: EcosystemJobs, accent: 'accent-gold' },
+  groups: { Art: EcosystemKomunitas, accent: 'accent-coral' },
+};
+
+/**
+ * HeroArt — ilustrasi Digital Nusantara berlapis dengan parallax pointer.
+ * Hanya menggerakkan transform (tanpa layout shift); nonaktif total saat
+ * prefers-reduced-motion. Murni visual, tidak mengubah fungsi hero.
+ */
+function HeroArt() {
+  const reduceMotion = useReducedMotion();
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || reduceMotion) return;
+    let raf = 0;
+    const onMove = (event: PointerEvent) => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const rect = el.getBoundingClientRect();
+        const x = (event.clientX - rect.left) / rect.width - 0.5;
+        const y = (event.clientY - rect.top) / rect.height - 0.5;
+        el.querySelectorAll<SVGGElement>('.dn-layer').forEach((layer) => {
+          const depth = parseFloat(layer.dataset.depth || '0');
+          layer.style.transform =
+            `translate3d(${(-x * depth * 44).toFixed(1)}px, ${(-y * depth * 28).toFixed(1)}px, 0)`;
+        });
+      });
+    };
+    el.addEventListener('pointermove', onMove);
+    return () => { el.removeEventListener('pointermove', onMove); cancelAnimationFrame(raf); };
+  }, [reduceMotion]);
+
+  return (
+    <div ref={ref} className="dn-hero-art">
+      <NusantaraHero
+        className="dn-hero-svg"
+        title="Ilustrasi Digital Nusantara: pesisir Sulawesi Tenggara — rumah panggung, nelayan, pedagang pasar, pelaku UMKM, dan anak muda berteknologi"
+      />
+      <div className="dn-hero-badges" aria-hidden="true">
+        <span className="dn-hero-badge"><i />Pasar lokal</span>
+        <span className="dn-hero-badge"><i />Komunitas</span>
+      </div>
+    </div>
+  );
+}
 
 const principles = [
   { number: '01', title: 'Dekat dengan kebutuhan', text: 'Mulai dari hal yang memang dicari warga setiap hari.' },
@@ -229,7 +288,7 @@ export default function HomeClient() {
   function closeMenu() { setMenuOpen(false); }
 
   return (
-    <main className="suki-overhaul-home">
+    <main className="suki-overhaul-home dn-home">
       <a className="skip-link" href="#main-content">Lewati ke konten utama</a>
 
       <div className="suki-overhaul-topbar">
@@ -312,7 +371,7 @@ export default function HomeClient() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, ease: sukiMotion.ease.out, delay: reduceMotion ? 0 : 0.15 }}
           >
-            <EcosystemMap active={activeNode} onSelect={setActiveNode} />
+            <HeroArt />
           </motion.div>
         </div>
       </section>
@@ -393,30 +452,28 @@ export default function HomeClient() {
             </div>
             <p>SUKI membantu kebutuhan, peluang, dan hubungan lokal bergerak dalam satu alur yang terasa dekat.</p>
           </div>
-          <div className="suki-overhaul-ecosystem-layout">
-            <div className="suki-overhaul-ecosystem-list">
-              {ecosystem.map((item) => {
-                const Icon = item.icon;
-                return (
+          <EcosystemMap active={activeNode} onSelect={setActiveNode} />
+          <div className="dn-eco-grid">
+            {ecosystem.map((item, index) => {
+              const { Art, accent } = ecosystemArt[item.key];
+              return (
+                <Reveal key={item.key} delay={index * 70} className="dn-eco-reveal">
                   <Link
-                    key={item.key}
                     href={item.href}
-                    className={`suki-overhaul-ecosystem-item tone-${item.tone} ${activeNode === item.key ? 'is-active' : ''}`}
-                    onMouseEnter={() => setActiveNode(item.key)}
-                    onFocus={() => setActiveNode(item.key)}
+                    className={`dn-eco-card ${accent}`}
                     aria-label={`${item.label} — ${item.title}: ${item.text}`}
                   >
-                    <span className="suki-overhaul-item-icon"><Icon size={20} aria-hidden="true" /></span>
-                    <span><small>{item.label}</small><strong>{item.title}</strong><span className="suki-overhaul-item-text">{item.text}</span></span>
-                    <ArrowRight size={17} aria-hidden="true" />
+                    <span className={`dn-eco-art ${accent}`} aria-hidden="true"><Art /></span>
+                    <span className="dn-eco-body">
+                      <span className="dn-eco-label">{item.label}</span>
+                      <strong className="dn-eco-title">{item.title}</strong>
+                      <span className="dn-eco-text">{item.text}</span>
+                      <span className="dn-eco-link">Jelajahi ruang <ArrowRight size={15} aria-hidden="true" /></span>
+                    </span>
                   </Link>
-                );
-              })}
-            </div>
-            <div className="suki-overhaul-ecosystem-note">
-              <Layers3 size={19} aria-hidden="true" />
-              <span><b>Terhubung sejak awal.</b><small>Temukan satu hal, lalu biarkan kebutuhan berikutnya tetap punya konteks.</small></span>
-            </div>
+                </Reveal>
+              );
+            })}
           </div>
         </div>
       </motion.section>
