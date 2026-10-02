@@ -178,3 +178,17 @@ export function SukiIconPesan(props: P) {
     </Base>
   );
 }
+
+/** SUKI Kampung — rumah panggung di atas tiang; titik emas sebagai matahari pagi. */
+export function SukiIconKampung(props: P) {
+  return (
+    <Base {...props}>
+      <path d="M3.5 10.5 12 4l8.5 6.5" />
+      <path d="M6.5 10.5V16h11v-5.5" />
+      <path d="M11 16v-3h2v3" />
+      <path d="M8 16v3.5M16 16v3.5" />
+      <path d="M4 21h16" />
+      <Dot cx={18.6} cy={5.2} r={1.7} />
+    </Base>
+  );
+}
