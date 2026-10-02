@@ -149,6 +149,7 @@ export default function CreateListingForm() {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [photoNotice, setPhotoNotice] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [gateNotice, setGateNotice] = useState<string | null>(null);
   const [submitState, setSubmitState] = useState<SubmitState>('idle');
   const [draftSavedAt, setDraftSavedAt] = useState<number | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -171,6 +172,7 @@ export default function CreateListingForm() {
         if (!alive) return;
         if (data.user) {
           setSessionState('authed');
+          setGateNotice(null);
           const meta = data.user.user_metadata as Record<string, unknown> | undefined;
           const name = String(meta?.full_name || meta?.name || data.user.email?.split('@')[0] || 'Seller');
           setUserName(name);
@@ -407,7 +409,7 @@ export default function CreateListingForm() {
 
         if (response.status === 401) {
           setSessionState('guest');
-          setFormError('Sesi Anda berakhir. Masuk kembali — draft Anda tetap tersimpan di perangkat ini.');
+          setGateNotice('Sesi Anda berakhir. Masuk kembali — draft Anda tetap tersimpan di perangkat ini.');
           return;
         }
         if (response.status === 403 && json?.error?.code === 'FORBIDDEN') {
@@ -532,6 +534,7 @@ export default function CreateListingForm() {
               <span className="dn-empty-art" aria-hidden="true"><EcosystemMarketplace /></span>
               <span className="fbmc-gate-icon"><Lock size={30} /></span>
               <h2>Masuk dulu untuk mulai menjual</h2>
+              {gateNotice && <p className="fbmc-field-note is-warn" role="status" style={{ justifyContent: 'center' }}><AlertCircle size={14} /> {gateNotice}</p>}
               <p>
                 Anda perlu akun SUKI agar pembeli bisa percaya dan kami bisa menghubungi Anda.
                 Draft yang sedang diisi tetap tersimpan di perangkat ini.
