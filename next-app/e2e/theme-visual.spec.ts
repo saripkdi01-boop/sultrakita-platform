@@ -4,10 +4,13 @@ type Theme = 'light' | 'dark';
 
 const routes = [
   { name: 'home', path: '/' },
+  { name: 'beranda', path: '/beranda' },
   { name: 'marketplace', path: '/marketplace' },
   { name: 'property', path: '/properti' },
   { name: 'jobs', path: '/jobs' },
-  { name: 'chat', path: '/chat' },
+  { name: 'groups', path: '/groups' },
+  { name: 'Business', path: '/Business' },
+  { name: 'login', path: '/login' },
 ];
 
 async function setTheme(page: Page, theme: Theme) {
