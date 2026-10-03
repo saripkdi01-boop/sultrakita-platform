@@ -88,7 +88,7 @@ function isHubActive(pathname: string): boolean {
   );
 }
 
-export function EcosystemHub({ variant }: { variant: 'tab' | 'mtab' }) {
+export function EcosystemHub({ variant }: { variant: 'action' | 'mtab' }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const panelId = useId();
@@ -130,7 +130,7 @@ export function EcosystemHub({ variant }: { variant: 'tab' | 'mtab' }) {
       <button
         ref={triggerRef}
         type="button"
-        className={variant === 'tab' ? 'skfb-tab skfb-hub-trigger' : 'skfb-mtab skfb-hub-trigger'}
+        className={variant === 'action' ? 'sknav-icon-btn sknav-hub-trigger' : 'sknav-mtab sknav-hub-trigger'}
         aria-expanded={open}
         aria-haspopup="dialog"
         aria-controls={panelId}
@@ -144,21 +144,21 @@ export function EcosystemHub({ variant }: { variant: 'tab' | 'mtab' }) {
 
       {open && (
         <>
-          <div className="skfb-hub-backdrop" aria-hidden="true" onClick={() => setOpen(false)} />
+          <div className="sknav-hub-backdrop" aria-hidden="true" onClick={() => setOpen(false)} />
           <div
             ref={panelRef}
             id={panelId}
             role="dialog"
             aria-label="Ekosistem SUKI — semua layanan"
-            className="skfb-hub-panel"
+            className="sknav-hub-panel"
           >
-            <div className="skfb-hub-head">
+            <div className="sknav-hub-head">
               <div>
-                <p className="skfb-hub-eyebrow">SUKI Apps</p>
-                <h2 className="skfb-hub-title">Ekosistem SUKI</h2>
-                <p className="skfb-hub-sub">Semua layanan dalam satu genggaman</p>
+                <p className="sknav-hub-eyebrow">SUKI Apps</p>
+                <h2 className="sknav-hub-title">Ekosistem SUKI</h2>
+                <p className="sknav-hub-sub">Semua layanan dalam satu genggaman</p>
               </div>
-              <button type="button" className="skfb-hub-close" onClick={close} aria-label="Tutup menu ekosistem">
+              <button type="button" className="sknav-hub-close" onClick={close} aria-label="Tutup menu ekosistem">
                 <X size={20} aria-hidden="true" />
               </button>
             </div>
@@ -167,35 +167,35 @@ export function EcosystemHub({ variant }: { variant: 'tab' | 'mtab' }) {
               <section
                 key={section.title}
                 aria-label={section.title}
-                className="skfb-hub-section"
+                className="sknav-hub-section"
                 style={{ '--hub-accent': section.accent } as CSSProperties}
               >
-                <div className="skfb-hub-section-head">
-                  <h3 className="skfb-hub-section-title">{section.title}</h3>
-                  <span className="skfb-hub-section-hint">{section.hint}</span>
+                <div className="sknav-hub-section-head">
+                  <h3 className="sknav-hub-section-title">{section.title}</h3>
+                  <span className="sknav-hub-section-hint">{section.hint}</span>
                 </div>
-                <div className="skfb-hub-grid">
+                <div className="sknav-hub-grid">
                   {section.tiles.map((tile) => {
                     const tileActive = tile.isActive(pathname);
                     return (
                       <Link
                         key={tile.key}
                         href={tile.href}
-                        className="skfb-hub-tile"
+                        className="sknav-hub-tile"
                         aria-current={tileActive ? 'page' : undefined}
                         onClick={() => setOpen(false)}
                       >
-                        <span className="skfb-hub-tile-icon" aria-hidden="true">
+                        <span className="sknav-hub-tile-icon" aria-hidden="true">
                           <tile.Icon />
                         </span>
-                        <span className="skfb-hub-tile-text">
-                          <span className="skfb-hub-tile-label">
+                        <span className="sknav-hub-tile-text">
+                          <span className="sknav-hub-tile-label">
                             {tile.label}
-                            {tile.badge && <em className="skfb-hub-badge">{tile.badge}</em>}
+                            {tile.badge && <em className="sknav-hub-badge">{tile.badge}</em>}
                           </span>
-                          <span className="skfb-hub-tile-desc">{tile.desc}</span>
+                          <span className="sknav-hub-tile-desc">{tile.desc}</span>
                         </span>
-                        <ArrowUpRight size={16} aria-hidden="true" className="skfb-hub-tile-go" />
+                        <ArrowUpRight size={16} aria-hidden="true" className="sknav-hub-tile-go" />
                       </Link>
                     );
                   })}
@@ -203,11 +203,11 @@ export function EcosystemHub({ variant }: { variant: 'tab' | 'mtab' }) {
               </section>
             ))}
 
-            <Link href="/ajak-teman" className="skfb-hub-foot" onClick={() => setOpen(false)}>
-              <span className="skfb-hub-foot-icon" aria-hidden="true">
+            <Link href="/ajak-teman" className="sknav-hub-foot" onClick={() => setOpen(false)}>
+              <span className="sknav-hub-foot-icon" aria-hidden="true">
                 <SukiIconAjakTeman />
               </span>
-              <span className="skfb-hub-foot-text">
+              <span className="sknav-hub-foot-text">
                 <strong>Ajak teman ke SUKI, kumpulkan Koin SUKI</strong>
                 <span>Tukarkan Koin SUKI jadi saldo & benefit ekosistem</span>
               </span>
