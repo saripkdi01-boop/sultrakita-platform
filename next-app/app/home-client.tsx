@@ -25,6 +25,7 @@ import {
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { sukiMotion } from '@/lib/motion-tokens';
+import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 import KendariHero from '@/components/kendari/KendariHero';
 import {
   KendariBahteramas,
@@ -162,6 +163,7 @@ export default function HomeClient() {
             </span>
           </nav>
           <div className="suki-overhaul-header-actions">
+            <LanguageSwitcher variant="dropdown" showLabel={false} />
             <button
               className="suki-overhaul-theme"
               type="button"
