@@ -1,7 +1,18 @@
 import Link from 'next/link';
+import BusinessMobileMenu from './BusinessMobileMenu';
 
 /** Header konsisten untuk halaman auth /Business (server component). */
 export default function BusinessHeader({ hideCta = false }: { hideCta?: boolean }) {
+  const menuLinks = [
+    { href: '/Business#cara-kerja', label: 'Cara kerja' },
+    { href: '/Business#ruang-tumbuh', label: 'Ruang tumbuh' },
+    { href: '/Business#paket', label: 'Paket' },
+  ];
+  const menuActions = [
+    { href: '/Business/dashboard', label: 'Dashboard' },
+    ...(hideCta ? [] : [{ href: '/Business/daftar', label: 'Daftarkan bisnis' }]),
+  ];
+
   return (
     <header className="suki-business-nav">
       <Link href="/Business" className="suki-business-brand" aria-label="Kembali ke halaman SUKI Business">
@@ -28,6 +39,7 @@ export default function BusinessHeader({ hideCta = false }: { hideCta?: boolean 
           </Link>
         )}
       </div>
+      <BusinessMobileMenu links={menuLinks} actions={menuActions} />
     </header>
   );
 }
