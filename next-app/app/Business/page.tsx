@@ -11,12 +11,12 @@ import {
   Handshake,
   Layers3,
   MapPin,
-  Menu,
   MessageCircle,
   MoveUpRight,
   Store,
   UsersRound,
 } from 'lucide-react';
+import BusinessMobileMenu from './_components/BusinessMobileMenu';
 import {
   BUSINESS_CATEGORIES,
   fetchBusinessStats,
@@ -56,6 +56,18 @@ const plans = [
   { name: 'Mulai', description: 'Untuk bisnis yang ingin hadir dengan fondasi yang jelas.', features: ['Profil bisnis terarah', 'Ruang untuk cerita dan penawaran', 'Pendampingan langkah pertama'], featured: false },
   { name: 'Bertumbuh', description: 'Untuk bisnis yang siap menjangkau lebih banyak peluang lokal.', features: ['Semua fitur Mulai', 'Penempatan di ruang yang relevan', 'Ruang kolaborasi dengan partner'], featured: true },
   { name: 'Kolaborasi', description: 'Untuk organisasi dan inisiatif dengan kebutuhan yang lebih khusus.', features: ['Ruang campaign khusus', 'Diskusi kebutuhan bersama tim', 'Jalur integrasi dan partner'], featured: false },
+];
+
+/** Isi menu hamburger mobile (≤900px) — cerminan nav & aksi header desktop. */
+const mobileMenuLinks = [
+  { href: '/Business/direktori', label: 'Direktori' },
+  { href: '#cara-kerja', label: 'Cara kerja' },
+  { href: '#ruang-tumbuh', label: 'Ruang tumbuh' },
+  { href: '#paket', label: 'Paket' },
+];
+const mobileMenuActions = [
+  { href: '/login', label: 'Masuk' },
+  { href: '/Business/daftar', label: 'Daftarkan bisnis' },
 ];
 
 function categoryLabel(value: string | null | undefined): string {
@@ -154,7 +166,7 @@ export default async function BusinessPage() {
           <Link href="/login" className="suki-business-login">Masuk</Link>
           <Link href="/Business/daftar" className="suki-business-button suki-business-button-dark">Daftarkan bisnis <ArrowRight size={15} /></Link>
         </div>
-        <button className="suki-business-menu" aria-label="Buka menu"><Menu size={21} /></button>
+        <BusinessMobileMenu links={mobileMenuLinks} actions={mobileMenuActions} />
       </header>
 
       <section className="suki-business-hero">
