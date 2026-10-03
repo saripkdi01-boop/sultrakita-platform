@@ -304,3 +304,136 @@ a.kh-baht-feat:hover { background: rgba(212,168,83,.07); border-color: rgba(212,
   .kh-hero-kb, .kh-badge i, .kh-scroll i { animation: none; }
   .kh-eco-card:hover, .kh-kom-card:hover, .kh-btn-gold:hover, .kh-btn-ghost:hover { transform: none; }
 }
+
+/* ==========================================================================
+   MODE TERANG — light theme yang benar-benar terang (bukan gelap)
+   Aturan: mode gelap = background gelap; mode terang = background terang.
+   Scope: html[data-theme="light"] + !important untuk mengalahkan "Perisai tema".
+   ========================================================================== */
+html[data-theme="light"] .kh-hero { background: #f5f0e8; }
+html[data-theme="light"] .kh-hero-veil {
+  background:
+    linear-gradient(180deg, rgba(250,247,240,.86) 0%, rgba(250,247,240,.38) 38%, rgba(250,247,240,.55) 68%, #f5f0e8 100%),
+    linear-gradient(90deg, rgba(250,247,240,.5) 0%, transparent 50%, rgba(250,247,240,.5) 100%);
+}
+html[data-theme="light"] .kh-hero .kh-title { color: #0b2b2b !important; text-shadow: none !important; }
+html[data-theme="light"] .kh-sub { color: rgba(11,43,43,.74) !important; text-shadow: none !important; }
+html[data-theme="light"] .kh-badge {
+  background: rgba(168,127,46,.10) !important;
+  border-color: rgba(168,127,46,.35) !important;
+  color: #8a6a24 !important;
+}
+html[data-theme="light"] .kh-badge i { background: #a87f2e; }
+html[data-theme="light"] .kh-btn-ghost {
+  background: #ffffff !important; color: #0b2b2b !important;
+  border: 1px solid rgba(11,43,43,.2) !important;
+}
+html[data-theme="light"] .kh-btn-ghost:hover { border-color: #a87f2e !important; color: #8a6a24 !important; }
+html[data-theme="light"] .kh-proof { color: rgba(11,43,43,.7) !important; }
+html[data-theme="light"] .kh-proof svg { color: #9a742a !important; }
+html[data-theme="light"] .kh-scroll { color: rgba(11,43,43,.5) !important; }
+html[data-theme="light"] .kh-wave path { fill: #faf7f0 !important; }
+
+/* Fallback foto — versi terang */
+html[data-theme="light"] .kh-fb-masjid {
+  background: linear-gradient(160deg, #f8f2e4 0%, #f1e6cc 30%, #faf5e9 50%, #f3ead4 70%, #eee2c8 100%) !important;
+}
+html[data-theme="light"] .kh-fb-bahteramas {
+  background: linear-gradient(135deg, #f8f2e4 0%, #f5edd9 40%, #efe3c6 80%, #f3ead4 100%) !important;
+}
+html[data-theme="light"] .kh-fb-tugu {
+  background: linear-gradient(145deg, #f5edd9 0%, #efe3c6 60%, #f3ead4 100%) !important;
+}
+html[data-theme="light"] .kh-fb-komunitas {
+  background: linear-gradient(135deg, #f8f2e4 0%, #f1e6cc 50%, #efe3c6 100%) !important;
+}
+html[data-theme="light"] .kh-slot-duo {
+  background: linear-gradient(160deg, rgba(212,168,83,.10) 0%, rgba(245,240,232,.12) 50%, rgba(212,168,83,.06) 100%) !important;
+}
+
+/* Tipografi & aksen */
+html[data-theme="light"] .kh-wrap .kh-h2 { color: #0b2b2b !important; }
+html[data-theme="light"] .kh-desc,
+html[data-theme="light"] .kh-value-card p,
+html[data-theme="light"] .kh-eco-card p,
+html[data-theme="light"] .kh-baht-feat p,
+html[data-theme="light"] .kh-kom-body p { color: rgba(11,43,43,.68) !important; }
+html[data-theme="light"] .kh-label { color: #9a742a !important; }
+html[data-theme="light"] .kh-label::before { background: #9a742a !important; }
+html[data-theme="light"] .kh-h2 .kh-gold, html[data-theme="light"] .kh-gold {
+  background-image: linear-gradient(135deg, #a87f2e, #d4a853) !important;
+  -webkit-background-clip: text !important; background-clip: text !important; color: transparent !important;
+}
+
+/* Value strip */
+html[data-theme="light"] .kh-value { background: linear-gradient(180deg, #faf7f0 0%, #f5f0e8 100%) !important; }
+html[data-theme="light"] .kh-value-card h3 { color: #0b2b2b !important; }
+html[data-theme="light"] .kh-value-icon {
+  background: rgba(168,127,46,.10) !important;
+  border-color: rgba(168,127,46,.28) !important;
+  color: #9a742a !important;
+}
+
+/* Ekosistem */
+html[data-theme="light"] .kh-eco { background: #f5f0e8 !important; }
+html[data-theme="light"] .kh-eco-card {
+  background: #ffffff !important;
+  border-color: rgba(11,43,43,.1) !important;
+  box-shadow: 0 6px 22px rgba(11,43,43,.06);
+}
+html[data-theme="light"] .kh-eco-card:hover {
+  background: #ffffff !important;
+  border-color: rgba(168,127,46,.5) !important;
+  box-shadow: 0 16px 38px rgba(11,43,43,.1) !important;
+}
+html[data-theme="light"] .kh-eco-card h3 { color: #0b2b2b !important; }
+html[data-theme="light"] .kh-eco-icon { color: #9a742a !important; }
+html[data-theme="light"] .kh-eco-arrow {
+  background: rgba(168,127,46,.12) !important;
+  color: #9a742a !important;
+}
+
+/* Bahteramas */
+html[data-theme="light"] .kh-baht { background: #faf7f0 !important; }
+html[data-theme="light"] .kh-baht-veil {
+  background: linear-gradient(180deg, #faf7f0 0%, rgba(250,247,240,.88) 28%, rgba(250,247,240,.88) 72%, #faf7f0 100%) !important;
+}
+html[data-theme="light"] .kh-baht-feat {
+  background: #ffffff !important;
+  border-color: rgba(11,43,43,.1) !important;
+}
+html[data-theme="light"] a.kh-baht-feat:hover {
+  background: rgba(212,168,83,.1) !important;
+  border-color: rgba(168,127,46,.35) !important;
+}
+html[data-theme="light"] .kh-baht-feat h4 { color: #0b2b2b !important; }
+html[data-theme="light"] .kh-baht-feat-ic {
+  background: rgba(168,127,46,.12) !important;
+  color: #9a742a !important;
+}
+html[data-theme="light"] .kh-baht-visual {
+  border-color: rgba(11,43,43,.12) !important;
+  box-shadow: 0 20px 50px rgba(11,43,43,.12) !important;
+}
+
+/* Komunitas */
+html[data-theme="light"] .kh-kom {
+  background: linear-gradient(180deg, #faf7f0 0%, #f5f0e8 55%, #faf7f0 100%) !important;
+}
+html[data-theme="light"] .kh-kom-card {
+  background: #ffffff !important;
+  border-color: rgba(11,43,43,.1) !important;
+}
+html[data-theme="light"] .kh-kom-card:hover {
+  border-color: rgba(168,127,46,.4) !important;
+  box-shadow: 0 14px 34px rgba(11,43,43,.1) !important;
+}
+html[data-theme="light"] .kh-kom-shade {
+  background: linear-gradient(180deg, transparent 42%, rgba(250,247,240,.96) 100%) !important;
+}
+html[data-theme="light"] .kh-kom-body h3 { color: #0b2b2b !important; }
+html[data-theme="light"] .kh-kom-tag {
+  background: rgba(168,127,46,.12) !important;
+  border-color: rgba(168,127,46,.32) !important;
+  color: #8a6a24 !important;
+}

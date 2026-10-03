@@ -18,6 +18,7 @@ import { BrandLogo } from './BrandLogo';
 import { CreateMenu } from './CreateMenu';
 import { EcosystemHub } from './EcosystemHub';
 import { NotificationCenter } from './NotificationCenter';
+import { ThemeToggle } from './ThemeToggle';
 import { ProfileHub } from '@/components/profile/ProfileHub';
 import { getProfileNickname, useSessionProfile } from '@/hooks/useSessionProfile';
 import './sknav.css';
@@ -149,6 +150,7 @@ export function Header({ onCreate }: { onCreate?: (type?: 'post' | 'reel') => vo
       {/* Baris 1 mobile (tidak diubah): hamburger + logo | Buat, Cari, Pesan */}
       <div className="sknav-mbar">
         <div className="sknav-mbar-left">
+          <ThemeToggle />
           <button
             type="button"
             className="sknav-hamburger"

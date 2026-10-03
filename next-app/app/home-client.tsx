@@ -178,6 +178,16 @@ export default function HomeClient() {
             <Link href="/beranda" className="suki-overhaul-header-cta">Buka SUKI <ArrowRight size={15} aria-hidden="true" /></Link>
           </div>
           <button
+            className="suki-overhaul-theme-icon"
+            type="button"
+            onClick={toggleTheme}
+            aria-label={`Aktifkan mode ${theme === 'dark' ? 'terang' : 'gelap'}`}
+            aria-pressed={theme === 'dark'}
+            title={theme === 'dark' ? 'Mode terang' : 'Mode gelap'}
+          >
+            {theme === 'dark' ? <Sun size={18} aria-hidden="true" /> : <span className="suki-moon" aria-hidden="true" />}
+          </button>
+          <button
             ref={menuButtonRef}
             className="suki-overhaul-menu"
             type="button"
