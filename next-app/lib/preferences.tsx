@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 export const LANGUAGES = [
-  ['id', 'Bahasa Indonesia'], ['en', 'English'], ['ms', 'Bahasa Melayu'], ['jv', 'Basa Jawa'], ['su', 'Basa Sunda'], ['zh', '中文'], ['ja', '日本語'], ['ko', '한국어'], ['ar', 'العربية'], ['hi', 'हिन्दी'], ['es', 'Español'], ['fr', 'Français'], ['de', 'Deutsch'], ['pt', 'Português'], ['it', 'Italiano'], ['nl', 'Nederlands'], ['ru', 'Русский'], ['tr', 'Türkçe'], ['th', 'ไทย'], ['vi', 'Tiếng Việt'], ['fil', 'Filipino'], ['sw', 'Kiswahili'], ['bn', 'বাংলা'], ['ur', 'اردو'],
+  ['id', 'Bahasa Indonesia'], ['en', 'English'], ['ms', 'Bahasa Melayu'], ['jv', 'Basa Jawa'], ['su', 'Basa Sunda'], ['zh', '中文'], ['ja', '日本語'], ['ko', '한국어'], ['ar', 'العربية'], ['hi', 'हिन्दी'], ['es', 'Español'], ['fr', 'Français'], ['de', 'Deutsch'], ['pt', 'Português'], ['it', 'Italiano'], ['nl', 'Nederlands'], ['ru', 'Русский'], ['tr', 'Türkçe'], ['th', 'ไทย'], ['vi', 'Tiếng Việt'], ['fil', 'Filipino'], ['sw', 'Kiswahili'], ['bn', 'বাংলা'], ['ur', 'اردو'], ['ta', 'தமிழ்'], ['fa', 'فارسی'], ['my', 'မြန်မာဘာသာ'],
 ] as const;
 export type LanguageCode = typeof LANGUAGES[number][0];
 export type ThemeMode = 'light' | 'dark';
