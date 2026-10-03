@@ -1,3 +1,4 @@
+import './business-wc.css';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import {
@@ -154,7 +155,7 @@ export default async function BusinessPage() {
       <section className="suki-business-hero">
         <div className="suki-business-hero-copy">
           <p className="suki-business-kicker"><span /> LOCAL BUSINESS OPERATING SYSTEM</p>
-          <h1>Bisnis lokal tidak perlu berjalan sendirian.</h1>
+          <h1>Bisnis lokal tidak perlu <span className="wc-grad-text">berjalan sendirian.</span></h1>
           <p className="suki-business-hero-text">SUKI Business membantu Anda membangun kehadiran, menemukan koneksi, dan bertumbuh di ekosistem digital yang memahami Sulawesi Tenggara.</p>
           <div className="suki-business-hero-actions">
             <Link href="/Business/daftar" className="suki-business-button suki-business-button-teal">Mulai bersama SUKI <ArrowRight size={16} /></Link>
@@ -182,6 +183,8 @@ export default async function BusinessPage() {
           <div className="suki-business-float-card float-bottom"><MapPin size={16} /><span><b>Kendari, Sultra</b><small>mulai dari yang dekat</small></span></div>
         </div>
       </section>
+
+      <div className="wc-tenun-strip" aria-hidden="true" />
 
       <section className="suki-business-audience" id="ruang-tumbuh">
         <div className="suki-business-section-head"><p className="suki-business-kicker">Dibuat untuk langkah Anda berikutnya</p><h2>Satu ruang untuk berbagai cara bertumbuh.</h2><p>Mulai dari kebutuhan yang paling dekat, lalu bangun kehadiran yang punya arah.</p></div>
