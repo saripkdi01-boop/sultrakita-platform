@@ -1,0 +1,24 @@
+/* ==========================================================================
+   WORLD-CLASS OVERHAUL — layer "Teluk Senja" untuk /groups
+   Hero sudah dark-premium; layer ini menambah aksen emas + skeleton ber-brand.
+   ========================================================================== */
+@import '../wc-overhaul.css';
+
+/* Kartu komunitas: sorot emas saat hover */
+.platform-shell article.group {
+  transition: transform var(--sk-d-base) var(--sk-ease), box-shadow var(--sk-d-base) var(--sk-ease), border-color var(--sk-d-base);
+}
+.platform-shell article.group:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--wc-shadow-lift);
+  border-color: rgba(212, 175, 55, 0.4) !important;
+}
+
+/* Hero: glow emas halus di tepi bawah */
+.platform-shell > section:first-child {
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35), inset 0 -3px 0 rgba(212, 175, 55, 0.55) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .platform-shell article.group:hover { transform: none; }
+}

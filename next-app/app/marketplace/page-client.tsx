@@ -7,6 +7,7 @@ import { BellPlus, Check, ChevronRight, Heart, LayoutGrid, MapPin, Plus, Scale, 
 import type { PublicListing } from '@/lib/listings-query';
 import type { MarketplaceFilters } from './page';
 import './marketplace-fb.css';
+import './marketplace-wc.css';
 import { FbmSearch } from '@/components/marketplace/FbmSearch';
 import { FbmFilters, categories, categoryIcons, conditions } from '@/components/marketplace/FbmFilters';
 import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
