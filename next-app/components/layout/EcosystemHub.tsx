@@ -19,6 +19,7 @@ import {
   SukiIconPesan,
   SukiIconProperti,
   SukiIconReels,
+  SukiIconWebStudio,
 } from './SukiIcons';
 
 type SukiIcon = ComponentType<SVGProps<SVGSVGElement>>;
@@ -54,6 +55,7 @@ const SECTIONS: Section[] = [
       { key: 'berita', label: 'Portal Berita', desc: 'Kabar terkini media Indonesia', href: '/beranda#portal-berita', Icon: SukiIconBerita, badge: 'Baru', isActive: () => false },
       { key: 'Business', label: 'Direktori Bisnis', desc: 'UMKM & jasa terverifikasi', href: '/Business', Icon: SukiIconBisnis, isActive: (p) => p.startsWith('/Business') },
       { key: 'kampung', label: 'SUKI Kampung', desc: 'Bangun kampung tropis virtual', href: '/kampung', Icon: SukiIconKampung, badge: 'Baru', isActive: (p) => p.startsWith('/kampung') },
+      { key: 'web-studio', label: 'SUKI Web Studio', desc: 'Jasa pembuatan website', href: '/web-studio', Icon: SukiIconWebStudio, badge: 'Baru', isActive: (p) => p.startsWith('/web-studio') },
     ],
   },
   {
@@ -85,7 +87,8 @@ function isHubActive(pathname: string): boolean {
     pathname.startsWith('/properti') ||
     pathname.startsWith('/Business') ||
     pathname.startsWith('/ajak-teman') ||
-    pathname.startsWith('/kampung')
+    pathname.startsWith('/kampung') ||
+    pathname.startsWith('/web-studio')
   );
 }
 
