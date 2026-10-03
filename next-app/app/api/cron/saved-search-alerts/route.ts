@@ -3,8 +3,9 @@ import { runSavedSearchAlerts } from '@/lib/saved-search-matcher';
 
 // Fase 2.6: cron per jam — cocokkan saved_searches dengan listing baru,
 // kirim notifikasi in-app (tabel notifications).
-// Dijadwalkan di vercel.json. Vercel Cron mengirim
-// `Authorization: Bearer <CRON_SECRET>` otomatis.
+// Dijadwalkan di .github/workflows/saved-search-alerts.yml (GitHub Actions,
+// per jam) — BUKAN Vercel Cron. Actions mengirim
+// `Authorization: Bearer <CRON_SECRET>` (secret repo CRON_SECRET).
 // Bila CRON_SECRET belum di-set di environment: skip graceful (bukan error),
 // agar deploy tanpa konfigurasi cron tetap hijau.
 
