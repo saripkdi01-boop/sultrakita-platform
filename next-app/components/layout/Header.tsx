@@ -1,1 +1,232 @@
-J3VzZSBjbGllbnQnOwoKaW1wb3J0IExpbmsgZnJvbSAnbmV4dC9saW5rJzsKaW1wb3J0IHsgdXNlUGF0aG5hbWUsIHVzZVJvdXRlciB9IGZyb20gJ25leHQvbmF2aWdhdGlvbic7CmltcG9ydCB7IEZvcm1FdmVudCwgdXNlU3RhdGUgfSBmcm9tICdyZWFjdCc7CmltcG9ydCB7CiAgQ2xhcHBlcmJvYXJkLAogIEhvbWUsCiAgTWVudSwKICBNZXNzYWdlQ2lyY2xlLAogIFNlYXJjaCwKICBTdG9yZSwKICBVc2VycywKICBYLAp9IGZyb20gJ2x1Y2lkZS1yZWFjdCc7CmltcG9ydCB7IHVzZVVJU3RvcmUgfSBmcm9tICdAL3N0b3JlL3VpJzsKaW1wb3J0IHsgQnJhbmRMb2dvIH0gZnJvbSAnLi9CcmFuZExvZ28nOwppbXBvcnQgeyBDcmVhdGVNZW51IH0gZnJvbSAnLi9DcmVhdGVNZW51JzsKaW1wb3J0IHsgRWNvc3lzdGVtSHViIH0gZnJvbSAnLi9FY29zeXN0ZW1IdWInOwppbXBvcnQgeyBOb3RpZmljYXRpb25DZW50ZXIgfSBmcm9tICcuL05vdGlmaWNhdGlvbkNlbnRlcic7CmltcG9ydCB7IFRoZW1lVG9nZ2xlIH0gZnJvbSAnLi9UaGVtZVRvZ2dsZSc7CmltcG9ydCB7IFByb2ZpbGVIdWIgfSBmcm9tICdAL2NvbXBvbmVudHMvcHJvZmlsZS9Qcm9maWxlSHViJzsKaW1wb3J0IHsgZ2V0UHJvZmlsZU5pY2tuYW1lLCB1c2VTZXNzaW9uUHJvZmlsZSB9IGZyb20gJ0AvaG9va3MvdXNlU2Vzc2lvblByb2ZpbGUnOwppbXBvcnQgJy4vc2tuYXYuY3NzJzsKCnR5cGUgTmF2TGlua0RlZiA9IHsKICBrZXk6IHN0cmluZzsKICBsYWJlbDogc3RyaW5nOwogIGhyZWY6IHN0cmluZzsKICBJY29uOiB0eXBlb2YgSG9tZTsKICBpc0FjdGl2ZTogKHBhdGhuYW1lOiBzdHJpbmcpID0+IGJvb2xlYW47Cn07CgovKiogTmF2aWdhc2kgdGVuZ2FoIG5hdmJhciBtb2Rlcm4g4oCUIGlrb24gKyBsYWJlbCB0ZWtzIChidWthbiBpa29uIHNhamEpLiAqLwpjb25zdCBOQVZfTElOS1M6IE5hdkxpbmtEZWZbXSA9IFsKICB7IGtleTogJ2hvbWUnLCBsYWJlbDogJ0JlcmFuZGEnLCBocmVmOiAnL2JlcmFuZGEnLCBJY29uOiBIb21lLCBpc0FjdGl2ZTogKHApID0+IHAgPT09ICcvJyB8fCBwID09PSAnL2JlcmFuZGEnIH0sCiAgeyBrZXk6ICdyZWVscycsIGxhYmVsOiAnSmVsYWphaCcsIGhyZWY6ICcvcmVlbHMnLCBJY29uOiBDbGFwcGVyYm9hcmQsIGlzQWN0aXZlOiAocCkgPT4gcC5zdGFydHNXaXRoKCcvcmVlbHMnKSB9LAogIHsga2V5OiAnbWFya2V0cGxhY2UnLCBsYWJlbDogJ01hcmtldHBsYWNlJywgaHJlZjogJy9tYXJrZXRwbGFjZScsIEljb246IFN0b3JlLCBpc0FjdGl2ZTogKHApID0+IHAuc3RhcnRzV2l0aCgnL21hcmtldHBsYWNlJykgfHwgcC5zdGFydHNXaXRoKCcvc3VraS1tYXJrZXRwbGFjZScpIH0sCiAgeyBrZXk6ICdrb211bml0YXMnLCBsYWJlbDogJ0tvbXVuaXRhcycsIGhyZWY6ICcvZ3JvdXBzJywgSWNvbjogVXNlcnMsIGlzQWN0aXZlOiAocCkgPT4gcC5zdGFydHNXaXRoKCcvZ3JvdXBzJykgfSwKXTsKCmZ1bmN0aW9uIFNlYXJjaEZvcm0oeyBhdXRvRm9jdXMsIG9uRG9uZSwgY2xhc3NOYW1lIH06IHsgYXV0b0ZvY3VzPzogYm9vbGVhbjsgb25Eb25lPzogKCkgPT4gdm9pZDsgY2xhc3NOYW1lPzogc3RyaW5nIH0pIHsKICBjb25zdCByb3V0ZXIgPSB1c2VSb3V0ZXIoKTsKICBjb25zdCBbcXVlcnksIHNldFF1ZXJ5XSA9IHVzZVN0YXRlKCcnKTsKICBmdW5jdGlvbiBzdWJtaXQoZXZlbnQ6IEZvcm1FdmVudCkgewogICAgZXZlbnQucHJldmVudERlZmF1bHQoKTsKICAgIGNvbnN0IHEgPSBxdWVyeS50cmltKCk7CiAgICBvbkRvbmU/LigpOwogICAgcm91dGVyLnB1c2gocSA/IGAvbWFya2V0cGxhY2U/cT0ke2VuY29kZVVSSUNvbXBvbmVudChxKX1gIDogJy9tYXJrZXRwbGFjZScpOwogIH0KICByZXR1cm4gKAogICAgPGZvcm0gcm9sZT0ic2VhcmNoIiBvblN1Ym1pdD17c3VibWl0fSBjbGFzc05hbWU9e2NsYXNzTmFtZX0+CiAgICAgIDxTZWFyY2ggc2l6ZT17MTh9IGFyaWEtaGlkZGVuPSJ0cnVlIiAvPgogICAgICA8aW5wdXQKICAgICAgICBhdXRvRm9jdXM9e2F1dG9Gb2N1c30KICAgICAgICB2YWx1ZT17cXVlcnl9CiAgICAgICAgb25DaGFuZ2U9eyhldmVudCkgPT4gc2V0UXVlcnkoZXZlbnQudGFyZ2V0LnZhbHVlKX0KICAgICAgICBvbktleURvd249eyhldmVudCkgPT4geyBpZiAoZXZlbnQua2V5ID09PSAnRXNjYXBlJykgb25Eb25lPy4oKTsgfX0KICAgICAgICBwbGFjZWhvbGRlcj0iQ2FyaSBkaSBTVUtJ4oCmIgogICAgICAgIGFyaWEtbGFiZWw9IkNhcmkgZGkgU1VLSSIKICAgICAgICBlbnRlcktleUhpbnQ9InNlYXJjaCIKICAgICAgLz4KICAgIDwvZm9ybT4KICApOwp9CgpleHBvcnQgZnVuY3Rpb24gSGVhZGVyKHsgb25DcmVhdGUgfTogeyBvbkNyZWF0ZT86ICh0eXBlPzogJ3Bvc3QnIHwgJ3JlZWwnKSA9PiB2b2lkIH0pIHsKICBjb25zdCB7IG1vYmlsZU9wZW4sIHRvZ2dsZU1vYmlsZSB9ID0gdXNlVUlTdG9yZSgpOwogIGNvbnN0IHBhdGhuYW1lID0gdXNlUGF0aG5hbWUoKTsKICBjb25zdCBbc2VhcmNoT3Blbiwgc2V0U2VhcmNoT3Blbl0gPSB1c2VTdGF0ZShmYWxzZSk7CiAgY29uc3QgeyB1c2VyLCBwcm9maWxlOiBzZXNzaW9uUHJvZmlsZSB9ID0gdXNlU2Vzc2lvblByb2ZpbGUoKTsKICBjb25zdCBkaXNwbGF5TmFtZSA9IGdldFByb2ZpbGVOaWNrbmFtZSh1c2VyLCBzZXNzaW9uUHJvZmlsZSk7CiAgY29uc3QgYXZhdGFyVXJsID0gc2Vzc2lvblByb2ZpbGU/LmF2YXRhcl91cmwgfHwgJyc7CiAgY29uc3QgcHJvZmlsZUhyZWYgPSBzZXNzaW9uUHJvZmlsZT8udXNlcm5hbWUgPyBgL3Byb2ZpbGUvJHtzZXNzaW9uUHJvZmlsZS51c2VybmFtZX1gIDogJy9zZXR0aW5ncy9hY2NvdW50JzsKICBjb25zdCBpbml0aWFscyA9IGRpc3BsYXlOYW1lLnNwbGl0KC9ccysvKS5tYXAoKHBhcnQpID0+IHBhcnRbMF0pLmpvaW4oJycpLnNsaWNlKDAsIDIpLnRvVXBwZXJDYXNlKCkgfHwgJ1NLJzsKICBjb25zdCBwcm9maWxlQWN0aXZlID0gcGF0aG5hbWUuc3RhcnRzV2l0aCgnL3Byb2ZpbGUnKTsKCiAgcmV0dXJuICgKICAgIDxoZWFkZXIgY2xhc3NOYW1lPSJza25hdi1oZWFkZXIiPgogICAgICB7LyogQmFyIHV0YW1hIGRlc2t0b3AvdGFibGV0OiA2NHB4IOKAlCBsb2dvICsgc2VhcmNoIHwgbmF2IGJlcmxhYmVsIHwgYWtzaSAqL30KICAgICAgPGRpdiBjbGFzc05hbWU9InNrbmF2LWJhciI+CiAgICAgICAgPGRpdiBjbGFzc05hbWU9InNrbmF2LWxlZnQiPgogICAgICAgICAgPEJyYW5kTG9nbyAvPgogICAgICAgICAgPFNlYXJjaEZvcm0gY2xhc3NOYW1lPSJza25hdi1zZWFyY2giIC8+CiAgICAgICAgICA8YnV0dG9uCiAgICAgICAgICAgIHR5cGU9ImJ1dHRvbiIKICAgICAgICAgICAgY2xhc3NOYW1lPSJza25hdi1pY29uLWJ0biBza25hdi1zZWFyY2gtdG9nZ2xlIgogICAgICAgICAgICBvbkNsaWNrPXsoKSA9PiBzZXRTZWFyY2hPcGVuKCh2YWx1ZSkgPT4gIXZhbHVlKX0KICAgICAgICAgICAgYXJpYS1sYWJlbD17c2VhcmNoT3BlbiA/ICdUdXR1cCBwZW5jYXJpYW4nIDogJ0NhcmknfQogICAgICAgICAgICBhcmlhLWV4cGFuZGVkPXtzZWFyY2hPcGVufQogICAgICAgICAgICB0aXRsZT0iQ2FyaSIKICAgICAgICAgID4KICAgICAgICAgICAgPFNlYXJjaCBhcmlhLWhpZGRlbj0idHJ1ZSIgLz4KICAgICAgICAgIDwvYnV0dG9uPgogICAgICAgICAge3NlYXJjaE9wZW4gJiYgKAogICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT0ic2tuYXYtc2VhcmNoLWV4cGFuZCI+CiAgICAgICAgICAgICAgPFNlYXJjaEZvcm0gY2xhc3NOYW1lPSJza25hdi1zZWFyY2gtZXhwYW5kLWZvcm0iIGF1dG9Gb2N1cyBvbkRvbmU9eygpID0+IHNldFNlYXJjaE9wZW4oZmFsc2UpfSAvPgogICAgICAgICAgICAgIDxidXR0b24KICAgICAgICAgICAgICAgIHR5cGU9ImJ1dHRvbiIKICAgICAgICAgICAgICAgIGNsYXNzTmFtZT0ic2tuYXYtc2VhcmNoLWNsb3NlIgogICAgICAgICAgICAgICAgb25DbGljaz17KCkgPT4gc2V0U2VhcmNoT3BlbihmYWxzZSl9CiAgICAgICAgICAgICAgICBhcmlhLWxhYmVsPSJUdXR1cCBwZW5jYXJpYW4iCiAgICAgICAgICAgICAgPgogICAgICAgICAgICAgICAgPFggc2l6ZT17MTh9IGFyaWEtaGlkZGVuPSJ0cnVlIiAvPgogICAgICAgICAgICAgIDwvYnV0dG9uPgogICAgICAgICAgICA8L2Rpdj4KICAgICAgICAgICl9CiAgICAgICAgPC9kaXY+CgogICAgICAgIHsvKiBOYXZpZ2FzaSB0ZW5nYWg6IGlrb24gKyBsYWJlbCB0ZWtzLiAiTm90aWZpa2FzaSIgYWRhbGFoIHBlbWljdQogICAgICAgICAgICBkcm9wZG93biBOb3RpZmljYXRpb25DZW50ZXIgKHNhdHUtc2F0dW55YSBwaW50dSBub3RpZmlrYXNpIOKAlAogICAgICAgICAgICB0aWRhayBhZGEgYmVsbCBkdXBsaWthdCBkaSBrYW5hbikuICovfQogICAgICAgIDxuYXYgY2xhc3NOYW1lPSJza25hdi1uYXYiIGFyaWEtbGFiZWw9Ik5hdmlnYXNpIHV0YW1hIj4KICAgICAgICAgIHtOQVZfTElOS1MubWFwKChsaW5rKSA9PiB7CiAgICAgICAgICAgIGNvbnN0IGFjdGl2ZSA9IGxpbmsuaXNBY3RpdmUocGF0aG5hbWUpOwogICAgICAgICAgICByZXR1cm4gKAogICAgICAgICAgICAgIDxMaW5rCiAgICAgICAgICAgICAgICBrZXk9e2xpbmsua2V5fQogICAgICAgICAgICAgICAgaHJlZj17bGluay5ocmVmfQogICAgICAgICAgICAgICAgY2xhc3NOYW1lPSJza25hdi1saW5rIgogICAgICAgICAgICAgICAgYXJpYS1jdXJyZW50PXthY3RpdmUgPyAncGFnZScgOiB1bmRlZmluZWR9CiAgICAgICAgICAgICAgICB0aXRsZT17bGluay5sYWJlbH0KICAgICAgICAgICAgICA+CiAgICAgICAgICAgICAgICA8bGluay5JY29uIGFyaWEtaGlkZGVuPSJ0cnVlIiAvPgogICAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPSJza25hdi1saW5rLWxhYmVsIj57bGluay5sYWJlbH08L3NwYW4+CiAgICAgICAgICAgICAgPC9MaW5rPgogICAgICAgICAgICApOwogICAgICAgICAgfSl9CiAgICAgICAgICA8Tm90aWZpY2F0aW9uQ2VudGVyIC8+CiAgICAgICAgPC9uYXY+CgogICAgICAgIHsvKiBBa3NpIGthbmFuICovfQogICAgICAgIDxkaXYgY2xhc3NOYW1lPSJza25hdi1hY3Rpb25zIj4KICAgICAgICAgIHt1c2VyID8gKAogICAgICAgICAgICA8PgogICAgICAgICAgICAgIDxFY29zeXN0ZW1IdWIgdmFyaWFudD0iYWN0aW9uIiAvPgogICAgICAgICAgICAgIDxDcmVhdGVNZW51IG9uQ3JlYXRlU3Rvcnk9e29uQ3JlYXRlfSAvPgogICAgICAgICAgICAgIDxQcm9maWxlSHViIC8+CiAgICAgICAgICAgIDwvPgogICAgICAgICAgKSA6ICgKICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9InNrbmF2LWd1ZXN0Ij4KICAgICAgICAgICAgICA8RWNvc3lzdGVtSHViIHZhcmlhbnQ9ImFjdGlvbiIgLz4KICAgICAgICAgICAgICA8TGluayBocmVmPSIvbG9naW4iIGNsYXNzTmFtZT0ic2tuYXYtYnRuIHNrbmF2LWJ0bi1naG9zdCI+TWFzdWs8L0xpbms+CiAgICAgICAgICAgICAgPExpbmsgaHJlZj0iL3NpZ251cCIgY2xhc3NOYW1lPSJza25hdi1idG4gc2tuYXYtYnRuLXByaW1hcnkiPkRhZnRhcjwvTGluaz4KICAgICAgICAgICAgPC9kaXY+CiAgICAgICAgICApfQogICAgICAgIDwvZGl2PgogICAgICA8L2Rpdj4KCiAgICAgIHsvKiBCYXJpcyAxIG1vYmlsZSAodGlkYWsgZGl1YmFoKTogaGFtYnVyZ2VyICsgbG9nbyB8IEJ1YXQsIENhcmksIFBlc2FuICovfQogICAgICA8ZGl2IGNsYXNzTmFtZT0ic2tuYXYtbWJhciI+CiAgICAgICAgPGRpdiBjbGFzc05hbWU9InNrbmF2LW1iYXItbGVmdCI+CiAgICAgICAgICA8VGhlbWVUb2dnbGUgLz4KICAgICAgICAgIDxidXR0b24KICAgICAgICAgICAgdHlwZT0iYnV0dG9uIgogICAgICAgICAgICBjbGFzc05hbWU9InNrbmF2LWhhbWJ1cmdlciIKICAgICAgICAgICAgb25DbGljaz17dG9nZ2xlTW9iaWxlfQogICAgICAgICAgICBhcmlhLWV4cGFuZGVkPXttb2JpbGVPcGVufQogICAgICAgICAgICBhcmlhLWNvbnRyb2xzPSJzdWtpLXNpZGViYXItZHJhd2VyIgogICAgICAgICAgICBhcmlhLWxhYmVsPXttb2JpbGVPcGVuID8gJ1R1dHVwIG1lbnUgdXRhbWEnIDogJ0J1a2EgbWVudSB1dGFtYSd9CiAgICAgICAgICA+CiAgICAgICAgICAgIHttb2JpbGVPcGVuID8gPFggYXJpYS1oaWRkZW49InRydWUiIC8+IDogPE1lbnUgYXJpYS1oaWRkZW49InRydWUiIC8+fQogICAgICAgICAgPC9idXR0b24+CiAgICAgICAgICA8QnJhbmRMb2dvIC8+CiAgICAgICAgPC9kaXY+CiAgICAgICAgPGRpdiBjbGFzc05hbWU9InNrbmF2LW1iYXItYWN0aW9ucyI+CiAgICAgICAgICA8Q3JlYXRlTWVudSBvbkNyZWF0ZVN0b3J5PXtvbkNyZWF0ZX0gLz4KICAgICAgICAgIDxidXR0b24KICAgICAgICAgICAgdHlwZT0iYnV0dG9uIgogICAgICAgICAgICBjbGFzc05hbWU9InNrbmF2LWljb24tYnRuIHNrbmF2LXNlYXJjaC10b2dnbGUiCiAgICAgICAgICAgIG9uQ2xpY2s9eygpID0+IHNldFNlYXJjaE9wZW4oKHZhbHVlKSA9PiAhdmFsdWUpfQogICAgICAgICAgICBhcmlhLWxhYmVsPXtzZWFyY2hPcGVuID8gJ1R1dHVwIHBlbmNhcmlhbicgOiAnQ2FyaSd9CiAgICAgICAgICAgIGFyaWEtZXhwYW5kZWQ9e3NlYXJjaE9wZW59CiAgICAgICAgICAgIHRpdGxlPSJDYXJpIgogICAgICAgICAgPgogICAgICAgICAgICA8U2VhcmNoIGFyaWEtaGlkZGVuPSJ0cnVlIiAvPgogICAgICAgICAgPC9idXR0b24+CiAgICAgICAgICA8TGluayBocmVmPSIvY2hhdCIgY2xhc3NOYW1lPSJza25hdi1pY29uLWJ0biIgYXJpYS1sYWJlbD0iUGVzYW4iIHRpdGxlPSJQZXNhbiI+CiAgICAgICAgICAgIDxNZXNzYWdlQ2lyY2xlIGFyaWEtaGlkZGVuPSJ0cnVlIiAvPgogICAgICAgICAgPC9MaW5rPgogICAgICAgIDwvZGl2PgogICAgICAgIHtzZWFyY2hPcGVuICYmICgKICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPSJza25hdi1zZWFyY2gtZXhwYW5kIj4KICAgICAgICAgICAgPFNlYXJjaEZvcm0gY2xhc3NOYW1lPSJza25hdi1zZWFyY2gtZXhwYW5kLWZvcm0iIGF1dG9Gb2N1cyBvbkRvbmU9eygpID0+IHNldFNlYXJjaE9wZW4oZmFsc2UpfSAvPgogICAgICAgICAgICA8YnV0dG9uCiAgICAgICAgICAgICAgdHlwZT0iYnV0dG9uIgogICAgICAgICAgICAgIGNsYXNzTmFtZT0ic2tuYXYtc2VhcmNoLWNsb3NlIgogICAgICAgICAgICAgIG9uQ2xpY2s9eygpID0+IHNldFNlYXJjaE9wZW4oZmFsc2UpfQogICAgICAgICAgICAgIGFyaWEtbGFiZWw9IlR1dHVwIHBlbmNhcmlhbiIKICAgICAgICAgICAgPgogICAgICAgICAgICAgIDxYIHNpemU9ezE4fSBhcmlhLWhpZGRlbj0idHJ1ZSIgLz4KICAgICAgICAgICAgPC9idXR0b24+CiAgICAgICAgICA8L2Rpdj4KICAgICAgICApfQogICAgICA8L2Rpdj4KCiAgICAgIHsvKiBCYXJpcyAyIG1vYmlsZSAodGlkYWsgZGl1YmFoKTogdGFiIGlrb24gKi99CiAgICAgIDxuYXYgY2xhc3NOYW1lPSJza25hdi1tdGFicyIgYXJpYS1sYWJlbD0iTmF2aWdhc2kgdXRhbWEiPgogICAgICAgIHtOQVZfTElOS1Muc2xpY2UoMCwgMykubWFwKChsaW5rKSA9PiB7CiAgICAgICAgICBjb25zdCBhY3RpdmUgPSBsaW5rLmlzQWN0aXZlKHBhdGhuYW1lKTsKICAgICAgICAgIHJldHVybiAoCiAgICAgICAgICAgIDxMaW5rCiAgICAgICAgICAgICAga2V5PXtsaW5rLmtleX0KICAgICAgICAgICAgICBocmVmPXtsaW5rLmhyZWZ9CiAgICAgICAgICAgICAgY2xhc3NOYW1lPSJza25hdi1tdGFiIgogICAgICAgICAgICAgIGFyaWEtY3VycmVudD17YWN0aXZlID8gJ3BhZ2UnIDogdW5kZWZpbmVkfQogICAgICAgICAgICAgIGFyaWEtbGFiZWw9e2xpbmsubGFiZWx9CiAgICAgICAgICAgID4KICAgICAgICAgICAgICA8bGluay5JY29uIGFyaWEtaGlkZGVuPSJ0cnVlIiAvPgogICAgICAgICAgICA8L0xpbms+CiAgICAgICAgICApOwogICAgICAgIH0pfQogICAgICAgIDxFY29zeXN0ZW1IdWIgdmFyaWFudD0ibXRhYiIgLz4KICAgICAgICA8ZGl2IGNsYXNzTmFtZT0ic2tuYXYtbXRhYiIgcm9sZT0icHJlc2VudGF0aW9uIj4KICAgICAgICAgIDxOb3RpZmljYXRpb25DZW50ZXIgLz4KICAgICAgICA8L2Rpdj4KICAgICAgICA8TGluawogICAgICAgICAgaHJlZj17cHJvZmlsZUhyZWZ9CiAgICAgICAgICBjbGFzc05hbWU9InNrbmF2LW10YWIiCiAgICAgICAgICBhcmlhLWN1cnJlbnQ9e3Byb2ZpbGVBY3RpdmUgPyAncGFnZScgOiB1bmRlZmluZWR9CiAgICAgICAgICBhcmlhLWxhYmVsPSJQcm9maWwgc2F5YSIKICAgICAgICA+CiAgICAgICAgICB7YXZhdGFyVXJsID8gKAogICAgICAgICAgICA8aW1nIHNyYz17YXZhdGFyVXJsfSBhbHQ9IiIgY2xhc3NOYW1lPSJza25hdi1tdGFiLWF2YXRhciIgLz4KICAgICAgICAgICkgOiAoCiAgICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT0ic2tuYXYtbXRhYi1hdmF0YXItZmFsbGJhY2siIGFyaWEtaGlkZGVuPSJ0cnVlIj57aW5pdGlhbHN9PC9zcGFuPgogICAgICAgICAgKX0KICAgICAgICA8L0xpbms+CiAgICAgIDwvbmF2PgogICAgPC9oZWFkZXI+CiAgKTsKfQo=
+'use client';
+
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import { FormEvent, useState } from 'react';
+import {
+  Clapperboard,
+  Home,
+  Menu,
+  MessageCircle,
+  Search,
+  Store,
+  Users,
+  X,
+} from 'lucide-react';
+import { useUIStore } from '@/store/ui';
+import { BrandLogo } from './BrandLogo';
+import { CreateMenu } from './CreateMenu';
+import { EcosystemHub } from './EcosystemHub';
+import { NotificationCenter } from './NotificationCenter';
+import { ThemeToggle } from './ThemeToggle';
+import { ProfileHub } from '@/components/profile/ProfileHub';
+import { getProfileNickname, useSessionProfile } from '@/hooks/useSessionProfile';
+import './sknav.css';
+
+type NavLinkDef = {
+  key: string;
+  label: string;
+  href: string;
+  Icon: typeof Home;
+  isActive: (pathname: string) => boolean;
+};
+
+/** Navigasi tengah navbar modern — ikon + label teks (bukan ikon saja). */
+const NAV_LINKS: NavLinkDef[] = [
+  { key: 'home', label: 'Beranda', href: '/beranda', Icon: Home, isActive: (p) => p === '/' || p === '/beranda' },
+  { key: 'reels', label: 'Jelajah', href: '/reels', Icon: Clapperboard, isActive: (p) => p.startsWith('/reels') },
+  { key: 'marketplace', label: 'Marketplace', href: '/marketplace', Icon: Store, isActive: (p) => p.startsWith('/marketplace') || p.startsWith('/suki-marketplace') },
+  { key: 'komunitas', label: 'Komunitas', href: '/groups', Icon: Users, isActive: (p) => p.startsWith('/groups') },
+];
+
+function SearchForm({ autoFocus, onDone, className }: { autoFocus?: boolean; onDone?: () => void; className?: string }) {
+  const router = useRouter();
+  const [query, setQuery] = useState('');
+  function submit(event: FormEvent) {
+    event.preventDefault();
+    const q = query.trim();
+    onDone?.();
+    router.push(q ? `/marketplace?q=${encodeURIComponent(q)}` : '/marketplace');
+  }
+  return (
+    <form role="search" onSubmit={submit} className={className}>
+      <Search size={18} aria-hidden="true" />
+      <input
+        autoFocus={autoFocus}
+        value={query}
+        onChange={(event) => setQuery(event.target.value)}
+        onKeyDown={(event) => { if (event.key === 'Escape') onDone?.(); }}
+        placeholder="Cari di SUKI…"
+        aria-label="Cari di SUKI"
+        enterKeyHint="search"
+      />
+    </form>
+  );
+}
+
+export function Header({ onCreate }: { onCreate?: (type?: 'post' | 'reel') => void }) {
+  const { mobileOpen, toggleMobile } = useUIStore();
+  const pathname = usePathname();
+  const [searchOpen, setSearchOpen] = useState(false);
+  const { user, profile: sessionProfile } = useSessionProfile();
+  const displayName = getProfileNickname(user, sessionProfile);
+  const avatarUrl = sessionProfile?.avatar_url || '';
+  const profileHref = sessionProfile?.username ? `/profile/${sessionProfile.username}` : '/settings/account';
+  const initials = displayName.split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase() || 'SK';
+  const profileActive = pathname.startsWith('/profile');
+
+  return (
+    <header className="sknav-header">
+      {/* Bar utama desktop/tablet: 64px — logo + search | nav berlabel | aksi */}
+      <div className="sknav-bar">
+        <div className="sknav-left">
+          <BrandLogo />
+          <SearchForm className="sknav-search" />
+          <button
+            type="button"
+            className="sknav-icon-btn sknav-search-toggle"
+            onClick={() => setSearchOpen((value) => !value)}
+            aria-label={searchOpen ? 'Tutup pencarian' : 'Cari'}
+            aria-expanded={searchOpen}
+            title="Cari"
+          >
+            <Search aria-hidden="true" />
+          </button>
+          {searchOpen && (
+            <div className="sknav-search-expand">
+              <SearchForm className="sknav-search-expand-form" autoFocus onDone={() => setSearchOpen(false)} />
+              <button
+                type="button"
+                className="sknav-search-close"
+                onClick={() => setSearchOpen(false)}
+                aria-label="Tutup pencarian"
+              >
+                <X size={18} aria-hidden="true" />
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Navigasi tengah: ikon + label teks. "Notifikasi" adalah pemicu
+            dropdown NotificationCenter (satu-satunya pintu notifikasi —
+            tidak ada bell duplikat di kanan). */}
+        <nav className="sknav-nav" aria-label="Navigasi utama">
+          {NAV_LINKS.map((link) => {
+            const active = link.isActive(pathname);
+            return (
+              <Link
+                key={link.key}
+                href={link.href}
+                className="sknav-link"
+                aria-current={active ? 'page' : undefined}
+                title={link.label}
+              >
+                <link.Icon aria-hidden="true" />
+                <span className="sknav-link-label">{link.label}</span>
+              </Link>
+            );
+          })}
+          <NotificationCenter />
+        </nav>
+
+        {/* Aksi kanan */}
+        <div className="sknav-actions">
+          {user ? (
+            <>
+              <EcosystemHub variant="action" />
+              <CreateMenu onCreateStory={onCreate} />
+              <ProfileHub />
+            </>
+          ) : (
+            <div className="sknav-guest">
+              <EcosystemHub variant="action" />
+              <Link href="/login" className="sknav-btn sknav-btn-ghost">Masuk</Link>
+              <Link href="/signup" className="sknav-btn sknav-btn-primary">Daftar</Link>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Baris 1 mobile (tidak diubah): hamburger + logo | Buat, Cari, Pesan */}
+      <div className="sknav-mbar">
+        <div className="sknav-mbar-left">
+          <ThemeToggle />
+          <button
+            type="button"
+            className="sknav-hamburger"
+            onClick={toggleMobile}
+            aria-expanded={mobileOpen}
+            aria-controls="suki-sidebar-drawer"
+            aria-label={mobileOpen ? 'Tutup menu utama' : 'Buka menu utama'}
+          >
+            {mobileOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
+          </button>
+          <BrandLogo />
+        </div>
+        <div className="sknav-mbar-actions">
+          <CreateMenu onCreateStory={onCreate} />
+          <button
+            type="button"
+            className="sknav-icon-btn sknav-search-toggle"
+            onClick={() => setSearchOpen((value) => !value)}
+            aria-label={searchOpen ? 'Tutup pencarian' : 'Cari'}
+            aria-expanded={searchOpen}
+            title="Cari"
+          >
+            <Search aria-hidden="true" />
+          </button>
+          <Link href="/chat" className="sknav-icon-btn" aria-label="Pesan" title="Pesan">
+            <MessageCircle aria-hidden="true" />
+          </Link>
+        </div>
+        {searchOpen && (
+          <div className="sknav-search-expand">
+            <SearchForm className="sknav-search-expand-form" autoFocus onDone={() => setSearchOpen(false)} />
+            <button
+              type="button"
+              className="sknav-search-close"
+              onClick={() => setSearchOpen(false)}
+              aria-label="Tutup pencarian"
+            >
+              <X size={18} aria-hidden="true" />
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Baris 2 mobile (tidak diubah): tab ikon */}
+      <nav className="sknav-mtabs" aria-label="Navigasi utama">
+        {NAV_LINKS.slice(0, 3).map((link) => {
+          const active = link.isActive(pathname);
+          return (
+            <Link
+              key={link.key}
+              href={link.href}
+              className="sknav-mtab"
+              aria-current={active ? 'page' : undefined}
+              aria-label={link.label}
+            >
+              <link.Icon aria-hidden="true" />
+            </Link>
+          );
+        })}
+        <EcosystemHub variant="mtab" />
+        <div className="sknav-mtab" role="presentation">
+          <NotificationCenter />
+        </div>
+        <Link
+          href={profileHref}
+          className="sknav-mtab"
+          aria-current={profileActive ? 'page' : undefined}
+          aria-label="Profil saya"
+        >
+          {avatarUrl ? (
+            <img src={avatarUrl} alt="" className="sknav-mtab-avatar" />
+          ) : (
+            <span className="sknav-mtab-avatar-fallback" aria-hidden="true">{initials}</span>
+          )}
+        </Link>
+      </nav>
+    </header>
+  );
+}

@@ -1,1 +1,25 @@
-J3VzZSBjbGllbnQnOwoKaW1wb3J0IHsgTW9vbiwgU3VuIH0gZnJvbSAnbHVjaWRlLXJlYWN0JzsKaW1wb3J0IHsgdXNlUHJlZmVyZW5jZXMgfSBmcm9tICdAL2xpYi9wcmVmZXJlbmNlcyc7CgovKioKICogVG9nZ2xlIG1vZGUgdGVyYW5nL2dlbGFwIOKAlCBtZW1ha2FpIHVzZVByZWZlcmVuY2VzIChzdW1iZXIga2ViZW5hcmFuIHR1bmdnYWw6CiAqIFByZWZlcmVuY2VzUHJvdmlkZXIpLiBEaXRhcnVoIGRpIGtpcmkgaGFtYnVyZ2VyIHBhZGEgbW9iaWxlIGJhci4KICovCmV4cG9ydCBmdW5jdGlvbiBUaGVtZVRvZ2dsZSh7IGNsYXNzTmFtZSA9ICcnIH06IHsgY2xhc3NOYW1lPzogc3RyaW5nIH0pIHsKICBjb25zdCB7IHRoZW1lLCB0b2dnbGVUaGVtZSB9ID0gdXNlUHJlZmVyZW5jZXMoKTsKCiAgcmV0dXJuICgKICAgIDxidXR0b24KICAgICAgdHlwZT0iYnV0dG9uIgogICAgICBvbkNsaWNrPXt0b2dnbGVUaGVtZX0KICAgICAgY2xhc3NOYW1lPXtgc2tuYXYtaWNvbi1idG4gc2tuYXYtdGhlbWUtdG9nZ2xlICR7Y2xhc3NOYW1lfWAudHJpbSgpfQogICAgICBhcmlhLWxhYmVsPXt0aGVtZSA9PT0gJ2RhcmsnID8gJ0FrdGlma2FuIG1vZGUgdGVyYW5nJyA6ICdBa3RpZmthbiBtb2RlIGdlbGFwJ30KICAgICAgYXJpYS1wcmVzc2VkPXt0aGVtZSA9PT0gJ2RhcmsnfQogICAgICB0aXRsZT17dGhlbWUgPT09ICdkYXJrJyA/ICdNb2RlIHRlcmFuZycgOiAnTW9kZSBnZWxhcCd9CiAgICA+CiAgICAgIHt0aGVtZSA9PT0gJ2RhcmsnID8gPFN1biBhcmlhLWhpZGRlbj0idHJ1ZSIgLz4gOiA8TW9vbiBhcmlhLWhpZGRlbj0idHJ1ZSIgLz59CiAgICA8L2J1dHRvbj4KICApOwp9Cg==
+'use client';
+
+import { Moon, Sun } from 'lucide-react';
+import { usePreferences } from '@/lib/preferences';
+
+/**
+ * Toggle mode terang/gelap — memakai usePreferences (sumber kebenaran tunggal:
+ * PreferencesProvider). Ditaruh di kiri hamburger pada mobile bar.
+ */
+export function ThemeToggle({ className = '' }: { className?: string }) {
+  const { theme, toggleTheme } = usePreferences();
+
+  return (
+    <button
+      type="button"
+      onClick={toggleTheme}
+      className={`sknav-icon-btn sknav-theme-toggle ${className}`.trim()}
+      aria-label={theme === 'dark' ? 'Aktifkan mode terang' : 'Aktifkan mode gelap'}
+      aria-pressed={theme === 'dark'}
+      title={theme === 'dark' ? 'Mode terang' : 'Mode gelap'}
+    >
+      {theme === 'dark' ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
+    </button>
+  );
+}
