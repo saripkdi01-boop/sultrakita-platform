@@ -43,7 +43,7 @@ export function CreateMenu({ onCreateStory }: CreateMenuProps) {
   function handleCreate(type: 'post' | 'reel') { close(); if (onCreateStory) onCreateStory(type); else window.location.href = `/beranda?compose=${type}`; }
 
   return <>
-    <button type="button" role="button" className="create-fab" onClick={() => setOpen(true)} aria-label="Tambah konten baru" aria-haspopup="dialog" aria-expanded={open} title="Tambah"><span className="create-fab-surface"><Plus className="create-fab-icon" strokeWidth={2.5} aria-hidden="true" /></span></button>
+    <button type="button" role="button" className="create-fab" onClick={() => setOpen(true)} aria-label="Buat konten baru" aria-haspopup="dialog" aria-expanded={open} title="Buat"><span className="create-fab-surface"><Plus className="create-fab-icon" strokeWidth={2.5} aria-hidden="true" /></span><span className="create-fab-label" aria-hidden="true">Buat</span></button>
     {open && <div className="create-modal-layer" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) close(); }}>
       <section className="create-modal" role="dialog" aria-modal="true" aria-labelledby="create-modal-title">
         <header className="create-modal-header"><div><span className="eyebrow">SUKI Create</span><h2 id="create-modal-title">Buat Postingan</h2></div><button type="button" className="create-modal-close" onClick={close} aria-label="Tutup menu tambah"><X size={19} /></button></header>
