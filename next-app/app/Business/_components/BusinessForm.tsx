@@ -13,6 +13,8 @@ import {
   fieldTextarea,
   visuallyHidden,
 } from './formStyles';
+import { usePreferences } from '@/lib/preferences';
+import { getGroupsLabels } from '@/lib/i18n/dict-groups';
 
 export type CategoryOption = { value: string; label: string };
 
@@ -43,66 +45,78 @@ const HOURS_PREFIX = 'bf-jam';
 
 /* ---------- Skema validasi per langkah ---------- */
 
-const step1Schema = z.object({
-  nama: z.string().trim().min(3, 'Nama usaha minimal 3 karakter.').max(120, 'Nama usaha maksimal 120 karakter.'),
-  kategori: z.string().min(1, 'Pilih kategori usaha.'),
-  deskripsi: z.string().max(2000, 'Deskripsi maksimal 2000 karakter.').optional().default(''),
-});
+type GroupsLabels = ReturnType<typeof getGroupsLabels>;
+
+function buildStep1Schema(b: GroupsLabels) {
+  return z.object({
+    nama: z.string().trim().min(3, b.bErrNameMin).max(120, b.bErrNameMax),
+    kategori: z.string().min(1, b.bErrCategoryRequired),
+    deskripsi: z.string().max(2000, b.bErrDescMax).optional().default(''),
+  });
+}
 
 // Regex disamakan dengan API (POST /api/businesses): /^[+0-9()\-\s]{6,20}$/
 const phoneRegex = /^[+0-9()\-\s]{6,20}$/;
 
-const step2Schema = z.object({
-  alamat: z.string().trim().min(5, 'Alamat minimal 5 karakter.').max(300, 'Alamat maksimal 300 karakter.'),
-  kota: z.string().trim().min(2, 'Kota/kabupaten wajib diisi.').max(80, 'Kota/kabupaten maksimal 80 karakter.'),
-  provinsi: z.string().trim().min(2, 'Provinsi wajib diisi.').max(80, 'Provinsi maksimal 80 karakter.'),
-  telepon: z
-    .string()
-    .trim()
-    .max(25, 'Nomor telepon maksimal 25 karakter.')
-    .refine((v) => v === '' || phoneRegex.test(v), 'Format nomor telepon tidak valid.'),
-  whatsapp: z
-    .string()
-    .trim()
-    .max(25, 'Nomor WhatsApp maksimal 25 karakter.')
-    .refine((v) => v === '' || phoneRegex.test(v), 'Format nomor WhatsApp tidak valid.'),
-  email: z
-    .string()
-    .trim()
-    .max(120, 'Email maksimal 120 karakter.')
-    .refine((v) => v === '' || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), 'Format email tidak valid.'),
-  website: z
-    .string()
-    .trim()
-    .max(200, 'Website maksimal 200 karakter.')
-    .refine(
-      (v) => v === '' || /^(https?:\/\/)?([\w-]+\.)+[a-z]{2,}(\/\S*)?$/i.test(v),
-      'Format website tidak valid (contoh: https://usahaku.id).',
-    ),
-});
+function buildStep2Schema(b: GroupsLabels) {
+  return z.object({
+    alamat: z.string().trim().min(5, b.bErrAddressMin).max(300, b.bErrAddressMax),
+    kota: z.string().trim().min(2, b.bErrCityRequired).max(80, b.bErrCityMax),
+    provinsi: z.string().trim().min(2, b.bErrProvinceRequired).max(80, b.bErrProvinceMax),
+    telepon: z
+      .string()
+      .trim()
+      .max(25, b.bErrPhoneMax)
+      .refine((v) => v === '' || phoneRegex.test(v), b.bErrPhoneInvalid),
+    whatsapp: z
+      .string()
+      .trim()
+      .max(25, b.bErrWaMax)
+      .refine((v) => v === '' || phoneRegex.test(v), b.bErrWaInvalid),
+    email: z
+      .string()
+      .trim()
+      .max(120, b.bErrEmailMax)
+      .refine((v) => v === '' || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), b.bErrEmailInvalid),
+    website: z
+      .string()
+      .trim()
+      .max(200, b.bErrWebsiteMax)
+      .refine(
+        (v) => v === '' || /^(https?:\/\/)?([\w-]+\.)+[a-z]{2,}(\/\S*)?$/i.test(v),
+        b.bErrWebsiteInvalid,
+      ),
+  });
+}
 
-const step3Schema = z.object({
-  jam_operasional: z
-    .record(z.string(), z.object({ open: z.string(), close: z.string() }).nullable())
-    .superRefine((val, ctx) => {
-      for (const [day, range] of Object.entries(val)) {
-        if (!range) continue;
-        if (!range.open || !range.close) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            path: ['jam_operasional', day],
-            message: `Lengkapi jam buka dan jam tutup hari ${DAY_LABELS[day] ?? day}.`,
-          });
-        } else if (range.open >= range.close) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            path: ['jam_operasional', day],
-            message: 'Jam tutup harus lebih larut dari jam buka.',
-          });
+const DAY_I18N_KEYS = { senin: 'bDayMon', selasa: 'bDayTue', rabu: 'bDayWed', kamis: 'bDayThu', jumat: 'bDayFri', sabtu: 'bDaySat', minggu: 'bDaySun' } as const;
+
+function buildStep3Schema(b: GroupsLabels) {
+  return z.object({
+    jam_operasional: z
+      .record(z.string(), z.object({ open: z.string(), close: z.string() }).nullable())
+      .superRefine((val, ctx) => {
+        for (const [day, range] of Object.entries(val)) {
+          if (!range) continue;
+          if (!range.open || !range.close) {
+            const dayKey = (DAY_I18N_KEYS as Record<string, string>)[day];
+            const dayLabel = dayKey ? (b as Record<string, string>)[dayKey] : day;
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              path: ['jam_operasional', day],
+              message: b.bErrHoursIncomplete.replace('{day}', dayLabel ?? day),
+            });
+          } else if (range.open >= range.close) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              path: ['jam_operasional', day],
+              message: b.bHoursCloseAfterOpen,
+            });
+          }
         }
-      }
-    }),
-});
+      }),
+  });
+}
 
 function toFieldErrors(error: z.ZodError): Record<string, string> {
   const out: Record<string, string> = {};
@@ -113,16 +127,16 @@ function toFieldErrors(error: z.ZodError): Record<string, string> {
   return out;
 }
 
-function validateStep(step: number, values: BusinessFormData): Record<string, string> {
+function validateStep(step: number, values: BusinessFormData, b: GroupsLabels): Record<string, string> {
   if (step === 1) {
-    const result = step1Schema.safeParse(values);
+    const result = buildStep1Schema(b).safeParse(values);
     return result.success ? {} : toFieldErrors(result.error);
   }
   if (step === 2) {
-    const result = step2Schema.safeParse(values);
+    const result = buildStep2Schema(b).safeParse(values);
     return result.success ? {} : toFieldErrors(result.error);
   }
-  const result = step3Schema.safeParse(values);
+  const result = buildStep3Schema(b).safeParse(values);
   return result.success ? {} : toFieldErrors(result.error);
 }
 
@@ -132,12 +146,14 @@ const STEP_FIELDS: Record<number, string[]> = {
   3: ['jam_operasional'],
 };
 
-const STEPS = [
-  { n: 1, title: 'Info dasar', desc: 'Nama, kategori, dan deskripsi usaha' },
-  { n: 2, title: 'Kontak & lokasi', desc: 'Alamat dan cara pelanggan menghubungi Anda' },
-  { n: 3, title: 'Jam operasional', desc: 'Kapan usaha Anda buka setiap hari' },
-  { n: 4, title: 'Review & kirim', desc: 'Periksa kembali sebelum dikirim' },
-];
+function buildSteps(b: GroupsLabels) {
+  return [
+    { n: 1, title: b.bStep1Title, desc: b.bStep1Desc },
+    { n: 2, title: b.bStep2Title, desc: b.bStep2Desc },
+    { n: 3, title: b.bStep3Title, desc: b.bStep3Desc },
+    { n: 4, title: b.bStep4Title, desc: b.bStep4Desc },
+  ];
+}
 
 function formatTimeId(hhmm: string): string {
   return hhmm.replace(':', '.');
@@ -166,6 +182,9 @@ export default function BusinessForm({ categories, mode, initial, onSubmit, subm
   const [errors, setErrors] = useState<Record<string, string>>({});
   const headingRef = useRef<HTMLHeadingElement>(null);
   const isEdit = mode === 'edit';
+  const { language } = usePreferences();
+  const b = getGroupsLabels(language);
+  const STEPS = buildSteps(b);
 
   useEffect(() => {
     headingRef.current?.focus();
@@ -199,7 +218,7 @@ export default function BusinessForm({ categories, mode, initial, onSubmit, subm
   }
 
   function goNext() {
-    const fieldErrors = validateStep(step, values);
+    const fieldErrors = validateStep(step, values, b);
     if (Object.keys(fieldErrors).length > 0) {
       setErrors(fieldErrors);
       focusFirstError(fieldErrors, step);
@@ -224,9 +243,9 @@ export default function BusinessForm({ categories, mode, initial, onSubmit, subm
       return;
     }
     const fieldErrors = {
-      ...validateStep(1, values),
-      ...validateStep(2, values),
-      ...validateStep(3, values),
+      ...validateStep(1, values, b),
+      ...validateStep(2, values, b),
+      ...validateStep(3, values, b),
     };
     if (Object.keys(fieldErrors).length > 0) {
       setErrors(fieldErrors);
@@ -279,20 +298,20 @@ export default function BusinessForm({ categories, mode, initial, onSubmit, subm
       {/* Indikator langkah */}
       <div style={{ marginBottom: 26 }}>
         <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--sb-muted)', margin: '0 0 10px' }}>
-          Langkah {step} dari 4 — {STEPS[step - 1].title}
+          {b.bFormStepOf.replace('{s}', String(step)).replace('{t}', STEPS[step - 1].title)}
         </p>
         <div
           role="progressbar"
           aria-valuenow={step}
           aria-valuemin={1}
           aria-valuemax={4}
-          aria-label="Kemajuan pengisian formulir"
+          aria-label={b.bFormProgressAria}
           style={{ height: 8, borderRadius: 999, background: 'var(--sb-line)', overflow: 'hidden' }}
         >
           <div style={{ width: `${(step / 4) * 100}%`, height: '100%', borderRadius: 999, background: 'var(--sb-teal)' }} />
         </div>
         <ol
-          aria-label="Tahapan pengisian"
+          aria-label={b.bFormStepsAria}
           style={{ listStyle: 'none', margin: '14px 0 0', padding: 0, display: 'flex', gap: 8, flexWrap: 'wrap' }}
         >
           {STEPS.map((s) => {
@@ -347,7 +366,7 @@ export default function BusinessForm({ categories, mode, initial, onSubmit, subm
           {STEPS[step - 1].title}
         </h2>
         <p style={{ margin: '0 0 22px', fontSize: 13, color: 'var(--sb-muted)' }}>
-          {STEPS[step - 1].desc}. Kolom bertanda <span aria-hidden="true" style={{ color: 'var(--sb-danger)' }}>*</span> wajib diisi.
+          {STEPS[step - 1].desc}. {b.bFormRequiredNote}
         </p>
 
         {/* Langkah 1 — Info dasar */}
@@ -355,7 +374,7 @@ export default function BusinessForm({ categories, mode, initial, onSubmit, subm
           <div style={{ display: 'grid', gap: 18 }}>
             <label htmlFor="bf-nama" style={fieldLabel}>
               <span>
-                Nama usaha{requiredMark}
+                {b.bFieldName}{requiredMark}
               </span>
               <input
                 id="bf-nama"
@@ -371,14 +390,14 @@ export default function BusinessForm({ categories, mode, initial, onSubmit, subm
                 style={fieldInput}
               />
               <span id="bf-nama-hint" style={fieldHint}>
-                Nama resmi atau nama populer usaha Anda.
+                {b.bFieldNameHint}
               </span>
               {fieldErrorFor('nama')}
             </label>
 
             <label htmlFor="bf-kategori" style={fieldLabel}>
               <span>
-                Kategori usaha{requiredMark}
+                {b.bFieldCategory}{requiredMark}
               </span>
               <select
                 id="bf-kategori"
@@ -390,7 +409,7 @@ export default function BusinessForm({ categories, mode, initial, onSubmit, subm
                 aria-describedby={describedBy('kategori')}
                 style={fieldInput}
               >
-                <option value="">Pilih kategori…</option>
+                <option value="">{b.bFieldCategoryPh}</option>
                 {categories.map((c) => (
                   <option key={c.value} value={c.value}>
                     {c.label}
@@ -401,7 +420,7 @@ export default function BusinessForm({ categories, mode, initial, onSubmit, subm
             </label>
 
             <label htmlFor="bf-deskripsi" style={fieldLabel}>
-              <span>Deskripsi usaha</span>
+              <span>{b.bFieldDesc}</span>
               <textarea
                 id="bf-deskripsi"
                 value={values.deskripsi}
@@ -412,7 +431,7 @@ export default function BusinessForm({ categories, mode, initial, onSubmit, subm
                 style={fieldTextarea}
               />
               <span id="bf-deskripsi-hint" style={{ ...fieldHint, display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-                <span>Ceritakan produk, layanan, dan keunggulan usaha Anda.</span>
+                <span>{b.bFieldDescHint}</span>
                 <span aria-hidden="true">{values.deskripsi.length}/2000</span>
               </span>
               {fieldErrorFor('deskripsi')}
@@ -425,7 +444,7 @@ export default function BusinessForm({ categories, mode, initial, onSubmit, subm
           <div style={{ display: 'grid', gap: 18 }}>
             <label htmlFor="bf-alamat" style={fieldLabel}>
               <span>
-                Alamat lengkap{requiredMark}
+                {b.bFieldAddress}{requiredMark}
               </span>
               <textarea
                 id="bf-alamat"
@@ -446,7 +465,7 @@ export default function BusinessForm({ categories, mode, initial, onSubmit, subm
             <div style={{ display: 'grid', gap: 18, gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
               <label htmlFor="bf-kota" style={fieldLabel}>
                 <span>
-                  Kota/Kabupaten{requiredMark}
+                  {b.bFieldCity}{requiredMark}
                 </span>
                 <input
                   id="bf-kota"
@@ -465,7 +484,7 @@ export default function BusinessForm({ categories, mode, initial, onSubmit, subm
               </label>
               <label htmlFor="bf-provinsi" style={fieldLabel}>
                 <span>
-                  Provinsi{requiredMark}
+                  {b.bFieldProvince}{requiredMark}
                 </span>
                 <input
                   id="bf-provinsi"
@@ -486,7 +505,7 @@ export default function BusinessForm({ categories, mode, initial, onSubmit, subm
 
             <div style={{ display: 'grid', gap: 18, gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
               <label htmlFor="bf-telepon" style={fieldLabel}>
-                <span>Nomor telepon (opsional)</span>
+                <span>{b.bFieldPhone}</span>
                 <input
                   id="bf-telepon"
                   type="tel"
@@ -503,7 +522,7 @@ export default function BusinessForm({ categories, mode, initial, onSubmit, subm
                 {fieldErrorFor('telepon')}
               </label>
               <label htmlFor="bf-whatsapp" style={fieldLabel}>
-                <span>Nomor WhatsApp (opsional)</span>
+                <span>{b.bFieldWa}</span>
                 <input
                   id="bf-whatsapp"
                   type="tel"
@@ -518,14 +537,14 @@ export default function BusinessForm({ categories, mode, initial, onSubmit, subm
                   style={fieldInput}
                 />
                 <span id="bf-whatsapp-hint" style={fieldHint}>
-                  Bisa sama dengan nomor telepon.
+                  {b.bFieldWaHint}
                 </span>
                 {fieldErrorFor('whatsapp')}
               </label>
             </div>
 
             <label htmlFor="bf-email" style={fieldLabel}>
-              <span>Email usaha (opsional)</span>
+              <span>{b.bFieldEmail}</span>
               <input
                 id="bf-email"
                 type="email"
@@ -543,7 +562,7 @@ export default function BusinessForm({ categories, mode, initial, onSubmit, subm
             </label>
 
             <label htmlFor="bf-website" style={fieldLabel}>
-              <span>Website (opsional)</span>
+              <span>{b.bFieldWebsite}</span>
               <input
                 id="bf-website"
                 type="url"
@@ -558,7 +577,7 @@ export default function BusinessForm({ categories, mode, initial, onSubmit, subm
                 style={fieldInput}
               />
               <span id="bf-website-hint" style={fieldHint}>
-                Contoh: https://usahaku.id
+                {b.bFieldWebsiteHint}
               </span>
               {fieldErrorFor('website')}
             </label>
@@ -569,7 +588,7 @@ export default function BusinessForm({ categories, mode, initial, onSubmit, subm
         {step === 3 && (
           <div>
             <p id="bf-jam-hint" style={{ margin: '0 0 14px', fontSize: 13, color: 'var(--sb-muted)', lineHeight: 1.6 }}>
-              Centang “Tutup” untuk hari libur usaha Anda.
+              {b.bHoursHint}
             </p>
             <HoursEditor
               value={values.jam_operasional}
@@ -584,26 +603,28 @@ export default function BusinessForm({ categories, mode, initial, onSubmit, subm
         {step === 4 && (
           <div>
             <dl style={{ margin: 0, display: 'grid', gap: 0, borderTop: '1px solid var(--sb-line)' }}>
-              <ReviewRow label="Nama usaha" value={values.nama} />
-              <ReviewRow label="Kategori usaha" value={resolvedCategoryLabel || '—'} />
-              <ReviewRow label="Deskripsi usaha" value={values.deskripsi || '—'} multiline />
-              <ReviewRow label="Alamat" value={`${values.alamat}, ${values.kota}, ${values.provinsi}`} multiline />
-              <ReviewRow label="Telepon" value={values.telepon || '—'} />
-              <ReviewRow label="WhatsApp" value={values.whatsapp || '—'} />
-              <ReviewRow label="Email" value={values.email || '—'} />
-              <ReviewRow label="Website" value={values.website || '—'} />
+              <ReviewRow label={b.bReviewName} value={values.nama} />
+              <ReviewRow label={b.bReviewCategory} value={resolvedCategoryLabel || '—'} />
+              <ReviewRow label={b.bReviewDesc} value={values.deskripsi || '—'} multiline />
+              <ReviewRow label={b.bReviewAddress} value={`${values.alamat}, ${values.kota}, ${values.provinsi}`} multiline />
+              <ReviewRow label={b.bReviewPhone} value={values.telepon || '—'} />
+              <ReviewRow label={b.bReviewWa} value={values.whatsapp || '—'} />
+              <ReviewRow label={b.bReviewEmail} value={values.email || '—'} />
+              <ReviewRow label={b.bReviewWebsite} value={values.website || '—'} />
               <div style={{ padding: '12px 0', borderBottom: '1px solid var(--sb-line)' }}>
                 <dt style={{ fontSize: 12, fontWeight: 800, color: 'var(--sb-muted)', textTransform: 'uppercase', letterSpacing: '.06em' }}>
-                  Jam operasional
+                  {b.bReviewHours}
                 </dt>
                 <dd style={{ margin: '8px 0 0', display: 'grid', gap: 4, fontSize: 14 }}>
                   {DAY_ORDER.map((day) => {
                     const range = values.jam_operasional[day] ?? null;
+                    const dayKey = (DAY_I18N_KEYS as Record<string, string>)[day];
+                    const dayLabel = dayKey ? (b as Record<string, string>)[dayKey] : DAY_LABELS[day];
                     return (
                       <span key={day} style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-                        <span style={{ color: 'var(--sb-muted)' }}>{DAY_LABELS[day]}</span>
+                        <span style={{ color: 'var(--sb-muted)' }}>{dayLabel}</span>
                         <span style={{ fontWeight: 700 }}>
-                          {range ? `${formatTimeId(range.open)}–${formatTimeId(range.close)}` : 'Tutup'}
+                          {range ? `${formatTimeId(range.open)}–${formatTimeId(range.close)}` : b.bHoursClosed}
                         </span>
                       </span>
                     );
@@ -613,8 +634,8 @@ export default function BusinessForm({ categories, mode, initial, onSubmit, subm
             </dl>
             <p style={{ margin: '18px 0 0', fontSize: 13, color: 'var(--sb-muted)', lineHeight: 1.7 }}>
               {isEdit
-                ? 'Periksa kembali perubahan di atas sebelum disimpan.'
-                : 'Setelah dikirim, tim SUKI akan mengkurasi profil usaha Anda sebelum tayang.'}
+                ? b.bReviewNoteEdit
+                : b.bReviewNoteCreate}
             </p>
             {serverError && (
               <div role="alert" style={{ ...errorBox, marginTop: 16 }}>
@@ -634,7 +655,7 @@ export default function BusinessForm({ categories, mode, initial, onSubmit, subm
               className="suki-business-button suki-business-button-light"
               style={{ flex: '1 1 0' }}
             >
-              Kembali
+              {b.bFormBack}
             </button>
           )}
           {step < 4 ? (
@@ -644,7 +665,7 @@ export default function BusinessForm({ categories, mode, initial, onSubmit, subm
               className="suki-business-button suki-business-button-dark"
               style={{ flex: '2 1 0' }}
             >
-              Lanjut
+              {b.bFormNext}
             </button>
           ) : (
             <button
@@ -653,13 +674,13 @@ export default function BusinessForm({ categories, mode, initial, onSubmit, subm
               className="suki-business-button suki-business-button-teal"
               style={{ flex: '2 1 0' }}
             >
-              {submitting ? 'Mengirim…' : isEdit ? 'Simpan Perubahan' : 'Kirim untuk Kurasi'}
+              {submitting ? b.bFormSubmitting : isEdit ? b.bFormSave : b.bFormSubmit}
             </button>
           )}
         </div>
         {step < 4 && (
           <p style={visuallyHidden} aria-live="polite">
-            {Object.keys(errors).length > 0 ? 'Ada kolom yang perlu diperbaiki.' : ''}
+            {Object.keys(errors).length > 0 ? b.bFormFixFields : ''}
           </p>
         )}
       </div>

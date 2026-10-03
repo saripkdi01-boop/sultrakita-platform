@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { ArrowRight, CalendarDays } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { formatEventMonth as formatEventMonthShared } from '@/lib/beranda-types';
+import { usePreferences } from '@/lib/preferences';
+import { getBerandaLabels } from '@/lib/i18n/dict-beranda';
 import styles from './feed.module.css';
 
 type RailEvent = { id: string; title: string; date: string; month: string; place: string };
@@ -12,6 +14,8 @@ type RailEvent = { id: string; title: string; date: string; month: string; place
 // properti fiktif + nomor WhatsApp palsu (P0-F2); sekarang: kegiatan komunitas
 // mendatang dari tabel group_events, atau tidak me-render apa pun bila kosong.
 export function RightSidebar() {
+  const { language } = usePreferences();
+  const b = getBerandaLabels(language);
   const [events, setEvents] = useState<RailEvent[] | null>(null);
 
   useEffect(() => {
@@ -31,7 +35,7 @@ export function RightSidebar() {
           const groupName = Array.isArray(event.groups) ? event.groups[0]?.name : event.groups?.name;
           return {
             id: String(event.id),
-            title: event.title || 'Kegiatan komunitas',
+            title: event.title || '',
             date: Number.isNaN(date.getTime()) ? '–' : String(date.getDate()).padStart(2, '0'),
             month: formatEventMonthShared(event.starts_at || ''),
             place: [groupName, event.location].filter(Boolean).join(' · ') || 'Sulawesi Tenggara',
@@ -51,17 +55,17 @@ export function RightSidebar() {
     <aside className={styles.railWidget} aria-labelledby="rail-events-title">
       <div className={styles.railHead}>
         <span className={styles.railIcon}><CalendarDays size={15} aria-hidden="true" /></span>
-        <h2 id="rail-events-title">Kegiatan komunitas</h2>
+        <h2 id="rail-events-title">{b.brEvents}</h2>
       </div>
       <ul className={styles.railList}>
         {events.map((event) => (
           <li key={event.id} className={styles.railItem}>
             <span className={styles.railDate} aria-hidden="true"><b>{event.date}</b><small>{event.month}</small></span>
-            <span className={styles.railMeta}><strong>{event.title}</strong><small>{event.place}</small></span>
+            <span className={styles.railMeta}><strong>{event.title || b.brEvents}</strong><small>{event.place}</small></span>
           </li>
         ))}
       </ul>
-      <a href="/groups" className={styles.railLink}>Jelajahi komunitas <ArrowRight size={14} aria-hidden="true" /></a>
+      <a href="/groups" className={styles.railLink}>{b.brExploreGroups} <ArrowRight size={14} aria-hidden="true" /></a>
     </aside>
   );
 }

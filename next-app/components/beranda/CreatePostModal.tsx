@@ -6,6 +6,8 @@ import { createPost, searchProfiles } from '@/lib/actions/posts';
 import { createR2Upload } from '@/actions/upload';
 import { trapFocus } from '@/components/ui/a11y';
 import { getProfileNickname, useSessionProfile } from '@/hooks/useSessionProfile';
+import { usePreferences } from '@/lib/preferences';
+import { getBerandaLabels, fmtLabel } from '@/lib/i18n/dict-beranda';
 import './composer.css';
 
 type Privacy = 'public' | 'followers';
@@ -24,6 +26,14 @@ const MAX_IMAGE_BYTES = 20 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 50 * 1024 * 1024;
 const draftKey = 'suki-create-post-draft';
 const moods: Mood[] = ['Merayakan', 'Merasa bersyukur', 'Senang', 'Sedih', 'Bersemangat', 'Mencari rekomendasi'];
+const moodLabelKey: Record<Mood, string> = {
+  'Merayakan': 'brMoodCelebrate',
+  'Merasa bersyukur': 'brMoodGrateful',
+  'Senang': 'brMoodHappy',
+  'Sedih': 'brMoodSad',
+  'Bersemangat': 'brMoodExcited',
+  'Mencari rekomendasi': 'brMoodSeek',
+};
 
 function initials(name: string) {
   return name.split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase();
@@ -33,6 +43,8 @@ const formatId = (value: number) => new Intl.NumberFormat('id-ID').format(value)
 
 export function CreatePostModal({ open, initialType = 'post', onClose, onCreated }: Props) {
   const { user, profile } = useSessionProfile();
+  const { language } = usePreferences();
+  const b = getBerandaLabels(language);
   const [mounted, setMounted] = useState(open);
   const [shown, setShown] = useState(false);
   const [textContent, setTextContent] = useState('');
@@ -181,20 +193,20 @@ export function CreatePostModal({ open, initialType = 'post', onClose, onCreated
     event.target.value = '';
     if (!selected.length) return;
     if (media.length + selected.length > MAX_MEDIA) {
-      setNotice(`Maksimal ${MAX_MEDIA} media per postingan.`);
+      setNotice(fmtLabel(b.brMaxMedia, { max: MAX_MEDIA }));
       return;
     }
     setIsUploading(true);
     setSubmitError('');
-    setNotice('Mengunggah media…');
+    setNotice(b.brUploading);
     try {
       const uploaded: UploadedMedia[] = [];
       for (const file of selected) {
         const isVideo = file.type.startsWith('video/');
-        if (!file.type.startsWith('image/') && !isVideo) throw new Error('Pilih file gambar atau video.');
+        if (!file.type.startsWith('image/') && !isVideo) throw new Error(b.brPickMedia);
         const maxBytes = isVideo ? MAX_VIDEO_BYTES : MAX_IMAGE_BYTES;
         if (file.size > maxBytes) {
-          throw new Error(`"${file.name}" terlalu besar. Maksimal ${isVideo ? '50 MB' : '20 MB'}.`);
+          throw new Error(fmtLabel(b.brFileTooLarge, { name: file.name, max: isVideo ? '50 MB' : '20 MB' }));
         }
         // Upload memakai signed URL R2 (presigned POST) — alur yang sudah ada.
         const result = await createR2Upload({ fileName: file.name, contentType: file.type, size: file.size });
@@ -202,13 +214,13 @@ export function CreatePostModal({ open, initialType = 'post', onClose, onCreated
         Object.entries(result.fields).forEach(([key, value]) => form.append(key, String(value)));
         form.append('file', file);
         const response = await fetch(result.url, { method: 'POST', body: form });
-        if (!response.ok) throw new Error(`Upload ${file.name} gagal (${response.status}).`);
+        if (!response.ok) throw new Error(fmtLabel(b.brUploadFailed, { name: file.name, status: response.status }));
         uploaded.push({ url: result.publicUrl, name: file.name, type: file.type, preview: URL.createObjectURL(file) });
       }
       setMedia((current) => [...current, ...uploaded]);
-      setNotice(`${uploaded.length} media siap dipublikasikan.`);
+      setNotice(fmtLabel(b.brMediaReady, { count: uploaded.length }));
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : 'Media gagal diunggah.');
+      setSubmitError(error instanceof Error ? error.message : b.brMediaFail);
     } finally {
       setIsUploading(false);
     }
@@ -228,9 +240,9 @@ export function CreatePostModal({ open, initialType = 'post', onClose, onCreated
         draftKey,
         JSON.stringify({ content: textContent, location, privacy, mood, savedAt: new Date().toISOString() }),
       );
-      setNotice('Draft tersimpan di perangkat ini.');
+      setNotice(b.brDraftSaved);
     } catch {
-      setNotice('Draft tidak dapat disimpan di perangkat ini.');
+      setNotice(b.brDraftSaveFail);
     }
   }
 
@@ -244,7 +256,7 @@ export function CreatePostModal({ open, initialType = 'post', onClose, onCreated
     setLocation('');
     setMood('');
     setDraftRestored(false);
-    setNotice('Draft dibuang.');
+    setNotice(b.brDraftDiscarded);
   }
 
   function updateTagQuery(value: string) {
@@ -266,7 +278,7 @@ export function CreatePostModal({ open, initialType = 'post', onClose, onCreated
 
   function addTag(profileToAdd: TagProfile) {
     if (taggedProfiles.length >= MAX_TAGS) {
-      setNotice(`Maksimal ${MAX_TAGS} warga dapat ditandai.`);
+      setNotice(fmtLabel(b.brMaxTags, { max: MAX_TAGS }));
       return;
     }
     setTaggedProfiles((current) => [...current, profileToAdd]);
@@ -277,24 +289,24 @@ export function CreatePostModal({ open, initialType = 'post', onClose, onCreated
   async function submit() {
     if (busyRef.current) return;
     if (!user) {
-      setSubmitError('Silakan login terlebih dahulu untuk membuat postingan.');
+      setSubmitError(b.brLoginToPost);
       return;
     }
     if (!canPublish) {
       setSubmitError(
         trimmedContent.length < 2 && !media.length
-          ? 'Tulis minimal 2 karakter atau tambahkan media.'
-          : 'Postingan sedang diproses, tunggu sebentar.',
+          ? b.brMinContent
+          : b.brPostBusy,
       );
       return;
     }
     if (postType === 'reel' && !media.some((item) => item.type.startsWith('video/'))) {
-      setSubmitError('Reel membutuhkan setidaknya satu video. Tambahkan video dulu ya.');
+      setSubmitError(b.brReelNeedsVideo);
       return;
     }
     setIsSaving(true);
     setSubmitError('');
-    setNotice('Mempublikasikan postingan…');
+    setNotice(b.brPublishingPost);
     const result = await createPost({
       content: textContent,
       type: postType,
@@ -321,7 +333,7 @@ export function CreatePostModal({ open, initialType = 'post', onClose, onCreated
     setMood('');
     setMedia([]);
     setTaggedProfiles([]);
-    onCreated?.(result.duplicate ? 'Postingan ini sudah ada di feed Anda.' : 'Postingan berhasil dibagikan ke feed.');
+    onCreated?.(result.duplicate ? b.brPostDup : b.brPostOk);
     onClose();
   }
 
@@ -353,7 +365,7 @@ export function CreatePostModal({ open, initialType = 'post', onClose, onCreated
 
   if (!mounted) return null;
 
-  const title = postType === 'reel' ? 'Buat reel' : 'Buat postingan';
+  const title = postType === 'reel' ? b.brReelTitle : b.brPostTitle;
 
   return (
     <div
@@ -388,14 +400,14 @@ export function CreatePostModal({ open, initialType = 'post', onClose, onCreated
             <h2 id="skc-title" className="skc-title">
               {title}
             </h2>
-            <div className="skc-type-tabs" role="tablist" aria-label="Jenis konten">
+            <div className="skc-type-tabs" role="tablist" aria-label={b.brContentType}>
               <button
                 type="button"
                 role="tab"
                 aria-selected={postType === 'post'}
                 onClick={() => setPostType('post')}
               >
-                Postingan
+                {b.brTabPost}
               </button>
               <button
                 type="button"
@@ -403,7 +415,7 @@ export function CreatePostModal({ open, initialType = 'post', onClose, onCreated
                 aria-selected={postType === 'reel'}
                 onClick={() => setPostType('reel')}
               >
-                Reel
+                {b.brTabReel}
               </button>
             </div>
           </div>
@@ -412,7 +424,7 @@ export function CreatePostModal({ open, initialType = 'post', onClose, onCreated
             onClick={onClose}
             disabled={isSaving || isUploading}
             className="skc-icon-btn"
-            aria-label="Tutup composer"
+            aria-label={b.brCloseComposer}
           >
             <X size={20} />
           </button>
@@ -427,14 +439,14 @@ export function CreatePostModal({ open, initialType = 'post', onClose, onCreated
               <div className="skc-author-name">{displayName}</div>
               <label className="skc-privacy">
                 <Globe2 size={13} aria-hidden="true" />
-                <span className="sr-only">Privasi postingan</span>
+                <span className="sr-only">{b.brPostPrivacy}</span>
                 <select
                   value={privacy}
                   onChange={(event) => setPrivacy(event.target.value as Privacy)}
-                  aria-label="Privasi postingan"
+                  aria-label={b.brPostPrivacy}
                 >
-                  <option value="public">Publik</option>
-                  <option value="followers">Pengikut</option>
+                  <option value="public">{b.brPrivacyPublic}</option>
+                  <option value="followers">{b.brPrivacyFollowers}</option>
                 </select>
               </label>
             </div>
@@ -447,11 +459,11 @@ export function CreatePostModal({ open, initialType = 'post', onClose, onCreated
             onChange={(event) => setTextContent(event.target.value.slice(0, MAX_CONTENT))}
             placeholder={
               postType === 'reel'
-                ? 'Ceritakan tentang reel ini…'
-                : 'Ceritakan kabar Sultra hari ini…'
+                ? b.brReelPh
+                : b.brComposerPh
             }
             maxLength={MAX_CONTENT}
-            aria-label="Tulis cerita"
+            aria-label={b.brWriteStory}
             className="skc-textarea"
           />
           <div className={`skc-counter${remaining < 100 ? ' is-low' : ''}`} aria-live="off">
@@ -460,44 +472,44 @@ export function CreatePostModal({ open, initialType = 'post', onClose, onCreated
 
           {draftRestored && (
             <div className="skc-draft-banner" role="status">
-              <span>Draft terakhir dipulihkan otomatis.</span>
+              <span>{b.brDraftRestored}</span>
               <button type="button" onClick={discardDraft}>
-                Buang
+                {b.brDiscard}
               </button>
             </div>
           )}
 
           {media.length > 0 && (
-            <div className="skc-media-grid" aria-label="Media terpilih">
+            <div className="skc-media-grid" aria-label={b.brMediaSelected}>
               {media.map((item, index) => (
                 <div key={`${item.url}-${index}`} className="skc-media-item">
                   {item.type.startsWith('video/') ? (
-                    <video src={item.preview} muted playsInline aria-label={`Pratinjau video ${item.name}`} />
+                    <video src={item.preview} muted playsInline aria-label={fmtLabel(b.brPreviewVideo, { name: item.name })} />
                   ) : (
-                    <img src={item.preview} alt={`Pratinjau ${item.name}`} />
+                    <img src={item.preview} alt={fmtLabel(b.brPreviewImg, { name: item.name })} />
                   )}
                   <button
                     type="button"
                     onClick={() => removeMedia(index)}
                     className="skc-media-remove"
-                    aria-label={`Hapus ${item.name}`}
+                    aria-label={fmtLabel(b.brRemoveMedia, { name: item.name })}
                   >
                     <X size={14} />
                   </button>
-                  <span className="skc-media-kind">{item.type.startsWith('video/') ? 'Video' : 'Foto'}</span>
+                  <span className="skc-media-kind">{item.type.startsWith('video/') ? b.brMediaVideo : b.brMediaPhoto}</span>
                 </div>
               ))}
             </div>
           )}
 
           {/* Progressive disclosure: satu baris ikon */}
-          <div className="skc-disclosure" role="toolbar" aria-label="Tambahan postingan">
+          <div className="skc-disclosure" role="toolbar" aria-label={b.brPostExtras}>
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
               disabled={isUploading || media.length >= MAX_MEDIA}
               className={`skc-icon-btn${media.length > 0 ? ' is-active' : ''}`}
-              aria-label="Tambah foto atau video"
+              aria-label={b.brAddMedia}
             >
               <ImagePlus size={20} />
               {media.length > 0 && <span className="skc-dot" aria-hidden="true" />}
@@ -506,7 +518,7 @@ export function CreatePostModal({ open, initialType = 'post', onClose, onCreated
               type="button"
               onClick={() => togglePanel('lokasi')}
               className={`skc-icon-btn${location.trim() ? ' is-active' : ''}`}
-              aria-label="Tambah lokasi"
+              aria-label={b.brAddLocation}
               aria-expanded={panel === 'lokasi'}
               aria-controls="skc-panel-lokasi"
             >
@@ -517,7 +529,7 @@ export function CreatePostModal({ open, initialType = 'post', onClose, onCreated
               type="button"
               onClick={() => togglePanel('mood')}
               className={`skc-icon-btn${mood ? ' is-active' : ''}`}
-              aria-label="Tambah mood"
+              aria-label={b.brAddMood}
               aria-expanded={panel === 'mood'}
               aria-controls="skc-panel-mood"
             >
@@ -528,7 +540,7 @@ export function CreatePostModal({ open, initialType = 'post', onClose, onCreated
               type="button"
               onClick={() => togglePanel('tag')}
               className={`skc-icon-btn${taggedProfiles.length > 0 ? ' is-active' : ''}`}
-              aria-label="Tandai warga"
+              aria-label={b.brTagPeople}
               aria-expanded={panel === 'tag'}
               aria-controls="skc-panel-tag"
             >
@@ -540,13 +552,13 @@ export function CreatePostModal({ open, initialType = 'post', onClose, onCreated
           {panel === 'lokasi' && (
             <div className="skc-panel" id="skc-panel-lokasi">
               <p className="skc-panel-title">
-                <MapPin size={15} aria-hidden="true" /> Lokasi <em>opsional</em>
+                <MapPin size={15} aria-hidden="true" /> {b.brLocationTitle} <em>{b.brOptional}</em>
               </p>
               <input
                 id="post-location"
                 value={location}
                 onChange={(event) => setLocation(event.target.value.slice(0, MAX_LOCATION))}
-                placeholder="Contoh: Kendari, Sulawesi Tenggara"
+                placeholder={b.brLocationPh}
                 maxLength={MAX_LOCATION}
                 className="skc-input"
                 autoComplete="off"
@@ -557,7 +569,7 @@ export function CreatePostModal({ open, initialType = 'post', onClose, onCreated
           {panel === 'mood' && (
             <div className="skc-panel" id="skc-panel-mood">
               <p className="skc-panel-title">
-                <Smile size={15} aria-hidden="true" /> Mood <em>opsional</em>
+                <Smile size={15} aria-hidden="true" /> {b.brMoodTitle} <em>{b.brOptional}</em>
               </p>
               <div className="skc-mood-list">
                 {moods.map((item) => (
@@ -569,7 +581,7 @@ export function CreatePostModal({ open, initialType = 'post', onClose, onCreated
                     onClick={() => setMood(mood === item ? '' : item)}
                   >
                     {mood === item && <Check size={12} aria-hidden="true" />}
-                    {item}
+                    {b[moodLabelKey[item]]}
                   </button>
                 ))}
               </div>
@@ -579,23 +591,23 @@ export function CreatePostModal({ open, initialType = 'post', onClose, onCreated
           {panel === 'tag' && (
             <div className="skc-panel" id="skc-panel-tag">
               <p className="skc-panel-title">
-                <Tag size={15} aria-hidden="true" /> Tandai warga <em>maks. {MAX_TAGS}</em>
+                <Tag size={15} aria-hidden="true" /> {b.brTagPeople} <em>{fmtLabel(b.brMaxCount, { max: MAX_TAGS })}</em>
               </p>
               <input
                 value={tagQuery}
                 onChange={(event) => updateTagQuery(event.target.value)}
-                placeholder="Cari nama atau username warga"
+                placeholder={b.brSearchPeoplePh}
                 autoComplete="off"
                 className="skc-input"
-                aria-label="Cari warga untuk ditandai"
+                aria-label={b.brSearchPeopleAria}
               />
               {tagLoading && (
                 <p className="skc-help" role="status">
-                  Mencari warga…
+                  {b.brSearchingPeople}
                 </p>
               )}
               {tagSuggestions.length > 0 && (
-                <div className="skc-suggestions" role="listbox" aria-label="Hasil pencarian warga">
+                <div className="skc-suggestions" role="listbox" aria-label={b.brSearchResults}>
                   {tagSuggestions.map((item) => (
                     <button
                       type="button"
@@ -609,25 +621,25 @@ export function CreatePostModal({ open, initialType = 'post', onClose, onCreated
                         {item.avatar_url ? (
                           <img src={item.avatar_url} alt="" />
                         ) : (
-                          initials(item.display_name || item.username || 'Warga')
+                          initials(item.display_name || item.username || b.brResident)
                         )}
                       </span>
                       <span>
-                        <strong>{item.display_name || item.username || 'Warga Sultra'}</strong>
-                        <small>{item.username ? `@${item.username}` : item.district || 'Warga Sultra'}</small>
+                        <strong>{item.display_name || item.username || b.brSultraResident}</strong>
+                        <small>{item.username ? `@${item.username}` : item.district || b.brSultraResident}</small>
                       </span>
                     </button>
                   ))}
                 </div>
               )}
               {taggedProfiles.length > 0 && (
-                <div className="skc-tagged" aria-label="Warga yang ditandai">
+                <div className="skc-tagged" aria-label={b.brTaggedList}>
                   {taggedProfiles.map((item) => (
                     <button
                       type="button"
                       key={item.id}
                       onClick={() => setTaggedProfiles((current) => current.filter((tag) => tag.id !== item.id))}
-                      aria-label={`Hapus tanda untuk ${item.display_name || item.username}`}
+                      aria-label={fmtLabel(b.brUntag, { name: item.display_name || item.username || b.brResident })}
                       className="skc-tag-chip"
                     >
                       <span>@{item.username || (item.display_name || 'warga').replace(/\s+/g, '').toLowerCase()}</span>
@@ -650,15 +662,14 @@ export function CreatePostModal({ open, initialType = 'post', onClose, onCreated
             tabIndex={-1}
           />
           <p className="skc-help">
-            Maksimal {MAX_MEDIA} media · foto {formatId(MAX_IMAGE_BYTES / 1024 / 1024)} MB · video{' '}
-            {formatId(MAX_VIDEO_BYTES / 1024 / 1024)} MB · upload memakai signed URL.
+            {fmtLabel(b.brUploadHelp, { maxMedia: MAX_MEDIA, maxImageMB: formatId(MAX_IMAGE_BYTES / 1024 / 1024), maxVideoMB: formatId(MAX_VIDEO_BYTES / 1024 / 1024) })}
           </p>
 
           {submitError && (
             <div className="skc-error" role="alert" aria-live="assertive">
               <span>{submitError}</span>
               <button type="button" onClick={() => void submit()} className="skc-retry" disabled={isSaving || isUploading}>
-                {isSaving ? 'Mengirim…' : 'Coba lagi'}
+                {isSaving ? b.brSending : b.brRetry}
               </button>
             </div>
           )}
@@ -676,17 +687,17 @@ export function CreatePostModal({ open, initialType = 'post', onClose, onCreated
             disabled={isSaving || isUploading}
             className="skc-draft-btn"
           >
-            Simpan Draft
+            {b.brSaveDraft}
           </button>
           <button
             type="button"
             onClick={() => void submit()}
             disabled={!canPublish}
             className="skc-publish"
-            aria-label={isSaving ? 'Sedang mempublikasikan' : 'Publikasikan sekarang'}
+            aria-label={isSaving ? b.brPublishingAria : b.brPublishNow}
           >
             {isSaving || isUploading ? <Loader2 size={16} className="skc-spin" aria-hidden="true" /> : <ArrowUp size={16} aria-hidden="true" />}
-            {isSaving ? 'Mempublikasikan…' : isUploading ? 'Mengunggah media…' : 'Publikasikan sekarang'}
+            {isSaving ? b.brPublishing : isUploading ? b.brUploading : b.brPublishNow}
           </button>
         </footer>
       </section>

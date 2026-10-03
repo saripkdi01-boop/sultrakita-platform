@@ -25,6 +25,8 @@ import {
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { sukiMotion } from '@/lib/motion-tokens';
+import { usePreferences } from '@/lib/preferences';
+import { getCoreLabels } from '@/lib/i18n/dictionaries';
 import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 import KendariHero from '@/components/kendari/KendariHero';
 import {
@@ -34,27 +36,29 @@ import {
   KendariValue,
 } from '@/components/kendari/KendariSections';
 
-const ecosystemLinks = [
-  { label: 'Marketplace', href: '/marketplace' },
-  { label: 'Properti', href: '/properti' },
-  { label: 'Peluang', href: '/jobs' },
-  { label: 'Komunitas', href: '/groups' },
-];
-
-const quickLinks = [
-  { icon: ShoppingBag, label: 'Belanja lokal', href: '/marketplace' },
-  { icon: Building2, label: 'Cari properti', href: '/properti' },
-  { icon: BriefcaseBusiness, label: 'Cari pekerjaan', href: '/jobs' },
-  { icon: Users, label: 'Gabung komunitas', href: '/groups' },
-  { icon: Store, label: 'Untuk bisnis', href: '/Business' },
-];
-
 export default function HomeClient() {
   const reduceMotion = useReducedMotion();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const { language } = usePreferences();
+  const t: Record<string, string> = getCoreLabels(language);
+
+  const ecosystemLinks = [
+    { label: t.marketplace, href: '/marketplace' },
+    { label: t.property, href: '/properti' },
+    { label: t.ecoLinkOpportunity, href: '/jobs' },
+    { label: t.groups, href: '/groups' },
+  ];
+
+  const quickLinks = [
+    { icon: ShoppingBag, label: t.quickShopLocal, href: '/marketplace' },
+    { icon: Building2, label: t.quickFindProperty, href: '/properti' },
+    { icon: BriefcaseBusiness, label: t.quickFindJob, href: '/jobs' },
+    { icon: Users, label: t.quickJoinCommunity, href: '/groups' },
+    { icon: Store, label: t.navForBusiness, href: '/Business' },
+  ];
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchShellRef = useRef<HTMLDivElement>(null);
@@ -136,30 +140,30 @@ export default function HomeClient() {
 
   return (
     <main className="suki-overhaul-home dn-home">
-      <a className="skip-link" href="#main-content">Lewati ke konten utama</a>
+      <a className="skip-link" href="#main-content">{t.skipToContent}</a>
 
       <div className="suki-overhaul-topbar">
         <div className="suki-overhaul-container">
-          <span><Sparkles size={13} aria-hidden="true" /> Ekosistem digital Sulawesi Tenggara</span>
-          <Link href="/help-center">Pusat bantuan <ArrowRight size={13} aria-hidden="true" /></Link>
+          <span><Sparkles size={13} aria-hidden="true" /> {t.heroBadge}</span>
+          <Link href="/help-center">{t.helpCenter} <ArrowRight size={13} aria-hidden="true" /></Link>
         </div>
       </div>
 
       <header className={`suki-overhaul-header ${menuOpen ? 'is-open' : ''}`}>
         <div className="suki-overhaul-container suki-overhaul-header-inner">
-          <Link href="/" className="suki-overhaul-brand" aria-label="SUKI Apps — beranda" onClick={closeMenu}>
+          <Link href="/" className="suki-overhaul-brand" aria-label={t.brandHome} onClick={closeMenu}>
             <span className="suki-overhaul-brand-mark"><Image src="/brand/suki-logo-mark.svg" alt="" width={23} height={23} /></span>
             <span><strong>SUKI Apps</strong><small>by SULTRAKITA</small></span>
           </Link>
-          <nav id="suki-primary-navigation" aria-label="Navigasi utama">
-            <a href="#ekosistem" onClick={closeMenu}>Ekosistem</a>
-            <a href="#menghubungkan" onClick={closeMenu}>Menghubungkan</a>
-            <a href="#komunitas" onClick={closeMenu}>Komunitas</a>
-            <a href="#tentang" onClick={closeMenu}>Tentang</a>
-            <Link href="/Business" onClick={closeMenu}>Untuk bisnis</Link>
+          <nav id="suki-primary-navigation" aria-label={t.navMain}>
+            <a href="#ekosistem" onClick={closeMenu}>{t.ecosystem}</a>
+            <a href="#menghubungkan" onClick={closeMenu}>{t.navConnecting}</a>
+            <a href="#komunitas" onClick={closeMenu}>{t.groups}</a>
+            <a href="#tentang" onClick={closeMenu}>{t.navAbout}</a>
+            <Link href="/Business" onClick={closeMenu}>{t.navForBusiness}</Link>
             <span className="suki-overhaul-menu-extra">
-              <Link href="/login" onClick={closeMenu}>Masuk</Link>
-              <Link href="/beranda" className="suki-overhaul-primary" onClick={closeMenu}>Buka SUKI <ArrowRight size={15} aria-hidden="true" /></Link>
+              <Link href="/login" onClick={closeMenu}>{t.login}</Link>
+              <Link href="/beranda" className="suki-overhaul-primary" onClick={closeMenu}>{t.openSuki} <ArrowRight size={15} aria-hidden="true" /></Link>
             </span>
           </nav>
           <div className="suki-overhaul-header-actions">
@@ -168,14 +172,14 @@ export default function HomeClient() {
               className="suki-overhaul-theme"
               type="button"
               onClick={toggleTheme}
-              aria-label={`Aktifkan mode ${theme === 'dark' ? 'terang' : 'gelap'}`}
+              aria-label={theme === 'dark' ? t.enableLightMode : t.enableDarkMode}
               aria-pressed={theme === 'dark'}
             >
               {theme === 'dark' ? <Sun size={16} aria-hidden="true" /> : <span className="suki-moon" aria-hidden="true" />}
-              <span>{theme === 'dark' ? 'Terang' : 'Gelap'}</span>
+              <span>{theme === 'dark' ? t.lightMode : t.darkMode}</span>
             </button>
-            <Link href="/login" className="suki-overhaul-login">Masuk</Link>
-            <Link href="/beranda" className="suki-overhaul-header-cta">Buka SUKI <ArrowRight size={15} aria-hidden="true" /></Link>
+            <Link href="/login" className="suki-overhaul-login">{t.login}</Link>
+            <Link href="/beranda" className="suki-overhaul-header-cta">{t.openSuki} <ArrowRight size={15} aria-hidden="true" /></Link>
           </div>
           <button
             className="suki-overhaul-theme-icon"
@@ -192,7 +196,7 @@ export default function HomeClient() {
             className="suki-overhaul-menu"
             type="button"
             aria-controls="suki-primary-navigation"
-            aria-label={menuOpen ? 'Tutup menu' : 'Buka menu'}
+            aria-label={menuOpen ? t.closeMenu : t.openMenu}
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((value) => !value)}
           >
@@ -209,7 +213,7 @@ export default function HomeClient() {
 
       <KendariValue />
 
-      <section className="suki-overhaul-search-band" aria-label="Pencarian SUKI Apps">
+      <section className="suki-overhaul-search-band" aria-label={t.searchSection}>
         <div className="suki-overhaul-container">
           <div ref={searchShellRef} className={`suki-overhaul-search-shell ${searchOpen ? 'is-open' : ''}`}>
             <button
@@ -220,7 +224,7 @@ export default function HomeClient() {
               aria-expanded={searchOpen}
             >
               <Search size={18} aria-hidden="true" />
-              <span>{searchOpen ? 'Cari di marketplace SUKI' : 'Apa yang sedang Anda cari?'}</span>
+              <span>{searchOpen ? t.searchMarketplaceCta : t.searchPrompt}</span>
               <kbd aria-hidden="true">⌘ K</kbd>
             </button>
             <AnimatePresence>
@@ -241,17 +245,17 @@ export default function HomeClient() {
                       ref={searchInputRef}
                       value={query}
                       onChange={(event) => setQuery(event.target.value)}
-                      placeholder="Cari produk, jasa, atau kebutuhan di Sultra…"
-                      aria-label="Cari di marketplace SUKI"
+                      placeholder={t.searchPlaceholderHome}
+                      aria-label={t.searchMarketplaceCta}
                       type="search"
                     />
                   </div>
-                  <button type="submit">Cari <ArrowRight size={15} aria-hidden="true" /></button>
-                  <button type="button" className="suki-search-close" onClick={() => setSearchOpen(false)} aria-label="Tutup pencarian">
+                  <button type="submit">{t.search} <ArrowRight size={15} aria-hidden="true" /></button>
+                  <button type="button" className="suki-search-close" onClick={() => setSearchOpen(false)} aria-label={t.closeSearch}>
                     <X size={16} aria-hidden="true" />
                   </button>
                   <div className="suki-overhaul-search-suggestions">
-                    <span id="suki-search-suggestions-label">Atau jelajahi ruang:</span>
+                    <span id="suki-search-suggestions-label">{t.exploreSpaces}</span>
                     <div role="group" aria-labelledby="suki-search-suggestions-label">
                       {ecosystemLinks.map((item) => (
                         <Link key={item.label} href={item.href}>{item.label}</Link>
@@ -262,8 +266,8 @@ export default function HomeClient() {
               )}
             </AnimatePresence>
           </div>
-          <nav className="suki-overhaul-quick-links" aria-label="Tautan cepat">
-            <span>Mulai dari sini</span>
+          <nav className="suki-overhaul-quick-links" aria-label={t.startHere}>
+            <span>{t.startHere}</span>
             {quickLinks.map((item) => {
               const Icon = item.icon;
               return (
@@ -285,22 +289,22 @@ export default function HomeClient() {
       <motion.section className="suki-overhaul-about" id="tentang" aria-labelledby="about-title" {...revealProps}>
         <div className="suki-overhaul-container suki-overhaul-about-grid">
           <div>
-            <span className="suki-overhaul-kicker">Dari Sultra, untuk Sultra</span>
-            <h2 id="about-title">Teknologi yang tetap terasa <em>manusiawi.</em></h2>
-            <p>SUKI dibuat untuk membantu hal-hal yang dekat menjadi lebih mudah ditemukan, dipahami, dan dikembangkan. Bukan hanya tempat melihat listing, tetapi ruang yang menghubungkan orang, kebutuhan, dan peluang.</p>
+            <span className="suki-overhaul-kicker">{t.aboutKicker}</span>
+            <h2 id="about-title">{t.aboutTitleA} <em>{t.aboutTitleB}</em></h2>
+            <p>{t.aboutDesc}</p>
             <div className="suki-overhaul-points">
-              <span><Check size={14} aria-hidden="true" /> Konteks lokal</span>
-              <span><Check size={14} aria-hidden="true" /> Pengalaman yang jelas</span>
-              <span><Check size={14} aria-hidden="true" /> Ruang untuk bertumbuh</span>
+              <span><Check size={14} aria-hidden="true" /> {t.aboutPoint1}</span>
+              <span><Check size={14} aria-hidden="true" /> {t.aboutPoint2}</span>
+              <span><Check size={14} aria-hidden="true" /> {t.aboutPoint3}</span>
             </div>
-            <Link href="/help-center" className="suki-overhaul-text-link">Kenali SUKI lebih lanjut <ArrowRight size={15} aria-hidden="true" /></Link>
+            <Link href="/help-center" className="suki-overhaul-text-link">{t.aboutLink} <ArrowRight size={15} aria-hidden="true" /></Link>
           </div>
           <div className="suki-overhaul-about-card">
             <div className="suki-about-card-top">
               <span className="suki-about-logo"><Image src="/brand/suki-logo-mark.svg" alt="" width={26} height={26} /></span>
               <span><small>LOCAL DIGITAL ECOSYSTEM</small><b>Kendari, Sultra</b></span>
             </div>
-            <strong>Temukan.<br />Terhubung.<br /><em>Bertumbuh.</em></strong>
+            <strong>{t.heroTitle1}<br />{t.heroTitle2}<br /><em>{t.heroTitle3}</em></strong>
             <div className="suki-about-route" aria-hidden="true"><i /><i /><i /><span><MapPin size={18} /></span></div>
           </div>
         </div>
@@ -309,11 +313,11 @@ export default function HomeClient() {
       <section className="suki-overhaul-business" aria-labelledby="business-title">
         <div className="suki-overhaul-container suki-overhaul-business-inner">
           <div>
-            <span className="suki-overhaul-kicker">Untuk seller &amp; mitra</span>
-            <h2 id="business-title">Bisnis lokal punya cerita.<br /><em>Beri ruang untuk tumbuh.</em></h2>
-            <p>Bangun eksistensi, hadirkan penawaran, dan temukan koneksi baru melalui ekosistem yang memahami konteks Sulawesi Tenggara.</p>
+            <span className="suki-overhaul-kicker">{t.bizKicker}</span>
+            <h2 id="business-title">{t.bizTitleA}<br /><em>{t.bizTitleB}</em></h2>
+            <p>{t.bizDesc}</p>
           </div>
-          <Link href="/Business" className="suki-overhaul-light-button">Masuk ke SUKI Business <ArrowRight size={17} aria-hidden="true" /></Link>
+          <Link href="/Business" className="suki-overhaul-light-button">{t.heroCtaBusiness} <ArrowRight size={17} aria-hidden="true" /></Link>
         </div>
       </section>
 
@@ -321,11 +325,11 @@ export default function HomeClient() {
         <div className="suki-overhaul-container">
           <div className="suki-overhaul-final-card">
             <div>
-              <span className="suki-overhaul-kicker">Langkah berikutnya</span>
-              <h2 id="final-title">Temukan ruang Anda di SUKI Apps.</h2>
-              <p>Mulai dari kebutuhan yang paling dekat dengan Anda hari ini.</p>
+              <span className="suki-overhaul-kicker">{t.finalKicker}</span>
+              <h2 id="final-title">{t.finalTitle}</h2>
+              <p>{t.finalDesc}</p>
             </div>
-            <Link href="/beranda" className="suki-overhaul-primary">Buka SUKI Apps <ArrowRight size={17} aria-hidden="true" /></Link>
+            <Link href="/beranda" className="suki-overhaul-primary">{t.openSukiApps} <ArrowRight size={17} aria-hidden="true" /></Link>
           </div>
         </div>
       </section>
@@ -340,18 +344,18 @@ export default function HomeClient() {
                 <span className="suki-overhaul-brand-mark"><Image src="/brand/suki-logo-mark.svg" alt="" width={23} height={23} /></span>
                 <span><strong>SUKI Apps</strong><small>by SULTRAKITA</small></span>
               </div>
-              <p>Ekosistem digital yang menghubungkan kebutuhan, peluang, dan jejaring lokal Sulawesi Tenggara.</p>
+              <p>{t.heroSubtitle}</p>
             </div>
-            <nav className="suki-overhaul-footer-links" aria-label="Tautan footer">
-              <div><b>Jelajahi</b><Link href="/beranda">Beranda</Link><Link href="/marketplace">Marketplace</Link><Link href="/properti">Properti</Link><Link href="/jobs">Jobs</Link></div>
-              <div><b>Terhubung</b><Link href="/groups">Komunitas</Link><Link href="/Business">Untuk bisnis</Link><Link href="/help-center">Panduan</Link></div>
-              <div><b>Bantuan</b><Link href="/bantuan/faq">FAQ</Link><Link href="/kontak">Kontak</Link><Link href="/support">Laporkan masalah</Link></div>
-              <div><b>Legal</b><Link href="/legal/kebijakan-privasi">Kebijakan Privasi</Link><Link href="/legal/syarat-ketentuan">Syarat &amp; Ketentuan</Link><Link href="/security-center">Keamanan</Link></div>
+            <nav className="suki-overhaul-footer-links" aria-label={t.footerExplore}>
+              <div><b>{t.footerExplore}</b><Link href="/beranda">{t.home}</Link><Link href="/marketplace">{t.marketplace}</Link><Link href="/properti">{t.property}</Link><Link href="/jobs">{t.footerJobs}</Link></div>
+              <div><b>{t.footerConnect}</b><Link href="/groups">{t.groups}</Link><Link href="/Business">{t.navForBusiness}</Link><Link href="/help-center">{t.footerGuide}</Link></div>
+              <div><b>{t.footerHelp}</b><Link href="/bantuan/faq">{t.footerFaq}</Link><Link href="/kontak">{t.contact}</Link><Link href="/support">{t.footerReport}</Link></div>
+              <div><b>{t.footerLegal}</b><Link href="/legal/kebijakan-privasi">{t.footerPrivacy}</Link><Link href="/legal/syarat-ketentuan">{t.terms}</Link><Link href="/security-center">{t.footerSecurity}</Link></div>
             </nav>
           </div>
           <div className="suki-overhaul-footer-bottom">
-            <span>© 2026 SUKI Apps · Sulawesi Tenggara</span>
-            <span><Compass size={12} aria-hidden="true" /> Dibangun untuk tumbuh bersama ekosistem lokal.</span>
+            <span>{t.footerCopy}</span>
+            <span><Compass size={12} aria-hidden="true" /> {t.footerTagline}</span>
           </div>
         </div>
       </footer>

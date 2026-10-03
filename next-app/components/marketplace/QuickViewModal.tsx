@@ -10,6 +10,9 @@ import { reportListing } from '@/lib/actions/reports';
 import { ReportButton } from '@/components/moderation/ReportButton';
 import { SafeImage } from './SafeImage';
 import { discountPercent, originalPriceValue } from './promo';
+import { usePreferences } from '@/lib/preferences';
+import { getCoreLabels } from '@/lib/i18n/dictionaries';
+import { getMarketplaceLabels } from '@/lib/i18n/dict-marketplace';
 
 // Quick view — galeri multi-foto + info penjual jujur (tier dari data nyata
 // + tautan ke etalase toko). Aksi "Bandingkan" pindah ke sini agar kartu
@@ -36,6 +39,9 @@ type Props = {
 };
 
 export function QuickViewModal({ listing, saved = false, inCompare = false, onToggleWishlist, onToggleCompare, onClose, similar = [], onSelectSimilar }: Props) {
+  const { language } = usePreferences();
+  const t = getCoreLabels(language);
+  const mp = getMarketplaceLabels(language);
   const [photoIndex, setPhotoIndex] = useState(0);
   const bodyRef = useRef<HTMLDivElement>(null);
 
@@ -54,14 +60,14 @@ export function QuickViewModal({ listing, saved = false, inCompare = false, onTo
   const images = Array.isArray(listing.images) && listing.images.length > 0 ? listing.images : listing.thumbnail_url ? [listing.thumbnail_url] : [];
   const image = images[Math.min(photoIndex, images.length - 1)];
   const price = Math.trunc(Number(listing.price) || 0);
-  const priceText = price > 0 ? rupiah(price) : 'Harga hubungi penjual';
+  const priceText = price > 0 ? rupiah(price) : mp.mpContactSellerPrice;
   const discount = discountPercent(listing);
   const original = originalPriceValue(listing);
   // Chat WhatsApp: inquiry diteruskan ke WA Business resmi SUKI (bukan nomor
   // pribadi seller — privasi seller terjaga). Tombol hanya muncul bila
   // NEXT_PUBLIC_SUKI_WA_NUMBER dikonfigurasi.
   const waHref = sukiWaLink(
-    `Halo SUKI, saya tertarik dengan listing "${listing.title}" (${priceText}) di SUKI Marketplace: ${siteUrl()}/marketplace?listing=${encodeURIComponent(String(listing.id))}`
+    mp.mpWaMessage.replace('{title}', listing.title).replace('{price}', priceText).replace('{url}', `${siteUrl()}/marketplace?listing=${encodeURIComponent(String(listing.id))}`)
   );
   // Stok jujur: tampilkan hanya bila kolom stock_quantity tersedia di DB.
   // Tanpa klaim "Stok tersedia" bila datanya tidak ada.
@@ -75,16 +81,16 @@ export function QuickViewModal({ listing, saved = false, inCompare = false, onTo
   return (
     <div className="fbm-qv-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
       <section className="fbm-qv" role="dialog" aria-modal="true" aria-labelledby="quick-view-title">
-        <button type="button" className="fbm-qv-close" onClick={onClose} aria-label="Tutup pratinjau"><X size={18} aria-hidden="true" /></button>
+        <button type="button" className="fbm-qv-close" onClick={onClose} aria-label={mp.mpClosePreview}><X size={18} aria-hidden="true" /></button>
         <div className="fbm-qv-media">
           {image ? <SafeImage src={image} alt={listing.title} priority /> : <div className="fbm-card-empty" aria-hidden="true">📦</div>}
           {images.length > 1 && (
             <>
-              <button type="button" className="fbm-card-gallery-nav fbm-card-gallery-prev" onClick={() => setPhotoIndex((i) => (i - 1 + images.length) % images.length)} aria-label="Foto sebelumnya"><ChevronLeft size={16} aria-hidden="true" /></button>
-              <button type="button" className="fbm-card-gallery-nav fbm-card-gallery-next" onClick={() => setPhotoIndex((i) => (i + 1) % images.length)} aria-label="Foto berikutnya"><ChevronRight size={16} aria-hidden="true" /></button>
-              <div className="fbm-qv-thumbs" role="group" aria-label="Pilih foto">
+              <button type="button" className="fbm-card-gallery-nav fbm-card-gallery-prev" onClick={() => setPhotoIndex((i) => (i - 1 + images.length) % images.length)} aria-label={mp.mpPrevPhoto}><ChevronLeft size={16} aria-hidden="true" /></button>
+              <button type="button" className="fbm-card-gallery-nav fbm-card-gallery-next" onClick={() => setPhotoIndex((i) => (i + 1) % images.length)} aria-label={mp.mpNextPhoto}><ChevronRight size={16} aria-hidden="true" /></button>
+              <div className="fbm-qv-thumbs" role="group" aria-label={mp.mpChoosePhoto}>
                 {images.slice(0, 6).map((src, thumb) => (
-                  <button key={thumb} type="button" className={`fbm-qv-thumb${thumb === photoIndex ? ' active' : ''}`} onClick={() => setPhotoIndex(thumb)} aria-label={`Foto ${thumb + 1}`} aria-pressed={thumb === photoIndex}>
+                  <button key={thumb} type="button" className={`fbm-qv-thumb${thumb === photoIndex ? ' active' : ''}`} onClick={() => setPhotoIndex(thumb)} aria-label={`${mp.mpPhoto} ${thumb + 1}`} aria-pressed={thumb === photoIndex}>
                     <SafeImage src={src} alt="" />
                   </button>
                 ))}
@@ -105,7 +111,7 @@ export function QuickViewModal({ listing, saved = false, inCompare = false, onTo
           </p>
           {description && <p className="fbm-qv-desc">{description.slice(0, 220)}{description.length > 220 ? '…' : ''}</p>}
           {listing.seller && sellerId && (
-            <Link href={`/marketplace/toko/${encodeURIComponent(sellerId)}`} className="fbm-qv-shop" aria-label={`Kunjungi toko ${listing.seller.name}`}>
+            <Link href={`/marketplace/toko/${encodeURIComponent(sellerId)}`} className="fbm-qv-shop" aria-label={`${mp.mpVisitStore} ${listing.seller.name}`}>
               <span className="fbm-shop-avatar" aria-hidden="true">
                 {listing.seller.avatar_url ? <img src={listing.seller.avatar_url} alt="" loading="lazy" /> : listing.seller.name.slice(0, 1).toUpperCase()}
               </span>
@@ -117,28 +123,28 @@ export function QuickViewModal({ listing, saved = false, inCompare = false, onTo
           <p className="fbm-qv-meta">
             {district && <span><MapPin size={13} aria-hidden="true" /> {district}</span>}
             {stock !== null && (stock > 0
-              ? <span><Check size={13} aria-hidden="true" /> Stok: {stock} tersedia</span>
-              : <span className="fbm-qv-outofstock">Stok habis</span>)}
+              ? <span><Check size={13} aria-hidden="true" /> {mp.mpStockAvailable.replace('{count}', String(stock))}</span>
+              : <span className="fbm-qv-outofstock">{mp.mpOutOfStock}</span>)}
           </p>
           <div className="fbm-qv-actions">
             {sellerId ? (
               <Link href={`/marketplace/toko/${encodeURIComponent(sellerId)}`} className="fbm-qv-primary">
-                <Store size={15} aria-hidden="true" /> Kunjungi toko <ArrowRight size={15} aria-hidden="true" />
+                <Store size={15} aria-hidden="true" /> {mp.mpVisitStore} <ArrowRight size={15} aria-hidden="true" />
               </Link>
             ) : null}
             {waHref && (
-              <a href={waHref} target="_blank" rel="noopener noreferrer" className="fbm-qv-secondary fbm-qv-wa" aria-label={`Tanya tentang ${listing.title} via WhatsApp`}>
-                <MessageCircle size={16} aria-hidden="true" /> WhatsApp
+              <a href={waHref} target="_blank" rel="noopener noreferrer" className="fbm-qv-secondary fbm-qv-wa" aria-label={mp.mpAskViaWA.replace('{title}', listing.title)}>
+                <MessageCircle size={16} aria-hidden="true" /> {mp.mpWhatsApp}
               </a>
             )}
             {onToggleWishlist && (
-              <button type="button" className={`fbm-qv-secondary${saved ? ' saved' : ''}`} onClick={onToggleWishlist} aria-pressed={saved} aria-label={saved ? 'Hapus dari wishlist' : 'Simpan ke wishlist'}>
-                <Heart size={16} aria-hidden="true" fill={saved ? 'currentColor' : 'none'} /> {saved ? 'Tersimpan' : 'Simpan'}
+              <button type="button" className={`fbm-qv-secondary${saved ? ' saved' : ''}`} onClick={onToggleWishlist} aria-pressed={saved} aria-label={saved ? mp.mpRemoveFromWishlist : mp.mpSaveToWishlist}>
+                <Heart size={16} aria-hidden="true" fill={saved ? 'currentColor' : 'none'} /> {saved ? mp.mpSaved : t.save}
               </button>
             )}
             {onToggleCompare && (
-              <button type="button" className={`fbm-qv-secondary${inCompare ? ' active' : ''}`} onClick={onToggleCompare} aria-pressed={inCompare} aria-label={inCompare ? 'Hapus dari perbandingan' : 'Tambah ke perbandingan'}>
-                <Scale size={16} aria-hidden="true" /> {inCompare ? 'Dibandingkan' : 'Bandingkan'}
+              <button type="button" className={`fbm-qv-secondary${inCompare ? ' active' : ''}`} onClick={onToggleCompare} aria-pressed={inCompare} aria-label={inCompare ? mp.mpRemoveFromCompare : mp.mpAddToCompare}>
+                <Scale size={16} aria-hidden="true" /> {inCompare ? mp.mpCompared : mp.mpCompare}
               </button>
             )}
             <ReportButton
@@ -149,7 +155,7 @@ export function QuickViewModal({ listing, saved = false, inCompare = false, onTo
 
           {similar.length > 0 && onSelectSimilar && (
             <section className="fbm-qv-similar" aria-labelledby="qv-similar-heading">
-              <h3 id="qv-similar-heading">Produk serupa</h3>
+              <h3 id="qv-similar-heading">{mp.mpSimilarProducts}</h3>
               <div className="fbm-qv-similar-rail">
                 {similar.map((item) => {
                   const itemPrice = Math.trunc(Number(item.price) || 0);
@@ -160,12 +166,12 @@ export function QuickViewModal({ listing, saved = false, inCompare = false, onTo
                       type="button"
                       className="fbm-qv-similar-card"
                       onClick={() => onSelectSimilar(item)}
-                      aria-label={`Lihat ${item.title}`}
+                      aria-label={`${mp.mpView} ${item.title}`}
                     >
                       <span className="fbm-qv-similar-art">
                         {itemImages[0] ? <SafeImage src={itemImages[0]} alt="" /> : <span aria-hidden="true">📦</span>}
                       </span>
-                      <strong>{itemPrice > 0 ? rupiah(itemPrice) : 'Hubungi penjual'}</strong>
+                      <strong>{itemPrice > 0 ? rupiah(itemPrice) : mp.mpContactSeller}</strong>
                       <span className="fbm-qv-similar-title">{item.title}</span>
                     </button>
                   );

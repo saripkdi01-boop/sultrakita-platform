@@ -1,6 +1,13 @@
+'use client';
+
+import { usePreferences } from '@/lib/preferences';
+import { getBerandaLabels } from '@/lib/i18n/dict-beranda';
+
 export default function BerandaLoading() {
+  const { language } = usePreferences();
+  const b = getBerandaLabels(language);
   return (
-    <div className="mx-auto max-w-6xl px-4 pb-24 pt-6" aria-busy="true" aria-label="Memuat beranda">
+    <div className="mx-auto max-w-6xl px-4 pb-24 pt-6" aria-busy="true" aria-label={b.brLoadingBeranda}>
       <div className="skeleton-line skeleton-shimmer" style={{ width: '50%', height: 36 }} />
       <div className="skeleton-line skeleton-shimmer" style={{ width: '70%', marginTop: 12 }} />
       <div className="grid gap-4 sm:grid-cols-3" style={{ marginTop: 20 }}>

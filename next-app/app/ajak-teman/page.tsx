@@ -13,6 +13,8 @@ import { csrfFetch } from '@/lib/security/csrf-client';
 import { supabase } from '@/lib/supabase/client';
 import { claimReferralBestEffort } from '@/lib/referral-claim-client';
 import { REF_CODE_RE } from '@/lib/referral-attribution';
+import { usePreferences } from '@/lib/preferences';
+import { getMiscLabels } from '@/lib/i18n/dict-misc';
 import './referral.css';
 
 /* ---------- types ---------- */
@@ -27,44 +29,40 @@ type Redemption = { id: string | number; points: number; rupiah_amount: number; 
 type Analytics = { totals: { visits: number; signups: number; qualified: number }; channels: Array<{ channel: string; visits: number; signups: number; qualified: number }> };
 
 /* ---------- constants ---------- */
-const LEVELS = [
-  { name: 'Pemula', min: 0 },
-  { name: 'Aktif', min: 5 },
-  { name: 'Pejuang', min: 20 },
-  { name: 'Legenda', min: 50 },
-];
+const LEVEL_KEYS = ['refLevelBeginner', 'refLevelActive', 'refLevelFighter', 'refLevelLegend'];
+const LEVEL_MINS = [0, 5, 20, 50];
 const SECTIONS = [
-  { id: 'ringkasan', label: 'Ringkasan' },
-  { id: 'bagikan', label: 'Bagikan' },
-  { id: 'performa', label: 'Performa' },
-  { id: 'peringkat', label: 'Peringkat' },
-  { id: 'dompet', label: 'Dompet' },
-  { id: 'bantuan', label: 'Bantuan' },
+  { id: 'ringkasan', labelKey: 'refSecSummary' },
+  { id: 'bagikan', labelKey: 'refSecShare' },
+  { id: 'performa', labelKey: 'refSecPerformance' },
+  { id: 'peringkat', labelKey: 'refSecLeaderboard' },
+  { id: 'dompet', labelKey: 'refSecWallet' },
+  { id: 'bantuan', labelKey: 'refSecHelp' },
 ];
-const FAQS: Array<[string, string]> = [
-  ['Apakah ikut program ini gratis?', 'Ya, 100% gratis. Cukup punya akun SUKI Apps, kamu langsung dapat kode referral pribadi. Tidak ada biaya pendaftaran, tidak ada target belanja, dan tidak ada potongan tersembunyi.'],
-  ['Kapan Koin masuk ke saldo saya?', 'Koin masuk otomatis setelah teman yang kamu ajak menyelesaikan aktivasi qualified — misalnya melengkapi profil, memasang listing pertama, atau aktif di komunitas. Bukan sekadar klik link atau daftar saja, supaya program tetap sehat dan adil.'],
-  ['Apa itu aktivasi qualified?', 'Aktivasi qualified adalah tindakan bermakna yang menunjukkan temanmu benar-benar memakai SUKI Apps, sesuai kriteria campaign yang sedang berjalan. Detail kriteria selalu tertulis di halaman ini dan bisa berubah antar campaign.'],
-  ['Bagaimana cara mencairkan Koin?', 'Kumpulkan minimal 1.000 Koin, lalu ajukan pencairan lewat tab Dompet ke transfer bank atau e-wallet. Setiap pengajuan diperiksa manual oleh tim SUKI (biasanya 1–3 hari kerja) sebelum dana dikirim.'],
-  ['Bolehkah promosi di grup WhatsApp atau media sosial?', 'Boleh, dan memang itu cara terbaik. Yang tidak boleh: spam berulang, mengklaim penghasilan pasti, menyesatkan orang, atau memakai materi yang bukan hakmu. Promosi jujur = akun aman.'],
-  ['Data apa yang dicatat dari link referral saya?', 'Hanya kunjungan link, pendaftaran, dan aktivasi yang teratribusi ke kodemu — tanpa data pribadi temanmu yang dibagikan kepadamu. Semua pencatatan mengikuti Kebijakan Privasi SUKI Apps.'],
+const FAQ_KEYS: Array<[string, string]> = [
+  ['refFaq1Q', 'refFaq1A'],
+  ['refFaq2Q', 'refFaq2A'],
+  ['refFaq3Q', 'refFaq3A'],
+  ['refFaq4Q', 'refFaq4A'],
+  ['refFaq5Q', 'refFaq5A'],
+  ['refFaq6Q', 'refFaq6A'],
 ];
-const RULES: Array<[string, string]> = [
-  ['Aktivasi qualified', 'Koin hanya diberikan untuk referral yang memenuhi kriteria aktivasi campaign. Klik atau daftar saja belum menghasilkan Koin.'],
-  ['Satu akun, satu atribusi', 'Akun ganda, kode sendiri, bot, dan manipulasi atribusi tidak memenuhi syarat dan ditandai sistem anti-fraud.'],
-  ['Reward mengikuti campaign', 'Rasio konversi, minimum pencairan, dan benefit dapat berubah mengikuti ketentuan campaign resmi yang diumumkan di halaman ini.'],
-  ['Promosi bertanggung jawab', 'Dilarang spam, klaim penghasilan pasti, atau menyesatkan calon pengguna dalam bentuk apa pun.'],
-  ['Verifikasi manual', 'Setiap pengajuan pencairan diperiksa tim SUKI. Dana hanya dikirim setelah data valid dan lolos verifikasi.'],
+const RULE_KEYS: Array<[string, string]> = [
+  ['refRule1T', 'refRule1D'],
+  ['refRule2T', 'refRule2D'],
+  ['refRule3T', 'refRule3D'],
+  ['refRule4T', 'refRule4D'],
+  ['refRule5T', 'refRule5D'],
 ];
 
 /* ---------- helpers ---------- */
 const money = (v: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(v || 0);
 const count = (v: number) => Number(v || 0).toLocaleString('id-ID');
-function timeAgo(ts: number) {
+function timeAgo(ts: number, t: Record<string, string>) {
   const s = Math.max(0, Math.round((Date.now() - ts) / 1000));
-  if (s < 10) return 'baru saja';
-  if (s < 60) return `${s} dtk lalu`;
-  return `${Math.floor(s / 60)} mnt lalu`;
+  if (s < 10) return t.refJustNow;
+  if (s < 60) return t.refSecAgo.replace('{n}', String(s));
+  return t.refMinAgo.replace('{n}', String(Math.floor(s / 60)));
 }
 function WaIcon() {
   return (<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z" /></svg>);
@@ -81,6 +79,8 @@ function FbIcon() {
 
 /* ---------- page ---------- */
 export default function AjakTemanPage() {
+  const { language } = usePreferences();
+  const t = getMiscLabels(language);
   const [summary, setSummary] = useState<Summary | null>(null);
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [leaders, setLeaders] = useState<Leader[]>([]);
@@ -177,7 +177,7 @@ export default function AjakTemanPage() {
           { event: 'INSERT', schema: 'public', table: 'referral_account_events', filter: `referrer_id=eq.${uid}` },
           () => {
             setUpdatedAt(Date.now());
-            showToast('Aktivitas referral baru masuk 🎉');
+            showToast(t.refNewActivity);
             void loadSummary();
             void loadAnalytics();
           })
@@ -236,10 +236,11 @@ export default function AjakTemanPage() {
   const qualified = summary?.qualified_referrals || 0;
   const balance = summary?.total_points || 0;
   const lifetime = summary?.lifetime_points || 0;
-  const levelIdx = LEVELS.reduce((acc, l, i) => (qualified >= l.min ? i : acc), 0);
-  const level = LEVELS[levelIdx];
-  const nextLevel = LEVELS[levelIdx + 1];
-  const progress = nextLevel ? Math.min(100, Math.round(((qualified - level.min) / (nextLevel.min - level.min)) * 100)) : 100;
+  const levelIdx = LEVEL_MINS.reduce((acc, min, i) => (qualified >= min ? i : acc), 0);
+  const levelName = t[LEVEL_KEYS[levelIdx]];
+  const nextLevelName = LEVEL_KEYS[levelIdx + 1] ? t[LEVEL_KEYS[levelIdx + 1]] : '';
+  const nextLevelMin = LEVEL_MINS[levelIdx + 1];
+  const progress = nextLevelMin !== undefined ? Math.min(100, Math.round(((qualified - LEVEL_MINS[levelIdx]) / (nextLevelMin - LEVEL_MINS[levelIdx])) * 100)) : 100;
   const totals = analytics?.totals || { visits: 0, signups: 0, qualified: 0 };
   const convVisitSignup = totals.visits ? Math.round((totals.signups / totals.visits) * 100) : 0;
   const convSignupQualified = totals.signups ? Math.round((totals.qualified / totals.signups) * 100) : 0;
@@ -262,14 +263,14 @@ export default function AjakTemanPage() {
     showToast(doneMsg);
   }
   const shareText = (link: string) =>
-    `Gabung SUKI Apps bareng aku yuk! Marketplace, properti, lowongan kerja, dan komunitas Sulawesi Tenggara dalam satu tempat.\n\nDaftar lewat link ini: ${link}`;
+    t.refShareText.replace('{link}', link);
   async function nativeShare() {
     const link = linkFor('');
     if (navigator.share) {
-      try { await navigator.share({ title: 'Ajak Teman ke SUKI Apps', text: shareText(link), url: link }); }
+      try { await navigator.share({ title: t.refShareTitle2, text: shareText(link), url: link }); }
       catch { /* pengguna membatalkan */ }
     } else {
-      await copyText(link, 'Link referral disalin.');
+      await copyText(link, t.refLinkCopied);
     }
   }
   async function redeem(event: FormEvent<HTMLFormElement>) {
@@ -286,7 +287,7 @@ export default function AjakTemanPage() {
       }),
     });
     const payload = await response.json().catch(() => ({}));
-    showToast(payload?.data?.message || apiErrorMessage(payload, 'Pengajuan diterima untuk verifikasi.'));
+    showToast(payload?.data?.message || apiErrorMessage(payload, t.refRedeemOk));
     if (response.ok) {
       event.currentTarget.reset();
       setRedeemPoints(minimumRedemption);
@@ -295,19 +296,19 @@ export default function AjakTemanPage() {
     }
   }
   const statusChip = (status: string) => {
-    if (status === 'paid') return <span className="refer-chip refer-chip-ok">Dibayar</span>;
-    if (status === 'approved') return <span className="refer-chip refer-chip-info">Disetujui</span>;
-    if (status === 'rejected') return <span className="refer-chip refer-chip-bad">Ditolak</span>;
-    return <span className="refer-chip refer-chip-wait">Menunggu</span>;
+    if (status === 'paid') return <span className="refer-chip refer-chip-ok">{t.refStatusPaid}</span>;
+    if (status === 'approved') return <span className="refer-chip refer-chip-info">{t.refStatusApproved}</span>;
+    if (status === 'rejected') return <span className="refer-chip refer-chip-bad">{t.refStatusRejected}</span>;
+    return <span className="refer-chip refer-chip-wait">{t.refStatusWaiting}</span>;
   };
 
   const shareChannels = [
-    { key: 'whatsapp', label: 'WhatsApp', icon: <WaIcon />, cls: 'icon-wa', hint: 'Grup & chat' },
-    { key: 'telegram', label: 'Telegram', icon: <TgIcon />, cls: 'icon-tg', hint: 'Channel & grup' },
-    { key: 'x', label: 'X', icon: <XIcon />, cls: 'icon-x', hint: 'Post publik' },
-    { key: 'facebook', label: 'Facebook', icon: <FbIcon />, cls: 'icon-fb', hint: 'Kronologi' },
-    { key: 'qr', label: 'QR Code', icon: <QrCode size={22} />, cls: 'icon-qr', hint: 'Cetak & booth' },
-    { key: 'more', label: 'Lainnya', icon: <Share2 size={22} />, cls: 'icon-more', hint: 'Aplikasi lain' },
+    { key: 'whatsapp', label: t.refChannelWa, icon: <WaIcon />, cls: 'icon-wa', hint: t.refChannelWaHint },
+    { key: 'telegram', label: t.refChannelTg, icon: <TgIcon />, cls: 'icon-tg', hint: t.refChannelTgHint },
+    { key: 'x', label: t.refChannelX, icon: <XIcon />, cls: 'icon-x', hint: t.refChannelXHint },
+    { key: 'facebook', label: t.refChannelFb, icon: <FbIcon />, cls: 'icon-fb', hint: t.refChannelFbHint },
+    { key: 'qr', label: t.refChannelQr, icon: <QrCode size={22} />, cls: 'icon-qr', hint: t.refChannelQrHint },
+    { key: 'more', label: t.refChannelMore, icon: <Share2 size={22} />, cls: 'icon-more', hint: t.refChannelMoreHint },
   ];
   function channelHref(key: string): string | null {
     const link = linkFor(key === 'more' ? '' : key);
@@ -324,55 +325,55 @@ export default function AjakTemanPage() {
       <main className="refer-scope">
         <div className="refer-wrap">
           {/* sticky chip nav */}
-          <nav className="refer-nav" aria-label="Navigasi halaman referral">
-            {SECTIONS.map(({ id, label }) => (
-              <a key={id} href={`#${id}`} className={activeSection === id ? 'active' : ''} onClick={() => setActiveSection(id)}>{label}</a>
+          <nav className="refer-nav" aria-label={t.refNavAria}>
+            {SECTIONS.map(({ id, labelKey }) => (
+              <a key={id} href={`#${id}`} className={activeSection === id ? 'active' : ''} onClick={() => setActiveSection(id)}>{t[labelKey]}</a>
             ))}
           </nav>
 
           {/* ============ RINGKASAN ============ */}
-          <section id="ringkasan" aria-label="Ringkasan referral">
+          <section id="ringkasan" aria-label={t.refSecSummary}>
             <div className="refer-hero-card">
               <div className="refer-hero-top">
-                <span className="refer-kicker">Program Ajak Teman</span>
+                <span className="refer-kicker">{t.refKicker}</span>
                 {liveReady && (
-                  <span className={`refer-live${live ? '' : ' is-polling'}`} title={live ? 'Terhubung real-time' : 'Diperbarui otomatis tiap 30 detik'}>
-                    <i aria-hidden="true" />{live ? 'Live' : 'Otomatis'}
+                  <span className={`refer-live${live ? '' : ' is-polling'}`} title={live ? t.refLiveTitle : t.refPollingTitle}>
+                    <i aria-hidden="true" />{live ? t.refLive : t.refAuto}
                   </span>
                 )}
               </div>
               {loading ? (
-                <p className="refer-balance-label">Memuat saldo…</p>
+                <p className="refer-balance-label">{t.refLoadingBalance}</p>
               ) : loggedIn === false ? (
                 <>
-                  <h1 className="refer-title" style={{ color: '#fff' }}>Ajak teman, kumpulkan Koin SUKI.</h1>
-                  <p className="refer-balance-sub">Bagikan link referral ke WhatsApp, komunitas, atau media sosial. Setiap teman yang bergabung dan aktif, kamu dapat Koin yang bisa dicairkan.</p>
+                  <h1 className="refer-title" style={{ color: '#fff' }}>{t.refHeroTitle}</h1>
+                  <p className="refer-balance-sub">{t.refHeroDesc}</p>
                   <div className="refer-login-cta">
-                    <Link className="refer-btn refer-btn-primary" href="/login?redirect=/ajak-teman">Masuk untuk mulai</Link>
-                    <Link className="refer-btn refer-btn-ghost" href="/signup?redirect=/ajak-teman">Buat akun gratis</Link>
+                    <Link className="refer-btn refer-btn-primary" href="/login?redirect=/ajak-teman">{t.refLoginCta}</Link>
+                    <Link className="refer-btn refer-btn-ghost" href="/signup?redirect=/ajak-teman">{t.refSignupCta}</Link>
                   </div>
                 </>
               ) : (
                 <>
-                  <p className="refer-balance-label">Saldo Koin SUKI kamu</p>
+                  <p className="refer-balance-label">{t.refBalanceLabel}</p>
                   <p className="refer-balance">{count(balance)}</p>
-                  <p className="refer-balance-sub">≈ <strong>{money(Math.floor(balance / pointsPerRupiah))}</strong> · {count(lifetime)} Koin terkumpul seumur hidup</p>
+                  <p className="refer-balance-sub">≈ <strong>{money(Math.floor(balance / pointsPerRupiah))}</strong> · {t.refLifetime.replace('{n}', count(lifetime))}</p>
                   <div className="refer-level">
                     <div className="refer-level-head">
-                      <b>Level {level.name}</b>
-                      <span>{nextLevel ? `${count(nextLevel.min - qualified)} aktivasi lagi ke ${nextLevel.name}` : 'Level tertinggi tercapai 🎉'}</span>
+                      <b>{t.refLevel.replace('{name}', levelName)}</b>
+                      <span>{nextLevelMin !== undefined ? t.refNextLevel.replace('{n}', count(nextLevelMin - qualified)).replace('{name}', nextLevelName) : t.refTopLevel}</span>
                     </div>
-                    <div className="refer-progress" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100} aria-label={`Progres level ${level.name}`}>
+                    <div className="refer-progress" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100} aria-label={t.refLevel.replace('{name}', levelName)}>
                       <i style={{ width: `${progress}%` }} />
                     </div>
-                    <p>{count(qualified)} aktivasi qualified · Diperbarui {timeAgo(updatedAt)}</p>
+                    <p>{t.refQualifiedCount.replace('{n}', count(qualified))} · {t.refUpdated.replace('{ago}', timeAgo(updatedAt, t))}</p>
                   </div>
                   <div className="refer-hero-actions">
                     <a className="refer-btn refer-btn-wa" href={channelHref('whatsapp') || '#bagikan'} target="_blank" rel="noopener noreferrer">
-                      <WaIcon /> Bagikan via WhatsApp
+                      <WaIcon /> {t.refShareWa}
                     </a>
-                    <button className="refer-btn refer-btn-ghost" onClick={() => copyText(linkFor(''), 'Link referral disalin.')}>
-                      <Copy size={17} /> Salin link
+                    <button className="refer-btn refer-btn-ghost" onClick={() => copyText(linkFor(''), t.refLinkCopied)}>
+                      <Copy size={17} /> {t.refCopyLink}
                     </button>
                   </div>
                 </>
@@ -383,43 +384,43 @@ export default function AjakTemanPage() {
               <div className="refer-stats" style={{ marginTop: 14 }}>
                 <article className="refer-stat">
                   <span className="icon"><MousePointerClick size={18} /></span>
-                  <small>Link dikunjungi</small><b>{count(totals.visits)}</b>
-                  <span>Orang membuka link referralmu</span>
+                  <small>{t.refStatVisits}</small><b>{count(totals.visits)}</b>
+                  <span>{t.refStatVisitsDesc}</span>
                 </article>
                 <article className="refer-stat">
                   <span className="icon"><UserPlus size={18} /></span>
-                  <small>Teman bergabung</small><b>{count(totals.signups)}</b>
-                  <span>Mendaftar lewat kodemu · {convVisitSignup}% dari kunjungan</span>
+                  <small>{t.refStatSignups}</small><b>{count(totals.signups)}</b>
+                  <span>{t.refStatSignupsDesc.replace('{pct}', String(convVisitSignup))}</span>
                 </article>
                 <article className="refer-stat">
                   <span className="icon"><BadgeCheck size={18} /></span>
-                  <small>Aktivasi qualified</small><b>{count(totals.qualified)}</b>
-                  <span>Lolos verifikasi · {convSignupQualified}% dari pendaftar</span>
+                  <small>{t.refStatQualified}</small><b>{count(totals.qualified)}</b>
+                  <span>{t.refStatQualifiedDesc.replace('{pct}', String(convSignupQualified))}</span>
                 </article>
                 <article className="refer-stat">
                   <span className="icon"><TrendingUp size={18} /></span>
-                  <small>Tingkat konversi</small><b>{convVisitQualified}%</b>
-                  <span>Dari kunjungan menjadi Koin</span>
+                  <small>{t.refStatConv}</small><b>{convVisitQualified}%</b>
+                  <span>{t.refStatConvDesc}</span>
                 </article>
               </div>
             )}
           </section>
 
           {/* ============ BAGIKAN ============ */}
-          <section id="bagikan" aria-label="Bagikan referral">
+          <section id="bagikan" aria-label={t.refSecShare}>
             <div className="refer-card">
               <div className="refer-section-head">
-                <span className="refer-kicker"><Share2 size={13} /> Bagikan</span>
-                <h3>Link referral pribadimu</h3>
-                <p className="desc">Setiap tombol di bawah memakai link dengan kode kamu — kunjungan tercatat otomatis ke kanal yang benar.</p>
+                <span className="refer-kicker"><Share2 size={13} /> {t.refSecShare}</span>
+                <h3>{t.refShareTitle}</h3>
+                <p className="desc">{t.refShareDesc}</p>
               </div>
               {loggedIn === false ? (
-                <p className="refer-empty">Masuk dulu untuk melihat kode referral pribadimu.<br /><Link href="/login?redirect=/ajak-teman" style={{ color: 'var(--theme-primary)', fontWeight: 800 }}>Masuk / daftar gratis →</Link></p>
+                <p className="refer-empty">{t.refLoginToSee}<br /><Link href="/login?redirect=/ajak-teman" style={{ color: 'var(--theme-primary)', fontWeight: 800 }}>{t.refLoginLink}</Link></p>
               ) : (
                 <>
                   <div className="refer-linkbox">
-                    <input readOnly value={referralCode ? linkFor('') : 'Memuat…'} aria-label="Link referral pribadi" onFocus={(e) => e.target.select()} />
-                    <button onClick={() => copyText(linkFor(''), 'Link referral disalin.')}>Salin</button>
+                    <input readOnly value={referralCode ? linkFor('') : t.refLinkLoading} aria-label={t.refLinkAria} onFocus={(e) => e.target.select()} />
+                    <button onClick={() => copyText(linkFor(''), t.refLinkCopied)}>{t.refCopy}</button>
                   </div>
                   <div className="refer-channels">
                     {shareChannels.map((ch) => {
@@ -433,138 +434,138 @@ export default function AjakTemanPage() {
                   {qrOpen && (
                     <div className="refer-qr-panel">
                       <div className="refer-qr-row">
-                        <label>Kanal QR
+                        <label>{t.refQrChannel}
                           <select value={qrChannel} onChange={(e) => setQrChannel(e.target.value)}>
                             {['whatsapp', 'telegram', 'instagram', 'community', 'website', 'direct'].map((c) => <option key={c} value={c}>{c}</option>)}
                           </select>
                         </label>
                       </div>
-                      {qrData ? <img src={qrData} alt={`Kode QR referral kanal ${qrChannel}`} /> : <p className="refer-note">Membuat QR…</p>}
-                      {qrData && <a className="refer-btn-sm" href={qrData} download={`suki-referral-${qrChannel}.png`}>Unduh QR PNG</a>}
-                      <p className="refer-note">Cetak untuk booth, warung, atau papan komunitas — setiap scan tercatat sebagai kunjungan dari kanal {qrChannel}.</p>
+                      {qrData ? <img src={qrData} alt={t.refQrAlt.replace('{channel}', qrChannel)} /> : <p className="refer-note">{t.refQrMaking}</p>}
+                      {qrData && <a className="refer-btn-sm" href={qrData} download={`suki-referral-${qrChannel}.png`}>{t.refQrDownload}</a>}
+                      <p className="refer-note">{t.refQrNote.replace('{channel}', qrChannel)}</p>
                     </div>
                   )}
-                  <p className="refer-note" style={{ marginTop: 14 }}>Contoh pesan: “{shareText('').split('\n\n')[0]}” — jujur, tanpa janji penghasilan.</p>
+                  <p className="refer-note" style={{ marginTop: 14 }}>{t.refShareExample.replace('{text}', shareText('').split('\n\n')[0])}</p>
                 </>
               )}
             </div>
           </section>
 
           {/* ============ PERFORMA ============ */}
-          <section id="performa" aria-label="Performa referral">
+          <section id="performa" aria-label={t.refSecPerformance}>
             <div className="refer-grid-2">
               <div className="refer-card">
                 <div className="refer-section-head">
-                  <span className="refer-kicker"><TrendingUp size={13} /> Performa</span>
-                  <h3>Alur dari klik menjadi Koin</h3>
-                  <p className="desc">Fokuskan energimu ke langkah yang paling bocor.</p>
+                  <span className="refer-kicker"><TrendingUp size={13} /> {t.refSecPerformance}</span>
+                  <h3>{t.refFunnelTitle}</h3>
+                  <p className="desc">{t.refFunnelDesc}</p>
                 </div>
                 <div className="refer-funnel">
                   <div className="refer-funnel-step">
                     <span className="dot">1</span>
-                    <div><b>Kunjungan link</b><small>Orang yang membuka linkmu</small></div>
+                    <div><b>{t.refFunnelVisit}</b><small>{t.refFunnelVisitDesc}</small></div>
                     <strong>{count(totals.visits)}</strong>
                   </div>
                   <div className="refer-funnel-step">
                     <span className="dot">2</span>
-                    <div><b>Pendaftar</b><small>Membuat akun SUKI Apps · {convVisitSignup}%</small>
+                    <div><b>{t.refFunnelSignup}</b><small>{t.refFunnelSignupDesc.replace('{pct}', String(convVisitSignup))}</small>
                       <div className="refer-funnel-bar"><i style={{ width: `${convVisitSignup}%` }} /></div>
                     </div>
                     <strong>{count(totals.signups)}</strong>
                   </div>
                   <div className="refer-funnel-step">
                     <span className="dot">3</span>
-                    <div><b>Qualified → Koin</b><small>Aktivasi terverifikasi · {convSignupQualified}%</small>
+                    <div><b>{t.refFunnelQualified}</b><small>{t.refFunnelQualifiedDesc.replace('{pct}', String(convSignupQualified))}</small>
                       <div className="refer-funnel-bar"><i style={{ width: `${convSignupQualified}%` }} /></div>
                     </div>
                     <strong>{count(totals.qualified)}</strong>
                   </div>
                 </div>
                 <button className="refer-btn-sm" onClick={() => { void loadAnalytics(); void loadSummary(); setUpdatedAt(Date.now()); }}>
-                  <RefreshCw size={14} /> Muat ulang data
+                  <RefreshCw size={14} /> {t.refReload}
                 </button>
               </div>
               <div className="refer-card">
                 <div className="refer-section-head">
-                  <span className="refer-kicker"><Sparkles size={13} /> Kanal</span>
-                  <h3>Kanal yang menghasilkan</h3>
-                  <p className="desc">Diurutkan dari aktivasi qualified terbanyak.</p>
+                  <span className="refer-kicker"><Sparkles size={13} /> {t.refSecShare}</span>
+                  <h3>{t.refChannelsTitle}</h3>
+                  <p className="desc">{t.refChannelsDesc}</p>
                 </div>
                 {topChannels.length ? (
                   <div className="refer-channels-bars">
                     {topChannels.map((c) => (
                       <div key={c.channel} className="refer-channel-bar">
-                        <div className="row"><b>{c.channel}</b><span>{count(c.qualified)} qualified · {count(c.signups)} daftar</span></div>
+                        <div className="row"><b>{c.channel}</b><span>{t.refChannelQualified.replace('{n}', count(c.qualified)).replace('{m}', count(c.signups))}</span></div>
                         <div className="track"><i style={{ width: `${Math.round((c.qualified / maxChannelQualified) * 100)}%` }} /></div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="refer-empty">Belum ada data kanal. Bagikan link dengan tombol WhatsApp di atas, lalu lihat kanal mana yang paling menghasilkan.</p>
+                  <p className="refer-empty">{t.refNoChannels}</p>
                 )}
               </div>
             </div>
           </section>
 
           {/* ============ PERINGKAT ============ */}
-          <section id="peringkat" aria-label="Papan peringkat">
+          <section id="peringkat" aria-label={t.refSecLeaderboard}>
             <div className="refer-card">
               <div className="refer-section-head">
-                <span className="refer-kicker"><Medal size={13} /> Papan peringkat</span>
-                <h3>Affiliator paling berdampak</h3>
-                <p className="desc">Peringkat berdasarkan aktivasi qualified — bukan jumlah klik. Nama ditampilkan sebagai alias demi privasi.</p>
+                <span className="refer-kicker"><Medal size={13} /> {t.refSecLeaderboard}</span>
+                <h3>{t.refBoardTitle}</h3>
+                <p className="desc">{t.refBoardDesc}</p>
               </div>
               {leaders.length ? (
                 <div className="refer-board">
                   {leaders.slice(0, 10).map((row) => (
                     <div key={row.rank} className={`refer-board-row${row.you ? ' is-you' : ''}`}>
                       <span className={`refer-rank${row.rank <= 3 ? ` r${row.rank}` : ''}`}>{row.rank}</span>
-                      <div><b>{row.name}{row.you && <span className="refer-you-tag">KAMU</span>}</b><small>{count(row.qualified_referrals)} aktivasi qualified</small></div>
-                      <strong>{count(row.total_points)} Koin</strong>
+                      <div><b>{row.name}{row.you && <span className="refer-you-tag">{t.refYou}</span>}</b><small>{t.refBoardQualified.replace('{n}', count(row.qualified_referrals))}</small></div>
+                      <strong>{t.refBoardCoins.replace('{n}', count(row.total_points))}</strong>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="refer-empty">Belum ada data peringkat yang cukup untuk ditampilkan. Jadilah yang pertama mengumpulkan aktivasi qualified! 🚀</p>
+                <p className="refer-empty">{t.refNoBoard}</p>
               )}
             </div>
           </section>
 
           {/* ============ DOMPET ============ */}
-          <section id="dompet" aria-label="Dompet Koin">
+          <section id="dompet" aria-label={t.refSecWallet}>
             <div className="refer-grid-2">
               <div className="refer-card">
                 <div className="refer-section-head">
-                  <span className="refer-kicker"><Wallet size={13} /> Dompet</span>
-                  <h3>Cairkan Koin jadi rupiah</h3>
-                  <p className="desc">Rasio {pointsPerRupiah} Koin = Rp1 · Minimum {count(minimumRedemption)} Koin per pengajuan. Setiap pengajuan diverifikasi manual 1–3 hari kerja.</p>
+                  <span className="refer-kicker"><Wallet size={13} /> {t.refSecWallet}</span>
+                  <h3>{t.refWalletTitle}</h3>
+                  <p className="desc">{t.refWalletDesc.replace('{n}', String(pointsPerRupiah)).replace('{m}', count(minimumRedemption))}</p>
                 </div>
                 {loggedIn === false ? (
-                  <p className="refer-empty">Masuk untuk melihat saldo dan mengajukan pencairan.</p>
+                  <p className="refer-empty">{t.refWalletLogin}</p>
                 ) : (
                   <>
                     <div className="refer-wallet-balance">
-                      <b>{count(balance)} <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--theme-text-muted)' }}>Koin</span></b>
+                      <b>{count(balance)} <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--theme-text-muted)' }}>{t.refWalletCoins}</span></b>
                       <span>≈ {money(Math.floor(balance / pointsPerRupiah))}</span>
                     </div>
                     <form className="refer-form" onSubmit={redeem}>
-                      <label>Jumlah Koin
+                      <label>{t.refRedeemAmount}
                         <input name="points" type="number" min={minimumRedemption} step={pointsPerRupiah} value={redeemPoints} onChange={(e) => setRedeemPoints(Number(e.target.value))} required />
-                        <small>Estimasi diterima: {money(Math.floor(redeemPoints / pointsPerRupiah))}</small>
+                        <small>{t.refRedeemEstimate.replace('{amount}', money(Math.floor(redeemPoints / pointsPerRupiah)))}</small>
                       </label>
-                      <label>Metode pencairan
+                      <label>{t.refRedeemMethod}
                         <select name="payout_method" required defaultValue="">
-                          <option value="" disabled>Pilih metode</option>
-                          <option value="bank_transfer">Transfer bank</option>
-                          <option value="ewallet">E-wallet (DANA/OVO/GoPay)</option>
+                          <option value="" disabled>{t.refRedeemMethodPick}</option>
+                          <option value="bank_transfer">{t.refRedeemBank}</option>
+                          <option value="ewallet">{t.refRedeemEwallet}</option>
                         </select>
                       </label>
-                      <label>Nomor rekening / akun e-wallet
-                        <input name="payout_account" minLength={4} maxLength={80} required placeholder="Cth. 821234567890" autoComplete="off" />
-                        <small>Nomor disimpan termasking dan hanya dipakai untuk pencairan.</small>
+                      <label>{t.refRedeemAccount}
+                        <input name="payout_account" minLength={4} maxLength={80} required placeholder={t.refRedeemAccountPh} autoComplete="off" />
+                        <small>{t.refRedeemAccountNote}</small>
                       </label>
                       <button className="refer-btn refer-btn-primary" type="submit" style={{ width: '100%' }}>
-                        <Gift size={17} /> Ajukan pencairan
+                        <Gift size={17} /> {t.refRedeemSubmit}
                       </button>
                     </form>
                   </>
@@ -572,9 +573,9 @@ export default function AjakTemanPage() {
               </div>
               <div className="refer-card">
                 <div className="refer-section-head">
-                  <span className="refer-kicker"><Users size={13} /> Riwayat</span>
-                  <h3>Pengajuan pencairan</h3>
-                  <p className="desc">Status terbaru dari setiap pengajuanmu.</p>
+                  <span className="refer-kicker"><Users size={13} /> {t.refSecWallet}</span>
+                  <h3>{t.refHistoryTitle}</h3>
+                  <p className="desc">{t.refHistoryDesc}</p>
                 </div>
                 {redemptions.length ? (
                   <div className="refer-history">
@@ -582,26 +583,26 @@ export default function AjakTemanPage() {
                       <div key={item.id} className="refer-history-row">
                         <div>
                           <b>{money(item.rupiah_amount)}</b>
-                          <small>{count(item.points)} Koin · {item.created_at ? new Date(item.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}</small>
+                          <small>{t.refBoardCoins.replace('{n}', count(item.points))} · {item.created_at ? new Date(item.created_at).toLocaleDateString(language === 'id' ? 'id-ID' : language, { day: 'numeric', month: 'short', year: 'numeric' }) : ''}</small>
                         </div>
                         {statusChip(item.status)}
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="refer-empty">Belum ada pengajuan. Kumpulkan {count(minimumRedemption)} Koin pertama, lalu cairkan di sini.</p>
+                  <p className="refer-empty">{t.refNoHistory.replace('{n}', count(minimumRedemption))}</p>
                 )}
                 {summary?.recent_activity?.length ? (
                   <>
                     <div className="refer-section-head" style={{ marginTop: 20 }}>
-                      <h3 style={{ fontSize: 15 }}>Aktivitas terbaru</h3>
+                      <h3 style={{ fontSize: 15 }}>{t.refRecentTitle}</h3>
                     </div>
                     <div className="refer-history">
                       {summary.recent_activity.slice(0, 5).map((ev, i) => (
                         <div key={`${ev.created_at}-${i}`} className="refer-history-row">
                           <div>
-                            <b style={{ fontSize: 13 }}>{ev.event_type === 'qualified' ? 'Aktivasi qualified' : ev.event_type === 'signup' ? 'Teman bergabung' : 'Link dikunjungi'}</b>
-                            <small>{ev.source_channel || 'direct'} · {ev.created_at ? new Date(ev.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) : ''}</small>
+                            <b style={{ fontSize: 13 }}>{ev.event_type === 'qualified' ? t.refEvQualified : ev.event_type === 'signup' ? t.refEvSignup : t.refEvVisit}</b>
+                            <small>{ev.source_channel || 'direct'} · {ev.created_at ? new Date(ev.created_at).toLocaleDateString(language === 'id' ? 'id-ID' : language, { day: 'numeric', month: 'short' }) : ''}</small>
                           </div>
                           <strong style={{ fontSize: 13, color: ev.event_type === 'qualified' ? 'var(--theme-success)' : 'var(--theme-text-muted)' }}>
                             {ev.event_type === 'qualified' ? `+${count(campaign.pointsPerQualifiedInvite || 100)}` : '•'}
@@ -616,23 +617,23 @@ export default function AjakTemanPage() {
           </section>
 
           {/* ============ BANTUAN ============ */}
-          <section id="bantuan" aria-label="Bantuan dan ketentuan">
+          <section id="bantuan" aria-label={t.refSecHelp}>
             <div className="refer-grid-2">
               <div className="refer-card">
                 <div className="refer-section-head">
-                  <span className="refer-kicker">Cara kerja</span>
-                  <h3>Empat langkah mudah</h3>
+                  <span className="refer-kicker">{t.refHowKicker}</span>
+                  <h3>{t.refHowTitle}</h3>
                 </div>
                 <div className="refer-steps" style={{ gridTemplateColumns: '1fr' }}>
                   {[
-                    ['Salin link referralmu', 'Setiap akun punya kode unik. Link tercatat otomatis atas namamu.'],
-                    ['Bagikan ke orang yang tepat', 'Grup WhatsApp keluarga, komunitas, teman kampus atau kantor — yang memang butuh SUKI Apps.'],
-                    ['Teman daftar & aktif', 'Mereka mendaftar lewat linkmu lalu memakai fitur SUKI (profil, listing, komunitas).'],
-                    ['Koin masuk otomatis', 'Setelah aktivasi qualified terverifikasi, Koin langsung masuk ke saldomu.'],
-                  ].map(([t, d], i) => (
-                    <div key={t} className="refer-step" style={{ gridTemplateColumns: '32px 1fr', display: 'grid' }}>
+                    [t.refStep1T, t.refStep1D],
+                    [t.refStep2T, t.refStep2D],
+                    [t.refStep3T, t.refStep3D],
+                    [t.refStep4T, t.refStep4D],
+                  ].map(([st, sd], i) => (
+                    <div key={st} className="refer-step" style={{ gridTemplateColumns: '32px 1fr', display: 'grid' }}>
                       <span className="num">{i + 1}</span>
-                      <div><b>{t}</b><br /><span>{d}</span></div>
+                      <div><b>{st}</b><br /><span>{sd}</span></div>
                     </div>
                   ))}
                 </div>
@@ -640,31 +641,31 @@ export default function AjakTemanPage() {
               <div style={{ display: 'grid', gap: 'clamp(16px, 2.5vw, 24px)', alignContent: 'start' }}>
                 <div className="refer-card">
                   <div className="refer-section-head">
-                    <span className="refer-kicker">Tanya jawab</span>
-                    <h3>Yang sering ditanyakan</h3>
+                    <span className="refer-kicker">{t.refFaqKicker}</span>
+                    <h3>{t.refFaqTitle}</h3>
                   </div>
                   <div className="refer-faq">
-                    {FAQS.map(([q, a], i) => (
-                      <div key={q} className={`refer-faq-item${openFaq === i ? ' open' : ''}`}>
+                    {FAQ_KEYS.map(([qk, ak], i) => (
+                      <div key={qk} className={`refer-faq-item${openFaq === i ? ' open' : ''}`}>
                         <button onClick={() => setOpenFaq(openFaq === i ? null : i)} aria-expanded={openFaq === i}>
-                          {q}<ChevronDown size={17} className="chev" />
+                          {t[qk]}<ChevronDown size={17} className="chev" />
                         </button>
-                        <div className="answer"><p>{a}</p></div>
+                        <div className="answer"><p>{t[ak]}</p></div>
                       </div>
                     ))}
                   </div>
                 </div>
                 <div className="refer-card">
                   <div className="refer-section-head">
-                    <span className="refer-kicker">Ketentuan</span>
-                    <h3>Main adil, semua menang</h3>
+                    <span className="refer-kicker">{t.refRulesKicker}</span>
+                    <h3>{t.refRulesTitle}</h3>
                   </div>
                   <ul className="refer-rules">
-                    {RULES.map(([t, d], i) => (
-                      <li key={t}><span className="rn">{String(i + 1).padStart(2, '0')}</span><span><b>{t}.</b> {d}</span></li>
+                    {RULE_KEYS.map(([tk, dk], i) => (
+                      <li key={tk}><span className="rn">{String(i + 1).padStart(2, '0')}</span><span><b>{t[tk]}.</b> {t[dk]}</span></li>
                     ))}
                   </ul>
-                  <p className="refer-note" style={{ marginTop: 14 }}>Program “Ajak Teman, Tumbuh Bersama” berakhir {campaign.endDate || '31 Des 2026'} kecuali diperpanjang. SUKI Apps dapat menyesuaikan syarat dengan pemberitahuan di halaman ini.</p>
+                  <p className="refer-note" style={{ marginTop: 14 }}>{t.refProgramNote.replace('{date}', campaign.endDate || '31 Des 2026')}</p>
                 </div>
               </div>
             </div>

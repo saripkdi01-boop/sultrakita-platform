@@ -5,6 +5,9 @@ import { usePathname } from 'next/navigation';
 import { CSSProperties, ComponentType, SVGProps, useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ArrowUpRight, LayoutGrid, X } from 'lucide-react';
+import { usePreferences } from '@/lib/preferences';
+import { getCoreLabels } from '@/lib/i18n/dictionaries';
+import { getNavLabels } from '@/lib/i18n/navigation';
 import {
   SukiIconAjakTeman,
   SukiIconBerita,
@@ -42,40 +45,40 @@ type Section = {
 };
 
 /** Seluruh destinasi ekosistem SUKI — rute nyata yang sudah live, tanpa tautan palsu. */
-const SECTIONS: Section[] = [
+const buildSections = (t: Record<string, string>): Section[] => [
   {
-    title: 'Jelajahi',
-    hint: 'Layanan utama SUKI',
+    title: t.exploreTitle,
+    hint: t.sukiMainServices,
     accent: '#0b7567',
     tiles: [
-      { key: 'marketplace', label: 'Marketplace', desc: 'Jual beli barang & jasa lokal', href: '/marketplace', Icon: SukiIconMarketplace, isActive: (p) => p.startsWith('/marketplace') || p.startsWith('/suki-marketplace') },
-      { key: 'properti', label: 'Properti', desc: 'Sewa & jual properti lewat peta', href: '/properti', Icon: SukiIconProperti, isActive: (p) => p.startsWith('/properti') },
-      { key: 'jobs', label: 'SUKI Jobs', desc: 'Lowongan kerja Sulawesi Tenggara', href: '/jobs', Icon: SukiIconJobs, isActive: (p) => p.startsWith('/jobs') },
-      { key: 'komunitas', label: 'Komunitas', desc: 'Grup & komunitas warga', href: '/groups', Icon: SukiIconKomunitas, isActive: (p) => p.startsWith('/groups') },
-      { key: 'berita', label: 'Portal Berita', desc: 'Kabar terkini media Indonesia', href: '/beranda#portal-berita', Icon: SukiIconBerita, badge: 'Baru', isActive: () => false },
-      { key: 'Business', label: 'Direktori Bisnis', desc: 'UMKM & jasa terverifikasi', href: '/Business', Icon: SukiIconBisnis, isActive: (p) => p.startsWith('/Business') },
-      { key: 'kampung', label: 'SUKI Kampung', desc: 'Bangun kampung tropis virtual', href: '/kampung', Icon: SukiIconKampung, badge: 'Baru', isActive: (p) => p.startsWith('/kampung') },
-      { key: 'web-studio', label: 'SUKI Web Studio', desc: 'Jasa pembuatan website', href: '/web-studio', Icon: SukiIconWebStudio, badge: 'Baru', isActive: (p) => p.startsWith('/web-studio') },
+      { key: 'marketplace', label: t.marketplace, desc: t.marketplaceDesc, href: '/marketplace', Icon: SukiIconMarketplace, isActive: (p) => p.startsWith('/marketplace') || p.startsWith('/suki-marketplace') },
+      { key: 'properti', label: t.property, desc: t.propertyDesc, href: '/properti', Icon: SukiIconProperti, isActive: (p) => p.startsWith('/properti') },
+      { key: 'jobs', label: t.sukiJobs, desc: t.jobsDesc, href: '/jobs', Icon: SukiIconJobs, isActive: (p) => p.startsWith('/jobs') },
+      { key: 'komunitas', label: t.groups, desc: t.groupsDesc, href: '/groups', Icon: SukiIconKomunitas, isActive: (p) => p.startsWith('/groups') },
+      { key: 'berita', label: t.newsPortal, desc: t.newsPortalDesc, href: '/beranda#portal-berita', Icon: SukiIconBerita, badge: t.badgeNew, isActive: () => false },
+      { key: 'Business', label: t.businessDirectory, desc: t.businessDirectoryDesc, href: '/Business', Icon: SukiIconBisnis, isActive: (p) => p.startsWith('/Business') },
+      { key: 'kampung', label: t.sukiKampung, desc: t.sukiKampungDesc, href: '/kampung', Icon: SukiIconKampung, badge: t.badgeNew, isActive: (p) => p.startsWith('/kampung') },
+      { key: 'web-studio', label: 'SUKI Web Studio', desc: 'Jasa pembuatan website', href: '/web-studio', Icon: SukiIconWebStudio, badge: t.badgeNew, isActive: (p) => p.startsWith('/web-studio') },
     ],
   },
   {
-    title: 'Buat & Hasilkan',
-    hint: 'Mulai bertransaksi hari ini',
+    title: t.createAndEarn,
+    hint: t.startTransacting,
     accent: '#b8860b',
     tiles: [
-      { key: 'jual', label: 'Pasang Iklan', desc: 'Jual barang di Marketplace', href: '/marketplace/create', Icon: SukiIconIklan, isActive: (p) => p === '/marketplace/create' },
-      { key: 'daftar-Business', label: 'Daftarkan Bisnis', desc: 'Tampilkan usahamu ke warga', href: '/Business/daftar', Icon: SukiIconDaftarBisnis, isActive: (p) => p.startsWith('/Business/daftar') },
-      { key: 'loker', label: 'Pasang Lowongan', desc: 'Rekrut talenta lokal', href: '/jobs/create', Icon: SukiIconLowongan, isActive: (p) => p === '/jobs/create' },
+      { key: 'jual', label: t.postAd, desc: t.postAdDesc, href: '/marketplace/create', Icon: SukiIconIklan, isActive: (p) => p === '/marketplace/create' },
+      { key: 'daftar-Business', label: t.registerBusiness, desc: t.registerBusinessDesc, href: '/Business/daftar', Icon: SukiIconDaftarBisnis, isActive: (p) => p.startsWith('/Business/daftar') },
+      { key: 'loker', label: t.postJob, desc: t.postJobDesc, href: '/jobs/create', Icon: SukiIconLowongan, isActive: (p) => p === '/jobs/create' },
     ],
   },
   {
-    title: 'SUKI Saya',
-    hint: 'Akun & kebersamaan',
+    title: t.mySuki,
+    hint: t.accountTogetherness,
     accent: '#6d4fc2',
     tiles: [
-      { key: 'ajak', label: 'Ajak Teman', desc: 'Kumpulkan Koin SUKI tiap ajakan', href: '/ajak-teman', Icon: SukiIconAjakTeman, badge: 'Reward', isActive: (p) => p.startsWith('/ajak-teman') },
-      { key: 'reels', label: 'Reels', desc: 'Video pendek warga Sultra', href: '/reels', Icon: SukiIconReels, isActive: (p) => p.startsWith('/reels') },
-      { key: 'chat', label: 'Pesan', desc: 'Ngobrol dengan penjual & teman', href: '/chat', Icon: SukiIconPesan, isActive: (p) => p.startsWith('/chat') },
+      { key: 'ajak', label: t.inviteFriends, desc: t.inviteFriendsDesc, href: '/ajak-teman', Icon: SukiIconAjakTeman, badge: t.badgeReward, isActive: (p) => p.startsWith('/ajak-teman') },
+      { key: 'reels', label: t.reels, desc: t.reelsDesc, href: '/reels', Icon: SukiIconReels, isActive: (p) => p.startsWith('/reels') },
+      { key: 'chat', label: t.chat, desc: t.chatDesc, href: '/chat', Icon: SukiIconPesan, isActive: (p) => p.startsWith('/chat') },
     ],
   },
 ];
@@ -94,6 +97,9 @@ function isHubActive(pathname: string): boolean {
 
 export function EcosystemHub({ variant }: { variant: 'action' | 'mtab' }) {
   const pathname = usePathname();
+  const { language } = usePreferences();
+  const t: Record<string, string> = { ...getCoreLabels(language), ...getNavLabels(language) };
+  const SECTIONS = buildSections(t);
   const [open, setOpen] = useState(false);
   // Portal hanya aman setelah mount di klien (SSR: document belum ada).
   const [mounted, setMounted] = useState(false);
@@ -149,8 +155,8 @@ export function EcosystemHub({ variant }: { variant: 'action' | 'mtab' }) {
         aria-haspopup="dialog"
         aria-controls={panelId}
         aria-current={active ? 'page' : undefined}
-        aria-label="Ekosistem SUKI — semua layanan"
-        title="Ekosistem SUKI"
+        aria-label={t.ecosystemAllServices}
+        title={t.sukiEcosystem}
         onClick={() => setOpen((value) => !value)}
       >
         <LayoutGrid aria-hidden="true" />
@@ -163,16 +169,16 @@ export function EcosystemHub({ variant }: { variant: 'action' | 'mtab' }) {
             ref={panelRef}
             id={panelId}
             role="dialog"
-            aria-label="Ekosistem SUKI — semua layanan"
+            aria-label={t.ecosystemAllServices}
             className="sknav-hub-panel"
           >
             <div className="sknav-hub-head">
               <div>
                 <p className="sknav-hub-eyebrow">SUKI Apps</p>
-                <h2 className="sknav-hub-title">Ekosistem SUKI</h2>
-                <p className="sknav-hub-sub">Semua layanan dalam satu genggaman</p>
+                <h2 className="sknav-hub-title">{t.sukiEcosystem}</h2>
+                <p className="sknav-hub-sub">{t.allServicesOneHand}</p>
               </div>
-              <button type="button" className="sknav-hub-close" onClick={close} aria-label="Tutup menu ekosistem">
+              <button type="button" className="sknav-hub-close" onClick={close} aria-label={t.closeEcosystemMenu}>
                 <X size={20} aria-hidden="true" />
               </button>
             </div>
@@ -222,8 +228,8 @@ export function EcosystemHub({ variant }: { variant: 'action' | 'mtab' }) {
                 <SukiIconAjakTeman />
               </span>
               <span className="sknav-hub-foot-text">
-                <strong>Ajak teman ke SUKI, kumpulkan Koin SUKI</strong>
-                <span>Tukarkan Koin SUKI jadi saldo & benefit ekosistem</span>
+                <strong>{t.inviteBannerTitle}</strong>
+                <span>{t.inviteBannerDesc}</span>
               </span>
               <ArrowUpRight size={18} aria-hidden="true" />
             </Link>

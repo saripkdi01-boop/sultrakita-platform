@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { usePreferences } from '@/lib/preferences';
+import { getGroupsLabels } from '@/lib/i18n/dict-groups';
 import './kampung.css';
 
 /**
@@ -16,43 +18,42 @@ import './kampung.css';
  * dan docs/04-SPESIFIKASI-API.md untuk jalur backend Fase 2.
  */
 export default function KampungPage() {
+  const { language } = usePreferences();
+  const k = getGroupsLabels(language);
   return (
     <AppLayout active="home">
       <main className="skk-shell">
         <div className="skk-topbar">
           <div>
-            <span className="skk-kicker">SUKI KAMPUNG · FASE 1</span>
-            <h1>Main bersama. Bangun bersama. Tumbuh bersama.</h1>
+            <span className="skk-kicker">{k.kKicker}</span>
+            <h1>{k.kTitle}</h1>
             <p>
-              Bangun kampung tropis virtual khas Sulawesi Tenggara: tempatkan bangunan,
-              panen Koin SUKI, selesaikan misi harian, dan uji pengetahuanmu lewat Kuis Sultra.
+              {k.kDesc}
             </p>
           </div>
-          <Link href="/beranda" className="skk-back" aria-label="Kembali ke Beranda SUKI">
-            ← Kembali ke SUKI
+          <Link href="/beranda" className="skk-back" aria-label={k.kBackAria}>
+            {k.kBack}
           </Link>
         </div>
 
         <div className="skk-demo" role="status">
-          <b>Mode Demo</b> — progres kampung tersimpan <b>di perangkat ini</b>, bukan di akun SUKI.
-          Backend (autentikasi, teman, referral server-side) belum diimplementasikan.
+          <b>{k.kDemoT.split(' — ')[0]}</b> — {k.kDemoT.split(' — ').slice(1).join(' — ')}
         </div>
 
         <div className="skk-frame-wrap">
           <iframe
             src="/kampung/index.html"
-            title="Game SUKI Kampung — prototipe playable Fase 1"
+            title={k.kFrameTitle}
             className="skk-frame"
             allowFullScreen
           />
         </div>
         <noscript>
-          <p className="skk-footnote">SUKI Kampung membutuhkan JavaScript untuk dimainkan.</p>
+          <p className="skk-footnote">{k.kNoJs}</p>
         </noscript>
 
         <p className="skk-footnote">
-          Koin SUKI di game ini adalah aset virtual, bukan uang sungguhan dan tidak dapat ditarik.
-          Lihat status backend di <code>/api/kampung/status</code>.
+          {k.kFootnote}
         </p>
       </main>
     </AppLayout>

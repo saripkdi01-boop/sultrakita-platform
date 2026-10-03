@@ -4,6 +4,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { LoaderCircle, RefreshCw, Send, X } from 'lucide-react';
 import { ApiComment, getComments, postComment } from '@/lib/feed-interactions';
 import { relativeTime } from '@/lib/format-time';
+import { usePreferences } from '@/lib/preferences';
+import { getCoreLabels } from '@/lib/i18n/dictionaries';
+import { getBerandaLabels, fmtLabel } from '@/lib/i18n/dict-beranda';
 import styles from './feed.module.css';
 
 type Props = {
@@ -21,6 +24,9 @@ function initialsOf(name: string) {
 }
 
 export function CommentThread({ postId, postAuthor, onCountChange, onNotice }: Props) {
+  const { language } = usePreferences();
+  const t = getCoreLabels(language);
+  const b = getBerandaLabels(language);
   const [comments, setComments] = useState<ApiComment[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [hasNextPage, setHasNextPage] = useState(true);
@@ -47,12 +53,12 @@ export function CommentThread({ postId, postAuthor, onCountChange, onNotice }: P
     } catch {
       // Gagal tambah halaman: biarkan daftar yang sudah ada + tombol "Muat lagi"
       // tetap bisa dicoba ulang. Gagal awal: tampilkan error + tombol coba lagi.
-      if (mountedRef.current && !append) setError('Komentar belum dapat dimuat.');
-      if (mountedRef.current && append) onNotice?.('Komentar berikutnya gagal dimuat. Coba lagi.');
+      if (mountedRef.current && !append) setError(b.brCommentsErr);
+      if (mountedRef.current && append) onNotice?.(b.brCommentsMoreFail);
     } finally {
       if (mountedRef.current) { setLoading(false); setLoadingMore(false); }
     }
-  }, [postId, onNotice]);
+  }, [postId, onNotice, b.brCommentsErr, b.brCommentsMoreFail]);
 
   useEffect(() => { void load(null, false); }, [load]);
 
@@ -60,7 +66,7 @@ export function CommentThread({ postId, postAuthor, onCountChange, onNotice }: P
     event?.preventDefault();
     const content = draft.trim();
     if (!content || sending) return;
-    if (content.length > 500) { onNotice?.('Komentar maksimal 500 karakter.'); return; }
+    if (content.length > 500) { onNotice?.(b.brCommentLong); return; }
     setSending(true);
     const tempId = `temp-${Date.now()}`;
     const replyName = replyTo?.name || null;
@@ -68,7 +74,7 @@ export function CommentThread({ postId, postAuthor, onCountChange, onNotice }: P
       id: tempId, post_id: postId, user_id: 'me', content,
       parent_id: replyTo?.id || null, reply_to_name: replyName,
       created_at: new Date().toISOString(),
-      profiles: { display_name: 'Anda' },
+      profiles: { display_name: b.brYou },
     };
     setComments((current) => [optimistic, ...current]);
     setDraft(''); setReplyTo(null);
@@ -80,24 +86,24 @@ export function CommentThread({ postId, postAuthor, onCountChange, onNotice }: P
     } catch (caught) {
       if (!mountedRef.current) return;
       setComments((current) => current.filter((item) => item.id !== tempId));
-      const message = caught instanceof Error ? caught.message : 'Komentar gagal dikirim.';
-      onNotice?.(message === 'Sesi login diperlukan.' ? 'Silakan login untuk berkomentar.' : 'Komentar gagal dikirim. Coba lagi.');
+      const message = caught instanceof Error ? caught.message : b.brCommentFail;
+      onNotice?.(message === 'Sesi login diperlukan.' ? b.brLoginComment : b.brCommentRetry);
     } finally {
       if (mountedRef.current) setSending(false);
     }
   }
 
-  return <section className={styles.thread} aria-label={`Komentar untuk postingan ${postAuthor}`}>
+  return <section className={styles.thread} aria-label={fmtLabel(b.brCommentsFor, { name: postAuthor })}>
     {loading ? (
-      <p className={styles.threadEmpty} role="status"><LoaderCircle size={15} className="spin" aria-hidden="true" /> Memuat komentar…</p>
+      <p className={styles.threadEmpty} role="status"><LoaderCircle size={15} className="spin" aria-hidden="true" /> {b.brLoadingComments}</p>
     ) : error && comments.length === 0 ? (
-      <p className={styles.threadError} role="alert">{error} <button type="button" onClick={() => void load(null, false)}><RefreshCw size={13} aria-hidden="true" /> Coba lagi</button></p>
+      <p className={styles.threadError} role="alert">{error} <button type="button" onClick={() => void load(null, false)}><RefreshCw size={13} aria-hidden="true" /> {b.brRetry}</button></p>
     ) : (
       <>
-        {comments.length === 0 && <p className={styles.threadEmpty}>Belum ada komentar. Mulai percakapan pertama.</p>}
+        {comments.length === 0 && <p className={styles.threadEmpty}>{b.brCommentsEmpty}</p>}
         <ul className={styles.threadList}>
           {comments.map((comment) => {
-            const name = comment.profiles?.username || comment.profiles?.display_name || 'Pengguna';
+            const name = comment.profiles?.username || comment.profiles?.display_name || b.brUserFallback;
             return <li key={comment.id} className={styles.commentItem}>
               <span className={styles.commentAvatar} aria-hidden="true">
                 {comment.profiles?.avatar_url ? <img src={comment.profiles.avatar_url} alt="" loading="lazy" /> : initialsOf(name)}
@@ -106,13 +112,13 @@ export function CommentThread({ postId, postAuthor, onCountChange, onNotice }: P
                 <div className={styles.commentHead}>
                   <span className={styles.commentAuthor}>{name}</span>
                   <span className={styles.commentTime}>{relativeTime(comment.created_at)}</span>
-                  {comment.reply_to_name && <span className={styles.replyTo}>↳ membalas {comment.reply_to_name}</span>}
+                  {comment.reply_to_name && <span className={styles.replyTo}>{fmtLabel(b.brReplyTo, { name: comment.reply_to_name })}</span>}
                 </div>
                 <p className={styles.commentText}>{comment.content}</p>
                 <div className={styles.commentFoot}>
                   {!comment.parent_id && (
                     <button type="button" className={styles.replyBtn} onClick={() => setReplyTo({ id: comment.id, name })}>
-                      Balas
+                      {b.brReply}
                     </button>
                   )}
                 </div>
@@ -123,7 +129,7 @@ export function CommentThread({ postId, postAuthor, onCountChange, onNotice }: P
         {hasNextPage && comments.length > 0 && (
           <button type="button" className={styles.loadMoreBtn} onClick={() => void load(cursor, true)} disabled={loadingMore}>
             {loadingMore ? <LoaderCircle size={14} className="spin" aria-hidden="true" /> : null}
-            {loadingMore ? 'Memuat…' : 'Muat komentar lain'}
+            {loadingMore ? b.brLoadingShort : b.brLoadMoreComments}
           </button>
         )}
       </>
@@ -131,23 +137,23 @@ export function CommentThread({ postId, postAuthor, onCountChange, onNotice }: P
     <form onSubmit={(event) => void submit(event)}>
       {replyTo && (
         <p className={styles.replyingTo}>
-          Membalas <strong>{replyTo.name}</strong>
-          <button type="button" onClick={() => setReplyTo(null)} aria-label="Batal membalas"><X size={13} aria-hidden="true" /> Batal</button>
+          {b.brReplyingTo} <strong>{replyTo.name}</strong>
+          <button type="button" onClick={() => setReplyTo(null)} aria-label={b.brCancelReply}><X size={13} aria-hidden="true" /> {t.cancel}</button>
         </p>
       )}
       <div className={styles.composerRow}>
-        <label htmlFor={`comment-input-${postId}`} className="sr-only">Tulis komentar</label>
+        <label htmlFor={`comment-input-${postId}`} className="sr-only">{b.brWriteComment}</label>
         <input
           id={`comment-input-${postId}`}
           className={styles.composerInput}
           value={draft}
           maxLength={500}
           onChange={(event) => setDraft(event.target.value)}
-          placeholder={replyTo ? `Balas ${replyTo.name}…` : 'Tulis komentar…'}
+          placeholder={replyTo ? fmtLabel(b.brReplyPh, { name: replyTo.name }) : b.brCommentPh}
           disabled={sending}
           autoComplete="off"
         />
-        <button type="submit" className={styles.composerSend} disabled={sending || !draft.trim()} aria-label="Kirim komentar">
+        <button type="submit" className={styles.composerSend} disabled={sending || !draft.trim()} aria-label={b.brSendComment}>
           {sending ? <LoaderCircle size={17} className="spin" aria-hidden="true" /> : <Send size={17} aria-hidden="true" />}
         </button>
       </div>

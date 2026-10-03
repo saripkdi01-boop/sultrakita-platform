@@ -4,10 +4,13 @@
 
 import { useEffect, useRef } from 'react';
 import { isValidCoord } from '@/lib/geo';
+import { usePreferences } from '@/lib/preferences';
+import { tpj } from '@/lib/i18n/dict-propertijobs';
 
 type PropertyMiniMapProps = { lat: number; lng: number; title: string; isEstimate?: boolean };
 
 export default function PropertyMiniMap({ lat, lng, title, isEstimate = false }: PropertyMiniMapProps) {
+  const { language } = usePreferences();
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -44,5 +47,5 @@ export default function PropertyMiniMap({ lat, lng, title, isEstimate = false }:
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lat, lng]);
 
-  return <div ref={containerRef} className="h-full w-full" role="application" aria-label={`Peta lokasi properti${isEstimate ? ' (perkiraan)' : ''}`} />;
+  return <div ref={containerRef} className="h-full w-full" role="application" aria-label={tpj(language, 'pjMiniMapAria', { estimate: isEstimate ? tpj(language, 'pjMiniMapEstSuffix') : '' })} />;
 }

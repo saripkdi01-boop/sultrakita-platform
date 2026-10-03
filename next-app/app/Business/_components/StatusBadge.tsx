@@ -1,48 +1,59 @@
-type StatusConfig = { label: string; background: string; color: string; border: string };
+'use client';
+
+import { usePreferences } from '@/lib/preferences';
+import { getGroupsLabels } from '@/lib/i18n/dict-groups';
+
+type StatusStyle = { background: string; color: string; border: string };
 
 const soft = (token: string, pct: number) =>
   `color-mix(in srgb, var(${token}) ${pct}%, var(--sb-surface, var(--theme-surface)))`;
 const softBorder = (token: string, pct: number) =>
   `color-mix(in srgb, var(${token}) ${pct}%, transparent)`;
 
-const CONFIG: Record<string, StatusConfig> = {
+const CONFIG: Record<string, StatusStyle> = {
   draft: {
-    label: 'Draf',
     background: 'var(--theme-surface-soft)',
     color: 'var(--theme-text-muted)',
     border: 'var(--theme-border)',
   },
   pending: {
-    label: 'Menunggu Kurasi',
     background: soft('--theme-warning', 14),
     color: 'var(--theme-warning)',
     border: softBorder('--theme-warning', 40),
   },
   approved: {
-    label: 'Tayang',
     background: soft('--theme-success', 12),
     color: 'var(--theme-success)',
     border: softBorder('--theme-success', 40),
   },
   rejected: {
-    label: 'Ditolak',
     background: soft('--theme-danger', 10),
     color: 'var(--theme-danger)',
     border: softBorder('--theme-danger', 40),
   },
 };
 
-const FALLBACK: StatusConfig = {
-  label: 'Tidak diketahui',
+const STATUS_KEYS: Record<string, 'bStatusDraft' | 'bStatusPending' | 'bStatusApproved' | 'bStatusRejected'> = {
+  draft: 'bStatusDraft',
+  pending: 'bStatusPending',
+  approved: 'bStatusApproved',
+  rejected: 'bStatusRejected',
+};
+
+const FALLBACK: StatusStyle = {
   background: 'var(--theme-surface-soft)',
   color: 'var(--theme-text-muted)',
   border: 'var(--theme-border)',
 };
 
-/** Badge status bisnis dengan label Bahasa Indonesia. Server component. */
+/** Badge status bisnis. Client component agar label mengikuti bahasa aktif. */
 export default function StatusBadge({ status }: { status: string | null | undefined }) {
+  const { language } = usePreferences();
+  const b = getGroupsLabels(language);
   const key = (status ?? '').toLowerCase();
-  const cfg = CONFIG[key] ?? { ...FALLBACK, label: status ? String(status) : FALLBACK.label };
+  const style = CONFIG[key] ?? FALLBACK;
+  const statusKey = STATUS_KEYS[key];
+  const label = statusKey ? b[statusKey] : status ? String(status) : b.bStatusUnknown;
   return (
     <span
       style={{
@@ -55,14 +66,14 @@ export default function StatusBadge({ status }: { status: string | null | undefi
         fontWeight: 800,
         letterSpacing: '.05em',
         textTransform: 'uppercase',
-        background: cfg.background,
-        color: cfg.color,
-        border: `1px solid ${cfg.border}`,
+        background: style.background,
+        color: style.color,
+        border: `1px solid ${style.border}`,
         whiteSpace: 'nowrap',
       }}
     >
-      <span aria-hidden="true" style={{ width: 7, height: 7, borderRadius: '50%', background: cfg.color, flex: 'none' }} />
-      {cfg.label}
+      <span aria-hidden="true" style={{ width: 7, height: 7, borderRadius: '50%', background: style.color, flex: 'none' }} />
+      {label}
     </span>
   );
 }

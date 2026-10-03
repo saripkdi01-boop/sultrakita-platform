@@ -1,20 +1,10 @@
-import type { Metadata } from 'next';
+'use client';
+
 import Link from 'next/link';
 import { ArrowLeft, Clock, Inbox, Mail, MessageCircleQuestion, ShieldCheck } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
-
-export const metadata: Metadata = {
-  title: 'Kontak | SUKI Apps',
-  description:
-    'Hubungi tim SUKI Apps: email resmi, tiket dukungan dalam aplikasi, dan pusat bantuan. Kanal kontak resmi sukiapps.web.id.',
-  alternates: { canonical: 'https://sukiapps.web.id/kontak' },
-  openGraph: {
-    title: 'Kontak | SUKI Apps',
-    description: 'Kanal resmi menghubungi tim SUKI Apps.',
-    url: 'https://sukiapps.web.id/kontak',
-    type: 'website',
-  },
-};
+import { usePreferences } from '@/lib/preferences';
+import { getMiscLabels } from '@/lib/i18n/dict-misc';
 
 // Hanya kanal yang BENAR-BENAR terverifikasi ada di repo/dokumen:
 // - hello@sukiapps.web.id (mailto di app/Business/page.tsx)
@@ -23,55 +13,58 @@ export const metadata: Metadata = {
 // TIDAK mencantumkan alamat kantor / nomor telepon / WhatsApp karena tidak
 // ada yang terverifikasi (env WhatsApp kosong; nomor di dokumen lama adalah
 // data palsu yang sudah dihapus).
-const CHANNELS = [
-  {
-    icon: Mail,
-    title: 'Email',
-    value: 'hello@sukiapps.web.id',
-    href: 'mailto:hello@sukiapps.web.id',
-    desc: 'Untuk pertanyaan umum, kemitraan, dan permintaan data pribadi (subjek: "Permintaan Data Pribadi").',
-  },
-  {
-    icon: Inbox,
-    title: 'Tiket dukungan (dalam aplikasi)',
-    value: 'Laporkan Masalah',
-    href: '/support',
-    desc: 'Laporkan bug, kendala akun, atau dugaan penipuan. Anda mendapat nomor tiket dan bisa melacak statusnya.',
-  },
-  {
-    icon: MessageCircleQuestion,
-    title: 'Pusat Bantuan & FAQ',
-    value: 'Pusat Bantuan',
-    href: '/help-center',
-    desc: 'Cari panduan dan jawaban mandiri sebelum menghubungi tim.',
-  },
-  {
-    icon: ShieldCheck,
-    title: 'Pusat Keamanan',
-    value: 'Keamanan akun',
-    href: '/security-center',
-    desc: 'Kelola perangkat login dan dapatkan tips perlindungan dari penipuan.',
-  },
-] as const;
 
 export default function KontakPage() {
+  const { language } = usePreferences();
+  const t = getMiscLabels(language);
+
+  const CHANNELS = [
+    {
+      icon: Mail,
+      title: t.contactChannelEmail,
+      value: 'hello@sukiapps.web.id',
+      href: 'mailto:hello@sukiapps.web.id',
+      desc: t.contactChannelEmailDesc,
+    },
+    {
+      icon: Inbox,
+      title: t.contactChannelTicket,
+      value: t.contactChannelTicketValue,
+      href: '/support',
+      desc: t.contactChannelTicketDesc,
+    },
+    {
+      icon: MessageCircleQuestion,
+      title: t.contactChannelHelp,
+      value: t.contactChannelHelpValue,
+      href: '/help-center',
+      desc: t.contactChannelHelpDesc,
+    },
+    {
+      icon: ShieldCheck,
+      title: t.contactChannelSecurity,
+      value: t.contactChannelSecurityValue,
+      href: '/security-center',
+      desc: t.contactChannelSecurityDesc,
+    },
+  ] as const;
   return (
     <AppLayout>
       <main className="platform-shell mx-auto max-w-3xl" style={{ background: 'var(--sk-bg)', color: 'var(--sk-ink)' }}>
         <Link href="/" className="mb-5 inline-flex items-center gap-2 text-sm font-semibold" style={{ color: 'var(--sk-teal)' }}>
-          <ArrowLeft size={16} /> Kembali ke beranda
+          <ArrowLeft size={16} /> {t.contactBack}
         </Link>
 
         <header className="rounded-3xl p-7 sm:p-10" style={{ background: 'var(--sk-teal)', color: '#fff' }}>
           <p className="inline-flex items-center gap-2 text-xs font-extrabold uppercase" style={{ letterSpacing: '.18em', color: 'var(--sk-brand)' }}>
-            <Mail size={14} /> Kontak
+            <Mail size={14} /> {t.contactEyebrow}
           </p>
-          <h1 className="mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl">Hubungi tim SUKI</h1>
+          <h1 className="mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl">{t.contactTitle}</h1>
           <p className="mt-3 max-w-2xl text-sm leading-6" style={{ color: 'rgba(255,255,255,.85)' }}>
-            Pilih kanal resmi di bawah ini. Kami membaca setiap pesan yang masuk.
+            {t.contactSubtitle}
           </p>
           <p className="mt-4 inline-flex items-center gap-2 text-xs font-semibold" style={{ color: 'rgba(255,255,255,.75)' }}>
-            <Clock size={14} /> Respons tiket dukungan: umumnya 24–48 jam pada hari kerja.
+            <Clock size={14} /> {t.contactResponseTime}
           </p>
         </header>
 
@@ -106,12 +99,9 @@ export default function KontakPage() {
           className="mb-10 mt-6 rounded-2xl border p-6 text-sm leading-7"
           style={{ borderColor: 'var(--sk-line)', background: 'var(--sk-surface-2)' }}
         >
-          <p className="font-bold">Catatan transparansi</p>
+          <p className="font-bold">{t.contactTransparency}</p>
           <p className="mt-2" style={{ color: 'var(--sk-muted)' }}>
-            Saat ini kami belum mempublikasikan alamat kantor fisik atau nomor telepon/WhatsApp resmi.
-            Waspadai pihak yang mengatasnamakan SUKI Apps melalui nomor tidak dikenal — kanal resmi kami
-            hanya yang tercantum di halaman ini. Jangan pernah membagikan OTP, kata sandi, atau kode
-            verifikasi kepada siapa pun.
+            {t.contactTransparencyDesc}
           </p>
         </section>
       </main>

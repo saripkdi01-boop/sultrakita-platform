@@ -1,6 +1,10 @@
+'use client';
+
 import Link from 'next/link';
 import { ArrowLeft, Scale } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { usePreferences } from '@/lib/preferences';
+import { getMiscLabels } from '@/lib/i18n/dict-misc';
 
 export interface LegalSection {
   id: string;
@@ -9,8 +13,9 @@ export interface LegalSection {
 }
 
 // Shell bersama untuk dokumen legal SUKI Apps.
-// Bahasa Indonesia, token design system --sk-*, tanpa klaim yang tidak
-// didukung kode (tanpa alamat kantor/telepon fiktif).
+// Token design system --sk-*, tanpa klaim yang tidak didukung kode
+// (tanpa alamat kantor/telepon fiktif). Chrome diterjemahkan via i18n;
+// isi dokumen legal tetap Bahasa Indonesia (dokumen hukum).
 export function LegalDoc({
   eyebrow,
   title,
@@ -24,6 +29,11 @@ export function LegalDoc({
   effectiveDate: string;
   sections: LegalSection[];
 }) {
+  const { language } = usePreferences();
+  const t = getMiscLabels(language);
+
+  const questionsParts = t.legalQuestionsText.split(/(\{contact\}|\{faq\})/g);
+
   return (
     <AppLayout>
       <main
@@ -35,7 +45,7 @@ export function LegalDoc({
           className="mb-5 inline-flex items-center gap-2 text-sm font-semibold"
           style={{ color: 'var(--sk-teal)' }}
         >
-          <ArrowLeft size={16} /> Kembali ke beranda
+          <ArrowLeft size={16} /> {t.legalBack}
         </Link>
 
         <header
@@ -53,17 +63,17 @@ export function LegalDoc({
             {description}
           </p>
           <p className="mt-4 text-xs font-semibold" style={{ color: 'rgba(255,255,255,.7)' }}>
-            Berlaku sejak: {effectiveDate}
+            {t.legalEffective} {effectiveDate}
           </p>
         </header>
 
         <nav
-          aria-label="Daftar isi dokumen"
+          aria-label={t.legalTocAria}
           className="mt-6 rounded-2xl border p-5"
           style={{ borderColor: 'var(--sk-line)', background: 'var(--sk-surface)' }}
         >
           <p className="text-xs font-extrabold uppercase" style={{ letterSpacing: '.14em', color: 'var(--sk-muted)' }}>
-            Daftar isi
+            {t.legalToc}
           </p>
           <ol className="mt-3 space-y-2 text-sm">
             {sections.map((section, index) => (
@@ -103,10 +113,13 @@ export function LegalDoc({
           className="mb-10 rounded-2xl border p-5 text-sm"
           style={{ borderColor: 'var(--sk-line)', background: 'var(--sk-surface-2)' }}
         >
-          <p className="font-bold">Pertanyaan tentang dokumen ini?</p>
+          <p className="font-bold">{t.legalQuestions}</p>
           <p className="mt-1" style={{ color: 'var(--sk-muted)' }}>
-            Hubungi tim SUKI melalui <Link href="/kontak" className="font-semibold hover:underline" style={{ color: 'var(--sk-teal)' }}>halaman kontak</Link> atau{' '}
-            <Link href="/bantuan/faq" className="font-semibold hover:underline" style={{ color: 'var(--sk-teal)' }}>FAQ</Link>.
+            {questionsParts.map((part, i) => {
+              if (part === '{contact}') return <Link key={i} href="/kontak" className="font-semibold hover:underline" style={{ color: 'var(--sk-teal)' }}>{t.legalLinkContact}</Link>;
+              if (part === '{faq}') return <Link key={i} href="/bantuan/faq" className="font-semibold hover:underline" style={{ color: 'var(--sk-teal)' }}>{t.legalLinkFaq}</Link>;
+              return <span key={i}>{part}</span>;
+            })}
           </p>
         </footer>
       </main>

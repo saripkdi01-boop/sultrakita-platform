@@ -8,6 +8,8 @@ import { isPersonalizedAdsAllowed } from '@/lib/ads/consent';
 import { AdSenseUnit } from './AdSenseUnit';
 import { HouseAd, type HouseAdCreative } from './HouseAd';
 import styles from './ads.module.css';
+import { usePreferences } from '@/lib/preferences';
+import { getMiscLabels } from '@/lib/i18n/dict-misc';
 
 interface SlotConfig {
   provider: 'adsense' | 'house' | 'off';
@@ -52,6 +54,8 @@ interface AdSlotProps {
  */
 export function AdSlot({ placementId, eager = false, className }: AdSlotProps) {
   const pathname = usePathname();
+  const { language } = usePreferences();
+  const t = getMiscLabels(language);
   const hostRef = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(eager);
   const [config, setConfig] = useState<SlotConfig | null>(null);
@@ -105,7 +109,7 @@ export function AdSlot({ placementId, eager = false, className }: AdSlotProps) {
       className={`${styles['skad-slot']}${className ? ` ${className}` : ''}`}
       data-placement={placementId}
       role="complementary"
-      aria-label={`Slot iklan: ${spec.title}`}
+      aria-label={t.adSlotLabel.replace('{title}', spec.title)}
     >
       {!config ? (
         // Reserve ruang saat konfigurasi dimuat — tanpa konten, tanpa label.
@@ -119,7 +123,7 @@ export function AdSlot({ placementId, eager = false, className }: AdSlotProps) {
         <div aria-hidden="true" />
       )}
       {isMobileBanner && config && (
-        <button type="button" className={styles['skad-close']} onClick={() => setDismissed(true)} aria-label="Tutup iklan">
+        <button type="button" className={styles['skad-close']} onClick={() => setDismissed(true)} aria-label={t.adClose}>
           <X size={14} aria-hidden="true" />
         </button>
       )}
