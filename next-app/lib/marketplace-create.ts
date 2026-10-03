@@ -112,7 +112,9 @@ export const createListingPayloadSchema = z.object({
     .min(10, 'Judul minimal 10 karakter agar jelas.')
     .max(140, 'Judul maksimal 140 karakter.'),
   category: z.string().refine((v) => CATEGORY_SET.has(v), 'Pilih kategori yang tersedia.'),
-  condition: z.enum(['new', 'like_new', 'good', 'fair']),
+  condition: z.enum(['new', 'like_new', 'good', 'fair'], {
+    errorMap: () => ({ message: 'Pilih kondisi barang.' }),
+  }),
   price: z
     .number({ invalid_type_error: 'Harga harus berupa angka.' })
     .int('Harga harus bilangan bulat.')
