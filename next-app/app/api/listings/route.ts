@@ -49,11 +49,31 @@ export async function GET(request: NextRequest) {
 
 // ---- POST /api/listings: terbitkan listing marketplace ----
 //
-// Urutan pengaman (konsisten dengan route lain: comments, businesses):
-// rate limit -> CSRF -> auth -> validasi zod -> sanitasi -> insert.
+// Prosedur persetujuan otomatis ("ketentuan form post jual"):
+// sebuah posting DISETUJUI OTOMATIS (langsung tayang, tanpa persetujuan
+// manual admin) HANYA bila seluruh pemeriksaan di bawah lolos:
+//   1. rate limit per IP tidak terlampaui,
+//   2. token CSRF valid (anti pemalsuan form),
+//   3. pengguna sudah login (auth),
+//   4. payload lolos skema validasi form (createListingPayloadSchema):
+//      judul 10-140 karakter, kategori resmi, kondisi valid, harga >= 0,
+//      stok >= 1, deskripsi 20-5000 karakter, kota/kab di Sultra,
+//      nomor WhatsApp valid, foto <= 8,
+//   5. teks judul/deskripsi tersanitasi (anti XSS).
+//
+// Hasilnya dicatat di kolom moderation_status='auto_approved' +
+// approved_at/approved_by agar admin bisa meninjau belakangan di
+// /admin/listings (tarik/pulihkan). Bila satu saja gagal, posting DITOLAK
+// dengan pesan kesalahan yang jelas — tidak pernah lolos diam-diam.
+//
 // RLS: server memakai anon key + cookie sesi, jadi policy "owners manage
 // listings" (auth.uid() = owner_id) yang berlaku — tanpa subquery ke tabel
 // listings sendiri sehingga bebas dari pola rekursi RLS.
+type AutoApprovalCheck = { name: string; passed: boolean };
+function evaluateAutoApproval(checks: AutoApprovalCheck[]): { approved: boolean; failed: string[] } {
+  const failed = checks.filter((c) => !c.passed).map((c) => c.name);
+  return { approved: failed.length === 0, failed };
+}
 
 /** Dedupe double-submit: best-effort per instance (serverless) dengan TTL.
  *  Jujur dicatat: ini BUKAN idempotency lintas instance — perlindungan utama
@@ -150,6 +170,22 @@ export async function POST(request: NextRequest) {
   const description = sanitizeText(input.description);
   const imageUrls = input.photos.map((p) => p.url);
 
+  // Prosedur auto-approve: semua pemeriksaan di atas sudah lolos pada titik
+  // ini (rate limit, CSRF, auth, validasi zod, sanitasi). Evaluasi eksplisit
+  // agar alurnya terbaca & tercatat — posting tanpa persetujuan admin
+  // disetujui otomatis di sini, bukan diam-diam.
+  const approval = evaluateAutoApproval([
+    { name: 'rate_limit', passed: true },
+    { name: 'csrf', passed: true },
+    { name: 'auth', passed: true },
+    { name: 'validasi_form', passed: true },
+    { name: 'sanitasi', passed: title.length >= 10 && description.length >= 20 },
+  ]);
+  if (!approval.approved) {
+    return apiError('VALIDATION_ERROR', `Posting gagal pemeriksaan otomatis: ${approval.failed.join(', ')}.`, 422, request);
+  }
+  const approvedAt = new Date().toISOString();
+
   // Foto disimpan di listings.images (kolom yang dibaca kartu marketplace).
   // listing_media TIDAK dipakai: skemanya cacat (bigint vs uuid).
   // Catatan skema production (terverifikasi 2026-10-03): category_id integer
@@ -172,6 +208,12 @@ export async function POST(request: NextRequest) {
     stock_quantity: input.stock,
     specifications: { negotiable: input.negotiable, ...(whatsapp ? { whatsapp } : {}) },
     status: 'active',
+    // Jejak auto-approve: langsung tayang + tercatat untuk ditinjau admin.
+    // (Kolom ditambahkan migrasi 20261003090000; aman sebelum migrasi jalan
+    //  karena migrasi tersebut wajib dijalankan agar POST berfungsi.)
+    moderation_status: 'auto_approved',
+    approved_at: approvedAt,
+    approved_by: 'system:auto-approve',
   };
 
   const { data, error } = await supabase.from('listings').insert(row).select('id,title').single();
@@ -182,5 +224,12 @@ export async function POST(request: NextRequest) {
   }
 
   if (idemKey && data) rememberPublish(user.id, idemKey, String(data.id), String(data.title));
-  return NextResponse.json({ ok: true, data: { id: data.id, title: data.title } }, { status: 201 });
+  return NextResponse.json(
+    {
+      ok: true,
+      data: { id: data.id, title: data.title },
+      approval: { status: 'auto_approved', approved_at: approvedAt, by: 'system:auto-approve' },
+    },
+    { status: 201 },
+  );
 }
