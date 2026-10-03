@@ -54,6 +54,30 @@ export async function GET(request: Request) {
     return NextResponse.redirect(new URL('/login?error=auth_callback', url.origin));
   }
 
+  // Admin-aware redirect: akun admin/super_admin yang login OAuth (Google/
+  // Facebook) TANPA tujuan eksplisit langsung diarahkan ke /dashboard/admin.
+  // Best-effort: kegagalan baca role tidak menggagalkan login.
+  // Header Location pada respons redirect boleh dimutasi sebelum dikembalikan;
+  // cookie sesi yang ditulis saat exchange tetap utuh di objek response yang sama.
+  try {
+    if (safeNext === '/dashboard') {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.id) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .maybeSingle();
+        const role = (profile as { role?: string } | null)?.role;
+        if (role === 'admin' || role === 'super_admin') {
+          response.headers.set('Location', new URL('/dashboard/admin', url.origin).toString());
+        }
+      }
+    }
+  } catch {
+    // Abaikan — login tetap sukses ke tujuan default.
+  }
+
   // Atribusi UTM first-touch untuk signup OAuth: salin dari cookie sk_utm ke
   // profiles, hanya bila utm_source masih kosong (jangan timpa atribusi awal).
   // Best-effort: kegagalan tidak menggagalkan login.

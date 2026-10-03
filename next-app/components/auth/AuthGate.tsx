@@ -218,7 +218,26 @@ export function AuthGate({
         // Pengguna yang login via link referral namun belum terklaim (mis. signup
         // butuh verifikasi email): coba klaim sekarang, best-effort.
         claimReferralBestEffort();
-        router.push(safeRedirect(params.get('redirect')));
+        // Admin-aware redirect: akun admin/super_admin TANPA tujuan eksplisit
+        // langsung diarahkan ke /dashboard/admin. Best-effort.
+        let dest = safeRedirect(params.get('redirect'));
+        if ((dest === '/dashboard' || dest === '/') && supabase) {
+          try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user?.id) {
+              const { data: profile } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', user.id)
+                .maybeSingle();
+              const role = (profile as { role?: string } | null)?.role;
+              if (role === 'admin' || role === 'super_admin') dest = '/dashboard/admin';
+            }
+          } catch {
+            // Abaikan — tetap ke tujuan default.
+          }
+        }
+        router.push(dest);
       }
     }
     setBusy(null);

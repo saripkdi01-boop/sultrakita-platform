@@ -46,11 +46,20 @@ async function resolveRoles(userId: string): Promise<StaffSession> {
   }
 
   const now = new Date().toISOString();
-  const { data: grants } = await supabase
-    .from('user_roles')
-    .select('role, is_active, expires_at')
-    .eq('user_id', userId)
-    .eq('is_active', true);
+  // Tabel user_roles TIDAK ADA di production (pola resmi = profiles.role).
+  // Query dibungkus try/catch agar guard tidak pernah 500 karena tabel hilang;
+  // profiles.role di atas tetap menjadi sumber kebenaran utama.
+  let grants: Array<{ role: string; is_active: boolean; expires_at: string | null }> | null = null;
+  try {
+    const { data, error } = await supabase
+      .from('user_roles')
+      .select('role, is_active, expires_at')
+      .eq('user_id', userId)
+      .eq('is_active', true);
+    if (!error) grants = (data ?? []) as Array<{ role: string; is_active: boolean; expires_at: string | null }>;
+  } catch {
+    grants = null;
+  }
   for (const grant of grants ?? []) {
     if ((KNOWN_ROLES as string[]).includes(grant.role)) {
       if (!grant.expires_at || grant.expires_at > now) {

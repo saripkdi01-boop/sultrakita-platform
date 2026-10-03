@@ -1,16 +1,18 @@
 'use client';
 
-// Navigasi 8 seksi Operations Center — dirender di app/admin/layout.tsx
-// (semua halaman /admin/* sudah terproteksi requireAdminUser di layout).
-// Daftar seksi: overview, users, moderation, monitoring, billing, ads, settings, launch.
-// CATATAN: /admin/ads dibangun track T-ADS (branch upgrade/launch-ad-monetization);
-// link sudah disiapkan di sini agar navigasi lengkap setelah assembly.
+// Navigasi lengkap Operations Center — dirender di app/admin/layout.tsx
+// (semua halaman /admin/* sudah terproteksi requireAdminUser di layout)
+// dan di app/dashboard/admin/page.tsx.
+// 14 seksi: overview, users, moderation, monitoring, audit, billing, ads,
+// settings, support-tickets, ecosystem-banners, property-verification,
+// businesses, affiliate-rewards, launch.
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  LayoutDashboard, UsersRound, ShieldCheck, Activity,
-  CreditCard, Megaphone, Settings2, Rocket,
+  LayoutDashboard, UsersRound, ShieldCheck, Activity, ScrollText,
+  CreditCard, Megaphone, Settings2, LifeBuoy, Images, House,
+  Building2, Gift, Rocket,
 } from 'lucide-react';
 
 const SECTIONS = [
@@ -18,8 +20,14 @@ const SECTIONS = [
   { href: '/admin/users', label: 'Pengguna', icon: UsersRound },
   { href: '/admin/moderation', label: 'Moderasi', icon: ShieldCheck },
   { href: '/admin/monitoring', label: 'Monitoring', icon: Activity },
+  { href: '/admin/audit', label: 'Audit', icon: ScrollText },
   { href: '/admin/billing', label: 'Billing', icon: CreditCard },
   { href: '/admin/ads', label: 'Iklan', icon: Megaphone },
+  { href: '/admin/businesses', label: 'Bisnis', icon: Building2 },
+  { href: '/admin/property-verification', label: 'Properti', icon: House },
+  { href: '/admin/support-tickets', label: 'Tiket', icon: LifeBuoy },
+  { href: '/admin/ecosystem-banners', label: 'Banner', icon: Images },
+  { href: '/admin/affiliate-rewards', label: 'Afiliasi', icon: Gift },
   { href: '/admin/settings', label: 'Pengaturan', icon: Settings2 },
   { href: '/admin/launch', label: 'Launch', icon: Rocket },
 ] as const;

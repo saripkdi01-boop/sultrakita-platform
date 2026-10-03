@@ -175,16 +175,25 @@ export async function middleware(request: NextRequest) {
     },
   );
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user && url.pathname.startsWith('/admin')) {
+  // /dashboard/admin diperlakukan sebagai rute admin penuh — sama seperti /admin/*.
+  const isAdminPath = url.pathname.startsWith('/admin') || url.pathname.startsWith('/dashboard/admin');
+  if (!user && isAdminPath) {
     const login = new URL('/login', request.url);
-    login.searchParams.set('redirect', '/admin/dashboard');
+    login.searchParams.set('redirect', url.pathname.startsWith('/dashboard/admin') ? '/dashboard/admin' : '/admin/dashboard');
     return NextResponse.redirect(login);
   }
   if (!user && !publicRoute) { const redirect = url.clone(); redirect.pathname = '/login'; redirect.searchParams.set('redirect', url.pathname); return NextResponse.redirect(redirect); }
-  if (user && (url.pathname === '/login' || url.pathname === '/signup')) return NextResponse.redirect(new URL('/dashboard', request.url));
-  if (user && !publicRoute && (url.pathname.startsWith('/admin') || url.pathname.startsWith('/seller'))) {
+  if (user && (url.pathname === '/login' || url.pathname === '/signup')) {
+    // Admin yang sudah login dan membuka /login manual langsung ke dashboard admin.
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle();
-    if (url.pathname.startsWith('/admin') && !['admin', 'super_admin'].includes(profile?.role || '')) return NextResponse.redirect(new URL('/dashboard?error=unauthorized', request.url));
+    const dest = ['admin', 'super_admin'].includes((profile as { role?: string } | null)?.role || '')
+      ? '/dashboard/admin'
+      : '/dashboard';
+    return NextResponse.redirect(new URL(dest, request.url));
+  }
+  if (user && !publicRoute && (isAdminPath || url.pathname.startsWith('/seller'))) {
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle();
+    if (isAdminPath && !['admin', 'super_admin'].includes(profile?.role || '')) return NextResponse.redirect(new URL('/dashboard?error=unauthorized', request.url));
     if (url.pathname.startsWith('/seller') && profile?.role !== 'seller' && profile?.role !== 'admin') return NextResponse.redirect(new URL('/dashboard?error=unauthorized', request.url));
   }
   return response;
