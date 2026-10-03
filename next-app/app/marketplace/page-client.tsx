@@ -281,6 +281,10 @@ export default function MarketplacePageClient({ initialItems, initialFilters, in
             <button type="button" className="fbm-action-btn" onClick={openSaveSearch}>
               <BellPlus size={15} aria-hidden="true" /> Simpan pencarian
             </button>
+            {/* Tombol akses posting/jual ala Facebook ("Create new listing") */}
+            <Link href="/marketplace/create" className="fbm-action-btn primary fbm-sell-btn" aria-label="Jual barang di Marketplace">
+              <Plus size={16} aria-hidden="true" /> Jual
+            </Link>
             <button type="button" className="fbm-action-btn fbm-filter-open-btn" onClick={() => setSheetOpen(true)} aria-haspopup="dialog">
               <SlidersHorizontal size={15} aria-hidden="true" /> Filter
             </button>
