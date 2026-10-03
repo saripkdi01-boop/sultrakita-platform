@@ -61,6 +61,8 @@ button{font-family:inherit; cursor:pointer;}
 /* ===== Map ===== */
 .map-toolbar{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
 .btn{border:none;border-radius:12px;font-weight:700;font-size:14px;padding:12px 16px;min-height:46px;display:inline-flex;align-items:center;justify-content:center;gap:8px;}
+/* Tombol batal kecil di dalam petunjuk peta (mode bangun/pindah). */
+.btn-xs{min-height:0;padding:5px 12px;font-size:12.5px;border-radius:999px;}
 .btn-teal{background:var(--teal);color:#fff;}
 .btn-teal:active{background:var(--teal-dark);}
 .btn-gold{background:var(--gold);color:var(--ink);}
@@ -880,14 +882,17 @@ function renderHeader(){
   $("avatarBig").textContent=(p.name||"S").trim().charAt(0).toUpperCase();
   $("profileName").textContent=p.name;
   $("villageName").innerHTML="&#127969; "+esc(p.village);
-  $("profileVillage").innerHTML=esc(p.village);
+  /* JANGAN timpa dengan innerHTML polos: span#refCodeHero harus dipertahankan,
+     kalau tidak baris $("refCodeHero") di bawah akan null dan melempar error
+     yang menggugurkan renderMap/saveState (bug: bangunan Lv1 tak terlihat). */
+  $("profileVillage").innerHTML=esc(p.village)+' &middot; Kode: <span id="refCodeHero">'+esc(state.referral)+'</span>';
   $("coinBalance").textContent=fmt(p.coins);
   $("levelBadge").textContent="Lv "+p.level;
   var need=SK.xpForLevel(p.level);
   $("xpFill").style.width=Math.min(100,Math.round(p.xp/need*100))+"%";
   $("xpText").textContent=fmt(p.xp)+"/"+fmt(need)+" XP";
   $("refCode").textContent=state.referral;
-  $("refCodeHero").textContent=state.referral;
+  var rch=$("refCodeHero");if(rch)rch.textContent=state.referral;
 }
 
 /* ---------- Peta ---------- */
@@ -929,13 +934,25 @@ function renderMap(){
     })(x,y);
   }
   $("statBuildings").textContent=count;
-  $("statHarvest").textContent=fmt(state.stats.harvested);
-  $("statQuests").textContent=fmt(state.stats.questsDone);
+  $("statHarvest").textContent=fmt((state.stats&&state.stats.harvested)||0);
+  $("statQuests").textContent=fmt((state.stats&&state.stats.questsDone)||0);
 }
 
 /* ---------- Mode bangun / pindah ---------- */
 var placeMode=null;   // {type} saat memilih bangunan
 var moveMode=null;    // {fromKey} saat memindahkan
+var HINT_DEFAULT='Ketuk <b>Bangun</b>, pilih bangunan, lalu ketuk petak kosong.';
+var HINT_CANCEL=' <button class="btn btn-ghost btn-xs" id="btnCancelMode">&#10005; Batal</button>';
+function setHint(html){
+  $("mapHint").innerHTML=html;
+  var cb=$("btnCancelMode");
+  if(cb)cb.addEventListener("click",function(e){e.stopPropagation();cancelModes();});
+}
+function cancelModes(){
+  placeMode=null;moveMode=null;
+  setHint(HINT_DEFAULT);renderMap();
+  toast("Mode dibatalkan.","teal");
+}
 function openBuildSheet(){
   var g=$("buildGrid");g.innerHTML="";
   SK.BUILDINGS.forEach(function(def){
@@ -953,7 +970,7 @@ function openBuildSheet(){
     card.addEventListener("click",function(){
       placeMode={type:def.id};moveMode=null;
       closeSheets();renderMap();
-      $("mapHint").innerHTML="Ketuk petak kosong untuk membangun <b>"+esc(def.name)+"</b>. Ketuk lagi peta untuk batal.";
+      setHint("Ketuk petak kosong untuk membangun <b>"+esc(def.name)+"</b>."+HINT_CANCEL);
       toast("Mode bangun: "+def.name+" — ketuk petak kosong.","teal");
     });
     g.appendChild(card);
@@ -971,7 +988,7 @@ function onTileTap(x,y){
   var key=SK.tileKey(x,y);
   if(moveMode){
     var r=SK.moveBuilding(state,moveMode.fromKey,x,y);
-    if(r.ok){toast("Bangunan dipindahkan.");moveMode=null;}
+    if(r.ok){toast("Bangunan dipindahkan.");moveMode=null;setHint(HINT_DEFAULT);}
     else toast(r.reason,"teal");
     renderMap();saveState();return;
   }
@@ -982,7 +999,7 @@ function onTileTap(x,y){
       toast(def.name+" dibangun! +25 XP");
       window.SKAPP.afterEvents(res.events);
       placeMode=null;
-      $("mapHint").innerHTML='Ketuk <b>Bangun</b>, pilih bangunan, lalu ketuk petak kosong.';
+      setHint(HINT_DEFAULT);
     }else{
       toast(res.reason,"teal");
     }
@@ -1000,11 +1017,14 @@ function openTilePanel(key,b){
   var upCost=b.level<3?SK.upgradeCost(def,b.level):null;
   var refund=SK.sellRefund(b.invested);
   var secsLeft=Math.max(0,Math.ceil(def.interval-(now-b.lastHarvest)/1000));
+  /* Teks hasil konsisten: angka level-scaled (amt), bukan angka dasar def.benefit.
+     Sisa info bonus (mis. +20% XP misi) tetap ditampilkan bila ada. */
+  var extraB=String(def.benefit||"").replace(/^\+\d+\s*Koin per panen(\s*\(tiap \d+ dtk\))?\s*/,"").trim();
   $("tilePanelBody").innerHTML=
     '<div class="tile-panel-info"><span class="b-art">'+SK.ICONS[def.icon]+"</span>"+
     "<div><h3>"+esc(def.name)+' <span class="level-badge">Lv '+b.level+"</span></h3>"+
     "<p>"+esc(def.desc)+"</p></div></div>"+
-    '<div class="benefit-line">&#129689; Hasil: <b>'+fmt(amt)+' Koin</b> tiap '+def.interval+' dtk &middot; '+esc(def.benefit)+"</div>"+
+    '<div class="benefit-line">&#129689; Hasil: <b>'+fmt(amt)+' Koin</b> tiap '+def.interval+' dtk'+(extraB?' &middot; '+esc(extraB):"")+"</div>"+
     '<div class="panel-actions">'+
     '<button class="btn btn-gold btn-block" id="tpHarvest" '+(ready?"":"disabled")+">"+(ready?"&#129689; Panen +"+fmt(amt)+" Koin":"&#9200; Panen siap dalam "+secsLeft+" dtk")+"</button>"+
     (upCost?'<button class="btn btn-teal btn-block" id="tpUpgrade" '+(state.player.coins>=upCost?"":"disabled")+'>&#11014; Upgrade ke Lv '+(b.level+1)+" (&#129689; "+fmt(upCost)+")</button>"
@@ -1028,7 +1048,7 @@ function openTilePanel(key,b){
   });
   $("tpMove").addEventListener("click",function(){
     moveMode={fromKey:key};placeMode=null;closeSheets();renderMap();
-    $("mapHint").innerHTML="Ketuk petak kosong tujuan untuk memindahkan <b>"+esc(def.name)+"</b>.";
+    setHint("Ketuk petak kosong tujuan untuk memindahkan <b>"+esc(def.name)+"</b>."+HINT_CANCEL);
     toast("Mode pindah — ketuk petak tujuan.","teal");
   });
   $("tpSell").addEventListener("click",function(){
@@ -1105,7 +1125,13 @@ function renderQuests(){
         renderHeader();saveState();renderQuests();renderLedger();
       });
       var bS=document.createElement("button");bS.className="btn btn-ghost btn-sm";bS.textContent="Lewati";
-      bS.addEventListener("click",function(){SK.skipQuest(state,q.id);toast("Misi dilewati. Santai saja!");saveState();renderQuests();});
+      bS.addEventListener("click",function(){
+        showModal("\u23ED\uFE0F","Lewati misi \""+q.name+"\"?",
+          "Misi dilewati tanpa penalti, tapi hadiahnya hangus. Lanjutkan?",
+          [{label:"Ya, lewati",style:"btn-teal",onClick:function(){
+            SK.skipQuest(state,q.id);toast("Misi dilewati. Santai saja!");saveState();renderQuests();
+          }},{label:"Batal",style:"btn-ghost"}]);
+      });
       acts.appendChild(bK);acts.appendChild(bS);
     }
     box.appendChild(card);
