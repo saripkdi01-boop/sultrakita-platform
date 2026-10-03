@@ -1,5 +1,4 @@
 import { AppLayout } from '@/components/layout/AppLayout';
-import { getServerSupabase } from '@/lib/supabase/server';
 import { requireRole, redirectToLogin } from '@/lib/admin/guards';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
@@ -49,6 +48,18 @@ function getServiceClient(): SupabaseClient | null {
   return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
 }
 
+// OPS SWEEP — klien probe yang BENAR-BENAR anonim (tanpa cookie sesi).
+// getServerSupabase() membawa sesi admin yang sedang login, sehingga "probe
+// anon-key" sebelumnya sebenarnya menguji RLS sebagai admin — menyesatkan
+// (mis. error_events tampak "dapat dibaca anon" padahal anon asli ditolak).
+function getAnonProbeClient(): SupabaseClient | null {
+  if (typeof window !== 'undefined') return null;
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) return null;
+  return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+}
+
 interface TableStat {
   name: string;
   label: string;
@@ -59,7 +70,7 @@ interface TableStat {
 
 async function statTable(
   svc: SupabaseClient | null,
-  anon: SupabaseClient,
+  anon: SupabaseClient | null,
   t: { name: string; label: string },
 ): Promise<TableStat> {
   let count: number | null = null;
@@ -77,13 +88,15 @@ async function statTable(
   }
 
   let anonState: TableStat['anon'] = 'unknown';
-  try {
-    const { error } = await anon.from(t.name).select('id').limit(1);
-    if (!error) anonState = 'readable';
-    else if (/PGRST205|does not exist|relation/i.test(error.message)) anonState = 'missing';
-    else anonState = 'denied';
-  } catch {
-    anonState = 'unknown';
+  if (anon) {
+    try {
+      const { error } = await anon.from(t.name).select('id').limit(1);
+      if (!error) anonState = 'readable';
+      else if (/PGRST205|does not exist|relation/i.test(error.message)) anonState = 'missing';
+      else anonState = 'denied';
+    } catch {
+      anonState = 'unknown';
+    }
   }
   return { name: t.name, label: t.label, count, countNote, anon: anonState };
 }
@@ -104,14 +117,18 @@ export default async function AdminDatabasePage() {
 
   const checkedAt = new Date().toISOString();
   const svc = getServiceClient();
-  const anon = await getServerSupabase();
+  const anon = getAnonProbeClient();
 
   const stats = await Promise.all(TABLES.map((t) => statTable(svc, anon, t)));
 
   let buckets: BucketStat[] = [];
   let bucketError: string | null = null;
+  const bucketClient = svc ?? anon;
+  if (!bucketClient) {
+    bucketError = 'Supabase belum dikonfigurasi (NEXT_PUBLIC_SUPABASE_URL / ANON_KEY).';
+  } else {
   try {
-    const client = svc ?? anon;
+    const client = bucketClient;
     const { data: list, error } = await client.storage.listBuckets();
     if (error) {
       bucketError = error.message;
@@ -132,6 +149,7 @@ export default async function AdminDatabasePage() {
     }
   } catch (err) {
     bucketError = err instanceof Error ? err.message : 'Gagal membaca storage.';
+  }
   }
 
   const totalRows = stats.reduce((sum, s) => sum + (s.count ?? 0), 0);

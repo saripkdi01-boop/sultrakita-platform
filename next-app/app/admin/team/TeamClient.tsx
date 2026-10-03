@@ -62,7 +62,7 @@ export function TeamClient({ initial }: { initial: StaffRow[] }) {
     <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_1.4fr]">
       <div className="h-fit rounded-3xl border border-[#dcebe5] bg-white p-6 shadow-sm dark:border-white/10 dark:bg-[#10231f]">
         <h2 className="text-lg font-extrabold text-[#123f38] dark:text-white">Cari pengguna</h2>
-        <p className="mt-1 text-xs leading-5 text-[#78948c]">Cari by email untuk memberi/mencabut role staf.</p>
+        <p className="mt-1 text-xs leading-5 text-[#78948c]">Cari berdasarkan email untuk memberi/mencabut role staf.</p>
         <form onSubmit={(e) => void search(e)} className="mt-4 flex gap-2">
           <input
             type="email" value={email} onChange={(e) => setEmail(e.target.value)} required

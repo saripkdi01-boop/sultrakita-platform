@@ -140,20 +140,12 @@ function integrationStatus(): IntegrationItem[] {
   const has = (v: string | undefined) => !!v && v.length > 0;
   const billingProvider = process.env.SUKI_BILLING_PROVIDER || 'default (sandbox)';
   const midtransLive = process.env.MIDTRANS_IS_PRODUCTION === 'true';
-  const waVars = ['WA_CLOUD_ACCESS_TOKEN', 'WA_CLOUD_PHONE_NUMBER_ID', 'WA_CLOUD_VERIFY_TOKEN'];
-  const waSet = waVars.filter((k) => has(process.env[k])).length;
   return [
     {
       name: 'Billing',
       status: billingProvider,
       ok: true,
       detail: `mode ${midtransLive ? 'LIVE ⚠️' : 'sandbox'} · server key ${has(process.env.MIDTRANS_SERVER_KEY) ? 'terpasang' : 'belum'} · client key ${has(process.env.MIDTRANS_CLIENT_KEY) ? 'terpasang' : 'belum'}`,
-    },
-    {
-      name: 'CS WhatsApp',
-      status: waSet === waVars.length ? 'terkonfigurasi' : `${waSet}/${waVars.length} env terisi`,
-      ok: waSet === waVars.length ? true : null,
-      detail: 'webhook: /api/cs/whatsapp-cloud (Cloud API) + /api/cs/inbound (n8n/gateway)',
     },
     {
       name: 'Supabase service-role',
@@ -174,6 +166,39 @@ function integrationStatus(): IntegrationItem[] {
       detail: 'login Google via Supabase Auth',
     },
   ];
+}
+
+// OPS SWEEP — CS WhatsApp: probe JUJUR keberadaan rute webhook di deploy ini.
+// Kode CS WhatsApp (adapter Cloud API + inbound n8n) hidup di branch
+// `fitur/ai-customer-service` yang BELUM merge ke main — jangan klaim webhook
+// aktif hanya karena env terisi. Rute dianggap ada bila GET tidak 404
+// (route nyata: verify GET tanpa param → 403; route tak ada → 404).
+async function csWhatsappStatus(base: string): Promise<IntegrationItem> {
+  const has = (v: string | undefined) => !!v && v.length > 0;
+  const waVars = ['WA_CLOUD_ACCESS_TOKEN', 'WA_CLOUD_PHONE_NUMBER_ID', 'WA_CLOUD_VERIFY_TOKEN'];
+  const waSet = waVars.filter((k) => has(process.env[k])).length;
+  let routeState: 'ada' | 'belum' | 'unknown' = 'unknown';
+  try {
+    const res = await fetch(`${base}/api/cs/whatsapp-cloud`, { cache: 'no-store', redirect: 'manual' });
+    routeState = res.status === 404 ? 'belum' : 'ada';
+  } catch {
+    routeState = 'unknown';
+  }
+  if (routeState === 'ada') {
+    const complete = waSet === waVars.length;
+    return {
+      name: 'CS WhatsApp',
+      status: complete ? 'terkonfigurasi' : `${waSet}/${waVars.length} env terisi`,
+      ok: complete ? true : null,
+      detail: `webhook aktif: /api/cs/whatsapp-cloud (Cloud API) + /api/cs/inbound (n8n/gateway) · ${waSet}/${waVars.length} env WA_CLOUD_* terisi`,
+    };
+  }
+  return {
+    name: 'CS WhatsApp',
+    status: routeState === 'belum' ? 'belum di-deploy' : 'tak dapat diprobe',
+    ok: null,
+    detail: `rute /api/cs/whatsapp-cloud TIDAK ada di deploy ini — kode CS WhatsApp (branch fitur/ai-customer-service) belum merge ke main. Env WA_CLOUD_* terisi ${waSet}/${waVars.length}; webhook tidak akan aktif walau env lengkap.`,
+  };
 }
 
 function StatusBadge({ ok }: { ok: boolean | null }) {
@@ -238,7 +263,8 @@ export default async function AdminMonitoringPage() {
   ]);
   const activity = await recentAdminActivity();
   const errorCount = await unresolvedErrorCount();
-  const integrations = integrationStatus();
+  const csWa = await csWhatsappStatus(base);
+  const integrations = [...integrationStatus(), csWa];
   const jobs = (cronJobsData as { jobs: Array<{ id: string; name: string; file: string; schedule: string; schedule_human: string; target: string; description: string }>; notes: string[] }).jobs;
   const cronNotes = (cronJobsData as { notes: string[] }).notes;
 
