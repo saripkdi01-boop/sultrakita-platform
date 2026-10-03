@@ -70,7 +70,7 @@ const SECTIONS: Section[] = [
     hint: 'Akun & kebersamaan',
     accent: '#6d4fc2',
     tiles: [
-      { key: 'ajak', label: 'Ajak Teman', desc: 'Kumpulkan Star tiap ajakan', href: '/ajak-teman', Icon: SukiIconAjakTeman, badge: 'Reward', isActive: (p) => p.startsWith('/ajak-teman') },
+      { key: 'ajak', label: 'Ajak Teman', desc: 'Kumpulkan Koin SUKI tiap ajakan', href: '/ajak-teman', Icon: SukiIconAjakTeman, badge: 'Reward', isActive: (p) => p.startsWith('/ajak-teman') },
       { key: 'reels', label: 'Reels', desc: 'Video pendek warga Sultra', href: '/reels', Icon: SukiIconReels, isActive: (p) => p.startsWith('/reels') },
       { key: 'chat', label: 'Pesan', desc: 'Ngobrol dengan penjual & teman', href: '/chat', Icon: SukiIconPesan, isActive: (p) => p.startsWith('/chat') },
     ],
@@ -208,8 +208,8 @@ export function EcosystemHub({ variant }: { variant: 'tab' | 'mtab' }) {
                 <SukiIconAjakTeman />
               </span>
               <span className="skfb-hub-foot-text">
-                <strong>Ajak teman ke SUKI, kumpulkan Star</strong>
-                <span>Tukarkan Star jadi saldo & benefit ekosistem</span>
+                <strong>Ajak teman ke SUKI, kumpulkan Koin SUKI</strong>
+                <span>Tukarkan Koin SUKI jadi saldo & benefit ekosistem</span>
               </span>
               <ArrowUpRight size={18} aria-hidden="true" />
             </Link>
