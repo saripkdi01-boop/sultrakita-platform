@@ -506,8 +506,8 @@
     border:1px solid var(--su-line);font-weight:700;color:var(--su-pine);
   }
   .suki-overhaul-header-actions{display:none}
-  .suki-overhaul-theme-icon{display:grid}
-  .suki-overhaul-menu{display:grid}
+  .suki-overhaul-theme-icon{display:grid;margin-left:auto}
+  .suki-overhaul-menu{display:grid;margin-left:0}
   .suki-overhaul-hero{padding:72px 0 84px}
   .suki-overhaul-hero-grid{grid-template-columns:1fr;gap:36px}
   .suki-overhaul-hero-copy{max-width:720px}
