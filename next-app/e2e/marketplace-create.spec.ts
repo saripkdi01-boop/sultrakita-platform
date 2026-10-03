@@ -10,6 +10,7 @@
  *   tidak diklaim di sini.
  */
 import { test, expect } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import path from 'node:path';
 
 const FIXTURES = path.join(__dirname, 'fixtures');
@@ -29,8 +30,8 @@ const FAKE_USER = {
 /** Kumpulkan error JS yang nyata; abaikan kegagalan jaringan lingkungan
  *  sandbox (resource eksternal, WebSocket realtime ke host dummy) —
  *  bukan bug aplikasi. */
-function collectRealErrors(page) {
-  const errors = [];
+function collectRealErrors(page: Page): string[] {
+  const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(String(e)));
   page.on('console', (m) => {
     if (m.type() !== 'error') return;
@@ -42,7 +43,7 @@ function collectRealErrors(page) {
   return errors;
 }
 
-async function noHorizontalOverflow(page) {
+async function noHorizontalOverflow(page: Page) {
   const overflow = await page.evaluate(
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
   );

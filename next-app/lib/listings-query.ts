@@ -144,6 +144,21 @@ async function hasPromoColumns(client: PromoProbeClient): Promise<boolean> {
   return promoColumnsAvailable;
 }
 
+// Kolom images & owner_id (migrasi 20261003090000_marketplace_create_columns).
+// Di production yang belum menjalankan migrasi, kolom belum ada — di-probe
+// sekali per instance agar select utama tidak 400/503.
+let createColumnsAvailable: boolean | null = null;
+async function hasCreateColumns(client: PromoProbeClient): Promise<boolean> {
+  if (createColumnsAvailable !== null) return createColumnsAvailable;
+  try {
+    const { error } = await client.from('listings').select('images,owner_id').limit(1);
+    createColumnsAvailable = !error;
+  } catch {
+    createColumnsAvailable = false;
+  }
+  return createColumnsAvailable;
+}
+
 export async function fetchPublicListings(filters: ListingFilters): Promise<ListingsQueryResult> {
   const queryText = filters.q?.trim();
   const district = filters.district?.trim();
@@ -158,7 +173,16 @@ export async function fetchPublicListings(filters: ListingFilters): Promise<List
   try {
     const client = getListingsClient() || await getServerSupabase();
     const promoColumns = await hasPromoColumns(client as unknown as PromoProbeClient);
-    let query = client.from('listings').select('id,title,description,price,image_url,images,district,city,condition,is_featured,is_demo,provenance,created_at,seller_id,owner_id').in('status', ['published', 'active']).or('is_demo.is.null,is_demo.eq.false');
+    // Kolom images & owner_id ditambahkan migrasi 20261003090000. Sebelum
+    // migrasi dijalankan di production, kolom belum ada -> keluarkan dari
+    // select agar GET tidak 503 (pola yang sama dengan hasPromoColumns).
+    const createColumns = await hasCreateColumns(client as unknown as PromoProbeClient);
+    const baseSelect = 'id,title,description,price,image_url,district,city,condition,is_featured,is_demo,provenance,created_at,seller_id';
+    const fullSelect = `${baseSelect},images,owner_id` as const;
+    // Cast ke literal penuh agar inferensi tipe baris tetap utuh; pada runtime
+    // varian tanpa images/owner_id dipakai bila kolom belum ada di DB.
+    const selectColumns = (createColumns ? fullSelect : baseSelect) as typeof fullSelect;
+    let query = client.from('listings').select(selectColumns).in('status', ['published', 'active']).or('is_demo.is.null,is_demo.eq.false');
     // Fase 2.1: sort server-side agar konsisten antara SSR & API.
     if (sort === 'termurah') query = query.order('price', { ascending: true }).order('created_at', { ascending: false });
     else if (sort === 'termahal') query = query.order('price', { ascending: false }).order('created_at', { ascending: false });
@@ -176,8 +200,10 @@ export async function fetchPublicListings(filters: ListingFilters): Promise<List
     }
     if (sellerId) {
       // seller_id numerik (bigint) atau owner_id uuid — dukung keduanya.
+      // Filter owner_id hanya bila kolomnya ada (migrasi 20261003090000).
       if (/^\d+$/.test(sellerId)) query = query.eq('seller_id', Number(sellerId));
-      else if (uuidPattern.test(sellerId)) query = query.eq('owner_id', sellerId);
+      else if (uuidPattern.test(sellerId) && createColumns) query = query.eq('owner_id', sellerId);
+      else if (uuidPattern.test(sellerId)) return { ok: true, items: [], filters: filterSummary, warning: 'Penjual tidak ditemukan.' };
       else return { ok: true, items: [], filters: filterSummary, warning: 'Penjual tidak ditemukan.' };
     }
     if (minPrice !== undefined && Number.isFinite(minPrice) && minPrice > 0) query = query.gte('price', minPrice);

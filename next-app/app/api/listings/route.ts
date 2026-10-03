@@ -152,27 +152,26 @@ export async function POST(request: NextRequest) {
 
   // Foto disimpan di listings.images (kolom yang dibaca kartu marketplace).
   // listing_media TIDAK dipakai: skemanya cacat (bigint vs uuid).
+  // Catatan skema production (terverifikasi 2026-10-03): category_id integer
+  // (legacy) -> hanya diisi bila hasil resolusi berupa angka; kolom
+  // is_negotiable/published_at/mode/location TIDAK ADA -> "bisa nego"
+  // disimpan di specifications (jsonb) agar tak ada data yang hilang diam-diam.
+  const categoryIdNum = categoryId && /^\d+$/.test(categoryId) ? parseInt(categoryId, 10) : null;
   const row = {
     owner_id: user.id,
-    seller_id: user.id,
     title,
     description,
     price: input.price,
-    currency: 'IDR',
-    mode: 'sale',
-    status: 'published',
-    location: input.district,
     district: input.district,
     city: input.district,
     province: 'Sulawesi Tenggara',
-    category_id: categoryId,
+    category_id: categoryIdNum,
     images: imageUrls,
     thumbnail_url: imageUrls[0] || null,
     condition: input.condition,
     stock_quantity: input.stock,
-    is_negotiable: input.negotiable,
-    specifications: whatsapp ? { whatsapp } : {},
-    published_at: new Date().toISOString(),
+    specifications: { negotiable: input.negotiable, ...(whatsapp ? { whatsapp } : {}) },
+    status: 'active',
   };
 
   const { data, error } = await supabase.from('listings').insert(row).select('id,title').single();
