@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { CSSProperties, ComponentType, SVGProps, useEffect, useId, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { ArrowUpRight, LayoutGrid, X } from 'lucide-react';
 import {
   SukiIconAjakTeman,
@@ -91,10 +92,16 @@ function isHubActive(pathname: string): boolean {
 export function EcosystemHub({ variant }: { variant: 'action' | 'mtab' }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  // Portal hanya aman setelah mount di klien (SSR: document belum ada).
+  const [mounted, setMounted] = useState(false);
   const panelId = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const active = isHubActive(pathname);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -107,11 +114,15 @@ export function EcosystemHub({ variant }: { variant: 'action' | 'mtab' }) {
         setOpen(false);
       }
     };
+    // Kunci scroll body selama panel terbuka (terutama bottom sheet di mobile).
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
     document.addEventListener('keydown', onKey);
     document.addEventListener('pointerdown', onPointer);
     return () => {
       document.removeEventListener('keydown', onKey);
       document.removeEventListener('pointerdown', onPointer);
+      document.body.style.overflow = prevOverflow;
     };
   }, [open ]);
 
@@ -142,7 +153,7 @@ export function EcosystemHub({ variant }: { variant: 'action' | 'mtab' }) {
         <LayoutGrid aria-hidden="true" />
       </button>
 
-      {open && (
+      {open && mounted && createPortal(
         <>
           <div className="sknav-hub-backdrop" aria-hidden="true" onClick={() => setOpen(false)} />
           <div
@@ -214,7 +225,8 @@ export function EcosystemHub({ variant }: { variant: 'action' | 'mtab' }) {
               <ArrowUpRight size={18} aria-hidden="true" />
             </Link>
           </div>
-        </>
+        </>,
+        document.body,
       )}
     </>
   );
