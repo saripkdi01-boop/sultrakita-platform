@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { runSavedSearchAlerts } from '@/lib/saved-search-matcher';
+import { runPropertySavedSearchAlerts } from '@/lib/property-saved-search';
 
 // Fase 2.6: cron per jam — cocokkan saved_searches dengan listing baru,
 // kirim notifikasi in-app (tabel notifications).
@@ -7,6 +8,12 @@ import { runSavedSearchAlerts } from '@/lib/saved-search-matcher';
 // `Authorization: Bearer <CRON_SECRET>` otomatis.
 // Bila CRON_SECRET belum di-set di environment: skip graceful (bukan error),
 // agar deploy tanpa konfigurasi cron tetap hijau.
+//
+// Program 4-jam (Properti): matcher properti (`filters.target = 'properti'')
+// ikut dijalankan di sini, tetapi NON-AKTIF secara default —
+// `runPropertySavedSearchAlerts` hanya bekerja bila env
+// `PROPERTI_SAVED_SEARCH_ENABLED=true`. Mengaktifkan butuh persetujuan
+// eksplisit pemilik. Lihat docs/PROPERTI-SAVED-SEARCH-ALERTS.md.
 
 export const dynamic = 'force-dynamic';
 
@@ -19,8 +26,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ ok: false, error: 'Tidak berwenang.' }, { status: 401 });
   }
   try {
-    const result = await runSavedSearchAlerts();
-    return NextResponse.json(result);
+    const [marketplace, properti] = await Promise.all([
+      runSavedSearchAlerts(),
+      runPropertySavedSearchAlerts(),
+    ]);
+    return NextResponse.json({ ok: true, marketplace, properti });
   } catch {
     return NextResponse.json({ ok: false, error: 'Gagal menjalankan pencocokan alert.' }, { status: 500 });
   }

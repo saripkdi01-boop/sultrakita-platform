@@ -59,6 +59,48 @@ export async function searchPropertiesInBounds(input: unknown): Promise<{ ok: bo
   }
 }
 
+// Pencarian dalam radius (lingkaran) dari sebuah titik — murni di level kode,
+// tanpa migrasi: bbox pendekatan dari radius, lalu filter haversine eksak di JS.
+// Dipakai kontrol "radius" pada peta /properti.
+const radiusSchema = z.object({
+  lat: z.coerce.number().min(-90).max(90),
+  lng: z.coerce.number().min(-180).max(180),
+  radiusKm: z.coerce.number().min(0.5).max(100),
+  category: z.string().trim().min(1).max(40).optional(),
+  minPrice: z.coerce.number().nonnegative().optional(),
+  maxPrice: z.coerce.number().nonnegative().optional(),
+  limit: z.coerce.number().int().min(1).max(300).default(200),
+});
+
+export async function searchPropertiesInRadius(input: unknown): Promise<{ ok: boolean; data: any[]; source: GeoSource; error?: string }> {
+  const parsed = radiusSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, data: [], source: 'none', error: 'Radius pencarian tidak valid.' };
+  const { lat, lng, radiusKm, category, minPrice, maxPrice, limit } = parsed.data;
+  // Kotak pendekatan: 1° lintang ≈ 111 km; bujur disesuaikan cosinus lintang.
+  const dLat = radiusKm / 111;
+  const dLng = radiusKm / (111 * Math.max(0.2, Math.cos((lat * Math.PI) / 180)));
+  const boundsResult = await searchPropertiesInBounds({
+    minLat: lat - dLat,
+    maxLat: lat + dLat,
+    minLng: lng - dLng,
+    maxLng: lng + dLng,
+    category,
+    minPrice,
+    maxPrice,
+    limit: Math.min(300, limit * 2),
+  });
+  if (!boundsResult.ok) return boundsResult;
+  // Filter lingkaran eksak + urutkan dari terdekat. Hanya koordinat nyata
+  // (tanpa centroid tebakan) agar "dalam radius X km" benar-benar jujur.
+  const rows = (boundsResult.data as any[])
+    .filter(row => row.latitude != null && row.longitude != null)
+    .map(row => ({ ...row, _distanceKm: haversineKm(lat, lng, Number(row.latitude), Number(row.longitude)) }))
+    .filter(row => row._distanceKm <= radiusKm + 1e-6)
+    .sort((a, b) => a._distanceKm - b._distanceKm)
+    .slice(0, limit);
+  return { ok: true, data: rows, source: boundsResult.source };
+}
+
 const nearbySchema = z.object({
   id: z.string().trim().min(1).max(64),
   lat: z.coerce.number().min(-90).max(90),

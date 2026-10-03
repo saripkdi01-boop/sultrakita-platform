@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Calculator, Info } from 'lucide-react';
 import { estimateMonthlyInstallment, isForSale, rupiah } from '@/lib/property-format';
 
@@ -22,8 +22,14 @@ export default function MortgageCalculator({ price, canKpr, priceType }: Props) 
   const [downPct, setDownPct] = useState(20);
   const [rate, setRate] = useState(7);
   const [years, setYears] = useState(15);
+  // Harga bisa diubah user untuk simulasi skema lain — default dari listing.
+  // Murni input user, bukan data yang dikarang.
+  const [priceInput, setPriceInput] = useState<number>(Number.isFinite(price) && price > 0 ? Math.round(price) : 0);
+  useEffect(() => {
+    setPriceInput(Number.isFinite(price) && price > 0 ? Math.round(price) : 0);
+  }, [price]);
 
-  const calc = useMemo(() => estimateMonthlyInstallment(price, downPct, rate, years), [price, downPct, rate, years]);
+  const calc = useMemo(() => estimateMonthlyInstallment(priceInput, downPct, rate, years), [priceInput, downPct, rate, years]);
   if (!isForSale(priceType)) return null;
 
   const inputNumber = 'h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-800 outline-none focus:border-sultra-teal dark:border-slate-700 dark:bg-slate-900 dark:text-white';
@@ -39,6 +45,21 @@ export default function MortgageCalculator({ price, canKpr, priceType }: Props) 
         {canKpr ? 'Listing ini ditandai Bisa KPR oleh penjual. ' : ''}
         Atur skema di bawah untuk melihat perkiraan cicilan properti ini.
       </p>
+
+      <div className="mt-4">
+        <label htmlFor="kpr-price" className="text-xs font-bold text-slate-600 dark:text-slate-300">Harga properti (Rp)</label>
+        <input
+          id="kpr-price"
+          type="number"
+          min={0}
+          step={1000000}
+          value={priceInput || ''}
+          onChange={e => setPriceInput(Math.max(0, Number(e.target.value) || 0))}
+          className={`${inputNumber} mt-1 max-w-xs`}
+          inputMode="numeric"
+        />
+        <p className="mt-1 text-[11px] text-slate-500">Default dari harga listing — ubah untuk simulasi skema lain.</p>
+      </div>
 
       <div className="mt-4 grid gap-4 md:grid-cols-3">
         <div>
@@ -76,7 +97,7 @@ export default function MortgageCalculator({ price, canKpr, priceType }: Props) 
             <div><dt className="font-semibold text-slate-500 dark:text-slate-400">Pokok pinjaman</dt><dd className="mt-0.5 font-bold text-slate-800 dark:text-slate-100">{rupiah(calc.principal)}</dd></div>
             <div><dt className="font-semibold text-slate-500 dark:text-slate-400">Total bunga</dt><dd className="mt-0.5 font-bold text-slate-800 dark:text-slate-100">{rupiah(calc.totalInterest)}</dd></div>
             <div><dt className="font-semibold text-slate-500 dark:text-slate-400">Total dibayar</dt><dd className="mt-0.5 font-bold text-slate-800 dark:text-slate-100">{rupiah(calc.totalPaid)}</dd></div>
-            <div><dt className="font-semibold text-slate-500 dark:text-slate-400">Harga properti</dt><dd className="mt-0.5 font-bold text-slate-800 dark:text-slate-100">{rupiah(price)}</dd></div>
+            <div><dt className="font-semibold text-slate-500 dark:text-slate-400">Harga properti</dt><dd className="mt-0.5 font-bold text-slate-800 dark:text-slate-100">{rupiah(priceInput)}</dd></div>
           </dl>
         )}
       </div>
