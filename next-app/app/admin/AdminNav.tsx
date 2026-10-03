@@ -3,26 +3,30 @@
 // Navigasi lengkap Operations Center — dirender di app/admin/layout.tsx
 // (semua halaman /admin/* sudah terproteksi requireAdminUser di layout)
 // dan di app/dashboard/admin/page.tsx.
-// 14 seksi: overview, users, moderation, monitoring, audit, billing, ads,
-// settings, support-tickets, ecosystem-banners, property-verification,
-// businesses, affiliate-rewards, launch.
+// 18 seksi: overview, users, team, moderation, monitoring, errors, database,
+// audit, billing, ads, settings, announcements, support-tickets,
+// ecosystem-banners, property-verification, businesses, affiliate-rewards, launch.
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  LayoutDashboard, UsersRound, ShieldCheck, Activity, ScrollText,
-  CreditCard, Megaphone, Settings2, LifeBuoy, Images, House,
+  LayoutDashboard, UsersRound, KeyRound, ShieldCheck, Activity, Bug, Database, ScrollText,
+  CreditCard, Megaphone, Settings2, BellRing, LifeBuoy, Images, House,
   Building2, Gift, Rocket,
 } from 'lucide-react';
 
 const SECTIONS = [
   { href: '/admin/overview', label: 'Ringkasan', icon: LayoutDashboard },
   { href: '/admin/users', label: 'Pengguna', icon: UsersRound },
+  { href: '/admin/team', label: 'Tim', icon: KeyRound },
   { href: '/admin/moderation', label: 'Moderasi', icon: ShieldCheck },
   { href: '/admin/monitoring', label: 'Monitoring', icon: Activity },
+  { href: '/admin/errors', label: 'Error', icon: Bug },
+  { href: '/admin/database', label: 'Database', icon: Database },
   { href: '/admin/audit', label: 'Audit', icon: ScrollText },
   { href: '/admin/billing', label: 'Billing', icon: CreditCard },
   { href: '/admin/ads', label: 'Iklan', icon: Megaphone },
+  { href: '/admin/announcements', label: 'Pengumuman', icon: BellRing },
   { href: '/admin/businesses', label: 'Bisnis', icon: Building2 },
   { href: '/admin/property-verification', label: 'Properti', icon: House },
   { href: '/admin/support-tickets', label: 'Tiket', icon: LifeBuoy },

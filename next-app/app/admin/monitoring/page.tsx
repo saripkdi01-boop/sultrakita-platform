@@ -10,9 +10,9 @@ export const dynamic = 'force-dynamic';
 // /admin/monitoring — pusat monitoring operasional.
 // Semua pengecekan dilakukan SERVER-SIDE saat halaman dibuka (live).
 // Setiap metrik mencantumkan SUMBER + WAKTU pengecekan.
+// FASE B3: ditambah seksi "Integrasi & konfigurasi" (billing, CS WhatsApp,
+// feature flags) — hanya presence/mode, TIDAK PERNAH menampilkan nilai secret.
 // Batasan jujur:
-// - Tidak ada pipeline error terpusat di aplikasi: error runtime hanya
-//   terlihat di Vercel Runtime Logs (ditautkan di bawah).
 // - Status run terakhir cron GitHub Actions TIDAK bisa dibaca dari aplikasi;
 //   halaman hanya menampilkan jadwal dari file workflow + tautan ke tab Actions.
 
@@ -112,6 +112,70 @@ async function recentAdminActivity(): Promise<{ rows: AuditRow[]; error: string 
   }
 }
 
+// FASE B1/B3 — jumlah error belum resolved (null = tabel belum dimigrasi).
+async function unresolvedErrorCount(): Promise<number | null> {
+  try {
+    const supabase = await getServerSupabase();
+    const { count, error } = await supabase
+      .from('error_events')
+      .select('id', { count: 'exact', head: true })
+      .eq('resolved', false);
+    if (error) return null;
+    return count ?? 0;
+  } catch {
+    return null;
+  }
+}
+
+interface IntegrationItem {
+  name: string;
+  status: string;
+  ok: boolean | null;
+  detail: string;
+}
+
+// FASE B3 — status integrasi & konfigurasi. HANYA presence/mode dari env;
+// nilai secret TIDAK PERNAH dibaca/ditampilkan.
+function integrationStatus(): IntegrationItem[] {
+  const has = (v: string | undefined) => !!v && v.length > 0;
+  const billingProvider = process.env.SUKI_BILLING_PROVIDER || 'default (sandbox)';
+  const midtransLive = process.env.MIDTRANS_IS_PRODUCTION === 'true';
+  const waVars = ['WA_CLOUD_ACCESS_TOKEN', 'WA_CLOUD_PHONE_NUMBER_ID', 'WA_CLOUD_VERIFY_TOKEN'];
+  const waSet = waVars.filter((k) => has(process.env[k])).length;
+  return [
+    {
+      name: 'Billing',
+      status: billingProvider,
+      ok: true,
+      detail: `mode ${midtransLive ? 'LIVE ⚠️' : 'sandbox'} · server key ${has(process.env.MIDTRANS_SERVER_KEY) ? 'terpasang' : 'belum'} · client key ${has(process.env.MIDTRANS_CLIENT_KEY) ? 'terpasang' : 'belum'}`,
+    },
+    {
+      name: 'CS WhatsApp',
+      status: waSet === waVars.length ? 'terkonfigurasi' : `${waSet}/${waVars.length} env terisi`,
+      ok: waSet === waVars.length ? true : null,
+      detail: 'webhook: /api/cs/whatsapp-cloud (Cloud API) + /api/cs/inbound (n8n/gateway)',
+    },
+    {
+      name: 'Supabase service-role',
+      status: has(process.env.SUPABASE_SERVICE_ROLE_KEY) ? 'terpasang' : 'belum',
+      ok: has(process.env.SUPABASE_SERVICE_ROLE_KEY) ? true : false,
+      detail: 'dibutuhkan untuk hitung database pasti, tulis audit & error events',
+    },
+    {
+      name: 'Saved-search alerts (properti)',
+      status: process.env.PROPERTI_SAVED_SEARCH_ENABLED === 'true' ? 'aktif' : 'non-aktif',
+      ok: null,
+      detail: 'env PROPERTI_SAVED_SEARCH_ENABLED',
+    },
+    {
+      name: 'Google OAuth',
+      status: has(process.env.NEXT_PUBLIC_SUPABASE_URL) ? 'terkonfigurasi' : 'belum',
+      ok: has(process.env.NEXT_PUBLIC_SUPABASE_URL) ? true : false,
+      detail: 'login Google via Supabase Auth',
+    },
+  ];
+}
+
 function StatusBadge({ ok }: { ok: boolean | null }) {
   const cls =
     ok === true
@@ -173,6 +237,8 @@ export default async function AdminMonitoringPage() {
     checkStorage(),
   ]);
   const activity = await recentAdminActivity();
+  const errorCount = await unresolvedErrorCount();
+  const integrations = integrationStatus();
   const jobs = (cronJobsData as { jobs: Array<{ id: string; name: string; file: string; schedule: string; schedule_human: string; target: string; description: string }>; notes: string[] }).jobs;
   const cronNotes = (cronJobsData as { notes: string[] }).notes;
 
@@ -207,6 +273,26 @@ export default async function AdminMonitoringPage() {
         </section>
 
         <section className="mt-8">
+          <h2 className="mb-3 text-lg font-extrabold text-[#123f38] dark:text-white">Integrasi &amp; konfigurasi</h2>
+          <div className="grid gap-4 md:grid-cols-2">
+            {integrations.map((item) => (
+              <div key={item.name} className="rounded-3xl border border-[#dcebe5] bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#10231f]">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h3 className="font-extrabold text-[#123f38] dark:text-white">{item.name}</h3>
+                  <StatusBadge ok={item.ok} />
+                </div>
+                <p className="mt-2 font-mono text-sm font-bold text-[#1b806f] dark:text-[#7edac0]">{item.status}</p>
+                <p className="mt-1 text-xs leading-5 text-[#78948c]">{item.detail}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-3 text-[11px] leading-5 text-[#78948c]">
+            Sumber: environment variables server-side (hanya presence/mode — nilai secret tidak pernah dibaca/ditampilkan).
+            Dicek: {checkedAt} (UTC).
+          </p>
+        </section>
+
+        <section className="mt-8">
           <h2 className="mb-3 text-lg font-extrabold text-[#123f38] dark:text-white">Aktivitas admin terbaru</h2>
           <div className="rounded-3xl border border-[#dcebe5] bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#10231f]">
             {activity.error ? (
@@ -236,23 +322,47 @@ export default async function AdminMonitoringPage() {
 
         <section className="mt-8">
           <h2 className="mb-3 text-lg font-extrabold text-[#123f38] dark:text-white">Error runtime</h2>
-          <div className="rounded-3xl border border-dashed border-[#dcebe5] bg-[#f6fbf9] p-6 dark:border-white/10 dark:bg-white/5">
-            <p className="text-sm leading-6 text-[#55736b] dark:text-white/70">
-              <strong className="text-[#123f38] dark:text-white">Belum ada pipeline error terpusat</strong> di aplikasi ini.
-              Error runtime (500, exception server, kegagalan build) hanya tercatat di{' '}
-              <a
-                href="https://vercel.com/dashboard"
-                target="_blank"
-                rel="noreferrer"
-                className="font-bold text-[#1b806f] underline"
-              >
-                Vercel Runtime Logs
-              </a>{' '}
-              (proyek <code>sultrakita-platform</code> → tab Logs). Jangan mengarang daftar error — halaman ini
-              menampilkan empty state jujur sampai pipeline error (mis. Sentry) dipasang.
-            </p>
-            <p className="mt-2 text-[11px] text-[#78948c]">Sumber pernyataan: audit struktur repo &amp; tidak ditemukannya sink error terpusat.</p>
-          </div>
+          {errorCount === null ? (
+            <div className="rounded-3xl border border-dashed border-[#dcebe5] bg-[#f6fbf9] p-6 dark:border-white/10 dark:bg-white/5">
+              <p className="text-sm leading-6 text-[#55736b] dark:text-white/70">
+                <strong className="text-[#123f38] dark:text-white">Pipeline error (Fase B1) belum aktif</strong> — tabel{' '}
+                <code>error_events</code> belum dimigrasi. Jalankan{' '}
+                <code>20261003140000_error_events.sql</code> di Supabase SQL Editor untuk mengaktifkan Error Inbox.
+                Sementara itu error tetap tercatat di{' '}
+                <a
+                  href="https://vercel.com/dashboard"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-bold text-[#1b806f] underline"
+                >
+                  Vercel Runtime Logs
+                </a>{' '}
+                (proyek <code>sultrakita-platform</code> → tab Logs).
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-3xl border border-[#dcebe5] bg-white p-6 shadow-sm dark:border-white/10 dark:bg-[#10231f]">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm leading-6 text-[#55736b] dark:text-white/70">
+                    <strong className={`text-2xl font-extrabold ${errorCount > 0 ? 'text-red-700' : 'text-[#146355]'}`}>
+                      {errorCount}
+                    </strong>{' '}
+                    error belum di-resolved di <code>error_events</code>.
+                  </p>
+                  <p className="mt-1 text-[11px] text-[#78948c]">
+                    Sumber: tabel <code>error_events</code> (server-side). Tanpa PII — user hanya hash.
+                  </p>
+                </div>
+                <Link
+                  href="/admin/errors"
+                  className="rounded-xl bg-[#123f38] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-[#1b5a50]"
+                >
+                  Buka Error Inbox →
+                </Link>
+              </div>
+            </div>
+          )}
         </section>
 
         <section className="mt-8">
