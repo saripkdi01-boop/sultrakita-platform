@@ -1,0 +1,94 @@
+# Cron watchdog — skeleton NON-AKTIF.
+#
+# Tugas: mengawasi workflow terjadwal (saved-search-alerts, uptime-check).
+# Bila 3 run terakhir salah satu workflow GAGAL beruntun, workflow ini
+# membuat GitHub issue berlabel "cron-watchdog" (dedup: tidak membuat
+# duplikat bila issue masih terbuka).
+#
+# STATUS: NON-AKTIF secara default.
+# Hanya bisa dijalankan manual via Actions → "Cron watchdog" → Run workflow.
+# Untuk mengaktifkan jadwal otomatis, pemilik harus:
+#   1. Memberi persetujuan eksplisit (catat di docs/OTOMATISASI.md).
+#   2. Menghapus komentar pada blok `schedule` di bawah.
+# JANGAN mengaktifkan tanpa persetujuan pemilik.
+#
+# Tidak butuh secret baru: hanya memakai GITHUB_TOKEN bawaan runner.
+# Read-only terhadap Actions API; satu-satunya aksi tulis = membuat issue.
+name: Cron watchdog
+
+on:
+  # Jadwal DINONAKTIFKAN — aktifkan hanya atas persetujuan eksplisit pemilik.
+  # schedule:
+  #   - cron: '15 3 * * *'   # tiap hari 03:15 UTC — cukup untuk watchdog
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+
+jobs:
+  watchdog:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Cek run terakhir workflow terjadwal
+        id: check
+        run: |
+          set -euo pipefail
+          fail=0
+          report=""
+          for wf in "saved-search-alerts.yml" "uptime-check.yml"; do
+            # 3 run terakhir (berdasarkan conclusion), urutan terbaru dulu
+            conclusions=$(gh run list --workflow="$wf" --limit 3 --json conclusion --jq '.[].conclusion' || echo "API_ERROR")
+            echo "WORKFLOW $wf conclusions: $(echo "$conclusions" | tr '\n' ' ')"
+            consecutive=0
+            while IFS= read -r c; do
+              if [ "$c" = "failure" ] || [ "$c" = "timed_out" ]; then
+                consecutive=$((consecutive + 1))
+              else
+                break
+              fi
+            done <<< "$conclusions"
+            if [ "$consecutive" -ge 3 ]; then
+              echo "::error::${wf}: ${consecutive} run terakhir GAGAL beruntun"
+              report="${report}\n- \`${wf}\`: ${consecutive} run terakhir gagal beruntun"
+              fail=1
+            else
+              report="${report}\n- \`${wf}\`: OK (gagal beruntun: ${consecutive})"
+            fi
+          done
+          printf '%b\n' "$report" > /tmp/watchdog-report.txt
+          echo "failed=${fail}" >> "$GITHUB_OUTPUT"
+          [ "$fail" -eq 0 ]
+
+      - name: Buat GitHub issue bila watchdog gagal
+        if: failure()
+        run: |
+          set -euo pipefail
+          open_count=$(gh issue list --label cron-watchdog --state open --json number --jq 'length')
+          if [ "$open_count" -gt 0 ]; then
+            echo "Sudah ada ${open_count} issue 'cron-watchdog' yang masih terbuka — tidak membuat duplikat."
+            exit 0
+          fi
+          timestamp_utc=$(date -u +"%Y-%m-%d %H:%M UTC")
+          gh issue create \
+            --title "🐶 Cron watchdog: workflow terjadwal gagal beruntun (${timestamp_utc})" \
+            --label cron-watchdog \
+            --body "## Cron watchdog mendeteksi kegagalan beruntun
+
+          **Waktu:** ${timestamp_utc}
+          **Workflow:** ${{ github.workflow }} — run ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+          $(cat /tmp/watchdog-report.txt)
+
+          ## Langkah cepat
+          1. Buka tab Actions → cek log run yang gagal (workflow di atas).
+          2. Untuk saved-search-alerts: pastikan secret \`CRON_SECRET\` masih sama di Vercel dan GitHub Actions.
+          3. Untuk uptime-check: buka https://sukiapps.web.id/api/health — cek field \`ok\`, \`db\`, \`storage\`.
+          4. Tutup issue ini setelah pulih (watchdog tidak menutup otomatis).
+
+          Detail: docs/OTOMATISASI.md (bagian watchdog)."
+          echo "Issue cron-watchdog dibuat."
