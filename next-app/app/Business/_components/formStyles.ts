@@ -45,8 +45,9 @@ export const pageSubtitle: CSSProperties = {
 };
 
 export const card: CSSProperties = {
-  background: '#fff',
+  background: 'var(--sb-surface)',
   border: '1px solid var(--sb-line)',
+  boxShadow: 'var(--theme-shadow-md)',
   borderRadius: 20,
   padding: 24,
 };
@@ -65,7 +66,7 @@ export const fieldInput: CSSProperties = {
   padding: '12px 14px',
   borderRadius: 12,
   border: '1px solid var(--sb-line)',
-  background: '#fff',
+  background: 'var(--sb-surface)',
   color: 'var(--sb-ink)',
   fontSize: 15,
   fontFamily: 'inherit',
@@ -88,15 +89,15 @@ export const fieldError: CSSProperties = {
   margin: 0,
   fontSize: 12,
   fontWeight: 600,
-  color: '#b3261e',
+  color: 'var(--sb-danger)',
   lineHeight: 1.5,
 };
 
 export const errorBox: CSSProperties = {
   borderRadius: 14,
-  border: '1px solid #f7c9c4',
-  background: '#fdecea',
-  color: '#8f1d16',
+  border: '1px solid color-mix(in srgb, var(--sb-danger) 40%, transparent)',
+  background: 'color-mix(in srgb, var(--sb-danger) 10%, var(--sb-surface))',
+  color: 'var(--sb-danger)',
   padding: '13px 16px',
   fontSize: 13,
   fontWeight: 600,
@@ -105,9 +106,9 @@ export const errorBox: CSSProperties = {
 
 export const successBanner: CSSProperties = {
   borderRadius: 16,
-  border: '1px solid #cde7dd',
-  background: '#e7f3ef',
-  color: '#0e6258',
+  border: '1px solid color-mix(in srgb, var(--sb-success) 40%, transparent)',
+  background: 'color-mix(in srgb, var(--sb-success) 12%, var(--sb-surface))',
+  color: 'var(--sb-success)',
   padding: '14px 18px',
   fontSize: 14,
   fontWeight: 600,

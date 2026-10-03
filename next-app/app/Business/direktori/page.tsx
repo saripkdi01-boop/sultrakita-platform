@@ -110,7 +110,7 @@ export default async function DirektoriPage({
       <header className="suki-business-subnav">
         <div className="suki-business-subnav-inner">
           <Link href="/Business" className="suki-business-subnav-brand" aria-label="Kembali ke SUKI Business">
-            <span className="suki-business-mark">S</span>
+            <span className="suki-business-mark" aria-hidden="true"><img src="/suki-logo-mark.svg" alt="" width={36} height={36} /></span>
             <span>
               <strong>SUKI</strong>
               <small>Business</small>

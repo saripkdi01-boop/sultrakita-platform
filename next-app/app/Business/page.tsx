@@ -16,7 +16,7 @@ import {
   Store,
   UsersRound,
 } from 'lucide-react';
-import BusinessMobileMenu from './_components/BusinessMobileMenu';
+import BusinessNav from './_components/BusinessNav';
 import {
   BUSINESS_CATEGORIES,
   fetchBusinessStats,
@@ -56,18 +56,6 @@ const plans = [
   { name: 'Mulai', description: 'Untuk bisnis yang ingin hadir dengan fondasi yang jelas.', features: ['Profil bisnis terarah', 'Ruang untuk cerita dan penawaran', 'Pendampingan langkah pertama'], featured: false },
   { name: 'Bertumbuh', description: 'Untuk bisnis yang siap menjangkau lebih banyak peluang lokal.', features: ['Semua fitur Mulai', 'Penempatan di ruang yang relevan', 'Ruang kolaborasi dengan partner'], featured: true },
   { name: 'Kolaborasi', description: 'Untuk organisasi dan inisiatif dengan kebutuhan yang lebih khusus.', features: ['Ruang campaign khusus', 'Diskusi kebutuhan bersama tim', 'Jalur integrasi dan partner'], featured: false },
-];
-
-/** Isi menu hamburger mobile (≤900px) — cerminan nav & aksi header desktop. */
-const mobileMenuLinks = [
-  { href: '/Business/direktori', label: 'Direktori' },
-  { href: '#cara-kerja', label: 'Cara kerja' },
-  { href: '#ruang-tumbuh', label: 'Ruang tumbuh' },
-  { href: '#paket', label: 'Paket' },
-];
-const mobileMenuActions = [
-  { href: '/login', label: 'Masuk' },
-  { href: '/Business/daftar', label: 'Daftarkan bisnis' },
 ];
 
 function categoryLabel(value: string | null | undefined): string {
@@ -151,23 +139,17 @@ export default async function BusinessPage() {
   return (
     <main className="suki-business-page">
       <JsonLd />
-      <header className="suki-business-nav">
-        <Link href="/" className="suki-business-brand" aria-label="Kembali ke SUKI Apps">
-          <span className="suki-business-mark">S</span>
-          <span><strong>SUKI</strong><small>Business</small></span>
-        </Link>
-        <nav aria-label="Navigasi SUKI Business">
-          <Link href="/Business/direktori">Direktori</Link>
-          <a href="#cara-kerja">Cara kerja</a>
-          <a href="#ruang-tumbuh">Ruang tumbuh</a>
-          <a href="#paket">Paket</a>
-        </nav>
-        <div className="suki-business-nav-actions">
-          <Link href="/login" className="suki-business-login">Masuk</Link>
-          <Link href="/Business/daftar" className="suki-business-button suki-business-button-dark">Daftarkan bisnis <ArrowRight size={15} /></Link>
-        </div>
-        <BusinessMobileMenu links={mobileMenuLinks} actions={mobileMenuActions} />
-      </header>
+      <BusinessNav
+        links={[
+          { href: '/Business/direktori', label: 'Direktori' },
+          { href: '#cara-kerja', label: 'Cara kerja' },
+          { href: '#ruang-tumbuh', label: 'Ruang tumbuh' },
+          { href: '#paket', label: 'Paket' },
+        ]}
+        actions={[{ href: '/login', label: 'Masuk' }]}
+        brandHref="/"
+        brandAriaLabel="Kembali ke SUKI Apps"
+      />
 
       <section className="suki-business-hero">
         <div className="suki-business-hero-copy">
@@ -191,7 +173,7 @@ export default async function BusinessPage() {
         <div className="suki-business-hero-visual" aria-label="Pratinjau ruang kerja SUKI Business">
           <div className="suki-business-orbit orbit-a" /><div className="suki-business-orbit orbit-b" />
           <div className="suki-business-preview">
-            <div className="suki-business-preview-top"><span className="suki-business-preview-brand"><span className="suki-business-mini-mark">S</span><b>Ruang bisnis</b></span><span className="suki-business-status"><i /> Aktif</span></div>
+            <div className="suki-business-preview-top"><span className="suki-business-preview-brand"><span className="suki-business-mini-mark"><img src="/suki-logo-mark.svg" alt="" width={24} height={24} /></span><b>Ruang bisnis</b></span><span className="suki-business-status"><i /> Aktif</span></div>
             <div className="suki-business-preview-heading"><span>Profil Anda terlihat di</span><strong>ruang yang tepat.</strong></div>
             <div className="suki-business-preview-chart"><div className="suki-business-chart-label"><span>Kehadiran lokal</span><b>bertumbuh bersama</b></div><div className="suki-business-bars"><i /><i /><i /><i /><i /><i /><i /><i /></div></div>
             <div className="suki-business-preview-footer"><span><Store size={14} /> Marketplace</span><span><UsersRound size={14} /> Komunitas</span><span><Handshake size={14} /> Partner</span></div>
@@ -242,7 +224,7 @@ export default async function BusinessPage() {
 
       <section className="suki-business-faq"><div className="suki-business-section-head"><p className="suki-business-kicker">Pertanyaan umum</p><h2>Mulai dengan hal yang ingin Anda ketahui.</h2></div><div className="suki-business-faq-list"><details><summary>Siapa yang dapat bergabung dengan SUKI Business?<ChevronDown size={17} /></summary><p>Seller, UMKM, developer, pemilik properti, organisasi, sponsor, dan partner yang ingin membangun kehadiran di ekosistem digital Sulawesi Tenggara.</p></details><details><summary>Apakah saya harus memiliki toko online?<ChevronDown size={17} /></summary><p>Tidak selalu. Anda dapat memulai dari profil, cerita, listing, atau percakapan awal sesuai tujuan bisnis Anda.</p></details><details><summary>Bagaimana cara mendaftarkan bisnis saya?<ChevronDown size={17} /></summary><p>Kunjungi halaman pendaftaran di <Link href="/Business/daftar">sukiapps.web.id/Business/daftar</Link> dan isi data usaha Anda. Setelah terdaftar, profil bisnis Anda akan tampil di direktori dan dapat ditemukan warga.</p></details><details><summary>Bisakah saya melihat bisnis yang sudah bergabung?<ChevronDown size={17} /></summary><p>Bisa. Jelajahi <Link href="/Business/direktori">direktori bisnis SUKI</Link> untuk melihat usaha lokal yang terdaftar dan terverifikasi di Sulawesi Tenggara.</p></details><details><summary>Bagaimana cara memulai?<ChevronDown size={17} /></summary><p>Kirimkan kebutuhan Anda melalui email. Tim SUKI akan menghubungi Anda untuk memahami konteks dan menyusun langkah awal.</p></details></div></section>
 
-      <footer className="suki-business-footer"><div className="suki-business-brand"><span className="suki-business-mark">S</span><span><strong>SUKI</strong><small>Business</small></span></div><p>Ruang tumbuh untuk bisnis lokal Sulawesi Tenggara.</p><div className="suki-business-footer-links"><Link href="/">SUKI Apps</Link><Link href="/beranda">Aplikasi</Link><Link href="/Business/direktori">Direktori</Link><Link href="/Business/daftar">Daftarkan bisnis</Link><Link href="/help-center">Panduan</Link><Link href="/legal/privacy">Privasi</Link></div><small className="suki-business-copyright">© 2026 SUKI Apps · Sulawesi Tenggara</small></footer>
+      <footer className="suki-business-footer"><div className="suki-business-brand"><span className="suki-business-mark" aria-hidden="true"><img src="/suki-logo-mark.svg" alt="" width={36} height={36} /></span><span><strong>SUKI</strong><small>Business</small></span></div><p>Ruang tumbuh untuk bisnis lokal Sulawesi Tenggara.</p><div className="suki-business-footer-links"><Link href="/">SUKI Apps</Link><Link href="/beranda">Aplikasi</Link><Link href="/Business/direktori">Direktori</Link><Link href="/Business/daftar">Daftarkan bisnis</Link><Link href="/help-center">Panduan</Link><Link href="/legal/privacy">Privasi</Link></div><small className="suki-business-copyright">© 2026 SUKI Apps · Sulawesi Tenggara</small></footer>
     </main>
   );
 }

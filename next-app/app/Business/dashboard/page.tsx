@@ -82,7 +82,7 @@ export default async function BusinessDashboardPage({
             style={{
               border: '1px dashed var(--sb-line)',
               borderRadius: 20,
-              background: '#fff',
+              background: 'var(--sb-surface)',
               padding: '48px 28px',
               textAlign: 'center',
             }}

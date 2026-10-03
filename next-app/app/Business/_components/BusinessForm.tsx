@@ -269,7 +269,7 @@ export default function BusinessForm({ categories, mode, initial, onSubmit, subm
   }
 
   const requiredMark = (
-    <span aria-hidden="true" style={{ color: '#b3261e' }}>
+    <span aria-hidden="true" style={{ color: 'var(--sb-danger)' }}>
       {' *'}
     </span>
   );
@@ -324,9 +324,13 @@ export default function BusinessForm({ categories, mode, initial, onSubmit, subm
                     flex: 'none',
                     fontSize: 12,
                     fontWeight: 900,
-                    background: state === 'done' ? 'var(--sb-teal)' : state === 'current' ? 'var(--sb-ink)' : '#fff',
-                    color: state === 'todo' ? 'var(--sb-muted)' : '#fff',
+                    background: state === 'done' ? 'var(--sb-teal)' : state === 'current' ? 'var(--sb-ink)' : 'var(--sb-surface)',
+                    color: state === 'todo' ? 'var(--sb-muted)' : 'var(--sb-on-accent)',
                     border: state === 'todo' ? '1px solid var(--sb-line)' : 'none',
+                    boxShadow:
+                      state === 'current'
+                        ? '0 0 0 4px color-mix(in srgb, var(--sb-teal) 22%, transparent)'
+                        : 'none',
                   }}
                 >
                   {state === 'done' ? '✓' : s.n}
@@ -343,7 +347,7 @@ export default function BusinessForm({ categories, mode, initial, onSubmit, subm
           {STEPS[step - 1].title}
         </h2>
         <p style={{ margin: '0 0 22px', fontSize: 13, color: 'var(--sb-muted)' }}>
-          {STEPS[step - 1].desc}. Kolom bertanda <span aria-hidden="true" style={{ color: '#b3261e' }}>*</span> wajib diisi.
+          {STEPS[step - 1].desc}. Kolom bertanda <span aria-hidden="true" style={{ color: 'var(--sb-danger)' }}>*</span> wajib diisi.
         </p>
 
         {/* Langkah 1 — Info dasar */}

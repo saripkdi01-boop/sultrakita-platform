@@ -1,45 +1,16 @@
-import Link from 'next/link';
-import BusinessMobileMenu from './BusinessMobileMenu';
+import BusinessNav from './BusinessNav';
 
 /** Header konsisten untuk halaman auth /Business (server component). */
 export default function BusinessHeader({ hideCta = false }: { hideCta?: boolean }) {
-  const menuLinks = [
-    { href: '/Business#cara-kerja', label: 'Cara kerja' },
-    { href: '/Business#ruang-tumbuh', label: 'Ruang tumbuh' },
-    { href: '/Business#paket', label: 'Paket' },
-  ];
-  const menuActions = [
-    { href: '/Business/dashboard', label: 'Dashboard' },
-    ...(hideCta ? [] : [{ href: '/Business/daftar', label: 'Daftarkan bisnis' }]),
-  ];
-
   return (
-    <header className="suki-business-nav">
-      <Link href="/Business" className="suki-business-brand" aria-label="Kembali ke halaman SUKI Business">
-        <span className="suki-business-mark" aria-hidden="true">
-          S
-        </span>
-        <span>
-          <strong>SUKI</strong>
-          <small>Business</small>
-        </span>
-      </Link>
-      <nav aria-label="Navigasi SUKI Business">
-        <Link href="/Business#cara-kerja">Cara kerja</Link>
-        <Link href="/Business#ruang-tumbuh">Ruang tumbuh</Link>
-        <Link href="/Business#paket">Paket</Link>
-      </nav>
-      <div className="suki-business-nav-actions">
-        <Link href="/Business/dashboard" className="suki-business-login">
-          Dashboard
-        </Link>
-        {!hideCta && (
-          <Link href="/Business/daftar" className="suki-business-button suki-business-button-dark">
-            Daftarkan bisnis
-          </Link>
-        )}
-      </div>
-      <BusinessMobileMenu links={menuLinks} actions={menuActions} />
-    </header>
+    <BusinessNav
+      links={[
+        { href: '/Business#cara-kerja', label: 'Cara kerja' },
+        { href: '/Business#ruang-tumbuh', label: 'Ruang tumbuh' },
+        { href: '/Business#paket', label: 'Paket' },
+      ]}
+      actions={[{ href: '/Business/dashboard', label: 'Dashboard' }]}
+      hideCta={hideCta}
+    />
   );
 }

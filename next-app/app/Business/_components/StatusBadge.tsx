@@ -1,13 +1,43 @@
 type StatusConfig = { label: string; background: string; color: string; border: string };
 
+const soft = (token: string, pct: number) =>
+  `color-mix(in srgb, var(${token}) ${pct}%, var(--sb-surface, var(--theme-surface)))`;
+const softBorder = (token: string, pct: number) =>
+  `color-mix(in srgb, var(${token}) ${pct}%, transparent)`;
+
 const CONFIG: Record<string, StatusConfig> = {
-  draft: { label: 'Draf', background: '#f1f4f3', color: '#5c6b66', border: '#dfe6e3' },
-  pending: { label: 'Menunggu Kurasi', background: '#fdf3e0', color: '#8a5f0e', border: '#f0d9a8' },
-  approved: { label: 'Tayang', background: '#e7f3ef', color: '#0e6258', border: '#c4e2d7' },
-  rejected: { label: 'Ditolak', background: '#fdecea', color: '#b3261e', border: '#f5c6c1' },
+  draft: {
+    label: 'Draf',
+    background: 'var(--theme-surface-soft)',
+    color: 'var(--theme-text-muted)',
+    border: 'var(--theme-border)',
+  },
+  pending: {
+    label: 'Menunggu Kurasi',
+    background: soft('--theme-warning', 14),
+    color: 'var(--theme-warning)',
+    border: softBorder('--theme-warning', 40),
+  },
+  approved: {
+    label: 'Tayang',
+    background: soft('--theme-success', 12),
+    color: 'var(--theme-success)',
+    border: softBorder('--theme-success', 40),
+  },
+  rejected: {
+    label: 'Ditolak',
+    background: soft('--theme-danger', 10),
+    color: 'var(--theme-danger)',
+    border: softBorder('--theme-danger', 40),
+  },
 };
 
-const FALLBACK: StatusConfig = { label: 'Tidak diketahui', background: '#f1f4f3', color: '#5c6b66', border: '#dfe6e3' };
+const FALLBACK: StatusConfig = {
+  label: 'Tidak diketahui',
+  background: 'var(--theme-surface-soft)',
+  color: 'var(--theme-text-muted)',
+  border: 'var(--theme-border)',
+};
 
 /** Badge status bisnis dengan label Bahasa Indonesia. Server component. */
 export default function StatusBadge({ status }: { status: string | null | undefined }) {

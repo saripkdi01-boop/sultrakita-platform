@@ -14,11 +14,14 @@ const STATUS_LABELS: Record<string, string> = {
   archived: 'Diarsipkan',
 };
 
+const soft = (token: string, pct: number) =>
+  `color-mix(in srgb, var(${token}) ${pct}%, var(--sb-surface, var(--theme-surface)))`;
+
 const STATUS_COLORS: Record<string, { background: string; color: string }> = {
-  new: { background: '#fdf3e0', color: '#8a5f0e' },
-  read: { background: '#e7f3ef', color: '#0e6258' },
-  replied: { background: '#e8eefc', color: '#2b4a9e' },
-  archived: { background: '#f1f4f3', color: '#5c6b66' },
+  new: { background: soft('--theme-warning', 14), color: 'var(--theme-warning)' },
+  read: { background: soft('--theme-success', 12), color: 'var(--theme-success)' },
+  replied: { background: 'color-mix(in srgb, #2f7ea8 12%, var(--sb-surface, var(--theme-surface)))', color: 'var(--theme-primary)' },
+  archived: { background: 'var(--theme-surface-soft)', color: 'var(--theme-text-muted)' },
 };
 
 /** Normalisasi satu inquiry dari API menjadi bentuk tampilan (toleran terhadap variasi nama kolom). */
@@ -58,7 +61,7 @@ export default function InquiryList({ items }: { items: InquiryItem[] }) {
           padding: '18px 16px',
           borderRadius: 14,
           border: '1px dashed var(--sb-line)',
-          background: '#fbfdfc',
+          background: 'var(--sb-surface-soft)',
           color: 'var(--sb-muted)',
           fontSize: 13,
           textAlign: 'center',
@@ -82,7 +85,7 @@ export default function InquiryList({ items }: { items: InquiryItem[] }) {
               border: '1px solid var(--sb-line)',
               borderRadius: 14,
               padding: '14px 16px',
-              background: '#fff',
+              background: 'var(--sb-surface)',
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>

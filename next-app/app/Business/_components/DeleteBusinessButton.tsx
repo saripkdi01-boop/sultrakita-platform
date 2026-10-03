@@ -45,7 +45,7 @@ export default function DeleteBusinessButton({ id, name }: DeleteBusinessButtonP
         {deleting ? 'Menghapus…' : 'Hapus'}
       </button>
       {error && (
-        <span role="alert" style={{ fontSize: 12, fontWeight: 600, color: '#b3261e', maxWidth: 240 }}>
+        <span role="alert" style={{ fontSize: 12, fontWeight: 600, color: 'var(--sb-danger)', maxWidth: 240 }}>
           {error}
         </span>
       )}

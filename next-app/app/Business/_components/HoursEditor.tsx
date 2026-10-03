@@ -82,7 +82,7 @@ export default function HoursEditor({ value, onChange, idPrefix = 'jam', dayErro
               border: '1px solid var(--sb-line)',
               borderRadius: 14,
               padding: '13px 14px',
-              background: '#fff',
+              background: 'var(--sb-surface)',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
@@ -141,7 +141,7 @@ export default function HoursEditor({ value, onChange, idPrefix = 'jam', dayErro
                       fontSize: 15,
                       fontFamily: 'inherit',
                       color: 'var(--sb-ink)',
-                      background: '#fff',
+                      background: 'var(--sb-surface)',
                       width: '100%',
                     }}
                   />
@@ -166,7 +166,7 @@ export default function HoursEditor({ value, onChange, idPrefix = 'jam', dayErro
                       fontSize: 15,
                       fontFamily: 'inherit',
                       color: 'var(--sb-ink)',
-                      background: '#fff',
+                      background: 'var(--sb-surface)',
                       width: '100%',
                     }}
                   />
