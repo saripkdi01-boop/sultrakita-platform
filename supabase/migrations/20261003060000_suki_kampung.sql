@@ -4,8 +4,8 @@
 -- SATU file idempoten (aman dijalankan ulang). MEMBUAT SAJA, TIDAK MENGHAPUS.
 -- ⚠️ FILE SAJA — JANGAN dijalankan ke database tanpa persetujuan eksplisit.
 -- Angka ekonomi (biaya/yield/XP) mengikuti docs/02-EKONOMI.md v1.0.
--- Asumsi: tabel public.profiles(id uuid PK, role text) dan public.user_roles
--- (user_id, role, is_active, expires_at) sudah ada (pola admin SUKI Apps).
+-- Asumsi: tabel public.profiles(id uuid PK, role text) sudah ada
+-- (pola admin SUKI Apps — role: 'super_admin'/'admin'/'moderator'/'user').
 -- ============================================================================
 
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";  -- untuk gen_random_uuid()
@@ -24,12 +24,6 @@ AS $$
     SELECT 1 FROM public.profiles p
     WHERE p.id = auth.uid()
       AND p.role IN ('super_admin', 'admin', 'moderator')
-  ) OR EXISTS (
-    SELECT 1 FROM public.user_roles ur
-    WHERE ur.user_id = auth.uid()
-      AND ur.is_active IS TRUE
-      AND ur.role IN ('super_admin', 'admin', 'moderator')
-      AND (ur.expires_at IS NULL OR ur.expires_at > now())
   );
 $$;
 
