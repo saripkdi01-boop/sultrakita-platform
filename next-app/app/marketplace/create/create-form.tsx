@@ -443,7 +443,7 @@ export default function CreateListingForm() {
         dirtyRef.current = false;
         setDraftSavedAt(null);
         setSubmitState('success');
-        setToast('Listing berhasil diterbitkan!');
+        setToast('Listing diterbitkan & disetujui otomatis — langsung tayang!');
         window.setTimeout(() => {
           router.push(`/marketplace?listing=${encodeURIComponent(String(json.data?.id))}`);
         }, 1100);
