@@ -6,7 +6,9 @@ const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://sukiapps.web.id').
 const ogImage = `${siteUrl}/og-image.png`;
 
 const title = 'SUKI Properti — Jual Beli & Sewa Properti Sulawesi Tenggara';
-const description = 'Cari rumah, tanah, ruko, dan properti lelang di Sulawesi Tenggara. Data terverifikasi, bisa KPR, dengan peta dan foto lengkap.';
+// Anti-fabrikasi: deskripsi meta tidak mengklaim "data terverifikasi" secara
+// menyeluruh — status verifikasi bersifat per-listing (badge Terverifikasi).
+const description = 'Cari rumah, tanah, ruko, dan properti lelang di Sulawesi Tenggara — dengan peta interaktif, foto, dan simulasi KPR.';
 
 // Fase 1.1: data properti awal di-render di server (ISR, refresh 2 menit) + metadata SEO/OG.
 export const revalidate = 120;

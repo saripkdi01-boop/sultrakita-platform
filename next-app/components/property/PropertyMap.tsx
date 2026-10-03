@@ -15,7 +15,13 @@ export type PropertyPin = {
   lat: number;
   lng: number;
   detailUrl: string;
+  /** Jarak (km) dari titik pusat radius — hanya diisi bila hasil pencarian radius. */
+  distanceKm?: number;
+  /** Kecamatan listing — dipakai info area ("N listing · kecamatan X (n)"). */
+  district?: string;
 };
+
+export type RadiusCircle = { lat: number; lng: number; km: number };
 
 type PropertyMapProps = {
   pins: PropertyPin[];
@@ -23,16 +29,19 @@ type PropertyMapProps = {
   hoveredId?: string | null;
   onViewportChange: (view: MapView, bounds: MapBounds) => void;
   onPinClick?: (id: string) => void;
+  /** Lingkaran radius aktif (digambar di atas peta). null = tidak digambar. */
+  radiusCircle?: RadiusCircle | null;
 };
 
 function escapeHtml(value: string): string {
   return value.replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch] as string));
 }
 
-export default function PropertyMap({ pins, initialView, hoveredId, onViewportChange, onPinClick }: PropertyMapProps) {
+export default function PropertyMap({ pins, initialView, hoveredId, onViewportChange, onPinClick, radiusCircle = null }: PropertyMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
   const clusterRef = useRef<any>(null);
+  const circleRef = useRef<any>(null);
   const callbacksRef = useRef({ onViewportChange, onPinClick });
   callbacksRef.current = { onViewportChange, onPinClick };
   const pinsRef = useRef(pins);
@@ -120,6 +129,37 @@ export default function PropertyMap({ pins, initialView, hoveredId, onViewportCh
     })();
   }, [pins, hoveredId]);
 
+  // Gambar/perbarui lingkaran radius pencarian (atau hapus bila nonaktif).
+  // Dilewati bila nilai lat/lng/km tidak berubah (objek prop baru tiap render).
+  const circleKeyRef = useRef<string | null>(null);
+  useEffect(() => {
+    (async () => {
+      const L = (await import('leaflet')).default;
+      const map = mapRef.current;
+      if (!map) return;
+      const key = radiusCircle && Number.isFinite(radiusCircle.lat) && Number.isFinite(radiusCircle.lng) && radiusCircle.km > 0
+        ? `${radiusCircle.lat.toFixed(5)}|${radiusCircle.lng.toFixed(5)}|${radiusCircle.km}`
+        : null;
+      if (key === circleKeyRef.current) return;
+      circleKeyRef.current = key;
+      if (circleRef.current) {
+        map.removeLayer(circleRef.current);
+        circleRef.current = null;
+      }
+      if (key && radiusCircle) {
+        circleRef.current = L.circle([radiusCircle.lat, radiusCircle.lng], {
+          radius: radiusCircle.km * 1000,
+          color: '#13A89E',
+          weight: 2,
+          opacity: 0.9,
+          fillColor: '#13A89E',
+          fillOpacity: 0.08,
+          interactive: false,
+        }).addTo(map);
+      }
+    })();
+  }, [radiusCircle]);
+
   function handleLocate() {
     if (!('geolocation' in navigator) || !mapRef.current) return;
     navigator.geolocation.getCurrentPosition(
@@ -166,11 +206,15 @@ function renderPins(
       iconSize: undefined as any,
     });
     const marker = L.marker([pin.lat, pin.lng], { icon, title: pin.title });
+    const distanceLine = typeof pin.distanceKm === 'number' && Number.isFinite(pin.distanceKm)
+      ? `<br/><span>± ${escapeHtml(pin.distanceKm < 1 ? `${Math.round(pin.distanceKm * 1000)} m` : `${pin.distanceKm.toFixed(1).replace('.', ',')} km`)} dari titik peta</span>`
+      : '';
     marker.bindPopup(
       `<div style="min-width:180px">` +
         `<strong>${escapeHtml(pin.title)}</strong><br/>` +
-        `<span>${escapeHtml(shortPriceIdr(pin.price))}</span><br/>` +
-        `<a href="${escapeHtml(pin.detailUrl)}">Lihat detail &rarr;</a>` +
+        `<span>${escapeHtml(shortPriceIdr(pin.price))}</span>` +
+        distanceLine +
+        `<br/><a href="${escapeHtml(pin.detailUrl)}">Lihat detail &rarr;</a>` +
         `</div>`,
     );
     marker.on('click', () => onPinClick?.(pin.id));

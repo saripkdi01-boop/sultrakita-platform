@@ -71,7 +71,8 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
   const property: any = await getPublicPropertyById(id).catch(() => null);
   if (!property) notFound();
   const images = Array.isArray(property.images) ? property.images.filter(Boolean) : [];
-  const sellerName = property.seller?.full_name || 'Seller SUKI';
+  // Anti-fabrikasi: tanpa nama seller, tampilkan label jujur (bukan nama karangan).
+  const sellerName = property.seller?.full_name || 'Belum dicantumkan';
   const location = locationOf(property);
   const centroid = centroids[property.district] || { lat: -3.99, lng: 122.52 };
   // Fase 3: koordinat asli bila listing memilikinya; fallback centroid kecamatan berlabel jujur "perkiraan".
@@ -112,7 +113,7 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
             <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-sultra-mint to-sultra-sand">
               {images[0] ? <Image src={images[0]} alt={property.title} width={1200} height={900} priority sizes="(max-width: 1024px) 100vw, 58vw" className="aspect-[4/3] h-full w-full object-cover" /> : <div className="grid aspect-[4/3] place-items-center font-semibold text-sultra-forest">Hunian pilihan Sultra</div>}
               {property.is_demo && <span className="absolute left-4 top-4 rounded-full bg-slate-700/90 px-3 py-1.5 text-xs font-bold text-white">Demo</span>}
-              {(property.is_bank_verified || property.is_admin_verified) && <span className="absolute right-4 top-4 inline-flex items-center gap-1 rounded-full bg-sultra-gold px-3 py-1.5 text-xs font-bold text-white"><CheckCircle2 size={14} /> Terverifikasi</span>}
+              {(property.is_bank_verified || property.is_admin_verified) && <span title="Terverifikasi oleh bank atau admin SUKI" className="absolute right-4 top-4 inline-flex items-center gap-1 rounded-full bg-sultra-gold px-3 py-1.5 text-xs font-bold text-white"><CheckCircle2 size={14} /> Terverifikasi</span>}
             </div>
             {images.length > 1 && <div className="mt-3 grid grid-cols-4 gap-2">{images.slice(0, 4).map((image: string, index: number) => <Image key={image} src={image} alt={`${property.title}, foto ${index + 1}`} width={300} height={225} loading="lazy" sizes="(max-width: 640px) 25vw, 14vw" className="aspect-[4/3] w-full rounded-xl object-cover" />)}</div>}
             {/* Fase 3: mini-map Leaflet asli (fallback centroid kecamatan berlabel "perkiraan" bila tanpa koordinat) */}
