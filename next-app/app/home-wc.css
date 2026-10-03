@@ -1,0 +1,99 @@
+/* ==========================================================================
+   WORLD-CLASS OVERHAUL — layer "Teluk Senja" untuk homepage (/)
+   Override surgical di atas suki-overhaul.css. Tidak mengubah logika.
+   ========================================================================== */
+@import './wc-overhaul.css';
+
+/* --- Hero: aurora Teluk Senja --- */
+.suki-overhaul-hero {
+  background:
+    radial-gradient(980px 460px at 84% 10%, rgba(14, 98, 88, 0.20), transparent 62%),
+    radial-gradient(680px 420px at 4% 92%, rgba(212, 175, 55, 0.14), transparent 60%),
+    radial-gradient(500px 300px at 55% 110%, rgba(14, 98, 88, 0.08), transparent 65%),
+    var(--su-sand);
+}
+[data-theme="dark"] .suki-overhaul-hero,
+.dark .suki-overhaul-hero {
+  background:
+    radial-gradient(1050px 520px at 84% 8%, rgba(20, 101, 91, 0.55), transparent 62%),
+    radial-gradient(720px 440px at 4% 92%, rgba(212, 175, 55, 0.10), transparent 60%),
+    linear-gradient(180deg, #062b27 0%, #052723 60%, #041d1a 100%);
+}
+
+/* --- Pill → eyebrow kaca --- */
+.suki-overhaul-pill {
+  background: var(--wc-glass-bg) !important;
+  border: 1px solid var(--wc-glass-line) !important;
+  backdrop-filter: blur(var(--wc-glass-blur));
+  -webkit-backdrop-filter: blur(var(--wc-glass-blur));
+  color: var(--sk-brand) !important;
+  letter-spacing: 0.22em !important;
+  box-shadow: var(--wc-glass-shadow);
+}
+
+/* --- Headline: aksen gradasi --- */
+.suki-overhaul-hero h1 em,
+.suki-overhaul-section-heading h2 em,
+.suki-overhaul-about h2 em,
+.suki-overhaul-business h2 em {
+  background: var(--wc-grad-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+}
+
+/* --- CTA primer: emas + glow --- */
+.suki-overhaul-primary {
+  background: var(--wc-grad-gold) !important;
+  color: #241c05 !important;
+  box-shadow: var(--wc-glow-gold) !important;
+  border-radius: var(--sk-r-pill) !important;
+}
+.suki-overhaul-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 44px rgba(161, 98, 7, 0.45) !important;
+}
+.suki-overhaul-header-cta {
+  background: var(--wc-grad-gold) !important;
+  color: #241c05 !important;
+  box-shadow: var(--wc-glow-gold);
+  border-radius: var(--sk-r-pill) !important;
+}
+
+/* --- Kartu ekosistem: angkat saat hover --- */
+.dn-eco-card {
+  transition: transform var(--sk-d-base) var(--sk-ease), box-shadow var(--sk-d-base) var(--sk-ease), border-color var(--sk-d-base);
+}
+.dn-eco-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--wc-shadow-lift) !important;
+  border-color: var(--wc-glass-line);
+}
+
+/* --- Band bisnis & kartu final: kaca --- */
+.suki-overhaul-business {
+  background: linear-gradient(120deg, rgba(14, 98, 88, 0.10), rgba(212, 175, 55, 0.08)) !important;
+  border-top: 1px solid var(--wc-glass-line);
+  border-bottom: 1px solid var(--wc-glass-line);
+}
+.suki-overhaul-final-card {
+  background: var(--wc-glass-bg) !important;
+  border: 1px solid var(--wc-glass-line) !important;
+  backdrop-filter: blur(var(--wc-glass-blur));
+  -webkit-backdrop-filter: blur(var(--wc-glass-blur));
+  box-shadow: var(--wc-glass-shadow) !important;
+  border-radius: 28px !important;
+}
+
+/* --- Strip tenun sebagai pemisah --- */
+.wc-tenun-strip { height: 8px; }
+
+/* --- Search band: sedikit kaca --- */
+.suki-overhaul-search-shell {
+  border: 1px solid var(--wc-glass-line);
+  box-shadow: var(--wc-glass-shadow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .suki-overhaul-primary:hover, .dn-eco-card:hover { transform: none; }
+}

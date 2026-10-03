@@ -1,0 +1,78 @@
+/* ==========================================================================
+   WORLD-CLASS OVERHAUL — lapisan token (namespace --wc-*)
+   Arah visual "Teluk Senja" (diputuskan Fase 1, 2026-10-03).
+   Hidup BERDAMPINGAN dengan --sk-* / --suki-* / --dn-* tanpa menimpa:
+   file ini hanya mendefinisikan variabel --wc-*.
+   Dark mode mengikuti konvensi repo: class `.dark` pada <html>
+   (lib/preferences.tsx) — BUKAN data-theme.
+   Justifikasi: DESIGN-SYSTEM.md § "World-Class Overhaul (2026-10-03)".
+   ========================================================================== */
+
+:root {
+  /* --- 1. Kaca (glassmorphism) --- */
+  --wc-glass-bg: rgba(255, 255, 255, 0.72);
+  --wc-glass-line: rgba(20, 40, 36, 0.10);
+  --wc-glass-blur: 18px;
+  --wc-glass-shadow: 0 24px 60px rgba(14, 60, 53, 0.12);
+
+  /* --- 2. Cahaya (glow) untuk aksen CTA & hero --- */
+  --wc-glow-gold: 0 12px 34px rgba(161, 98, 7, 0.35);
+  --wc-glow-teal: 0 12px 34px rgba(14, 98, 88, 0.35);
+
+  /* --- 3. Gradasi --- */
+  --wc-grad-gold: linear-gradient(120deg, #F0D98C 0%, #D4AF37 55%, #A16207 100%);
+  --wc-grad-teal: linear-gradient(135deg, #0E6258 0%, #0A4A44 60%, #08332E 100%);
+  --wc-grad-text: linear-gradient(120deg, #A16207, #0E6258);
+  --wc-tenun: repeating-linear-gradient(135deg,
+      #0E6258 0 14px, #D4AF37 14px 20px, #A16207 20px 30px,
+      transparent 30px 36px);
+
+  /* --- 4. Hero "Teluk Senja" (aurora sangat restrained) --- */
+  --wc-hero-bg:
+    radial-gradient(900px 420px at 82% -8%, rgba(14, 98, 88, 0.14), transparent 62%),
+    radial-gradient(700px 380px at 8% 12%, rgba(212, 175, 55, 0.10), transparent 60%),
+    linear-gradient(180deg, var(--sk-bg) 0%, var(--sk-surface-2) 130%);
+
+  /* --- 5. Skeleton ber-brand (perceived loading) --- */
+  --wc-shimmer: linear-gradient(100deg,
+      transparent 20%, rgba(14, 98, 88, 0.10) 40%,
+      rgba(212, 175, 55, 0.16) 50%,
+      rgba(14, 98, 88, 0.10) 60%, transparent 80%);
+
+  /* --- 6. Bayangan angkat (hover kartu) --- */
+  --wc-shadow-lift: 0 4px 10px rgba(14, 60, 53, 0.06), 0 22px 48px rgba(14, 60, 53, 0.14);
+
+  /* --- 7. Motion --- */
+  --wc-d-reveal: 560ms;
+  --wc-ease-reveal: cubic-bezier(0.22, 0.9, 0.28, 1);
+}
+
+.dark {
+  --wc-glass-bg: rgba(255, 255, 255, 0.07);
+  --wc-glass-line: rgba(255, 255, 255, 0.14);
+  --wc-glass-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+
+  --wc-glow-gold: 0 12px 34px rgba(212, 175, 55, 0.35);
+  --wc-glow-teal: 0 12px 34px rgba(69, 184, 168, 0.30);
+
+  --wc-grad-text: linear-gradient(120deg, #F0D98C 0%, #D4AF37 60%, #E5C15A 100%);
+
+  --wc-hero-bg:
+    radial-gradient(1000px 480px at 82% -10%, rgba(20, 101, 91, 0.55), transparent 62%),
+    radial-gradient(760px 420px at 8% 14%, rgba(13, 74, 68, 0.6), transparent 60%),
+    radial-gradient(600px 300px at 60% 110%, rgba(212, 175, 55, 0.08), transparent 65%),
+    linear-gradient(180deg, #062b27 0%, #052723 60%, #041d1a 100%);
+
+  --wc-shimmer: linear-gradient(100deg,
+      transparent 20%, rgba(255, 255, 255, 0.06) 40%,
+      rgba(212, 175, 55, 0.14) 50%,
+      rgba(255, 255, 255, 0.06) 60%, transparent 80%);
+
+  --wc-shadow-lift: 0 4px 10px rgba(0, 0, 0, 0.3), 0 22px 48px rgba(0, 0, 0, 0.5);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --wc-d-reveal: 1ms;
+  }
+}
