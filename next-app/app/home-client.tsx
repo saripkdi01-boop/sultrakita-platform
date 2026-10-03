@@ -1,5 +1,6 @@
 'use client';
 
+import './home-wc.css';
 import Image from 'next/image';
 import Link from 'next/link';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
@@ -376,6 +377,8 @@ export default function HomeClient() {
         </div>
       </section>
 
+      <div className="wc-tenun-strip" aria-hidden="true" />
+
       <section className="suki-overhaul-search-band" aria-label="Pencarian SUKI Apps">
         <div className="suki-overhaul-container">
           <div ref={searchShellRef} className={`suki-overhaul-search-shell ${searchOpen ? 'is-open' : ''}`}>
@@ -557,6 +560,8 @@ export default function HomeClient() {
           </div>
         </div>
       </section>
+
+      <div className="wc-tenun-strip" aria-hidden="true" />
 
       <footer className="suki-overhaul-footer">
         <div className="suki-overhaul-container">

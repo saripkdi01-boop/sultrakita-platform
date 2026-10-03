@@ -1,5 +1,6 @@
 'use client';
 
+import './beranda-wc.css';
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { ArrowRight, Check, Compass, LoaderCircle, RefreshCw } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';

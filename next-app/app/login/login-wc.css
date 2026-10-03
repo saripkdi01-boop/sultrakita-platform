@@ -1,0 +1,27 @@
+/* ==========================================================================
+   WORLD-CLASS OVERHAUL — layer "Teluk Senja" untuk /login & /signup
+   AuthGate TIDAK disentuh — hanya aksen permukaan.
+   ========================================================================== */
+@import '../wc-overhaul.css';
+
+/* Strip tenun di puncak halaman auth */
+.auth-shell { position: relative; }
+.auth-shell::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; z-index: 5;
+  height: 8px; background: var(--wc-tenun);
+}
+
+/* Headline: aksen gradasi emas-teal */
+.auth-shell h1 > span {
+  background: var(--wc-grad-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+}
+
+/* Ubin fitur: kaca */
+.auth-shell .backdrop-blur.rounded-2xl {
+  background: var(--wc-glass-bg) !important;
+  border-color: var(--wc-glass-line) !important;
+  box-shadow: var(--wc-glass-shadow);
+}

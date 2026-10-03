@@ -472,12 +472,19 @@
 .threadError { font-size: 13px; color: var(--sk-danger, #b3261e); display: flex; align-items: center; gap: 8px; justify-content: center; }
 .threadError button { background: none; border: none; color: var(--sk-danger, #b3261e); font-weight: 600; text-decoration: underline; cursor: pointer; display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; }
 
-/* ---------- Skeleton menyerupai postingan flat ---------- */
+/* CATATAN: token --wc-* dipakai di bawah, tetapi DILARANG @import di file
+   module ini (:root tidak pure untuk CSS Modules). Token disediakan global
+   oleh app/beranda/beranda-wc.css di halaman yang sama. */
+
+/* ---------- Skeleton ber-brand "Teluk Senja" (World-Class Overhaul) ----------
+   Kartu kaca + shimmer emas/teal agar loading terasa premium, bukan abu generik. */
 .skCard {
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid var(--sk-line, #e7e5e4);
-  border-radius: 0;
+  background: var(--wc-glass-bg);
+  border: 1px solid var(--wc-glass-line);
+  border-radius: var(--sk-r-xl, 20px);
+  backdrop-filter: blur(var(--wc-glass-blur));
+  -webkit-backdrop-filter: blur(var(--wc-glass-blur));
+  box-shadow: var(--wc-glass-shadow);
   padding: 20px 16px 12px;
   display: flex;
   flex-direction: column;
@@ -496,9 +503,9 @@
 .skActions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding-top: 8px; border-top: 1px solid var(--sk-line, #e7e5e4); }
 .skAction { height: 34px; border-radius: var(--sk-r-sm, 8px); }
 .shimmer {
-  background: linear-gradient(100deg, var(--sk-surface-2, #f5eedb) 40%, var(--sk-line, #e7e5e4) 50%, var(--sk-surface-2, #f5eedb) 60%);
+  background: var(--wc-shimmer);
   background-size: 200% 100%;
-  animation: skShimmer 1.4s linear infinite;
+  animation: skShimmer 1.6s linear infinite;
 }
 @keyframes skShimmer { to { background-position: -200% 0; } }
 @media (prefers-reduced-motion: reduce) {
