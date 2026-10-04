@@ -47,7 +47,7 @@ export async function getMyProperties() {
 export async function getMyProperty(id: string) {
   try {
     const { supabase, user } = await requireServerUser();
-    const { data, error } = await supabase.from('properties').select('id,title,description,category,price,price_type,is_negotiable,status,is_admin_verified,verification_documents,images,created_at,updated_at').eq('id', id).eq('seller_id', user.id).maybeSingle();
+    const { data, error } = await supabase.from('properties').select('id,title,description,category,price,price_type,is_negotiable,status,is_admin_verified,verification_documents,images,bedrooms,bathrooms,floors,land_area_sqm,building_area_sqm,certificate_type,condition,furnishing,can_kpr,parking_slots,ac_available,furnished,amenities,created_at,updated_at').eq('id', id).eq('seller_id', user.id).maybeSingle();
     if (error) throw error;
     return { ok: true as const, data };
   } catch (error) {
