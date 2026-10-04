@@ -1,6 +1,9 @@
-/* SUKI Web Studio — namespace sws-*, token --theme-* (Theme Contract v1).
-   Mobile-first. Mendukung dark & light mode via token, bukan warna hard-code.
-   Target sentuh >= 44px, hormati prefers-reduced-motion. */
+/* SUKI Web Studio — desain "kelas Hostinger": hero berani + jaminan,
+   kartu harga premium, strip "termasuk", alur 4 langkah, banner CTA,
+   CTA sticky mobile. Namespace sws-*, token --theme-* (Theme Contract v1).
+   Hero & banner CTA memakai palet deep-teal + emas yang berdiri sendiri
+   (kontras aman di kedua tema). Mobile-first, target sentuh >= 44px,
+   hormati prefers-reduced-motion. */
 
 .sws {
   background: var(--theme-bg);
@@ -9,74 +12,71 @@
 }
 
 .sws-wrap {
-  width: min(1120px, calc(100% - 40px));
+  width: min(1140px, calc(100% - 40px));
   margin: 0 auto;
 }
 
 .sws-wrap-sempit {
-  max-width: 760px;
+  max-width: 780px;
 }
 
-/* ---------- HERO ---------- */
-.sws-hero {
-  padding: 64px 0 56px;
-  background:
-    radial-gradient(1200px 420px at 20% -10%, var(--theme-primary-soft), transparent 60%),
-    radial-gradient(900px 380px at 90% 0%, var(--theme-primary-soft), transparent 55%);
-  border-bottom: 1px solid var(--theme-border);
+/* ---------- OVERRIDE ATURAN GLOBAL (Theme Contract) ----------
+   globals.css memaksa warna via `html[data-theme] :where(...) !important`
+   untuk h1–h6, strong, p, dan label. Band gelap (hero & banner CTA) butuh
+   teks terang — override di-scope ketat agar tidak bocor ke tempat lain.
+   Aturan !important di sini menang karena web-studio.css dimuat setelah
+   globals.css (urutan sumber memecah seri spesifisitas). */
+.sws-hero h1,
+.sws-cta-banner h2 {
+  color: #fff !important;
 }
 
-.sws-kicker {
-  display: inline-block;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--theme-primary);
-  background: var(--theme-primary-soft);
-  border: 1px solid var(--theme-border);
-  border-radius: 999px;
-  padding: 7px 14px;
-  margin: 0 0 16px;
+.sws-hero .sws-kicker {
+  color: #ffd766 !important;
 }
 
-.sws-hero h1 {
-  font-size: clamp(2rem, 5vw, 3.25rem);
-  line-height: 1.1;
-  letter-spacing: -0.02em;
+.sws-hero .sws-sub,
+.sws-cta-banner .sws-cta-banner-dalam p {
+  color: rgba(255, 255, 255, 0.84) !important;
+}
+
+.sws .sws-seksi-kicker {
+  color: var(--theme-primary) !important;
+}
+
+.sws-harga strong {
+  color: var(--theme-primary) !important;
+}
+
+.sws-field label {
+  color: var(--theme-text-strong) !important;
+}
+
+/* Spesifisitas (0,2,0): mengalahkan `html[data-theme] :where(a, button)`
+   (0,1,1) yang mewarnai semua tombol dengan --theme-primary. */
+.sws .sws-btn-paket {
   color: var(--theme-text-strong);
-  margin: 0 0 14px;
 }
 
-.sws-sub {
-  font-size: clamp(1rem, 2.4vw, 1.2rem);
-  line-height: 1.65;
-  color: var(--theme-text-muted);
-  max-width: 640px;
-  margin: 0 0 26px;
+.sws .sws-btn-paket:hover {
+  color: #fff;
 }
 
-.sws-cta-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 26px;
-}
-
+/* ---------- TOMBOL ---------- */
 .sws-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 9px;
   min-height: 48px;
-  padding: 0 22px;
+  padding: 0 24px;
   border-radius: 14px;
   font-size: 1rem;
   font-weight: 700;
   text-decoration: none;
   cursor: pointer;
   border: 1px solid transparent;
-  transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease, border-color 0.16s ease;
 }
 
 .sws-btn-primary {
@@ -87,19 +87,19 @@
 
 /* Spesifisitas (0,2,0): mengalahkan aturan global
    `html[data-theme] :where(a, ..., button)` (0,1,1) yang mewarnai semua
-   link & tombol dengan --theme-primary — teks tombol primer harus putih. */
+   link & tombol dengan --theme-primary. */
 .sws .sws-btn-primary,
 .sws .sws-btn-primary:hover,
 .sws .sws-btn-primary:visited {
   color: #fff;
 }
 
-.sws .sws-btn-ghost {
-  color: var(--theme-text-strong);
-}
-
-.sws .sws-btn-ghost:hover {
-  color: var(--theme-primary);
+/* Dark mode: --theme-primary menjadi teal terang, jadi teks tombol
+   primer harus gelap agar kontras tetap aman. */
+html[data-theme="dark"] .sws .sws-btn-primary,
+html[data-theme="dark"] .sws .sws-btn-primary:hover,
+html[data-theme="dark"] .sws .sws-btn-primary:visited {
+  color: #062a28;
 }
 
 .sws-btn-primary:hover {
@@ -107,9 +107,12 @@
   transform: translateY(-1px);
 }
 
+.sws .sws-btn-ghost {
+  color: var(--theme-text-strong);
+}
+
 .sws-btn-ghost {
   background: var(--theme-surface);
-  color: var(--theme-text-strong);
   border-color: var(--theme-border-strong);
 }
 
@@ -118,36 +121,190 @@
   color: var(--theme-primary);
 }
 
+/* Tombol emas — dipakai di atas band gelap (hero & banner CTA). */
+.sws .sws-btn-emas,
+.sws .sws-btn-emas:visited {
+  background: #ffd766;
+  color: #123331;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.28);
+}
+
+.sws .sws-btn-emas:hover {
+  background: #ffdd85;
+  color: #123331;
+  transform: translateY(-1px);
+}
+
+.sws-btn-besar {
+  min-height: 54px;
+  padding: 0 30px;
+  font-size: 1.05rem;
+  flex: none;
+}
+
 .sws-btn:focus-visible {
   outline: 3px solid var(--theme-focus);
   outline-offset: 2px;
 }
 
-.sws-hero-points {
+/* ---------- HERO (band gelap premium) ---------- */
+.sws-hero {
+  position: relative;
+  overflow: hidden;
+  padding: 76px 0 64px;
+  color: #fff;
+  background:
+    radial-gradient(1000px 480px at 88% -12%, rgba(255, 215, 102, 0.16), transparent 60%),
+    radial-gradient(900px 520px at 8% 112%, rgba(97, 209, 192, 0.2), transparent 55%),
+    linear-gradient(135deg, #07332f 0%, #052723 58%, #041d1b 100%);
+}
+
+.sws-hero::after {
+  /* Aksen gelombang halus khas SUKI — dekoratif, tanpa makna. */
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 46px;
+  background: var(--theme-bg);
+  clip-path: ellipse(62% 100% at 50% 100%);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.sws-kicker {
+  display: inline-block;
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #ffd766;
+  background: rgba(255, 215, 102, 0.12);
+  border: 1px solid rgba(255, 215, 102, 0.4);
+  border-radius: 999px;
+  padding: 8px 16px;
+  margin: 0 0 20px;
+}
+
+.sws-hero h1 {
+  font-size: clamp(2.1rem, 5.4vw, 3.6rem);
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+  color: #fff;
+  margin: 0 0 16px;
+  max-width: 16ch;
+}
+
+.sws-sub {
+  font-size: clamp(1rem, 2.4vw, 1.18rem);
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.84);
+  max-width: 620px;
+  margin: 0 0 30px;
+}
+
+.sws-cta-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px 22px;
+  gap: 12px;
+  margin-bottom: 34px;
+}
+
+.sws .sws-btn-hero-ghost,
+.sws .sws-btn-hero-ghost:visited {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.32);
+  color: #fff;
+}
+
+.sws .sws-btn-hero-ghost:hover {
+  border-color: #ffd766;
+  color: #ffd766;
+  background: rgba(255, 255, 255, 0.09);
+}
+
+/* Strip jaminan hero — pola "risk-free" ala Hostinger. */
+.sws-jaminan {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px 18px;
+  list-style: none;
+  margin: 0;
+  padding: 22px 0 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  max-width: 720px;
+}
+
+@media (min-width: 720px) {
+  .sws-jaminan { grid-template-columns: repeat(4, 1fr); }
+}
+
+.sws-jaminan li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+  line-height: 1.45;
+}
+
+.sws-jaminan svg {
+  color: #ffd766;
+  flex: none;
+}
+
+/* ---------- RIBBON "SUDAH TERMASUK" ---------- */
+.sws-ribbon {
+  background: var(--theme-surface);
+  border-bottom: 1px solid var(--theme-border);
+  padding: 18px 0;
+}
+
+.sws-ribbon .sws-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px 28px;
+}
+
+.sws-ribbon-judul {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--theme-text-muted);
+}
+
+.sws-ribbon-judul strong {
+  color: var(--theme-text-strong);
+}
+
+.sws-ribbon-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
   list-style: none;
   margin: 0;
   padding: 0;
-  color: var(--theme-text-muted);
-  font-size: 0.93rem;
 }
 
-.sws-hero-points li {
+.sws-ribbon-list li {
   display: inline-flex;
   align-items: center;
   gap: 7px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--theme-primary);
 }
 
-.sws-hero-points svg {
-  color: var(--theme-primary);
+.sws-ribbon-list svg {
   flex: none;
 }
 
 /* ---------- SEKSI ---------- */
 .sws-seksi {
-  padding: 56px 0;
+  padding: 64px 0;
   scroll-margin-top: 72px;
 }
 
@@ -157,25 +314,39 @@
   border-bottom: 1px solid var(--theme-border);
 }
 
-.sws-seksi h2 {
-  font-size: clamp(1.4rem, 3.4vw, 2rem);
-  letter-spacing: -0.01em;
-  color: var(--theme-text-strong);
+.sws-seksi-kicker {
+  display: inline-block;
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--theme-primary);
   margin: 0 0 10px;
+}
+
+.sws-seksi h2 {
+  font-size: clamp(1.5rem, 3.6vw, 2.15rem);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--theme-text-strong);
+  margin: 0 0 12px;
+  max-width: 22ch;
 }
 
 .sws-lead {
   color: var(--theme-text-muted);
-  margin: 0 0 30px;
+  margin: 0 0 34px;
   max-width: 640px;
-  line-height: 1.65;
+  line-height: 1.7;
+  font-size: 1.02rem;
 }
 
-/* ---------- KARTU PAKET ---------- */
+/* ---------- KARTU PAKET (gaya Hostinger) ---------- */
 .sws-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 18px;
+  gap: 20px;
+  align-items: stretch;
 }
 
 @media (min-width: 700px) {
@@ -192,123 +363,226 @@
   flex-direction: column;
   background: var(--theme-surface);
   border: 1px solid var(--theme-border);
-  border-radius: 20px;
-  padding: 26px 24px;
+  border-radius: 22px;
+  padding: 28px 26px;
   box-shadow: var(--theme-shadow-sm);
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
 }
 
 .sws-kartu:hover {
-  transform: translateY(-3px);
+  transform: translateY(-4px);
   box-shadow: var(--theme-shadow-md);
+  border-color: var(--theme-border-strong);
 }
 
 .sws-kartu-unggulan {
   border: 2px solid var(--theme-primary);
+  box-shadow: 0 18px 44px rgba(8, 127, 112, 0.16), var(--theme-shadow-md);
+}
+
+.sws-kartu-unggulan:hover {
+  border-color: var(--theme-primary);
+  box-shadow: 0 22px 54px rgba(8, 127, 112, 0.22), var(--theme-shadow-md);
 }
 
 .sws-badge {
   position: absolute;
-  top: -13px;
-  right: 20px;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
   background: var(--theme-primary);
   color: #fff;
   font-size: 0.78rem;
-  font-weight: 700;
-  padding: 5px 13px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 6px 16px;
   border-radius: 999px;
   box-shadow: var(--theme-shadow-sm);
+}
+
+.sws-kartu-top {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin-bottom: 6px;
 }
 
 .sws-kartu-ikon {
   display: inline-grid;
   place-items: center;
-  width: 46px;
-  height: 46px;
-  border-radius: 14px;
+  width: 48px;
+  height: 48px;
+  flex: none;
+  border-radius: 15px;
   background: var(--theme-primary-soft);
   color: var(--theme-primary);
-  margin-bottom: 14px;
 }
 
 .sws-kartu h3 {
-  font-size: 1.18rem;
+  font-size: 1.22rem;
+  letter-spacing: -0.01em;
   color: var(--theme-text-strong);
-  margin: 0 0 6px;
+  margin: 2px 0 6px;
 }
 
-.sws-harga {
-  margin: 0 0 8px;
+.sws-tagline {
   color: var(--theme-text-muted);
+  font-size: 0.92rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Blok harga — pola Hostinger: label kecil + angka besar. */
+.sws-harga {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+  margin: 14px 0 4px;
+  padding: 14px 0;
+  border-top: 1px solid var(--theme-border);
+  border-bottom: 1px solid var(--theme-border);
 }
 
 .sws-harga-mulai {
   font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--theme-text-subtle);
 }
 
 .sws-harga strong {
-  font-size: 1.7rem;
-  letter-spacing: -0.02em;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
   color: var(--theme-primary);
-  margin: 0 2px;
 }
 
 .sws-harga-periode {
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-
-.sws-deskripsi {
-  color: var(--theme-text-muted);
   font-size: 0.95rem;
-  line-height: 1.6;
-  margin: 0 0 14px;
+  font-weight: 700;
+  color: var(--theme-text-muted);
 }
 
 .sws-fitur {
   list-style: none;
-  margin: 0 0 16px;
+  margin: 14px 0 0;
   padding: 0;
   display: grid;
-  gap: 9px;
-  font-size: 0.93rem;
+  gap: 10px;
+  font-size: 0.94rem;
   color: var(--theme-text);
 }
 
 .sws-fitur li {
   display: flex;
-  gap: 9px;
+  gap: 10px;
   align-items: flex-start;
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
 .sws-fitur svg {
   color: var(--theme-primary);
   flex: none;
-  margin-top: 2px;
+  margin-top: 3px;
 }
 
 .sws-waktu {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
   font-size: 0.88rem;
+  font-weight: 600;
   color: var(--theme-text-subtle);
-  margin: 0 0 18px;
-  margin-top: auto;
+  margin: auto 0 20px;
+  padding-top: 16px;
+}
+
+.sws-waktu svg {
+  color: var(--theme-primary);
+  flex: none;
 }
 
 .sws-btn-paket {
   width: 100%;
   background: var(--theme-surface-muted);
   color: var(--theme-text-strong);
-  border-color: var(--theme-border);
+  border-color: var(--theme-border-strong);
 }
 
 .sws-btn-paket:hover {
   background: var(--theme-primary);
   border-color: var(--theme-primary);
   color: #fff;
+  transform: translateY(-1px);
+}
+
+.sws-kartu .sws-btn-primary {
+  width: 100%;
+}
+
+.sws-harga-note {
+  margin: 26px 0 0;
+  font-size: 0.88rem;
+  color: var(--theme-text-subtle);
+  line-height: 1.7;
+  max-width: 720px;
+}
+
+/* ---------- LANGKAH PEMESANAN ---------- */
+.sws-langkah {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  list-style: none;
+  margin: 34px 0 0;
+  padding: 0;
+  counter-reset: sws-langkah;
+}
+
+@media (min-width: 700px) {
+  .sws-langkah { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 1080px) {
+  .sws-langkah { grid-template-columns: repeat(4, 1fr); }
+}
+
+.sws-langkah-item {
+  position: relative;
+  background: var(--theme-surface);
+  border: 1px solid var(--theme-border);
+  border-radius: 20px;
+  padding: 24px 22px;
+  box-shadow: var(--theme-shadow-sm);
+}
+
+.sws-langkah-nomor {
+  position: absolute;
+  top: 18px;
+  right: 20px;
+  font-size: 2.6rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--theme-primary-soft);
+  -webkit-text-stroke: 1px var(--theme-primary);
+  opacity: 0.55;
+  user-select: none;
+}
+
+.sws-langkah-isi h3 {
+  font-size: 1.06rem;
+  color: var(--theme-text-strong);
+  margin: 14px 0 8px;
+}
+
+.sws-langkah-isi p {
+  color: var(--theme-text-muted);
+  font-size: 0.93rem;
+  line-height: 1.7;
+  margin: 0;
 }
 
 /* ---------- KENAPA ---------- */
@@ -323,20 +597,27 @@
 .sws-kenapa {
   background: var(--theme-surface);
   border: 1px solid var(--theme-border);
-  border-radius: 18px;
-  padding: 24px 22px;
+  border-radius: 20px;
+  padding: 26px 24px;
+  box-shadow: var(--theme-shadow-sm);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.sws-kenapa:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--theme-shadow-md);
 }
 
 .sws-kenapa h3 {
-  font-size: 1.05rem;
+  font-size: 1.06rem;
   color: var(--theme-text-strong);
-  margin: 0 0 8px;
+  margin: 14px 0 8px;
 }
 
 .sws-kenapa p {
   color: var(--theme-text-muted);
   font-size: 0.93rem;
-  line-height: 1.65;
+  line-height: 1.7;
   margin: 0;
 }
 
@@ -347,29 +628,30 @@
   gap: 16px;
   background: var(--theme-surface);
   border: 1px solid var(--theme-border);
-  border-radius: 20px;
-  padding: 26px 24px;
-  box-shadow: var(--theme-shadow-sm);
-  max-width: 760px;
+  border-radius: 22px;
+  padding: 28px 24px;
+  box-shadow: var(--theme-shadow-md);
+  max-width: 780px;
   scroll-margin-top: 84px;
 }
 
 @media (min-width: 700px) {
   .sws-form {
     grid-template-columns: 1fr 1fr;
-    padding: 32px;
+    padding: 36px;
   }
   .sws-field-penuh { grid-column: 1 / -1; }
 }
 
 .sws-field {
   display: grid;
-  gap: 7px;
+  gap: 8px;
+  align-content: start;
 }
 
 .sws-field label {
   font-size: 0.92rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--theme-text-strong);
 }
 
@@ -386,12 +668,12 @@
 .sws-field input,
 .sws-field select,
 .sws-field textarea {
-  min-height: 48px;
+  min-height: 50px;
   border: 1px solid var(--theme-border-strong);
-  border-radius: 12px;
+  border-radius: 13px;
   background: var(--theme-bg);
   color: var(--theme-text-strong);
-  padding: 12px 14px;
+  padding: 13px 15px;
   font-size: 1rem;
   font-family: inherit;
   width: 100%;
@@ -399,7 +681,7 @@
 
 .sws-field textarea {
   resize: vertical;
-  min-height: 110px;
+  min-height: 116px;
   line-height: 1.55;
 }
 
@@ -419,8 +701,8 @@
 .sws-error {
   grid-column: 1 / -1;
   margin: 0;
-  padding: 12px 16px;
-  border-radius: 12px;
+  padding: 13px 16px;
+  border-radius: 13px;
   background: rgba(194, 65, 59, 0.1);
   border: 1px solid var(--theme-danger);
   color: var(--theme-danger);
@@ -431,28 +713,72 @@
 .sws-btn-submit {
   grid-column: 1 / -1;
   width: 100%;
+  min-height: 54px;
+  font-size: 1.05rem;
 }
 
 .sws-form-catatan {
   grid-column: 1 / -1;
   margin: 0;
-  font-size: 0.86rem;
+  font-size: 0.87rem;
   color: var(--theme-text-subtle);
-  line-height: 1.6;
+  line-height: 1.65;
   text-align: center;
+}
+
+/* ---------- BANNER CTA (band gelap) ---------- */
+.sws-cta-banner {
+  position: relative;
+  overflow: hidden;
+  color: #fff;
+  background:
+    radial-gradient(800px 380px at 12% 0%, rgba(255, 215, 102, 0.14), transparent 60%),
+    radial-gradient(700px 420px at 95% 110%, rgba(97, 209, 192, 0.16), transparent 55%),
+    linear-gradient(120deg, #07332f 0%, #041d1b 100%);
+  padding: 56px 0;
+}
+
+.sws-cta-banner-dalam {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+}
+
+.sws-cta-banner h2 {
+  font-size: clamp(1.4rem, 3.2vw, 2rem);
+  letter-spacing: -0.02em;
+  color: #fff;
+  margin: 0 0 10px;
+  max-width: 20ch;
+}
+
+.sws-cta-banner p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.82);
+  line-height: 1.7;
+  max-width: 52ch;
 }
 
 /* ---------- FAQ ---------- */
 .sws-faq {
   display: grid;
   gap: 12px;
+  margin-top: 30px;
 }
 
 .sws-faq-item {
   background: var(--theme-surface);
   border: 1px solid var(--theme-border);
-  border-radius: 14px;
+  border-radius: 16px;
   overflow: hidden;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.sws-faq-item[open] {
+  border-color: var(--theme-primary);
+  box-shadow: var(--theme-shadow-sm);
 }
 
 .sws-faq-item summary {
@@ -460,10 +786,11 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  min-height: 56px;
-  padding: 14px 18px;
+  min-height: 60px;
+  padding: 16px 20px;
   cursor: pointer;
   font-weight: 700;
+  font-size: 1rem;
   color: var(--theme-text-strong);
   list-style: none;
 }
@@ -489,25 +816,61 @@
 
 .sws-faq-item p {
   margin: 0;
-  padding: 0 18px 18px;
+  padding: 0 20px 20px;
   color: var(--theme-text-muted);
-  line-height: 1.7;
-  font-size: 0.95rem;
+  line-height: 1.75;
+  font-size: 0.96rem;
 }
 
 .sws-kembali {
-  margin: 30px 0 0;
+  margin: 34px 0 0;
   text-align: center;
 }
 
 .sws-kembali a {
   color: var(--theme-primary);
-  font-weight: 600;
+  font-weight: 700;
   text-decoration: none;
 }
 
 .sws-kembali a:hover {
   text-decoration: underline;
+}
+
+/* ---------- STICKY CTA — mobile saja ---------- */
+.sws-stickybar {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .sws {
+    /* Ruang agar konten bawah tidak tertutup sticky bar. */
+    padding-bottom: 84px;
+  }
+
+  .sws-stickybar {
+    display: flex;
+    gap: 10px;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 40;
+    padding: 10px 14px max(12px, env(safe-area-inset-bottom));
+    background: color-mix(in srgb, var(--theme-surface) 92%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid var(--theme-border);
+    box-shadow: 0 -8px 24px rgba(4, 29, 27, 0.12);
+  }
+
+  .sws-btn-sticky {
+    flex: 1;
+    min-height: 48px;
+    padding: 0 12px;
+    font-size: 0.95rem;
+    border-radius: 13px;
+  }
 }
 
 /* ---------- REDUCED MOTION ---------- */

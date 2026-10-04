@@ -3,10 +3,15 @@
 /**
  * SUKI Web Studio — halaman publik jasa pembuatan website.
  *
+ * Desain ulang "kelas Hostinger": hero berani + jaminan, kartu harga premium,
+ * strip "sudah termasuk di semua paket", alur pemesanan 4 langkah, banner CTA
+ * akhir, dan CTA sticky di mobile — tanpa mengubah fakta harga, fitur, FAQ.
+ *
  * JUJUR BY DESIGN: form pemesanan TIDAK mengirim ke backend. Saat submit,
  * pesan terformat dibuka ke WhatsApp resmi SUKI via sukiWaLink() (wa.me).
  * Tidak ada data yang disimpan — ini disengaja sampai ada keputusan
- * untuk membangun alur order server-side.
+ * untuk membangun alur order server-side. Tidak ada testimoni, diskon,
+ * atau statistik klien yang dikarang di halaman ini.
  */
 
 import { useId, useRef, useState } from 'react';
@@ -17,14 +22,18 @@ import {
   Check,
   ChevronDown,
   Clock3,
+  Globe,
+  LayoutDashboard,
+  Lock,
   MessagesSquare,
+  PenTool,
   Rocket,
+  Server,
   ShieldCheck,
   Sparkles,
   Store,
+  Wallet,
   Wrench,
-  Globe,
-  LayoutDashboard,
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { sukiWaLink } from '@/lib/whatsapp';
@@ -122,6 +131,38 @@ const PAKETS: Paket[] = [
     ],
     waktu: 'Periode bulanan',
     ikon: Wrench,
+  },
+];
+
+/** Sudah termasuk di SEMUA paket — dari keunggulan "Harga transparan". */
+const TERMASUK = [
+  { ikon: Globe, teks: 'Domain 1 tahun' },
+  { ikon: Server, teks: 'Hosting 1 tahun' },
+  { ikon: Lock, teks: 'Sertifikat SSL' },
+  { ikon: BadgeCheck, teks: 'Tanpa biaya tersembunyi' },
+];
+
+/** Alur pemesanan — diringkas dari FAQ (sistem pembayaran & garansi). */
+const LANGKAH = [
+  {
+    ikon: MessagesSquare,
+    judul: 'Konsultasi gratis',
+    teks: 'Ceritakan kebutuhanmu via WhatsApp. Kami rekomendasikan paket yang paling pas — tanpa komitmen.',
+  },
+  {
+    ikon: Wallet,
+    judul: 'DP 50% sebagai tanda jadi',
+    teks: 'Harga disepakati transparan di muka dalam rupiah. Pelunasan setelah website selesai, sebelum go-live.',
+  },
+  {
+    ikon: PenTool,
+    judul: 'Pengerjaan + 2× revisi',
+    teks: 'Desain dikerjakan sesuai estimasi waktu tiap paket, termasuk 2× revisi desain.',
+  },
+  {
+    ikon: Rocket,
+    judul: 'Go-live + garansi 30 hari',
+    teks: 'Website diserahkan setelah lunas. Setiap bug/error kami perbaiki gratis selama 30 hari.',
   },
 ];
 
@@ -252,16 +293,21 @@ export default function WebStudioPage() {
         {/* HERO */}
         <section className="sws-hero" aria-labelledby="sws-judul">
           <div className="sws-wrap">
-            <p className="sws-kicker">Jasa Pembuatan Website</p>
-            <h1 id="sws-judul">SUKI Web Studio</h1>
+            <p className="sws-kicker">Jasa Pembuatan Website Profesional</p>
+            <h1 id="sws-judul">
+              Website yang menjual,
+              <br />
+              bukan sekadar tampil.
+            </h1>
             <p className="sws-sub">
-              Website profesional untuk UMKM &amp; bisnis Indonesia — dari landing page sampai toko
-              online. Kami rancang, kami bangun, kamu terima beres.
+              SUKI Web Studio merancang dan membangun website untuk UMKM &amp; bisnis
+              Indonesia — dari landing page sampai toko online. Kamu terima beres,
+              kami yang urus teknisnya.
             </p>
             <div className="sws-cta-row">
               {waKonsultasi ? (
                 <a
-                  className="sws-btn sws-btn-primary"
+                  className="sws-btn sws-btn-emas"
                   href={waKonsultasi}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -270,18 +316,53 @@ export default function WebStudioPage() {
                   Konsultasi Gratis
                 </a>
               ) : null}
-              <a className="sws-btn sws-btn-ghost" href="#sws-paket" onClick={(e) => {
-                e.preventDefault();
-                scrollKe(document.getElementById('sws-paket'));
-              }}>
+              <a
+                className="sws-btn sws-btn-hero-ghost"
+                href="#sws-paket"
+                onClick={(e) => {
+                  e.preventDefault();
+                  scrollKe(document.getElementById('sws-paket'));
+                }}
+              >
                 Lihat Paket
                 <ArrowRight size={18} aria-hidden />
               </a>
             </div>
-            <ul className="sws-hero-points">
-              <li><Check size={16} aria-hidden /> Harga transparan dalam rupiah</li>
-              <li><Check size={16} aria-hidden /> Domain &amp; hosting 1 tahun termasuk</li>
-              <li><Check size={16} aria-hidden /> Garansi bug 30 hari</li>
+            <ul className="sws-jaminan" aria-label="Jaminan SUKI Web Studio">
+              <li>
+                <BadgeCheck size={17} aria-hidden />
+                <span>Harga transparan dalam rupiah</span>
+              </li>
+              <li>
+                <ShieldCheck size={17} aria-hidden />
+                <span>Garansi bug 30 hari</span>
+              </li>
+              <li>
+                <PenTool size={17} aria-hidden />
+                <span>2× revisi desain</span>
+              </li>
+              <li>
+                <Server size={17} aria-hidden />
+                <span>Domain &amp; hosting 1 tahun termasuk</span>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        {/* SUDAH TERMASUK DI SEMUA PAKET */}
+        <section className="sws-ribbon" aria-label="Sudah termasuk di semua paket">
+          <div className="sws-wrap">
+            <p className="sws-ribbon-judul">Sudah termasuk di <strong>semua paket</strong></p>
+            <ul className="sws-ribbon-list">
+              {TERMASUK.map((t) => {
+                const Ikon = t.ikon;
+                return (
+                  <li key={t.teks}>
+                    <Ikon size={17} aria-hidden />
+                    <span>{t.teks}</span>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         </section>
@@ -289,30 +370,41 @@ export default function WebStudioPage() {
         {/* PRICELIST */}
         <section className="sws-seksi" id="sws-paket" aria-labelledby="sws-paket-judul">
           <div className="sws-wrap">
+            <p className="sws-seksi-kicker">Harga transparan</p>
             <h2 id="sws-paket-judul">Pilih paket yang pas untuk bisnismu</h2>
             <p className="sws-lead">
-              Semua harga dalam rupiah, sekali bayar — kecuali Care Plan yang bersifat bulanan.
+              Semua harga dalam rupiah dan sekali bayar — kecuali Care Plan yang
+              bersifat bulanan. Tanpa biaya tersembunyi.
             </p>
             <div className="sws-grid">
               {PAKETS.map((p) => {
                 const Ikon = p.ikon;
+                const unggulan = Boolean(p.badge);
                 return (
                   <article
                     key={p.id}
-                    className={`sws-kartu${p.badge ? ' sws-kartu-unggulan' : ''}`}
+                    className={`sws-kartu${unggulan ? ' sws-kartu-unggulan' : ''}`}
                     aria-label={`Paket ${p.nama}`}
                   >
                     {p.badge ? <span className="sws-badge">{p.badge}</span> : null}
-                    <div className="sws-kartu-ikon" aria-hidden>
-                      <Ikon size={22} />
+                    <div className="sws-kartu-top">
+                      <div className="sws-kartu-ikon" aria-hidden>
+                        <Ikon size={22} />
+                      </div>
+                      <div>
+                        <h3>{p.nama}</h3>
+                        <p className="sws-tagline">{p.deskripsi}</p>
+                      </div>
                     </div>
-                    <h3>{p.nama}</h3>
                     <p className="sws-harga">
-                      <span className="sws-harga-mulai">{p.periode === '/bulan' ? '' : 'mulai '}</span>
+                      {p.periode === '/bulan' ? null : (
+                        <span className="sws-harga-mulai">mulai</span>
+                      )}
                       <strong>{p.harga}</strong>
-                      <span className="sws-harga-periode">{p.periode === '/bulan' ? '/bulan' : ''}</span>
+                      {p.periode === '/bulan' ? (
+                        <span className="sws-harga-periode">/bulan</span>
+                      ) : null}
                     </p>
-                    <p className="sws-deskripsi">{p.deskripsi}</p>
                     <ul className="sws-fitur">
                       {p.fitur.map((f) => (
                         <li key={f}>
@@ -327,21 +419,54 @@ export default function WebStudioPage() {
                     </p>
                     <button
                       type="button"
-                      className="sws-btn sws-btn-paket"
+                      className={`sws-btn ${unggulan ? 'sws-btn-primary' : 'sws-btn-paket'}`}
                       onClick={() => pilihPaket(p.id)}
                     >
-                      Pilih Paket
+                      Pilih {p.nama}
                     </button>
                   </article>
                 );
               })}
             </div>
+            <p className="sws-harga-note">
+              DP 50% di awal sebagai tanda jadi, pelunasan setelah website selesai
+              dan sebelum go-live. Harga belum termasuk PPN 11% untuk kebutuhan
+              faktur perusahaan.
+            </p>
+          </div>
+        </section>
+
+        {/* CARA MEMESAN */}
+        <section className="sws-seksi sws-seksi-alternatif" id="sws-cara" aria-labelledby="sws-cara-judul">
+          <div className="sws-wrap">
+            <p className="sws-seksi-kicker">Mudah &amp; transparan</p>
+            <h2 id="sws-cara-judul">Dari chat sampai go-live dalam 4 langkah</h2>
+            <ol className="sws-langkah">
+              {LANGKAH.map((l, i) => {
+                const Ikon = l.ikon;
+                return (
+                  <li key={l.judul} className="sws-langkah-item">
+                    <div className="sws-langkah-nomor" aria-hidden>
+                      <span>{i + 1}</span>
+                    </div>
+                    <div className="sws-langkah-isi">
+                      <div className="sws-kartu-ikon" aria-hidden>
+                        <Ikon size={20} />
+                      </div>
+                      <h3>{l.judul}</h3>
+                      <p>{l.teks}</p>
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
           </div>
         </section>
 
         {/* KENAPA SUKI */}
-        <section className="sws-seksi sws-seksi-alternatif" aria-labelledby="sws-kenapa-judul">
+        <section className="sws-seksi" aria-labelledby="sws-kenapa-judul">
           <div className="sws-wrap">
+            <p className="sws-seksi-kicker">Kenapa kami</p>
             <h2 id="sws-kenapa-judul">Kenapa SUKI Web Studio?</h2>
             <div className="sws-grid sws-grid-kenapa">
               {KEUNGGULAN.map((k) => {
@@ -361,11 +486,13 @@ export default function WebStudioPage() {
         </section>
 
         {/* FORM PEMESANAN */}
-        <section className="sws-seksi" aria-labelledby="sws-form-judul">
+        <section className="sws-seksi sws-seksi-alternatif" aria-labelledby="sws-form-judul">
           <div className="sws-wrap">
-            <h2 id="sws-form-judul">Formulir pemesanan</h2>
+            <p className="sws-seksi-kicker">Langkah terakhir</p>
+            <h2 id="sws-form-judul">Siap mulai? Isi formulir pemesanan</h2>
             <p className="sws-lead">
-              Isi formulir di bawah — pesananmu akan diteruskan ke WhatsApp resmi SUKI Web Studio.
+              Isi data di bawah — pesananmu langsung diteruskan ke WhatsApp resmi
+              SUKI Web Studio dengan pesan yang sudah terisi otomatis.
             </p>
             <form ref={formRef} className="sws-form" onSubmit={kirimKeWA} noValidate>
               <div className="sws-field">
@@ -448,9 +575,34 @@ export default function WebStudioPage() {
           </div>
         </section>
 
+        {/* CTA BANNER */}
+        <section className="sws-cta-banner" aria-labelledby="sws-cta-judul">
+          <div className="sws-wrap sws-cta-banner-dalam">
+            <div>
+              <h2 id="sws-cta-judul">Masih ragu paket mana yang cocok?</h2>
+              <p>
+                Ngobrol dulu, gratis. Ceritakan bisnismu — kami bantu petakan
+                kebutuhan dan rekomendasikan paket yang paling pas, tanpa komitmen.
+              </p>
+            </div>
+            {waKonsultasi ? (
+              <a
+                className="sws-btn sws-btn-emas sws-btn-besar"
+                href={waKonsultasi}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <MessagesSquare size={18} aria-hidden />
+                Konsultasi Gratis
+              </a>
+            ) : null}
+          </div>
+        </section>
+
         {/* FAQ */}
-        <section className="sws-seksi sws-seksi-alternatif" aria-labelledby="sws-faq-judul">
+        <section className="sws-seksi" aria-labelledby="sws-faq-judul">
           <div className="sws-wrap sws-wrap-sempit">
+            <p className="sws-seksi-kicker">Sering ditanyakan</p>
             <h2 id="sws-faq-judul">Pertanyaan yang sering ditanyakan</h2>
             <div className="sws-faq">
               {FAQS.map((f) => (
@@ -468,6 +620,31 @@ export default function WebStudioPage() {
             </p>
           </div>
         </section>
+
+        {/* STICKY CTA — mobile saja */}
+        <div className="sws-stickybar" role="region" aria-label="Aksi cepat">
+          <a
+            className="sws-btn sws-btn-ghost sws-btn-sticky"
+            href="#sws-paket"
+            onClick={(e) => {
+              e.preventDefault();
+              scrollKe(document.getElementById('sws-paket'));
+            }}
+          >
+            Lihat Paket
+          </a>
+          {waKonsultasi ? (
+            <a
+              className="sws-btn sws-btn-primary sws-btn-sticky"
+              href={waKonsultasi}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <MessagesSquare size={17} aria-hidden />
+              Konsultasi Gratis
+            </a>
+          ) : null}
+        </div>
       </main>
     </AppLayout>
   );
