@@ -18,7 +18,8 @@ import {
   UsersRound,
 } from 'lucide-react';
 import BusinessNav from './_components/BusinessNav';
-import { BUSINESS_CATEGORIES, type PublicBusiness } from '@/lib/businesses-query';
+import { BUSINESS_CATEGORIES } from '@/lib/business-categories';
+import type { PublicBusiness } from '@/lib/businesses-query';
 import { usePreferences } from '@/lib/preferences';
 import { getGroupsLabels } from '@/lib/i18n/dict-groups';
 
