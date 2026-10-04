@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, Bath, Bed, Building2, CheckCircle2, Eye, Heart, MapPin, Maximize, MessageCircle, ShieldCheck } from 'lucide-react';
@@ -10,6 +9,7 @@ import { getNearbyProperties } from '@/lib/actions/property-geo';
 import { PropertyInquiryForm } from '@/components/property/PropertyInquiryForm';
 import PropertyMiniMapLazy from '@/components/property/PropertyMiniMapLazy';
 import PropertyCard from '@/components/property/PropertyCard';
+import { PropertyGallery } from '@/components/property/PropertyGallery';
 import MortgageCalculator from '@/components/property/MortgageCalculator';
 import { pricePerSqm } from '@/lib/property-format';
 import { AdSlot } from '@/components/ads/AdSlot';
@@ -110,12 +110,11 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
         <Link href="/properti" className="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-sultra-teal hover:text-sultra-forest"><ArrowLeft size={16} /> Kembali ke properti</Link>
         <div className="grid gap-6 lg:grid-cols-[1.15fr_.85fr]">
           <section>
-            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-sultra-mint to-sultra-sand">
-              {images[0] ? <Image src={images[0]} alt={property.title} width={1200} height={900} priority sizes="(max-width: 1024px) 100vw, 58vw" className="aspect-[4/3] h-full w-full object-cover" /> : <div className="grid aspect-[4/3] place-items-center font-semibold text-sultra-forest">Hunian pilihan Sultra</div>}
-              {property.is_demo && <span className="absolute left-4 top-4 rounded-full bg-slate-700/90 px-3 py-1.5 text-xs font-bold text-white">Demo</span>}
-              {(property.is_bank_verified || property.is_admin_verified) && <span title="Terverifikasi oleh bank atau admin SUKI" className="absolute right-4 top-4 inline-flex items-center gap-1 rounded-full bg-sultra-gold px-3 py-1.5 text-xs font-bold text-white"><CheckCircle2 size={14} /> Terverifikasi</span>}
+            <div className="relative">
+              <PropertyGallery images={images} title={property.title} />
+              {property.is_demo && <span className="absolute left-4 top-4 z-10 rounded-full bg-slate-700/90 px-3 py-1.5 text-xs font-bold text-white">Demo</span>}
+              {(property.is_bank_verified || property.is_admin_verified) && <span title="Terverifikasi oleh bank atau admin SUKI" className="absolute bottom-3 left-3 z-10 inline-flex items-center gap-1 rounded-full bg-sultra-gold px-3 py-1.5 text-xs font-bold text-white"><CheckCircle2 size={14} /> Terverifikasi</span>}
             </div>
-            {images.length > 1 && <div className="mt-3 grid grid-cols-4 gap-2">{images.slice(0, 4).map((image: string, index: number) => <Image key={image} src={image} alt={`${property.title}, foto ${index + 1}`} width={300} height={225} loading="lazy" sizes="(max-width: 640px) 25vw, 14vw" className="aspect-[4/3] w-full rounded-xl object-cover" />)}</div>}
             {/* Fase 3: mini-map Leaflet asli (fallback centroid kecamatan berlabel "perkiraan" bila tanpa koordinat) */}
             <div className="mt-6 overflow-hidden rounded-3xl border border-sultra-mint bg-sultra-mint/30 p-5 dark:border-sultra-forest/30">
               <div className="flex items-center gap-2 text-sultra-forest dark:text-sultra-sand"><MapPin size={18} /><h2 className="font-bold">{hasCoords ? 'Peta lokasi' : 'Peta lokasi perkiraan'}</h2></div>
