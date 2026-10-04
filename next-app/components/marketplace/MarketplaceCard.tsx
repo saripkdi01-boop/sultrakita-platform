@@ -20,7 +20,7 @@ export type MarketplaceListing = PublicListing;
 // - Kartu bersih: tanpa tombol Lihat cepat/Bandingkan (pindah ke QuickViewModal)
 // - Klik gambar/judul membuka quick view (?listing= deep link tetap didukung)
 
-const conditionLabels: Record<string, string> = { new: 'Baru', like_new: 'Seperti baru', good: 'Bekas baik', fair: 'Bekas layak' };
+const conditionLabels: Record<string, string> = { new: 'Baru', like_new: 'Seperti baru', good: 'Bekas baik', fair: 'Bekas layak', second: 'Bekas' };
 
 function rupiah(value: number) {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(value);

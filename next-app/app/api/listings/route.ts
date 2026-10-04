@@ -8,6 +8,8 @@ import {
   createListingPayloadSchema,
   normalizeWhatsapp,
   sanitizeText,
+  mapConditionToDb,
+  CREATE_CATEGORY_IDS,
 } from '@/lib/marketplace-create';
 
 // Data contoh hanya untuk development lokal: tampil HANYA bila
@@ -99,25 +101,43 @@ function rememberPublish(userId: string, key: string, listingId: string, title: 
 }
 
 /** Petakan label kategori form (11 label UI) -> uuid tabel categories.
- *  Gagal/tidak ada padanan -> null (listing tetap terbit & ditemukan via
- *  pencarian teks + filter kota). */
+ *  Gagal/tidak ada padanan -> fallback ke ID kanonis statis
+ *  (CREATE_CATEGORY_IDS) karena `listings.category_id` NOT NULL di
+ *  production — insert tidak boleh menerima null.
+ *  Tahan terhadap skema: kolom `is_active` belum ada di production
+ *  (migrasi repo tidak pernah di-apply) -> coba tanpa filter bila gagal. */
 async function resolveCategoryUuid(
   supabase: Awaited<ReturnType<typeof getServerSupabase>>,
   label: string,
 ): Promise<string | null> {
+  const normalized = label.trim().toLowerCase();
   try {
-    const normalized = label.trim().toLowerCase();
-    const { data, error } = await supabase.from('categories').select('id,slug,name').eq('is_active', true);
-    if (error || !data) return null;
-    const match = data.find((row) => {
-      const slug = String(row.slug || '').toLowerCase();
-      const name = String(row.name || '').toLowerCase();
-      return slug === normalized || name === normalized;
-    });
-    return match ? String(match.id) : null;
+    let query = supabase.from('categories').select('id,slug,name');
+    try {
+      const { data, error } = await query.eq('is_active', true);
+      if (error) throw error;
+      const match = (data ?? []).find((row) => {
+        const slug = String(row.slug || '').toLowerCase();
+        const name = String(row.name || '').toLowerCase();
+        return slug === normalized || name === normalized;
+      });
+      if (match) return String(match.id);
+    } catch {
+      // Kolom is_active belum ada di production -> coba tanpa filter.
+      const { data, error } = await supabase.from('categories').select('id,slug,name');
+      if (error) throw error;
+      const match = (data ?? []).find((row) => {
+        const slug = String(row.slug || '').toLowerCase();
+        const name = String(row.name || '').toLowerCase();
+        return slug === normalized || name === normalized;
+      });
+      if (match) return String(match.id);
+    }
   } catch {
-    return null;
+    // Tabel categories tidak terbaca -> lanjut ke fallback statis.
   }
+  const fallback = CREATE_CATEGORY_IDS[label.trim()];
+  return fallback ? String(fallback) : null;
 }
 
 export async function POST(request: NextRequest) {
@@ -193,6 +213,13 @@ export async function POST(request: NextRequest) {
   // is_negotiable/published_at/mode/location TIDAK ADA -> "bisa nego"
   // disimpan di specifications (jsonb) agar tak ada data yang hilang diam-diam.
   const categoryIdNum = categoryId && /^\d+$/.test(categoryId) ? parseInt(categoryId, 10) : null;
+  // Skema production (terverifikasi 2026-10-04 via information_schema):
+  // - listings.condition HANYA boleh 'new' | 'second' (check constraint).
+  //   Nilai detail form ('like_new'/'good'/'fair') dipetakan ke 'second' dan
+  //   disimpan utuh di specifications.condition_detail agar tetap presisi.
+  // - listings.category_id NOT NULL -> resolver di atas selalu mengembalikan
+  //   ID kanonis 1-11 (fallback statis), tidak pernah null.
+  const dbCondition = mapConditionToDb(input.condition);
   const row = {
     owner_id: user.id,
     title,
@@ -204,9 +231,13 @@ export async function POST(request: NextRequest) {
     category_id: categoryIdNum,
     images: imageUrls,
     thumbnail_url: imageUrls[0] || null,
-    condition: input.condition,
+    condition: dbCondition,
     stock_quantity: input.stock,
-    specifications: { negotiable: input.negotiable, ...(whatsapp ? { whatsapp } : {}) },
+    specifications: {
+      negotiable: input.negotiable,
+      condition_detail: input.condition,
+      ...(whatsapp ? { whatsapp } : {}),
+    },
     status: 'active',
     // Jejak auto-approve: langsung tayang + tercatat untuk ditinjau admin.
     // (Kolom ditambahkan migrasi 20261003090000; aman sebelum migrasi jalan

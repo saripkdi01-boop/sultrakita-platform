@@ -42,6 +42,32 @@ export const CREATE_CONDITIONS = [
 ] as const;
 export type CreateCondition = (typeof CREATE_CONDITIONS)[number]['value'];
 
+/** Pemetaan kondisi form -> nilai yang diizinkan check constraint DB
+ *  `listings_condition_check` (hanya 'new' | 'second').
+ *  Nilai detail asli disimpan di `specifications.condition_detail` agar tidak
+ *  hilang dan tetap tampil presisi di kartu listing. */
+export function mapConditionToDb(value: CreateCondition): 'new' | 'second' {
+  return value === 'new' ? 'new' : 'second';
+}
+
+/** ID kategori kanonis (1-11) sejajar dengan CREATE_CATEGORY_LABELS.
+ *  Dipakai sebagai fallback bila tabel `categories` di DB kosong / tidak
+ *  dapat di-resolve — kolom `listings.category_id` NOT NULL di production,
+ *  jadi insert tidak boleh menerima null. */
+export const CREATE_CATEGORY_IDS: Record<string, number> = {
+  Elektronik: 1,
+  Kendaraan: 2,
+  Properti: 3,
+  Fashion: 4,
+  Kuliner: 5,
+  Furnitur: 6,
+  Jasa: 7,
+  Pertanian: 8,
+  Perikanan: 9,
+  Kecantikan: 10,
+  Olahraga: 11,
+};
+
 /** 17 wilayah administratif Sulawesi Tenggara (data publik). `short` dipakai
  *  sebagai nilai `district`/`city` agar konsisten dengan filter marketplace. */
 export const SULTRA_REGIONS = [

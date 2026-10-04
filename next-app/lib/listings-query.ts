@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { getServerSupabase } from '@/lib/supabase/server';
+import { CREATE_CATEGORY_IDS } from '@/lib/marketplace-create';
 
 // Fase 1.1: query listing publik terpusat — dipakai oleh /api/listings
 // dan oleh Server Component halaman /marketplace (SSR data awal).
@@ -67,18 +68,33 @@ export async function resolveCategoryId(client: NonNullable<ReturnType<typeof ge
   const value = raw.trim();
   if (!value) return null;
   if (uuidPattern.test(value)) return value;
+  if (/^\d+$/.test(value)) return value;
   const normalized = value.toLowerCase();
   try {
     if (!categoryCache) {
-      const { data, error } = await client.from('categories').select('id,slug,name').eq('is_active', true);
-      if (error) throw error;
+      // Kolom is_active belum ada di production -> coba dengan filter,
+      // gagal -> ulangi tanpa filter (pola tahan-skema).
+      let data: Array<{ id: unknown; slug: unknown; name: unknown }> | null = null;
+      try {
+        const res = await client.from('categories').select('id,slug,name').eq('is_active', true);
+        if (res.error) throw res.error;
+        data = res.data as Array<{ id: unknown; slug: unknown; name: unknown }>;
+      } catch {
+        const res = await client.from('categories').select('id,slug,name');
+        if (res.error) throw res.error;
+        data = res.data as Array<{ id: unknown; slug: unknown; name: unknown }>;
+      }
       categoryCache = (data || []).map((row) => ({ id: String(row.id), slug: String(row.slug || '').toLowerCase(), name: String(row.name || '').toLowerCase() }));
     }
     const match = categoryCache.find((entry) => entry.slug === normalized || entry.name === normalized);
-    return match ? match.id : null;
+    if (match) return match.id;
   } catch {
-    return null;
+    // Lanjut ke fallback statis di bawah.
   }
+  // Fallback: ID kanonis 11 label form (selaras dengan isi tabel categories
+  // setelah penyelarasan taksonomi 2026-10-04).
+  const fallback = CREATE_CATEGORY_IDS[value] ?? CREATE_CATEGORY_IDS[Object.keys(CREATE_CATEGORY_IDS).find((k) => k.toLowerCase() === normalized) ?? ''];
+  return fallback ? String(fallback) : null;
 }
 
 export type ListingsQueryResult =
@@ -194,7 +210,7 @@ export async function fetchPublicListings(filters: ListingFilters): Promise<List
     // select agar GET tidak 503 (pola yang sama dengan hasPromoColumns).
     const createColumns = await hasCreateColumns(client as unknown as PromoProbeClient);
     const baseSelect = 'id,title,description,price,image_url,district,city,condition,is_featured,is_demo,provenance,created_at,seller_id';
-    const fullSelect = `${baseSelect},images,owner_id` as const;
+    const fullSelect = `${baseSelect},images,owner_id,specifications` as const;
     // Cast ke literal penuh agar inferensi tipe baris tetap utuh; pada runtime
     // varian tanpa images/owner_id dipakai bila kolom belum ada di DB.
     const selectColumns = (createColumns ? fullSelect : baseSelect) as typeof fullSelect;
@@ -211,7 +227,12 @@ export async function fetchPublicListings(filters: ListingFilters): Promise<List
     query = query.limit(limit);
     if (queryText) { const term = escapeLike(queryText); query = query.or(`title.ilike.%${term}%,description.ilike.%${term}%,district.ilike.%${term}%,city.ilike.%${term}%`); }
     if (district && district !== 'Semua distrik') query = query.eq('district', district);
-    if (condition) query = query.eq('condition', condition);
+    // DB production hanya mengenal condition 'new' | 'second' (check
+    // constraint); nilai detail form dipetakan: like_new/good/fair -> 'second'.
+    if (condition) {
+      const dbCondition = condition === 'new' ? 'new' : ['like_new', 'good', 'fair', 'second'].includes(condition) ? 'second' : condition;
+      query = query.eq('condition', dbCondition);
+    }
     // Filter kategori: UUID dipakai langsung; label/slug di-resolve ke UUID tabel categories.
     // Bila tidak dikenal, kembalikan hasil kosong yang jujur.
     if (category) {
@@ -244,7 +265,12 @@ export async function fetchPublicListings(filters: ListingFilters): Promise<List
     const items: PublicListing[] = visibleItems.map((item) => {
       const rowImages = Array.isArray(item.images) ? (item.images as unknown[]).map(String) : [];
       const images = dedupeUrls([...(mediaMap.get(String(item.id)) || []), ...rowImages, typeof item.image_url === 'string' ? item.image_url : null]);
-      return { ...item, images, thumbnail_url: images[0] || (typeof item.image_url === 'string' ? item.image_url : null), seller: item.seller_id ? sellerMap.get(Number(item.seller_id)) || null : null };
+      // Tampilkan detail kondisi presisi bila tersedia
+      // (specifications.condition_detail, mis. 'like_new'), karena kolom
+      // DB hanya menyimpan 'new' | 'second'.
+      const specs = (item as { specifications?: unknown }).specifications as Record<string, unknown> | null | undefined;
+      const detail = specs && typeof specs.condition_detail === 'string' ? specs.condition_detail : null;
+      return { ...item, condition: detail || item.condition, images, thumbnail_url: images[0] || (typeof item.image_url === 'string' ? item.image_url : null), seller: item.seller_id ? sellerMap.get(Number(item.seller_id)) || null : null };
     });
     // Slice 1: gabungkan kolom promo (original_price, stock_quantity) bila
     // tersedia di DB — query terpisah agar select utama tetap stabil secara tipe.
