@@ -6,6 +6,8 @@ import StatusBadge from './StatusBadge';
 import DeleteBusinessButton from './DeleteBusinessButton';
 import BusinessInquiries from '../dashboard/inbox';
 import { card } from './formStyles';
+import { usePreferences } from '@/lib/preferences';
+import { getGroupsLabels } from '@/lib/i18n/dict-groups';
 
 export type BusinessCardData = {
   id: string;
@@ -18,6 +20,8 @@ export type BusinessCardData = {
 /** Kartu satu bisnis milik pengguna di dashboard: status, aksi, dan pertanyaan masuk. */
 export default function BusinessCard({ business }: { business: BusinessCardData }) {
   const [inquiryCount, setInquiryCount] = useState<number | null>(null);
+  const { language } = usePreferences();
+  const b = getGroupsLabels(language);
   const meta = [business.kategoriLabel, business.kota].filter(Boolean).join(' · ');
 
   return (
@@ -46,9 +50,9 @@ export default function BusinessCard({ business }: { business: BusinessCardData 
         <Link
           href={`/Business/dashboard/${business.id}/edit`}
           className="suki-business-button suki-business-button-light"
-          aria-label={`Ubah data bisnis ${business.nama}`}
+          aria-label={b.bCardEditAria.replace('{name}', business.nama)}
         >
-          Ubah
+          {b.bCardEdit}
         </Link>
         <DeleteBusinessButton id={business.id} name={business.nama} />
       </div>
@@ -64,7 +68,7 @@ export default function BusinessCard({ business }: { business: BusinessCardData 
             listStyle: 'revert',
           }}
         >
-          Pertanyaan masuk{inquiryCount !== null ? ` (${inquiryCount})` : ''}
+          {b.bCardInquiries}{inquiryCount !== null ? ` (${inquiryCount})` : ''}
         </summary>
         <div style={{ paddingBottom: 6 }}>
           <BusinessInquiries businessId={business.id} onCount={setInquiryCount} />

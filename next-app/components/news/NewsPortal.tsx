@@ -3,7 +3,9 @@
 import { Fragment, useCallback, useEffect, useState } from 'react';
 import { ArrowUpRight, Newspaper, RefreshCw } from 'lucide-react';
 import { AdSlot } from '@/components/ads/AdSlot';
-import { NEWS_CATEGORIES, NEWS_CATEGORY_LABELS, type NewsCategory } from '@/lib/news/sources';
+import { NEWS_CATEGORIES, type NewsCategory } from '@/lib/news/sources';
+import { usePreferences } from '@/lib/preferences';
+import { dictChatNews, timeLocale } from '@/lib/i18n/dict-chatnews';
 import styles from './news.module.css';
 
 interface ApiNewsItem {
@@ -40,10 +42,10 @@ interface ApiResponse {
 
 type Status = 'loading' | 'ready' | 'error';
 
-function formatTime(iso: string | null): string {
+function formatTime(iso: string | null, locale: string): string {
   if (!iso) return '';
   try {
-    return new Date(iso).toLocaleString('id-ID', {
+    return new Date(iso).toLocaleString(locale, {
       day: 'numeric',
       month: 'short',
       hour: '2-digit',
@@ -70,10 +72,22 @@ function NewsSkeleton() {
  * titik baca pertama LTR, pola standar portal berita Indonesia).
  * Warna gradien per kategori via [data-category] di kartu induk.
  */
-function CategoryBadge({ category }: { category: NewsCategory }) {
+/** Kunci label kategori → diterjemahkan per bahasa via dictChatNews. */
+const NEWS_CAT_KEYS: Record<NewsCategory, string> = {
+  semua: 'newsCatSemua',
+  teknologi: 'newsCatTeknologi',
+  umum: 'newsCatUmum',
+  politik: 'newsCatPolitik',
+  global: 'newsCatGlobal',
+  riset: 'newsCatRiset',
+  komunitas: 'newsCatKomunitas',
+};
+
+function CategoryBadge({ category, t }: { category: NewsCategory; t: Record<string, string> }) {
+  const label = t[NEWS_CAT_KEYS[category]] ?? category;
   return (
-    <span className={styles.newsCategoryBadge} aria-label={`Kanal ${NEWS_CATEGORY_LABELS[category]}`}>
-      {NEWS_CATEGORY_LABELS[category]}
+    <span className={styles.newsCategoryBadge} aria-label={`${t.newsChannel} ${label}`}>
+      {label}
     </span>
   );
 }
@@ -83,12 +97,12 @@ function CategoryBadge({ category }: { category: NewsCategory }) {
  * lazy + aspect-ratio fixed (zero CLS) + referrerPolicy no-referrer.
  * Gagal dimuat → badge kategori tetap tampil di placeholder, kartu text-first.
  */
-function NewsThumb({ src, alt, category }: { src: string; alt: string; category: NewsCategory }) {
+function NewsThumb({ src, alt, category, t }: { src: string; alt: string; category: NewsCategory; t: Record<string, string> }) {
   const [failed, setFailed] = useState(false);
   if (failed) {
     return (
       <div className={`${styles.newsThumb} ${styles.newsThumbFallback}`}>
-        <CategoryBadge category={category} />
+        <CategoryBadge category={category} t={t} />
       </div>
     );
   }
@@ -96,7 +110,7 @@ function NewsThumb({ src, alt, category }: { src: string; alt: string; category:
     <div className={styles.newsThumb}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={src} alt={alt} loading="lazy" referrerPolicy="no-referrer" onError={() => setFailed(true)} />
-      <CategoryBadge category={category} />
+      <CategoryBadge category={category} t={t} />
     </div>
   );
 }
@@ -109,6 +123,9 @@ function NewsThumb({ src, alt, category }: { src: string; alt: string; category:
  * Slot iklan native tiap 6 kartu memakai infra AdSlot (house ads / AdSense-ready).
  */
 export function NewsPortal() {
+  const { language } = usePreferences();
+  const t = dictChatNews[language] ?? dictChatNews.id;
+  const locale = timeLocale(language);
   const [category, setCategory] = useState<NewsCategory>('semua');
   const [status, setStatus] = useState<Status>('loading');
   const [data, setData] = useState<ApiResponse | null>(null);
@@ -126,9 +143,9 @@ export function NewsPortal() {
       setStatus('ready');
     } catch {
       setStatus('error');
-      setErrorMsg('Portal berita tidak dapat dimuat. Periksa koneksimu lalu coba lagi.');
+      setErrorMsg(t.newsLoadError);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     void load(category);
@@ -136,29 +153,29 @@ export function NewsPortal() {
 
   const items = data?.items ?? [];
   const comingSoon = data?.comingSoon === true;
+  const catLabel = (cat: NewsCategory) => t[NEWS_CAT_KEYS[cat]] ?? cat;
 
   return (
     <section id="portal-berita" className={styles.newsSection} aria-labelledby="news-portal-title">
       <div className={styles.newsHead}>
         <div>
           <span className={styles.newsEyebrow}>
-            <Newspaper size={13} aria-hidden="true" /> Portal Berita
+            <Newspaper size={13} aria-hidden="true" /> {t.newsPortal}
           </span>
-          <h2 id="news-portal-title">Kabar terkini dari media Indonesia</h2>
+          <h2 id="news-portal-title">{t.newsLatestFromMedia}</h2>
           <p>
-            Ringkasan headline terbaru yang dikumpulkan otomatis dari media nasional.
-            Klik untuk membaca artikel lengkap di situs penerbit aslinya.
+            {t.newsPortalDesc}
           </p>
         </div>
         {data && !comingSoon && (
-          <span className={styles.newsLive} title={`Diperbarui ${formatTime(data.fetchedAt)}${data.stale ? ' (cache)' : ''}`}>
+          <span className={styles.newsLive} title={`${t.newsUpdated} ${formatTime(data.fetchedAt, locale)}${data.stale ? ' (cache)' : ''}`}>
             <span className={styles.newsLiveDot} aria-hidden="true" />
-            {data.stale ? 'Cache' : 'Live'}
+            {data.stale ? t.newsCache : t.newsLive}
           </span>
         )}
       </div>
 
-      <div className={styles.newsTabs} role="tablist" aria-label="Kategori berita">
+      <div className={styles.newsTabs} role="tablist" aria-label={t.newsCategoryAria}>
         {NEWS_CATEGORIES.map((cat) => (
           <button
             key={cat}
@@ -168,50 +185,50 @@ export function NewsPortal() {
             className={styles.newsTab}
             onClick={() => setCategory(cat)}
           >
-            {NEWS_CATEGORY_LABELS[cat]}
+            {catLabel(cat)}
           </button>
         ))}
       </div>
 
       {status === 'loading' && (
-        <div role="status" aria-label="Memuat berita">
+        <div role="status" aria-label={t.newsLoadingNews}>
           <div className={styles.newsGrid} aria-hidden="true">
             {[0, 1, 2, 3, 4, 5].map((i) => (
               <NewsSkeleton key={i} />
             ))}
           </div>
-          <span className="sr-only">Memuat berita terkini…</span>
+          <span className="sr-only">{t.newsLoadingLatest}</span>
         </div>
       )}
 
       {status === 'error' && (
         <div className={styles.newsState} role="alert">
-          <strong>Berita tidak dapat dimuat.</strong>
+          <strong>{t.newsErrorTitle}</strong>
           <p>{errorMsg}</p>
           <button type="button" className={styles.newsRetry} onClick={() => load(category)}>
             <RefreshCw size={14} aria-hidden="true" style={{ verticalAlign: '-2px', marginRight: 6 }} />
-            Coba lagi
+            {t.uiTryAgain}
           </button>
         </div>
       )}
 
       {status === 'ready' && comingSoon && (
         <div className={styles.newsState} role="status">
-          <strong>Kanal {NEWS_CATEGORY_LABELS[category]} segera hadir.</strong>
-          <p>{data?.message || 'Kami sedang menyiapkan sumber berita terverifikasi untuk kanal ini.'}</p>
+          <strong>{t.newsChannelComingSoon.replace('{category}', catLabel(category))}</strong>
+          <p>{data?.message || t.newsComingSoonDefault}</p>
         </div>
       )}
 
       {status === 'ready' && !comingSoon && items.length === 0 && (
         <div className={styles.newsState} role="status">
-          <strong>Belum ada berita saat ini.</strong>
-          <p>Sumber berita tidak mengembalikan artikel baru. Coba lagi beberapa menit lagi.</p>
+          <strong>{t.newsEmpty}</strong>
+          <p>{t.newsEmptyDesc}</p>
         </div>
       )}
 
       {status === 'ready' && !comingSoon && items.length > 0 && (
         <>
-          <ul className={styles.newsGrid} aria-label={`Berita ${NEWS_CATEGORY_LABELS[category]}`}>
+          <ul className={styles.newsGrid} aria-label={`${t.newsPortal} ${catLabel(category)}`}>
             {items.map((item, index) => (
               <Fragment key={item.id}>
                 <li>
@@ -219,14 +236,14 @@ export function NewsPortal() {
                       berwarna benar saat tab "Semua" mencampur banyak kategori. */}
                   <article className={styles.newsCard} data-category={item.category}>
                     {item.image ? (
-                      <NewsThumb src={item.image} alt={item.title} category={item.category} />
+                      <NewsThumb src={item.image} alt={item.title} category={item.category} t={t} />
                     ) : (
                       <div className={`${styles.newsThumb} ${styles.newsThumbFallback} ${styles.newsThumbTextOnly}`}>
-                        <CategoryBadge category={item.category} />
+                        <CategoryBadge category={item.category} t={t} />
                       </div>
                     )}
                     <h3>
-                      <a href={item.link} target="_blank" rel="noopener noreferrer" title={`Baca di ${item.sourceName}`}>
+                      <a href={item.link} target="_blank" rel="noopener noreferrer" title={t.newsReadOn.replace('{source}', item.sourceName)}>
                         {item.title}
                       </a>
                     </h3>
@@ -234,11 +251,11 @@ export function NewsPortal() {
                     <div className={styles.newsMeta}>
                       <span className={styles.newsSource}>{item.sourceName}</span>
                       {item.publishedAt && (
-                        <time dateTime={item.publishedAt}>{formatTime(item.publishedAt)}</time>
+                        <time dateTime={item.publishedAt}>{formatTime(item.publishedAt, locale)}</time>
                       )}
                     </div>
                     <a className={styles.newsReadMore} href={item.link} target="_blank" rel="noopener noreferrer">
-                      Baca selengkapnya <ArrowUpRight size={13} aria-hidden="true" />
+                      {t.newsReadMore} <ArrowUpRight size={13} aria-hidden="true" />
                     </a>
                   </article>
                 </li>
@@ -252,14 +269,14 @@ export function NewsPortal() {
             ))}
           </ul>
           <p className={styles.newsFoot}>
-            Headline &amp; ringkasan milik masing-masing penerbit
+            {t.newsFootPrefix}
             {data?.sources.map((s, i) => (
               <span key={s.id}>
                 {i === 0 ? ': ' : ', '}
                 <a href={s.siteUrl} target="_blank" rel="noopener noreferrer">{s.name}</a>
               </span>
             ))}
-            . SUKI Apps menampilkan kutipan singkat + tautan ke artikel asli.
+            . {t.newsFootSuffix}
           </p>
         </>
       )}

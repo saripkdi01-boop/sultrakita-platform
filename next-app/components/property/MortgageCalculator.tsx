@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Calculator, Info } from 'lucide-react';
 import { estimateMonthlyInstallment, isForSale, rupiah } from '@/lib/property-format';
+import { usePreferences } from '@/lib/preferences';
+import { tpj } from '@/lib/i18n/dict-propertijobs';
 
 type Props = {
   /** Harga listing (Rp), dipakai sebagai harga properti awal. */
@@ -19,6 +21,8 @@ type Props = {
  * lokal tanpa data bank sungguhan, selalu disertai disclaimer estimasi.
  */
 export default function MortgageCalculator({ price, canKpr, priceType }: Props) {
+  const { language } = usePreferences();
+  const p = (key: string, vars?: Record<string, string | number>) => tpj(language, key, vars ?? {});
   const [downPct, setDownPct] = useState(20);
   const [rate, setRate] = useState(7);
   const [years, setYears] = useState(15);
@@ -39,15 +43,15 @@ export default function MortgageCalculator({ price, canKpr, priceType }: Props) 
     <section aria-labelledby="kpr-calc-title" className="mt-6 rounded-3xl border border-sultra-mint bg-white p-5 sm:p-6 dark:border-sultra-forest/30 dark:bg-sultra-dark">
       <div className="flex items-center gap-2 text-sultra-forest dark:text-sultra-sand">
         <Calculator size={18} aria-hidden="true" />
-        <h2 id="kpr-calc-title" className="text-lg font-bold">Simulasi KPR</h2>
+        <h2 id="kpr-calc-title" className="text-lg font-bold">{p('pjKprTitle')}</h2>
       </div>
       <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-        {canKpr ? 'Listing ini ditandai Bisa KPR oleh penjual. ' : ''}
-        Atur skema di bawah untuk melihat perkiraan cicilan properti ini.
+        {canKpr ? <>{p('pjKprCanKprNote')} </> : ''}
+        {p('pjKprIntro')}
       </p>
 
       <div className="mt-4">
-        <label htmlFor="kpr-price" className="text-xs font-bold text-slate-600 dark:text-slate-300">Harga properti (Rp)</label>
+        <label htmlFor="kpr-price" className="text-xs font-bold text-slate-600 dark:text-slate-300">{p('pjKprPrice')}</label>
         <input
           id="kpr-price"
           type="number"
@@ -58,20 +62,20 @@ export default function MortgageCalculator({ price, canKpr, priceType }: Props) 
           className={`${inputNumber} mt-1 max-w-xs`}
           inputMode="numeric"
         />
-        <p className="mt-1 text-[11px] text-slate-500">Default dari harga listing — ubah untuk simulasi skema lain.</p>
+        <p className="mt-1 text-[11px] text-slate-500">{p('pjKprPriceHint')}</p>
       </div>
 
       <div className="mt-4 grid gap-4 md:grid-cols-3">
         <div>
           <div className="flex items-baseline justify-between gap-2">
-            <label htmlFor="kpr-dp" className="text-xs font-bold text-slate-600 dark:text-slate-300">Uang muka (DP)</label>
+            <label htmlFor="kpr-dp" className="text-xs font-bold text-slate-600 dark:text-slate-300">{p('pjKprDownPayment')}</label>
             <output htmlFor="kpr-dp" className="text-sm font-black text-sultra-forest dark:text-sultra-sand">{downPct}%</output>
           </div>
           <input id="kpr-dp" type="range" min={0} max={90} step={5} value={downPct} onChange={e => setDownPct(Number(e.target.value))} className={range} aria-describedby="kpr-dp-value" />
           <p id="kpr-dp-value" className="mt-1 text-[11px] text-slate-500">{calc ? rupiah(calc.downPayment) : '—'}</p>
         </div>
         <div>
-          <label htmlFor="kpr-rate" className="text-xs font-bold text-slate-600 dark:text-slate-300">Suku bunga per tahun</label>
+          <label htmlFor="kpr-rate" className="text-xs font-bold text-slate-600 dark:text-slate-300">{p('pjKprRate')}</label>
           <div className="mt-1 flex items-center gap-2">
             <input id="kpr-rate" type="number" min={0} max={30} step={0.25} value={rate} onChange={e => setRate(Number(e.target.value))} className={inputNumber} inputMode="decimal" />
             <span className="text-sm font-bold text-slate-500">%</span>
@@ -79,33 +83,32 @@ export default function MortgageCalculator({ price, canKpr, priceType }: Props) 
         </div>
         <div>
           <div className="flex items-baseline justify-between gap-2">
-            <label htmlFor="kpr-tenor" className="text-xs font-bold text-slate-600 dark:text-slate-300">Tenor</label>
-            <output htmlFor="kpr-tenor" className="text-sm font-black text-sultra-forest dark:text-sultra-sand">{years} tahun</output>
+            <label htmlFor="kpr-tenor" className="text-xs font-bold text-slate-600 dark:text-slate-300">{p('pjKprTenor')}</label>
+            <output htmlFor="kpr-tenor" className="text-sm font-black text-sultra-forest dark:text-sultra-sand">{p('pjKprYears', { n: years })}</output>
           </div>
           <input id="kpr-tenor" type="range" min={5} max={30} step={1} value={years} onChange={e => setYears(Number(e.target.value))} className={range} />
-          <p className="mt-1 text-[11px] text-slate-500">{calc ? `${calc.months} bulan` : '—'}</p>
+          <p className="mt-1 text-[11px] text-slate-500">{calc ? p('pjKprMonths', { n: calc.months }) : '—'}</p>
         </div>
       </div>
 
       <div className="mt-5 rounded-2xl bg-sultra-mint/40 p-4 dark:bg-sultra-forest/20" aria-live="polite">
-        <p className="text-[11px] font-bold uppercase tracking-[.14em] text-sultra-teal">Estimasi cicilan per bulan</p>
+        <p className="text-[11px] font-bold uppercase tracking-[.14em] text-sultra-teal">{p('pjKprMonthlyTitle')}</p>
         <p className="mt-1 text-2xl font-black tracking-tight text-sultra-forest sm:text-3xl dark:text-sultra-sand">
           {calc ? rupiah(calc.monthly) : '—'}
         </p>
         {calc && (
           <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-xs sm:grid-cols-4">
-            <div><dt className="font-semibold text-slate-500 dark:text-slate-400">Pokok pinjaman</dt><dd className="mt-0.5 font-bold text-slate-800 dark:text-slate-100">{rupiah(calc.principal)}</dd></div>
-            <div><dt className="font-semibold text-slate-500 dark:text-slate-400">Total bunga</dt><dd className="mt-0.5 font-bold text-slate-800 dark:text-slate-100">{rupiah(calc.totalInterest)}</dd></div>
-            <div><dt className="font-semibold text-slate-500 dark:text-slate-400">Total dibayar</dt><dd className="mt-0.5 font-bold text-slate-800 dark:text-slate-100">{rupiah(calc.totalPaid)}</dd></div>
-            <div><dt className="font-semibold text-slate-500 dark:text-slate-400">Harga properti</dt><dd className="mt-0.5 font-bold text-slate-800 dark:text-slate-100">{rupiah(priceInput)}</dd></div>
+            <div><dt className="font-semibold text-slate-500 dark:text-slate-400">{p('pjKprPrincipal')}</dt><dd className="mt-0.5 font-bold text-slate-800 dark:text-slate-100">{rupiah(calc.principal)}</dd></div>
+            <div><dt className="font-semibold text-slate-500 dark:text-slate-400">{p('pjKprTotalInterest')}</dt><dd className="mt-0.5 font-bold text-slate-800 dark:text-slate-100">{rupiah(calc.totalInterest)}</dd></div>
+            <div><dt className="font-semibold text-slate-500 dark:text-slate-400">{p('pjKprTotalPaid')}</dt><dd className="mt-0.5 font-bold text-slate-800 dark:text-slate-100">{rupiah(calc.totalPaid)}</dd></div>
+            <div><dt className="font-semibold text-slate-500 dark:text-slate-400">{p('pjKprPropertyPrice')}</dt><dd className="mt-0.5 font-bold text-slate-800 dark:text-slate-100">{rupiah(priceInput)}</dd></div>
           </dl>
         )}
       </div>
 
       <p className="mt-4 flex items-start gap-1.5 text-[11px] leading-5 text-slate-400 dark:text-slate-500">
         <Info size={13} className="mt-0.5 shrink-0" aria-hidden="true" />
-        Angka di atas adalah estimasi kasar (anuitas, bunga tetap). Suku bunga, biaya provisi,
-        asuransi, dan ketentuan aktual mengikuti kebijakan bank pilihan Anda.
+        {p('pjKprDisclaimer')}
       </p>
     </section>
   );

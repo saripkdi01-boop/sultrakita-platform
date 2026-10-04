@@ -6,6 +6,9 @@ import { Bookmark, Flag, Globe2, Heart, Link2, MessageCircle, MoreHorizontal, Us
 import { CommentThread } from './CommentThread';
 import { reportPost } from '@/lib/actions/reports';
 import { REPORT_REASON_LABELS, type ReportReason } from '@/lib/report-reasons';
+import { usePreferences } from '@/lib/preferences';
+import { getCoreLabels } from '@/lib/i18n/dictionaries';
+import { getBerandaLabels, fmtLabel } from '@/lib/i18n/dict-beranda';
 import type { MutationResult } from '@/hooks/useInfiniteFeed';
 import styles from './feed.module.css';
 
@@ -67,23 +70,25 @@ function linkify(text: string) {
 }
 
 function MediaGallery({ post }: { post: BerandaPostData }) {
+  const { language } = usePreferences();
+  const b = getBerandaLabels(language);
   const media = post.mediaUrls?.length ? post.mediaUrls : post.mediaUrl ? [post.mediaUrl] : [];
   if (!media.length) return null;
-  if (post.mediaType === 'video') return <ViewportVideo src={media[0]} caption={`Video dari ${post.author}`} />;
+  if (post.mediaType === 'video') return <ViewportVideo src={media[0]} caption={fmtLabel(b.brVideoFrom, { name: post.author })} noVideoText={b.brNoVideo} />;
   const shown = media.slice(0, 4);
   const extra = media.length - shown.length;
   const variant = styles[`media${shown.length}` as 'media1' | 'media2' | 'media3' | 'media4'];
   return (
-    <div className={`${styles.mediaGrid} ${variant}`} role="group" aria-label={`${media.length} media dari ${post.author}`}>
+    <div className={`${styles.mediaGrid} ${variant}`} role="group" aria-label={fmtLabel(b.brMediaFrom, { count: media.length, name: post.author })}>
       {shown.map((src, index) => (
         <button
           type="button"
           key={`${src}-${index}`}
           className={styles.mediaItem}
           onClick={() => window.open(src, '_blank', 'noopener,noreferrer')}
-          aria-label={`Buka foto ${index + 1} dari ${post.author}`}
+          aria-label={fmtLabel(b.brOpenPhoto, { n: index + 1, name: post.author })}
         >
-          <img src={src} alt={`Media ${index + 1} dari ${post.author}`} loading="lazy" decoding="async" />
+          <img src={src} alt={fmtLabel(b.brMediaAlt, { n: index + 1, name: post.author })} loading="lazy" decoding="async" />
           {index === shown.length - 1 && extra > 0 && <span className={styles.mediaMore} aria-hidden="true">+{extra}</span>}
         </button>
       ))}
@@ -91,7 +96,7 @@ function MediaGallery({ post }: { post: BerandaPostData }) {
   );
 }
 
-function ViewportVideo({ src, caption }: { src: string; caption: string }) {
+function ViewportVideo({ src, caption, noVideoText }: { src: string; caption: string; noVideoText: string }) {
   const ref = useRef<HTMLVideoElement>(null);
   useEffect(() => {
     const video = ref.current;
@@ -114,7 +119,7 @@ function ViewportVideo({ src, caption }: { src: string; caption: string }) {
     <figure className={styles.videoWrap}>
       <video ref={ref} controls playsInline muted loop preload="metadata" poster={`${src}#t=0.1`} aria-label={caption}>
         <source src={src} type="video/mp4" />
-        Browser Anda tidak mendukung video.
+        {noVideoText}
       </video>
       <figcaption className="sr-only">{caption}</figcaption>
     </figure>
@@ -126,6 +131,9 @@ function loginOrGeneric(code: string | undefined, loginMessage: string, genericM
 }
 
 export function FeedPost({ post, currentUserId, saved, actions, onNotice }: Props) {
+  const { language } = usePreferences();
+  const t = getCoreLabels(language);
+  const b = getBerandaLabels(language);
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [reporting, setReporting] = useState(false);
@@ -171,7 +179,7 @@ export function FeedPost({ post, currentUserId, saved, actions, onNotice }: Prop
     setBusy('like');
     try {
       const result = await actions.toggleLike(post.id);
-      if (!result.ok) onNotice(loginOrGeneric(result.code, 'Silakan login untuk menyukai postingan.', 'Suka gagal disimpan. Coba lagi.'));
+      if (!result.ok) onNotice(loginOrGeneric(result.code, b.brLoginLike, b.brLikeFail));
     } finally { setBusy(null); }
   }
 
@@ -183,11 +191,11 @@ export function FeedPost({ post, currentUserId, saved, actions, onNotice }: Prop
       if (!result.ok) {
         onNotice(
           result.code === 'SERVICE_UNAVAILABLE'
-            ? 'Fitur simpan belum tersedia — pembaruan database tertunda. Coba lagi nanti.'
-            : loginOrGeneric(result.code, 'Silakan login untuk menyimpan postingan.', 'Simpan gagal. Coba lagi.'),
+            ? b.brSaveNA
+            : loginOrGeneric(result.code, b.brLoginSave, b.brSaveFail),
         );
       } else {
-        onNotice(result.saved ? 'Postingan disimpan.' : 'Postingan dihapus dari simpanan.');
+        onNotice(result.saved ? b.brPostSaved : b.brPostUnsaved);
       }
     } finally { setBusy(null); }
   }
@@ -197,7 +205,7 @@ export function FeedPost({ post, currentUserId, saved, actions, onNotice }: Prop
     setBusy('follow');
     try {
       const result = await actions.toggleFollow(post.userId);
-      if (!result.ok) onNotice(loginOrGeneric(result.code, 'Silakan login untuk mengikuti warga.', 'Ikuti gagal. Coba lagi.'));
+      if (!result.ok) onNotice(loginOrGeneric(result.code, b.brLoginFollow, b.brFollowFail));
     } finally { setBusy(null); }
   }
 
@@ -205,9 +213,9 @@ export function FeedPost({ post, currentUserId, saved, actions, onNotice }: Prop
     const url = `${window.location.origin}/beranda`;
     try {
       await navigator.clipboard.writeText(url);
-      onNotice('Tautan beranda disalin ke papan klip.');
+      onNotice(b.brLinkCopied);
     } catch {
-      onNotice('Tautan tidak dapat disalin otomatis.');
+      onNotice(b.brLinkFail);
     }
     setMenuOpen(false);
   }
@@ -228,10 +236,10 @@ export function FeedPost({ post, currentUserId, saved, actions, onNotice }: Prop
     const url = `${window.location.origin}/beranda`;
     try {
       if (navigator.share) {
-        await navigator.share({ title: `Postingan ${post.author} di SUKI`, text: post.content.slice(0, 120), url });
+        await navigator.share({ title: fmtLabel(b.brShareTitle, { name: post.author }), text: post.content.slice(0, 120), url });
       } else {
         await navigator.clipboard.writeText(`${post.content}\n${url}`);
-        onNotice('Tautan postingan disalin ke papan klip.');
+        onNotice(b.brPostLinkCopied);
       }
     } catch {
       /* pengguna membatalkan — diam */
@@ -248,7 +256,7 @@ export function FeedPost({ post, currentUserId, saved, actions, onNotice }: Prop
           <div className={styles.nameRow}>
             <span id={`post-title-${post.id}`} style={{ display: 'contents' }}>
               {post.authorUsername ? (
-                <Link href={`/profile/${encodeURIComponent(post.authorUsername)}`} className={styles.authorName} aria-label={`Buka profil publik ${post.author}`}>
+                <Link href={`/profile/${encodeURIComponent(post.authorUsername)}`} className={styles.authorName} aria-label={fmtLabel(b.brOpenProfile, { name: post.author })}>
                   {post.author}
                 </Link>
               ) : (
@@ -260,11 +268,11 @@ export function FeedPost({ post, currentUserId, saved, actions, onNotice }: Prop
                 type="button"
                 className={`${styles.followBtn} ${post.followingAuthor ? styles.isFollowing : ''}`}
                 aria-pressed={!!post.followingAuthor}
-                aria-label={post.followingAuthor ? `Berhenti mengikuti ${post.author}` : `Ikuti ${post.author}`}
+                aria-label={post.followingAuthor ? fmtLabel(b.brUnfollow, { name: post.author }) : fmtLabel(b.brFollowAria, { name: post.author })}
                 onClick={() => void handleFollow()}
                 disabled={busy === 'follow'}
               >
-                {busy === 'follow' ? '…' : post.followingAuthor ? 'Mengikuti' : 'Ikuti'}
+                {busy === 'follow' ? '…' : post.followingAuthor ? b.brFollowing : b.brFollow}
               </button>
             )}
           </div>
@@ -272,11 +280,11 @@ export function FeedPost({ post, currentUserId, saved, actions, onNotice }: Prop
             <span>{post.time}</span>
             {post.location ? <><span className={styles.dot} aria-hidden="true">·</span><span>{post.location}</span></> : null}
             {post.mood ? <><span className={styles.dot} aria-hidden="true">·</span><span>{post.mood}</span></> : null}
-            {post.taggedCount ? <><span className={styles.dot} aria-hidden="true">·</span><span>{post.taggedCount} warga ditandai</span></> : null}
+            {post.taggedCount ? <><span className={styles.dot} aria-hidden="true">·</span><span>{fmtLabel(b.brTaggedCount, { count: post.taggedCount })}</span></> : null}
             <span className={styles.dot} aria-hidden="true">·</span>
             {post.privacy === 'followers'
-              ? <><Users size={11} aria-hidden="true" /> Pengikut</>
-              : <><Globe2 size={11} aria-hidden="true" /> Publik</>}
+              ? <><Users size={11} aria-hidden="true" /> {b.brPrivacyFollowers}</>
+              : <><Globe2 size={11} aria-hidden="true" /> {b.brPrivacyPublic}</>}
           </small>
         </div>
         <div className={styles.menuWrap} ref={menuRef}>
@@ -284,7 +292,7 @@ export function FeedPost({ post, currentUserId, saved, actions, onNotice }: Prop
             type="button"
             ref={triggerRef}
             className={styles.menuBtn}
-            aria-label={`Opsi postingan dari ${post.author}`}
+            aria-label={fmtLabel(b.brPostOptions, { name: post.author })}
             aria-expanded={menuOpen}
             aria-haspopup="menu"
             onClick={() => { setMenuOpen((open) => !open); setReporting(false); }}
@@ -296,16 +304,16 @@ export function FeedPost({ post, currentUserId, saved, actions, onNotice }: Prop
               {!reporting ? (
                 <>
                   <button type="button" className={styles.menuItem} role="menuitem" onClick={() => void copyLink()}>
-                    <Link2 size={15} aria-hidden="true" /> Salin tautan
+                    <Link2 size={15} aria-hidden="true" /> {b.brCopyLink}
                   </button>
                   <button type="button" className={`${styles.menuItem} ${styles.danger}`} role="menuitem" ref={reportBtnRef} onClick={() => setReporting(true)}>
-                    <Flag size={15} aria-hidden="true" /> Laporkan
+                    <Flag size={15} aria-hidden="true" /> {b.brReport}
                   </button>
                 </>
               ) : (
                 <div className={styles.reportBox}>
-                  <p>Alasan laporan</p>
-                  <div className={styles.reportReasons} role="group" aria-label="Pilih alasan laporan">
+                  <p>{b.brReportReason}</p>
+                  <div className={styles.reportReasons} role="group" aria-label={b.brReportChoose}>
                     {(Object.keys(REPORT_REASON_LABELS) as ReportReason[]).map((reason, index) => (
                       <button
                         key={reason}
@@ -320,7 +328,7 @@ export function FeedPost({ post, currentUserId, saved, actions, onNotice }: Prop
                     ))}
                   </div>
                   <div className={styles.reportActions}>
-                    <button type="button" className={styles.btnGhost} onClick={() => setReporting(false)}>Kembali</button>
+                    <button type="button" className={styles.btnGhost} onClick={() => setReporting(false)}>{t.back}</button>
                   </div>
                 </div>
               )}
@@ -332,62 +340,62 @@ export function FeedPost({ post, currentUserId, saved, actions, onNotice }: Prop
       {post.content ? <p className={styles.postContent}>{linkify(post.content)}</p> : null}
       <MediaGallery post={post} />
 
-      <div className={styles.metaRow} aria-label="Ringkasan interaksi">
+      <div className={styles.metaRow} aria-label={b.brInteractSum}>
         <span className={styles.likes}>
-          <Heart size={14} fill="currentColor" aria-hidden="true" /> {post.likes} suka
+          <Heart size={14} fill="currentColor" aria-hidden="true" /> {fmtLabel(b.brLikes, { count: post.likes })}
         </span>
         <button
           type="button"
           className={styles.replyBtn}
           onClick={() => setCommentsOpen((open) => !open)}
           aria-expanded={commentsOpen}
-          aria-label={commentsOpen ? 'Tutup komentar' : `Lihat ${post.comments} komentar`}
+          aria-label={commentsOpen ? b.brCloseComments : fmtLabel(b.brViewComments, { count: post.comments })}
         >
-          {post.comments} komentar
+          {fmtLabel(b.brComments, { count: post.comments })}
         </button>
       </div>
 
-      <div className={styles.actionRow} role="group" aria-label={`Aksi postingan dari ${post.author}`}>
+      <div className={styles.actionRow} role="group" aria-label={fmtLabel(b.brPostActions, { name: post.author })}>
         <button
           type="button"
           className={`${styles.actionBtn} ${liked ? styles.isActive : ''}`}
           aria-pressed={liked}
-          aria-label={liked ? `Batal suka postingan dari ${post.author}` : `Sukai postingan dari ${post.author}`}
+          aria-label={liked ? fmtLabel(b.brUnlike, { name: post.author }) : fmtLabel(b.brLikeAria, { name: post.author })}
           onClick={() => void handleLike()}
           disabled={busy === 'like'}
         >
           <Heart size={17} fill={liked ? 'currentColor' : 'none'} aria-hidden="true" />
-          <span>{liked ? 'Disukai' : 'Suka'}</span>
+          <span>{liked ? b.brLiked : b.brLike}</span>
         </button>
         <button
           type="button"
           className={styles.actionBtn}
           onClick={() => setCommentsOpen((open) => !open)}
           aria-expanded={commentsOpen}
-          aria-label={`Komentar pada postingan dari ${post.author}`}
+          aria-label={fmtLabel(b.brCommentAria, { name: post.author })}
         >
           <MessageCircle size={17} aria-hidden="true" />
-          <span>Komentar</span>
+          <span>{b.brComment}</span>
         </button>
         <button
           type="button"
           className={styles.actionBtn}
           onClick={() => void share()}
-          aria-label={`Bagikan postingan dari ${post.author}`}
+          aria-label={fmtLabel(b.brShareAria, { name: post.author })}
         >
           <Link2 size={17} aria-hidden="true" />
-          <span>Bagikan</span>
+          <span>{b.brShare}</span>
         </button>
         <button
           type="button"
           className={`${styles.actionBtn} ${saved ? styles.isSaved : ''}`}
           aria-pressed={saved}
-          aria-label={saved ? `Hapus postingan dari ${post.author} dari simpanan` : `Simpan postingan dari ${post.author}`}
+          aria-label={saved ? fmtLabel(b.brUnsaveAria, { name: post.author }) : fmtLabel(b.brSaveAria, { name: post.author })}
           onClick={() => void handleSave()}
           disabled={busy === 'save'}
         >
           <Bookmark size={17} fill={saved ? 'currentColor' : 'none'} aria-hidden="true" />
-          <span>{saved ? 'Tersimpan' : 'Simpan'}</span>
+          <span>{saved ? b.brSavedTitle : t.save}</span>
         </button>
       </div>
 

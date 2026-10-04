@@ -21,6 +21,9 @@ import { NotificationCenter } from './NotificationCenter';
 import { ThemeToggle } from './ThemeToggle';
 import { ProfileHub } from '@/components/profile/ProfileHub';
 import { getProfileNickname, useSessionProfile } from '@/hooks/useSessionProfile';
+import { usePreferences } from '@/lib/preferences';
+import { getCoreLabels } from '@/lib/i18n/dictionaries';
+import { getNavLabels } from '@/lib/i18n/navigation';
 import './sknav.css';
 
 type NavLinkDef = {
@@ -32,15 +35,17 @@ type NavLinkDef = {
 };
 
 /** Navigasi tengah navbar modern — ikon + label teks (bukan ikon saja). */
-const NAV_LINKS: NavLinkDef[] = [
-  { key: 'home', label: 'Beranda', href: '/beranda', Icon: Home, isActive: (p) => p === '/' || p === '/beranda' },
-  { key: 'reels', label: 'Jelajah', href: '/reels', Icon: Clapperboard, isActive: (p) => p.startsWith('/reels') },
-  { key: 'marketplace', label: 'Marketplace', href: '/marketplace', Icon: Store, isActive: (p) => p.startsWith('/marketplace') || p.startsWith('/suki-marketplace') },
-  { key: 'komunitas', label: 'Komunitas', href: '/groups', Icon: Users, isActive: (p) => p.startsWith('/groups') },
+const getNavLinks = (t: Record<string, string>): NavLinkDef[] => [
+  { key: 'home', label: t.home, href: '/beranda', Icon: Home, isActive: (p) => p === '/' || p === '/beranda' },
+  { key: 'reels', label: t.explore, href: '/reels', Icon: Clapperboard, isActive: (p) => p.startsWith('/reels') },
+  { key: 'marketplace', label: t.marketplace, href: '/marketplace', Icon: Store, isActive: (p) => p.startsWith('/marketplace') || p.startsWith('/suki-marketplace') },
+  { key: 'komunitas', label: t.groups, href: '/groups', Icon: Users, isActive: (p) => p.startsWith('/groups') },
 ];
 
 function SearchForm({ autoFocus, onDone, className }: { autoFocus?: boolean; onDone?: () => void; className?: string }) {
   const router = useRouter();
+  const { language } = usePreferences();
+  const t: Record<string, string> = { ...getCoreLabels(language), ...getNavLabels(language) };
   const [query, setQuery] = useState('');
   function submit(event: FormEvent) {
     event.preventDefault();
@@ -56,8 +61,8 @@ function SearchForm({ autoFocus, onDone, className }: { autoFocus?: boolean; onD
         value={query}
         onChange={(event) => setQuery(event.target.value)}
         onKeyDown={(event) => { if (event.key === 'Escape') onDone?.(); }}
-        placeholder="Cari di SUKI…"
-        aria-label="Cari di SUKI"
+        placeholder={t.searchInSuki}
+        aria-label={t.searchInSukiLabel}
         enterKeyHint="search"
       />
     </form>
@@ -66,6 +71,9 @@ function SearchForm({ autoFocus, onDone, className }: { autoFocus?: boolean; onD
 
 export function Header({ onCreate }: { onCreate?: (type?: 'post' | 'reel') => void }) {
   const { mobileOpen, toggleMobile } = useUIStore();
+  const { language } = usePreferences();
+  const t: Record<string, string> = { ...getCoreLabels(language), ...getNavLabels(language) };
+  const NAV_LINKS = getNavLinks(t);
   const pathname = usePathname();
   const [searchOpen, setSearchOpen] = useState(false);
   const { user, profile: sessionProfile } = useSessionProfile();
@@ -86,9 +94,9 @@ export function Header({ onCreate }: { onCreate?: (type?: 'post' | 'reel') => vo
             type="button"
             className="sknav-icon-btn sknav-search-toggle"
             onClick={() => setSearchOpen((value) => !value)}
-            aria-label={searchOpen ? 'Tutup pencarian' : 'Cari'}
+            aria-label={searchOpen ? t.closeSearch : t.search}
             aria-expanded={searchOpen}
-            title="Cari"
+            title={t.search}
           >
             <Search aria-hidden="true" />
           </button>
@@ -99,7 +107,7 @@ export function Header({ onCreate }: { onCreate?: (type?: 'post' | 'reel') => vo
                 type="button"
                 className="sknav-search-close"
                 onClick={() => setSearchOpen(false)}
-                aria-label="Tutup pencarian"
+                aria-label={t.closeSearch}
               >
                 <X size={18} aria-hidden="true" />
               </button>
@@ -110,7 +118,7 @@ export function Header({ onCreate }: { onCreate?: (type?: 'post' | 'reel') => vo
         {/* Navigasi tengah: ikon + label teks. "Notifikasi" adalah pemicu
             dropdown NotificationCenter (satu-satunya pintu notifikasi —
             tidak ada bell duplikat di kanan). */}
-        <nav className="sknav-nav" aria-label="Navigasi utama">
+        <nav className="sknav-nav" aria-label={t.mainNavigation}>
           {NAV_LINKS.map((link) => {
             const active = link.isActive(pathname);
             return (
@@ -140,8 +148,8 @@ export function Header({ onCreate }: { onCreate?: (type?: 'post' | 'reel') => vo
           ) : (
             <div className="sknav-guest">
               <EcosystemHub variant="action" />
-              <Link href="/login" className="sknav-btn sknav-btn-ghost">Masuk</Link>
-              <Link href="/signup" className="sknav-btn sknav-btn-primary">Daftar</Link>
+              <Link href="/login" className="sknav-btn sknav-btn-ghost">{t.login}</Link>
+              <Link href="/signup" className="sknav-btn sknav-btn-primary">{t.register}</Link>
             </div>
           )}
         </div>
@@ -157,7 +165,7 @@ export function Header({ onCreate }: { onCreate?: (type?: 'post' | 'reel') => vo
             onClick={toggleMobile}
             aria-expanded={mobileOpen}
             aria-controls="suki-sidebar-drawer"
-            aria-label={mobileOpen ? 'Tutup menu utama' : 'Buka menu utama'}
+            aria-label={mobileOpen ? t.closeMainMenu : t.openMainMenu}
           >
             {mobileOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
           </button>
@@ -169,13 +177,13 @@ export function Header({ onCreate }: { onCreate?: (type?: 'post' | 'reel') => vo
             type="button"
             className="sknav-icon-btn sknav-search-toggle"
             onClick={() => setSearchOpen((value) => !value)}
-            aria-label={searchOpen ? 'Tutup pencarian' : 'Cari'}
+            aria-label={searchOpen ? t.closeSearch : t.search}
             aria-expanded={searchOpen}
-            title="Cari"
+            title={t.search}
           >
             <Search aria-hidden="true" />
           </button>
-          <Link href="/chat" className="sknav-icon-btn" aria-label="Pesan" title="Pesan">
+          <Link href="/chat" className="sknav-icon-btn" aria-label={t.chat} title={t.chat}>
             <MessageCircle aria-hidden="true" />
           </Link>
         </div>
@@ -186,7 +194,7 @@ export function Header({ onCreate }: { onCreate?: (type?: 'post' | 'reel') => vo
               type="button"
               className="sknav-search-close"
               onClick={() => setSearchOpen(false)}
-              aria-label="Tutup pencarian"
+              aria-label={t.closeSearch}
             >
               <X size={18} aria-hidden="true" />
             </button>
@@ -195,7 +203,7 @@ export function Header({ onCreate }: { onCreate?: (type?: 'post' | 'reel') => vo
       </div>
 
       {/* Baris 2 mobile (tidak diubah): tab ikon */}
-      <nav className="sknav-mtabs" aria-label="Navigasi utama">
+      <nav className="sknav-mtabs" aria-label={t.mainNavigation}>
         {NAV_LINKS.slice(0, 3).map((link) => {
           const active = link.isActive(pathname);
           return (
@@ -218,7 +226,7 @@ export function Header({ onCreate }: { onCreate?: (type?: 'post' | 'reel') => vo
           href={profileHref}
           className="sknav-mtab"
           aria-current={profileActive ? 'page' : undefined}
-          aria-label="Profil saya"
+          aria-label={t.myProfile}
         >
           {avatarUrl ? (
             <img src={avatarUrl} alt="" className="sknav-mtab-avatar" />

@@ -4,6 +4,8 @@ import { Sparkles, WandSparkles } from 'lucide-react';
 import { useState } from 'react';
 import { generateListingFromImage } from '@/lib/actions/ai-listing';
 import { submitAiListingFeedback } from '@/lib/actions/ai-listing-feedback';
+import { usePreferences } from '@/lib/preferences';
+import { getMarketplaceLabels } from '@/lib/i18n/dict-marketplace';
 
 type ListingAiResult = {
   title: string;
@@ -26,12 +28,14 @@ function readAsDataUrl(file: File) {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result));
-    reader.onerror = () => reject(new Error('Foto tidak dapat dibaca oleh browser.'));
+    reader.onerror = () => reject(new Error('MP_PHOTO_UNREADABLE'));
     reader.readAsDataURL(file);
   });
 }
 
 export function AiListingAssistant({ file, onGenerated }: Props) {
+  const { language } = usePreferences();
+  const mp = getMarketplaceLabels(language);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [generated, setGenerated] = useState(false);
@@ -43,19 +47,19 @@ export function AiListingAssistant({ file, onGenerated }: Props) {
 
   async function handleGenerate() {
     if (!file) {
-      setMessage('Pilih foto produk terlebih dahulu agar AI dapat menganalisisnya.');
+      setMessage(mp.mpChoosePhotoFirst);
       return;
     }
     if (!SUPPORTED_TYPES.has(file.type)) {
-      setMessage('Format foto tidak didukung. Gunakan JPG, PNG, atau WebP.');
+      setMessage(mp.mpPhotoFormatUnsupported);
       return;
     }
     if (file.size > MAX_IMAGE_BYTES) {
-      setMessage('Ukuran foto maksimal 8 MB. Silakan pilih foto yang lebih kecil.');
+      setMessage(mp.mpPhotoTooLarge);
       return;
     }
     setLoading(true);
-    setMessage('Sedang menganalisis foto dan menyusun listing...');
+    setMessage(mp.mpAnalyzing);
     setGenerated(false);
     try {
       const base64 = await readAsDataUrl(file);
@@ -67,9 +71,9 @@ export function AiListingAssistant({ file, onGenerated }: Props) {
       setFeedbackChoice(null);
       setFeedbackComment('');
       setFeedbackSent(false);
-      setMessage('Draft listing berhasil diisi. Silakan periksa dan edit sebelum terbitkan.');
+      setMessage(mp.mpDraftReady);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'AI belum dapat membantu. Silakan isi manual.');
+      setMessage(error instanceof Error && error.message === 'MP_PHOTO_UNREADABLE' ? mp.mpPhotoUnreadable : mp.mpAiUnavailable);
     } finally {
       setLoading(false);
     }
@@ -85,23 +89,23 @@ export function AiListingAssistant({ file, onGenerated }: Props) {
   }
 
   return <div className="ai-listing-assistant bg-mint/70 text-forest shadow-soft" aria-live="polite" aria-busy={loading}>
-    <div className="ai-listing-copy"><span className="ai-listing-icon"><WandSparkles size={17}/></span><div><strong>Listing lebih cepat dengan AI</strong><small>Analisis foto untuk menyusun judul, deskripsi, kategori, dan perkiraan harga.</small></div></div>
-    <button type="button" className="ai-listing-button bg-gold" onClick={handleGenerate} disabled={loading} aria-describedby="ai-listing-help">{loading ? <><span className="ai-spinner" aria-hidden="true"/> Menganalisis...</> : <><Sparkles size={15} aria-hidden="true"/> Generate Otomatis dengan AI</>}</button>
-    <p id="ai-listing-help" className="sr-only">AI hanya mengisi draft. Periksa semua hasil dan kirim form secara manual.</p>
+    <div className="ai-listing-copy"><span className="ai-listing-icon"><WandSparkles size={17}/></span><div><strong>{mp.mpAiTitle}</strong><small>{mp.mpAiDesc}</small></div></div>
+    <button type="button" className="ai-listing-button bg-gold" onClick={handleGenerate} disabled={loading} aria-describedby="ai-listing-help">{loading ? <><span className="ai-spinner" aria-hidden="true"/> {mp.mpAnalyzingShort}</> : <><Sparkles size={15} aria-hidden="true"/> {mp.mpGenerateWithAi}</>}</button>
+    <p id="ai-listing-help" className="sr-only">{mp.mpAiDisclaimer}</p>
     {message && <p className={`ai-listing-message ${generated ? 'success' : ''}`} role={generated ? 'status' : 'alert'}>{message}</p>}
     {generated && <>
-      <button type="button" className="ai-edit-manual" onClick={() => setMessage('Silakan ubah field di atas sesuai kondisi produk sebenarnya.')}>Edit Manual</button>
+      <button type="button" className="ai-edit-manual" onClick={() => setMessage(mp.mpEditManuallyHint)}>{mp.mpEditManual}</button>
       <div className="mt-3 border-t border-forest/15 pt-3" aria-labelledby="ai-feedback-title">
-        <p id="ai-feedback-title" className="text-xs font-semibold">Apakah draft AI membantu?</p>
-        {feedbackSent ? <p className="mt-1 text-xs" role="status">Terima kasih, feedback kamu membantu kami memperbaiki assistant.</p> : <>
+        <p id="ai-feedback-title" className="text-xs font-semibold">{mp.mpFeedbackQuestion}</p>
+        {feedbackSent ? <p className="mt-1 text-xs" role="status">{mp.mpFeedbackThanks}</p> : <>
           <div className="mt-2 flex gap-2">
-            <button type="button" className="rounded-lg border px-3 py-1 text-xs" aria-pressed={feedbackChoice === true} onClick={() => setFeedbackChoice(true)}>Ya, membantu</button>
-            <button type="button" className="rounded-lg border px-3 py-1 text-xs" aria-pressed={feedbackChoice === false} onClick={() => setFeedbackChoice(false)}>Perlu perbaikan</button>
+            <button type="button" className="rounded-lg border px-3 py-1 text-xs" aria-pressed={feedbackChoice === true} onClick={() => setFeedbackChoice(true)}>{mp.mpFeedbackYes}</button>
+            <button type="button" className="rounded-lg border px-3 py-1 text-xs" aria-pressed={feedbackChoice === false} onClick={() => setFeedbackChoice(false)}>{mp.mpFeedbackNo}</button>
           </div>
           {feedbackChoice !== null && <>
-            <label className="sr-only" htmlFor="ai-feedback-comment">Komentar feedback (opsional)</label>
-            <textarea id="ai-feedback-comment" value={feedbackComment} onChange={event => setFeedbackComment(event.target.value.slice(0, 1000))} className="mt-2 w-full rounded-lg border p-2 text-xs" maxLength={1000} placeholder="Komentar singkat (opsional)" />
-            <button type="button" className="mt-2 rounded-lg bg-forest px-3 py-1 text-xs text-white disabled:opacity-50" disabled={feedbackLoading} onClick={() => void handleFeedback()}>{feedbackLoading ? 'Menyimpan...' : 'Kirim feedback'}</button>
+            <label className="sr-only" htmlFor="ai-feedback-comment">{mp.mpFeedbackCommentLabel}</label>
+            <textarea id="ai-feedback-comment" value={feedbackComment} onChange={event => setFeedbackComment(event.target.value.slice(0, 1000))} className="mt-2 w-full rounded-lg border p-2 text-xs" maxLength={1000} placeholder={mp.mpFeedbackPlaceholder} />
+            <button type="button" className="mt-2 rounded-lg bg-forest px-3 py-1 text-xs text-white disabled:opacity-50" disabled={feedbackLoading} onClick={() => void handleFeedback()}>{feedbackLoading ? mp.mpSavingFeedback : mp.mpSendFeedback}</button>
           </>}
         </>}
       </div>

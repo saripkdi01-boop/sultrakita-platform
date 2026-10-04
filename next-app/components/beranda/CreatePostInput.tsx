@@ -2,6 +2,8 @@
 
 import { ImagePlus, Video } from 'lucide-react';
 import { getProfileNickname, useSessionProfile } from '@/hooks/useSessionProfile';
+import { usePreferences } from '@/lib/preferences';
+import { getBerandaLabels, fmtLabel } from '@/lib/i18n/dict-beranda';
 import './composer.css';
 
 function initials(name: string) {
@@ -15,10 +17,12 @@ function initials(name: string) {
  */
 export function CreatePostInput({ onCreate }: { onCreate?: (type?: 'post' | 'reel') => void }) {
   const { user, profile } = useSessionProfile();
+  const { language } = usePreferences();
+  const b = getBerandaLabels(language);
   const displayName = getProfileNickname(user, profile);
   const avatarUrl = profile?.avatar_url;
   return (
-    <section className="skc-trigger" aria-label="Buat postingan">
+    <section className="skc-trigger" aria-label={b.brCreatePost}>
       <span className="skc-trigger-avatar" aria-hidden="true">
         {avatarUrl ? <img src={avatarUrl} alt="" /> : initials(displayName)}
       </span>
@@ -26,16 +30,16 @@ export function CreatePostInput({ onCreate }: { onCreate?: (type?: 'post' | 'ree
         type="button"
         onClick={() => onCreate?.('post')}
         className="skc-trigger-pill"
-        aria-label={`Buat postingan sebagai ${displayName}`}
+        aria-label={fmtLabel(b.brCreatePostAs, { name: displayName })}
       >
-        Ceritakan kabar Sultra hari ini…
+        {b.brComposerPh}
       </button>
       <div className="skc-trigger-actions">
         <button
           type="button"
           onClick={() => onCreate?.('post')}
           className="skc-icon-btn"
-          aria-label="Tambah foto ke postingan"
+          aria-label={b.brAddPhoto}
         >
           <ImagePlus size={20} />
         </button>
@@ -43,7 +47,7 @@ export function CreatePostInput({ onCreate }: { onCreate?: (type?: 'post' | 'ree
           type="button"
           onClick={() => onCreate?.('reel')}
           className="skc-icon-btn"
-          aria-label="Buat reel video"
+          aria-label={b.brReelAria}
         >
           <Video size={20} />
         </button>

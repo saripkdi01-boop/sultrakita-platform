@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Menu, X } from 'lucide-react';
+import { usePreferences } from '@/lib/preferences';
+import { getGroupsLabels } from '@/lib/i18n/dict-groups';
 
 export type BusinessNavItem = { href: string; label: string };
 
@@ -23,11 +25,15 @@ type BusinessNavProps = {
 export default function BusinessNav({
   links,
   actions = [],
-  cta = { href: '/Business/daftar', label: 'Daftarkan bisnis' },
+  cta,
   hideCta = false,
   brandHref = '/Business',
-  brandAriaLabel = 'Kembali ke halaman SUKI Business',
+  brandAriaLabel,
 }: BusinessNavProps) {
+  const { language } = usePreferences();
+  const b = getGroupsLabels(language);
+  const resolvedCta = cta ?? { href: '/Business/daftar', label: b.bNavRegister };
+  const resolvedBrandAria = brandAriaLabel ?? b.bNavBrandAria;
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -59,7 +65,7 @@ export default function BusinessNav({
 
   return (
     <header className="suki-business-nav">
-      <Link href={brandHref} className="suki-business-brand" aria-label={brandAriaLabel}>
+      <Link href={brandHref} className="suki-business-brand" aria-label={resolvedBrandAria}>
         <span className="suki-business-mark" aria-hidden="true">
           <img src="/suki-logo-mark.svg" alt="" width={36} height={36} />
         </span>
@@ -68,7 +74,7 @@ export default function BusinessNav({
           <small>Business</small>
         </span>
       </Link>
-      <nav aria-label="Navigasi SUKI Business">
+      <nav aria-label={b.bNavAria}>
         {links.map((link) => (
           <Link key={link.href + link.label} href={link.href}>
             {link.label}
@@ -82,8 +88,8 @@ export default function BusinessNav({
           </Link>
         ))}
         {!hideCta && (
-          <Link href={cta.href} className="suki-business-button suki-business-button-dark">
-            {cta.label} <ArrowRight size={15} aria-hidden="true" />
+          <Link href={resolvedCta.href} className="suki-business-button suki-business-button-dark">
+            {resolvedCta.label} <ArrowRight size={15} aria-hidden="true" />
           </Link>
         )}
       </div>
@@ -91,7 +97,7 @@ export default function BusinessNav({
         ref={buttonRef}
         type="button"
         className="suki-business-menu"
-        aria-label={open ? 'Tutup menu navigasi' : 'Buka menu navigasi'}
+        aria-label={open ? b.bNavCloseMenu : b.bNavOpenMenu}
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
       >
@@ -118,11 +124,11 @@ export default function BusinessNav({
         ))}
         {!hideCta && (
           <Link
-            href={cta.href}
+            href={resolvedCta.href}
             className="suki-business-mobile-cta"
             onClick={() => setOpen(false)}
           >
-            {cta.label} <ArrowRight size={15} aria-hidden="true" />
+            {resolvedCta.label} <ArrowRight size={15} aria-hidden="true" />
           </Link>
         )}
       </div>

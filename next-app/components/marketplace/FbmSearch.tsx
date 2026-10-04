@@ -2,6 +2,9 @@
 
 import { Search, X } from 'lucide-react';
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { usePreferences } from '@/lib/preferences';
+import { getCoreLabels } from '@/lib/i18n/dictionaries';
+import { getMarketplaceLabels } from '@/lib/i18n/dict-marketplace';
 
 // Kotak "Cari di Marketplace" ala FB — dipakai di sidebar desktop
 // dan sebagai search pill sticky di mobile. Saran: riwayat lokal +
@@ -16,6 +19,9 @@ const suggestions = {
 const RECENT_KEY = 'suki-marketplace-recent-searches';
 
 export function FbmSearch({ value, onSearch, id }: { value: string; onSearch: (value: string) => void; id: string }) {
+  const { language } = usePreferences();
+  const t = getCoreLabels(language);
+  const mp = getMarketplaceLabels(language);
   const [draft, setDraft] = useState(value);
   const [open, setOpen] = useState(false);
   const [recent, setRecent] = useState<string[]>([]);
@@ -70,29 +76,29 @@ export function FbmSearch({ value, onSearch, id }: { value: string; onSearch: (v
           value={draft}
           onFocus={() => setOpen(true)}
           onChange={(event) => { setDraft(event.target.value); setOpen(true); }}
-          placeholder="Cari di Marketplace"
-          aria-label="Cari di Marketplace"
+          placeholder={mp.mpSearchPlaceholder}
+          aria-label={mp.mpSearchPlaceholder}
           aria-autocomplete="list"
           aria-controls={`${id}-suggestions`}
           autoComplete="off"
         />
         {draft && (
-          <button type="button" className="fbm-search-clear" onClick={() => { setDraft(''); onSearch(''); setOpen(false); }} aria-label="Hapus pencarian">
+          <button type="button" className="fbm-search-clear" onClick={() => { setDraft(''); onSearch(''); setOpen(false); }} aria-label={mp.mpClearSearch}>
             <X size={15} aria-hidden="true" />
           </button>
         )}
-        <button className="fbm-search-go" type="submit">Cari</button>
+        <button className="fbm-search-go" type="submit">{t.search}</button>
       </form>
       {open && (
-        <div id={`${id}-suggestions`} className="fbm-suggestions" role="listbox" aria-label="Saran pencarian">
-          <div className="fbm-suggestion-label">{draft ? 'Saran pencarian' : recent.length ? 'Pencarian terakhir' : 'Sedang tren'}</div>
+        <div id={`${id}-suggestions`} className="fbm-suggestions" role="listbox" aria-label={mp.mpSearchSuggestions}>
+          <div className="fbm-suggestion-label">{draft ? mp.mpSearchSuggestions : recent.length ? mp.mpRecentSearches : mp.mpTrending}</div>
           {filtered.map((item) => (
             <button key={item} type="button" role="option" className="fbm-suggestion" onClick={() => choose(item)} aria-selected={false}>
               <Search size={14} aria-hidden="true" /> {item}
-              <small>{suggestions.locations.includes(item) ? 'Lokasi' : suggestions.categories.includes(item) ? 'Kategori' : 'Pencarian'}</small>
+              <small>{suggestions.locations.includes(item) ? mp.mpLocationTag : suggestions.categories.includes(item) ? mp.mpCategoryTag : mp.mpSearchTag}</small>
             </button>
           ))}
-          {!filtered.length && <p className="fbm-suggestions-empty">Tidak ada saran yang cocok.</p>}
+          {!filtered.length && <p className="fbm-suggestions-empty">{mp.mpNoSuggestions}</p>}
         </div>
       )}
     </div>

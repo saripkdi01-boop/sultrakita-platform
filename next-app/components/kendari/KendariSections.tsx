@@ -1,4 +1,8 @@
+'use client';
+
 import Link from 'next/link';
+import { usePreferences } from '@/lib/preferences';
+import { getCoreLabels } from '@/lib/i18n/dictionaries';
 import { Globe, ShieldCheck, Users } from 'lucide-react';
 import WcReveal from '@/components/ui/WcReveal';
 import {
@@ -14,30 +18,21 @@ import ImageSlot from './ImageSlot';
 /* ------------------------------------------------------------------ */
 /* Value strip — 3 proposisi jujur, tanpa angka karangan.              */
 /* ------------------------------------------------------------------ */
-const VALUES = [
-  {
-    Icon: Globe,
-    title: 'Akar lokal, jangkauan luas',
-    desc: 'Dibangun dari Kendari — memahami kebutuhan nyata warga Sulawesi Tenggara.',
-  },
-  {
-    Icon: ShieldCheck,
-    title: 'Aman & terpercaya',
-    desc: 'Akun dan data Anda dilindungi dengan standar keamanan modern.',
-  },
-  {
-    Icon: Users,
-    title: 'Untuk semua orang Sultra',
-    desc: 'Dari pelaku UMKM hingga pencari kerja — SUKI menghubungkan semua.',
-  },
+const getValues = (t: Record<string, string>) => [
+  { Icon: Globe, title: t.value1Title, desc: t.value1Desc },
+  { Icon: ShieldCheck, title: t.value2Title, desc: t.value2Desc },
+  { Icon: Users, title: t.value3Title, desc: t.value3Desc },
 ];
 
 export function KendariValue() {
+  const { language } = usePreferences();
+  const t: Record<string, string> = getCoreLabels(language);
+  const values = getValues(t);
   return (
-    <section className="kh-section kh-value" aria-label="Nilai SUKI Apps">
+    <section className="kh-section kh-value" aria-label={t.ecoLabel}>
       <div className="kh-wrap">
         <div className="kh-value-grid">
-          {VALUES.map((v, i) => (
+          {values.map((v, i) => (
             <WcReveal key={v.title} delay={(i % 3) as 0 | 1 | 2}>
               <div className="kh-value-card">
                 <div className="kh-value-icon">
@@ -57,67 +52,39 @@ export function KendariValue() {
 /* ------------------------------------------------------------------ */
 /* Ekosistem — 6 modul dengan ikon SVG khas SUKI, link ke rute nyata.  */
 /* ------------------------------------------------------------------ */
-const MODULES = [
-  {
-    Icon: SukiIconMarketplace,
-    title: 'Marketplace',
-    desc: 'Belanja produk lokal Sultra — dari kerajinan tangan hingga hasil bumi.',
-    href: '/marketplace',
-  },
-  {
-    Icon: SukiIconProperti,
-    title: 'Properti',
-    desc: 'Rumah, tanah, dan ruang usaha di Kendari dan sekitarnya.',
-    href: '/properti',
-  },
-  {
-    Icon: SukiIconJobs,
-    title: 'Jobs',
-    desc: 'Lowongan dan peluang karier dari perusahaan dan UMKM lokal.',
-    href: '/jobs',
-  },
-  {
-    Icon: SukiIconKomunitas,
-    title: 'Komunitas',
-    desc: 'Ruang warga: cerita, diskusi, dan jejaring yang tumbuh dari sekitar.',
-    href: '/groups',
-  },
-  {
-    Icon: SukiIconKampung,
-    title: 'Kampung',
-    desc: 'Layanan digital untuk kampung dan kelurahan yang lebih modern.',
-    href: '/kampung',
-  },
-  {
-    Icon: SukiIconBisnis,
-    title: 'Bisnis',
-    desc: 'Daftarkan usaha Anda agar dikenal lebih luas di Sultra.',
-    href: '/Business',
-  },
+const getModules = (t: Record<string, string>) => [
+  { Icon: SukiIconMarketplace, title: t.marketplace, desc: t.moduleMarketplaceDesc, href: '/marketplace' },
+  { Icon: SukiIconProperti, title: t.property, desc: t.modulePropertyDesc, href: '/properti' },
+  { Icon: SukiIconJobs, title: t.footerJobs, desc: t.moduleJobsDesc, href: '/jobs' },
+  { Icon: SukiIconKomunitas, title: t.groups, desc: t.moduleCommunityDesc, href: '/groups' },
+  { Icon: SukiIconKampung, title: 'Kampung', desc: t.moduleKampungDesc, href: '/kampung' },
+  { Icon: SukiIconBisnis, title: t.business, desc: t.moduleBusinessDesc, href: '/Business' },
 ];
 
 export function KendariEcosystem() {
+  const { language } = usePreferences();
+  const t: Record<string, string> = getCoreLabels(language);
+  const modules = getModules(t);
   return (
     <section className="kh-section kh-eco" id="ekosistem" aria-labelledby="kh-eco-title">
       <div className="kh-wrap">
         <WcReveal>
-          <div className="kh-label">Ekosistem Digital</div>
+          <div className="kh-label">{t.ecoLabel}</div>
         </WcReveal>
         <WcReveal delay={1}>
           <h2 className="kh-h2" id="kh-eco-title">
-            Semua yang Sultra butuhkan,
+            {t.ecoTitleA}
             <br />
-            dalam <span className="kh-gold">satu genggaman.</span>
+            <span className="kh-gold">{t.ecoTitleB}</span>
           </h2>
         </WcReveal>
         <WcReveal delay={2}>
           <p className="kh-desc">
-            Enam ruang terintegrasi yang saling terhubung — memudahkan Anda
-            bertransaksi, mencari, dan berkembang.
+            {t.ecoDesc}
           </p>
         </WcReveal>
         <div className="kh-eco-grid">
-          {MODULES.map((m, i) => (
+          {modules.map((m, i) => (
             <WcReveal key={m.title} delay={(i % 3) as 0 | 1 | 2}>
               <Link
                 href={m.href}
@@ -142,25 +109,16 @@ export function KendariEcosystem() {
 /* ------------------------------------------------------------------ */
 /* Bahteramas — metafora "menghubungkan" dipetakan ke fitur nyata.      */
 /* ------------------------------------------------------------------ */
-const BAHTERA_LINKS = [
-  {
-    title: 'UMKM & pembeli',
-    desc: 'Produk lokal bertemu pembeli di seluruh Sulawesi Tenggara.',
-    href: '/marketplace',
-  },
-  {
-    title: 'Talenta & perusahaan',
-    desc: 'Peluang kerja bertemu orang yang tepat.',
-    href: '/jobs',
-  },
-  {
-    title: 'Ruang & penghuni',
-    desc: 'Properti bertemu pemilik dan penghuni barunya.',
-    href: '/properti',
-  },
+const getBahteraLinks = (t: Record<string, string>) => [
+  { title: t.baht1Title, desc: t.baht1Desc, href: '/marketplace' },
+  { title: t.baht2Title, desc: t.baht2Desc, href: '/jobs' },
+  { title: t.baht3Title, desc: t.baht3Desc, href: '/properti' },
 ];
 
 export function KendariBahteramas() {
+  const { language } = usePreferences();
+  const t: Record<string, string> = getCoreLabels(language);
+  const bahteraLinks = getBahteraLinks(t);
   return (
     <section className="kh-baht" id="menghubungkan" aria-labelledby="kh-baht-title">
       <div className="kh-baht-bg" aria-hidden="true">
@@ -176,24 +134,22 @@ export function KendariBahteramas() {
         <div className="kh-baht-grid">
           <div>
             <WcReveal>
-              <div className="kh-label">Menghubungkan</div>
+              <div className="kh-label">{t.navConnecting}</div>
             </WcReveal>
             <WcReveal delay={1}>
               <h2 className="kh-h2" id="kh-baht-title">
-                Seperti Jembatan Bahteramas,
+                {t.bahtTitleA}
                 <br />
-                <span className="kh-gold">SUKI menghubungkan Sultra.</span>
+                <span className="kh-gold">{t.bahtTitleB}</span>
               </h2>
             </WcReveal>
             <WcReveal delay={2}>
               <p className="kh-desc">
-                Membentang di atas Teluk Kendari, jembatan ini menyatukan dua
-                sisi kota. Begitu pula SUKI — mempertemukan orang, usaha, dan
-                peluang di seluruh Sulawesi Tenggara.
+                {t.bahtDesc}
               </p>
             </WcReveal>
             <div className="kh-baht-feats">
-              {BAHTERA_LINKS.map((f, i) => (
+              {bahteraLinks.map((f, i) => (
                 <WcReveal key={f.title} delay={(i % 3) as 0 | 1 | 2}>
                   <Link href={f.href} className="kh-baht-feat">
                     <span>
@@ -209,7 +165,7 @@ export function KendariBahteramas() {
             <div className="kh-baht-visual">
               <ImageSlot
                 src="/images/jembatan-bahteramas-2.jpg"
-                alt="Jembatan Bahteramas"
+                alt={t.bahtBridgeAlt}
                 fallbackClass="kh-fb-bahteramas"
               />
             </div>
@@ -223,31 +179,16 @@ export function KendariBahteramas() {
 /* ------------------------------------------------------------------ */
 /* Komunitas — foto warga + aksen Tugu MTQ (slot, fallback bila kosong).*/
 /* ------------------------------------------------------------------ */
-const KOM_CARDS = [
-  {
-    src: '/images/komunitas-1.jpg',
-    alt: 'Suasana pasar di Kendari',
-    tag: 'UMKM',
-    title: 'Pelaku usaha lokal',
-    desc: 'Dari pasar tradisional hingga toko daring.',
-  },
-  {
-    src: '/images/komunitas-2.jpg',
-    alt: 'Anak muda Kendari berkreasi',
-    tag: 'Kreativitas',
-    title: 'Generasi muda',
-    desc: 'Anak muda Sultra yang berkarya lewat teknologi.',
-  },
-  {
-    src: '/images/komunitas-3.jpg',
-    alt: 'Nelayan Kendari',
-    tag: 'Bahari',
-    title: 'Nelayan & petani',
-    desc: 'Tulang punggung ekonomi Sulawesi Tenggara.',
-  },
+const getKomCards = (t: Record<string, string>) => [
+  { src: '/images/komunitas-1.jpg', alt: t.kom1Alt, tag: t.kom1Tag, title: t.kom1Title, desc: t.kom1Desc },
+  { src: '/images/komunitas-2.jpg', alt: t.kom2Alt, tag: t.kom2Tag, title: t.kom2Title, desc: t.kom2Desc },
+  { src: '/images/komunitas-3.jpg', alt: t.kom3Alt, tag: t.kom3Tag, title: t.kom3Title, desc: t.kom3Desc },
 ];
 
 export function KendariKomunitas() {
+  const { language } = usePreferences();
+  const t: Record<string, string> = getCoreLabels(language);
+  const komCards = getKomCards(t);
   return (
     <section className="kh-section kh-kom" id="komunitas" aria-labelledby="kh-kom-title">
       <div className="kh-tugu" aria-hidden="true">
@@ -260,23 +201,22 @@ export function KendariKomunitas() {
       </div>
       <div className="kh-wrap">
         <WcReveal>
-          <div className="kh-label">Komunitas</div>
+          <div className="kh-label">{t.groups}</div>
         </WcReveal>
         <WcReveal delay={1}>
           <h2 className="kh-h2" id="kh-kom-title">
-            Dari Kendari,
+            {t.komTitleA}
             <br />
-            <span className="kh-gold">untuk Kendari.</span>
+            <span className="kh-gold">{t.komTitleB}</span>
           </h2>
         </WcReveal>
         <WcReveal delay={2}>
           <p className="kh-desc">
-            SUKI adalah ruang bagi warga Sultra untuk tumbuh bersama — berkarya,
-            berdagang, dan saling mendukung.
+            {t.komDesc}
           </p>
         </WcReveal>
         <div className="kh-kom-grid">
-          {KOM_CARDS.map((c, i) => (
+          {komCards.map((c, i) => (
             <WcReveal key={c.title} delay={(i % 3) as 0 | 1 | 2}>
               <article className="kh-kom-card">
                 <div className="kh-kom-media">

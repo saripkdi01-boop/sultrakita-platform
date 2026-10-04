@@ -13,6 +13,9 @@ import { NewsPortal } from '@/components/news/NewsPortal';
 import { StoriesSection } from '@/components/beranda/StoriesSection';
 import { useInfiniteFeed, type FeedTab } from '@/hooks/useInfiniteFeed';
 import { supabase } from '@/lib/supabase/client';
+import { usePreferences } from '@/lib/preferences';
+import { getCoreLabels } from '@/lib/i18n/dictionaries';
+import { getBerandaLabels, fmtLabel } from '@/lib/i18n/dict-beranda';
 import styles from '@/components/beranda/feed.module.css';
 
 // /beranda adalah feed sosial content-first: komposer + infinite scroll.
@@ -26,6 +29,9 @@ export default function BerandaPage() {
     typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('tab') === 'saved' ? 'saved' : 'feed',
   );
   const { tab, items, loading, error, hasNextPage, loadMore, reload, savedIds, toggleLike, toggleSave, toggleFollow, bumpComments } = useInfiniteFeed('recommended', initialTab);
+  const { language } = usePreferences();
+  const t = getCoreLabels(language);
+  const b = getBerandaLabels(language);
   const isSavedTab = tab === 'saved';
   const [notice, setNotice] = useState('');
   const [composerOpen, setComposerOpen] = useState(false);
@@ -59,33 +65,33 @@ export default function BerandaPage() {
           <div className="beranda-v4-main">
             <StoriesSection onCreate={() => openComposer('post')} />
             <CreatePostInput onCreate={openComposer}/>
-            {notice && <div className={`beranda-notice ${styles.noticeBar}`} role="status" aria-live="polite"><span>{notice}</span><button type="button" onClick={() => setNotice('')}>Tutup</button></div>}
+            {notice && <div className={`beranda-notice ${styles.noticeBar}`} role="status" aria-live="polite"><span>{notice}</span><button type="button" onClick={() => setNotice('')}>{t.close}</button></div>}
 
             {isSavedTab && (
               <section className={styles.feedHead} aria-labelledby="feed-title">
                 <div>
-                  <h1 id="feed-title">Tersimpan</h1>
-                  <p>Postingan yang kamu simpan — hanya kamu yang bisa melihat daftar ini.</p>
+                  <h1 id="feed-title">{b.brSavedTitle}</h1>
+                  <p>{b.brSavedDesc}</p>
                 </div>
               </section>
             )}
 
             {error && (
               <div className={`${styles.feedState} ${styles.feedStateError}`} role="alert">
-                <strong>{isSavedTab ? 'Daftar simpanan tidak dapat dimuat.' : 'Feed tidak dapat dimuat.'}</strong>
+                <strong>{isSavedTab ? b.brFeedSavedError : b.brFeedError}</strong>
                 <span>{error}</span>
                 <button type="button" className={styles.btnGhost} onClick={reload}>
-                  <RefreshCw size={14} aria-hidden="true" /> Coba lagi
+                  <RefreshCw size={14} aria-hidden="true" /> {b.brRetry}
                 </button>
               </div>
             )}
 
             {!error && loading && items.length === 0 && (
-              <div aria-label="Memuat cerita" role="status">
+              <div aria-label={b.brLoadingStories} role="status">
                 <ul className={styles.feedList} aria-hidden="true">
                   {[0, 1, 2].map((index) => <li key={index}><FeedPostSkeleton /></li>)}
                 </ul>
-                <span className="sr-only">Memuat cerita warga…</span>
+                <span className="sr-only">{b.brLoadingStories}</span>
               </div>
             )}
 
@@ -93,20 +99,20 @@ export default function BerandaPage() {
               <div className={styles.feedState} role="status">
                 {isSavedTab ? (
                   <>
-                    <strong>Belum ada yang disimpan.</strong>
-                    <span>Ketuk ikon Simpan pada postingan mana pun untuk menyimpannya di sini dan membacanya nanti.</span>
+                    <strong>{b.brSavedEmpty}</strong>
+                    <span>{b.brSavedEmptyHint}</span>
                   </>
                 ) : (
                   <>
-                    <strong>Belum ada cerita di sini.</strong>
-                    <span>Bagikan cerita pertama dari wargamu.</span>
+                    <strong>{b.brFeedEmpty}</strong>
+                    <span>{b.brFeedEmptyHint}</span>
                   </>
                 )}
               </div>
             )}
 
             {items.length > 0 && (
-              <ul className={styles.feedList} aria-label={isSavedTab ? 'Daftar postingan tersimpan' : 'Daftar cerita warga'}>
+              <ul className={styles.feedList} aria-label={isSavedTab ? b.brSavedListLabel : b.brFeedListLabel}>
                 {items.map((post, index) => (
                   <Fragment key={post.id}>
                     <li>
@@ -131,32 +137,32 @@ export default function BerandaPage() {
 
             {loading && items.length > 0 && (
               <p className={styles.feedEnd} aria-live="polite">
-                <LoaderCircle size={15} className="spin" aria-hidden="true" /> Memuat cerita berikutnya…
+                <LoaderCircle size={15} className="spin" aria-hidden="true" /> {b.brLoadingNext}
               </p>
             )}
 
             <div ref={sentinelRef} className="feed-sentinel" aria-hidden="true" />
             {!hasNextPage && items.length > 0 && !loading && (
-              <p className={styles.feedEnd}>Kamu sudah melihat semua cerita terbaru.</p>
+              <p className={styles.feedEnd}>{b.brFeedEnd}</p>
             )}
           </div>
 
           <aside className="beranda-v4-rail">
             <section className="beranda-v4-opportunity">
               <span className="beranda-v4-opportunity-icon"><Compass size={20} /></span>
-              <span className="beranda-v4-eyebrow">Peluang hari ini</span>
-              <h2>Mulai dari hal yang bisa kamu lakukan.</h2>
-              <p>Temukan kerja, kolaborasi, volunteer, dan ruang untuk mengembangkan ide lokal.</p>
-              <a href="/jobs">Lihat peluang <ArrowRight size={15} /></a>
+              <span className="beranda-v4-eyebrow">{b.brOppEyebrow}</span>
+              <h2>{b.brOppTitle}</h2>
+              <p>{b.brOppDesc}</p>
+              <a href="/jobs">{b.brOppCta} <ArrowRight size={15} /></a>
             </section>
             <section className="beranda-v4-trust">
-              <span className="beranda-v4-eyebrow">Dibangun untuk warga</span>
-              <h2>Local-first. Tetap terpercaya.</h2>
-              <p>SUKI menjaga agar cerita, usaha, dan koneksi lokal tetap dekat, relevan, dan manusiawi.</p>
+              <span className="beranda-v4-eyebrow">{b.brTrustEyebrow}</span>
+              <h2>{b.brTrustTitle}</h2>
+              <p>{b.brTrustDesc}</p>
               <ul>
-                <li><Check size={15} /> Profil dan usaha dapat diverifikasi</li>
-                <li><Check size={15} /> Konten dapat dilaporkan</li>
-                <li><Check size={15} /> Aksi warga tetap transparan</li>
+                <li><Check size={15} /> {b.brTrust1}</li>
+                <li><Check size={15} /> {b.brTrust2}</li>
+                <li><Check size={15} /> {b.brTrust3}</li>
               </ul>
             </section>
             <RightSidebar />

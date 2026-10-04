@@ -8,6 +8,8 @@ import { useState } from 'react';
 import { BellPlus, Check, Loader2 } from 'lucide-react';
 import { savePropertySearchAlert } from '@/lib/property-saved-search';
 import { shortPriceIdr } from '@/lib/geo';
+import { usePreferences } from '@/lib/preferences';
+import { tpj } from '@/lib/i18n/dict-propertijobs';
 
 export type PropertySearchSnapshot = {
   q?: string;
@@ -20,7 +22,8 @@ export type PropertySearchSnapshot = {
   isLelang?: boolean;
 };
 
-function buildName(snapshot: PropertySearchSnapshot): string {
+function buildName(snapshot: PropertySearchSnapshot, language: string): string {
+  const t = (key: string) => tpj(language, key);
   const parts: string[] = [];
   if (snapshot.categoryLabel) parts.push(snapshot.categoryLabel);
   else if (snapshot.category) parts.push(snapshot.category.replaceAll('_', ' '));
@@ -31,9 +34,9 @@ function buildName(snapshot: PropertySearchSnapshot): string {
   if (min != null && min > 0 && max != null && max > 0) parts.push(`${shortPriceIdr(min)}–${shortPriceIdr(max)}`);
   else if (min != null && min > 0) parts.push(`≥ ${shortPriceIdr(min)}`);
   else if (max != null && max > 0) parts.push(`≤ ${shortPriceIdr(max)}`);
-  if (snapshot.canKpr) parts.push('Bisa KPR');
-  if (snapshot.isLelang) parts.push('Lelang');
-  return parts.length > 0 ? parts.join(' · ') : 'Semua properti';
+  if (snapshot.canKpr) parts.push(t('pjCanKpr'));
+  if (snapshot.isLelang) parts.push(t('pjAuctionShort'));
+  return parts.length > 0 ? parts.join(' · ') : t('pjAllProperties');
 }
 
 function hasFilter(snapshot: PropertySearchSnapshot): boolean {
@@ -46,6 +49,8 @@ function hasFilter(snapshot: PropertySearchSnapshot): boolean {
 }
 
 export default function PropertySavedSearchButton({ snapshot }: { snapshot: PropertySearchSnapshot }) {
+  const { language } = usePreferences();
+  const p = (key: string) => tpj(language, key);
   const [state, setState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [message, setMessage] = useState('');
 
@@ -56,7 +61,7 @@ export default function PropertySavedSearchButton({ snapshot }: { snapshot: Prop
     setState('saving');
     setMessage('');
     const result = await savePropertySearchAlert({
-      name: buildName(snapshot),
+      name: buildName(snapshot, language),
       filters: {
         target: 'properti' as const,
         ...(snapshot.q?.trim() ? { q: snapshot.q.trim() } : {}),
@@ -72,7 +77,7 @@ export default function PropertySavedSearchButton({ snapshot }: { snapshot: Prop
     });
     if (result.ok) {
       setState('saved');
-      setMessage('Pencarian tersimpan. Notifikasi alert saat ini nonaktif.');
+      setMessage(p('pjSearchSavedMsg'));
     } else {
       setState('error');
       setMessage(result.error);
@@ -85,11 +90,11 @@ export default function PropertySavedSearchButton({ snapshot }: { snapshot: Prop
         type="button"
         onClick={() => void handleSave()}
         disabled={!meaningful || state === 'saving' || state === 'saved'}
-        title={meaningful ? 'Simpan filter saat ini sebagai pencarian tersimpan' : 'Terapkan filter dulu untuk menyimpan pencarian'}
+        title={meaningful ? p('pjSaveSearchTitle') : p('pjSaveSearchNeedFilter')}
         className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 transition hover:border-sultra-teal hover:text-sultra-teal disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
       >
         {state === 'saving' ? <Loader2 size={14} className="animate-spin" /> : state === 'saved' ? <Check size={14} className="text-emerald-600" /> : <BellPlus size={14} />}
-        {state === 'saved' ? 'Tersimpan' : 'Simpan pencarian'}
+        {state === 'saved' ? p('pjSaved') : p('pjSaveSearch')}
       </button>
       {message && (
         <p className={`max-w-52 text-right text-[11px] leading-4 ${state === 'error' ? 'text-rose-600' : 'text-slate-500 dark:text-slate-400'}`}>

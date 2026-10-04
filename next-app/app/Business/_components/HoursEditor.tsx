@@ -1,11 +1,23 @@
 'use client';
 
 import { fieldError } from './formStyles';
+import { usePreferences } from '@/lib/preferences';
+import { getGroupsLabels } from '@/lib/i18n/dict-groups';
 
 export type DayHours = { open: string; close: string } | null;
 export type BusinessHours = Record<string, DayHours>;
 
 export const DAY_ORDER = ['senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu', 'minggu'] as const;
+
+const DAY_KEYS: Record<string, 'bDayMon' | 'bDayTue' | 'bDayWed' | 'bDayThu' | 'bDayFri' | 'bDaySat' | 'bDaySun'> = {
+  senin: 'bDayMon',
+  selasa: 'bDayTue',
+  rabu: 'bDayWed',
+  kamis: 'bDayThu',
+  jumat: 'bDayFri',
+  sabtu: 'bDaySat',
+  minggu: 'bDaySun',
+};
 
 export const DAY_LABELS: Record<string, string> = {
   senin: 'Senin',
@@ -60,6 +72,8 @@ type HoursEditorProps = {
 
 /** Editor jam operasional 7 hari. Nilai null = tutup. */
 export default function HoursEditor({ value, onChange, idPrefix = 'jam', dayErrors = {} }: HoursEditorProps) {
+  const { language } = usePreferences();
+  const b = getGroupsLabels(language);
   function setDay(day: string, next: DayHours) {
     onChange({ ...value, [day]: next });
   }
@@ -71,7 +85,7 @@ export default function HoursEditor({ value, onChange, idPrefix = 'jam', dayErro
         const externalError = dayErrors[day];
         const localError =
           current !== null && current.open && current.close && current.open >= current.close
-            ? 'Jam tutup harus lebih larut dari jam buka.'
+            ? b.bHoursCloseAfterOpen
             : null;
         const error = externalError ?? localError;
         const errorId = `${idPrefix}-${day}-error`;
@@ -87,7 +101,7 @@ export default function HoursEditor({ value, onChange, idPrefix = 'jam', dayErro
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
               <span id={`${idPrefix}-${day}-label`} style={{ fontWeight: 800, fontSize: 14, color: 'var(--sb-ink)' }}>
-                {DAY_LABELS[day]}
+                {b[DAY_KEYS[day]]}
               </span>
               <label
                 htmlFor={`${idPrefix}-${day}-closed`}
@@ -111,7 +125,7 @@ export default function HoursEditor({ value, onChange, idPrefix = 'jam', dayErro
                   }
                   style={{ width: 20, height: 20, accentColor: 'var(--sb-teal)' }}
                 />
-                Tutup
+                {b.bHoursClosed}
               </label>
             </div>
 
@@ -125,7 +139,7 @@ export default function HoursEditor({ value, onChange, idPrefix = 'jam', dayErro
                   htmlFor={`${idPrefix}-${day}-open`}
                   style={{ display: 'grid', gap: 6, fontSize: 12, fontWeight: 700, color: 'var(--sb-muted)', flex: '1 1 120px' }}
                 >
-                  Jam buka
+                  {b.bHoursOpen}
                   <input
                     id={`${idPrefix}-${day}-open`}
                     type="time"
@@ -150,7 +164,7 @@ export default function HoursEditor({ value, onChange, idPrefix = 'jam', dayErro
                   htmlFor={`${idPrefix}-${day}-close`}
                   style={{ display: 'grid', gap: 6, fontSize: 12, fontWeight: 700, color: 'var(--sb-muted)', flex: '1 1 120px' }}
                 >
-                  Jam tutup
+                  {b.bHoursClose}
                   <input
                     id={`${idPrefix}-${day}-close`}
                     type="time"

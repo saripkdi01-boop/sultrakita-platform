@@ -6,6 +6,8 @@ import { ArrowRight } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { getActiveEcosystemBanners, recordEcosystemBannerEvent, type BannerAppSlug, type EcosystemBanner, type BannerEventType } from '@/lib/actions/ecosystem-banners';
 import { supabase } from '@/lib/supabase/client';
+import { usePreferences } from '@/lib/preferences';
+import { getMiscLabels } from '@/lib/i18n/dict-misc';
 
 type Props = { appSlug: BannerAppSlug; banners?: EcosystemBanner[] };
 const toneClasses: Record<BannerAppSlug, { badge: string; button: string; dot: string }> = {
@@ -13,9 +15,16 @@ const toneClasses: Record<BannerAppSlug, { badge: string; button: string; dot: s
   jobs: { badge: 'bg-amber-100/90 text-amber-950', button: 'bg-amber-500 text-amber-950 hover:bg-amber-400', dot: 'bg-amber-500' },
   suits: { badge: 'bg-sky-100/90 text-sky-950', button: 'bg-sky-950 text-white hover:bg-sky-800', dot: 'bg-sky-950' },
 };
-const appLabels: Record<BannerAppSlug, string> = { marketplace: 'SUKI Marketplace', jobs: 'SUKI Jobs', suits: 'SUKI Suits' };
+const appLabelKeys: Record<BannerAppSlug, string> = { marketplace: 'ecoAppMarketplace', jobs: 'ecoAppJobs', suits: 'ecoAppSuits' };
 
 export function EcosystemSlider({ appSlug, banners: initialBanners = [] }: Props) {
+  const { language } = usePreferences();
+  const t = getMiscLabels(language);
+  const appLabels: Record<BannerAppSlug, string> = {
+    marketplace: t[appLabelKeys.marketplace],
+    jobs: t[appLabelKeys.jobs],
+    suits: t[appLabelKeys.suits],
+  };
   const [banners, setBanners] = useState<EcosystemBanner[]>(initialBanners);
   const [active, setActive] = useState(0);
   const [reducedMotion, setReducedMotion] = useState(false);
@@ -72,12 +81,12 @@ export function EcosystemSlider({ appSlug, banners: initialBanners = [] }: Props
     selectSlide((active + direction + banners.length) % banners.length);
   }
 
-  if (!loaded) return <section aria-label={`${appLabels[appSlug]} sedang memuat banner`} className={`ecosystem-slider ecosystem-slider-loading ecosystem-slider-${appSlug} mb-4 min-h-[11rem] rounded-2xl sm:min-h-[14rem]`} />;
+  if (!loaded) return <section aria-label={t.ecoLoading.replace('{app}', appLabels[appSlug])} className={`ecosystem-slider ecosystem-slider-loading ecosystem-slider-${appSlug} mb-4 min-h-[11rem] rounded-2xl sm:min-h-[14rem]`} />;
   if (!banners.length) return null;
 
-  return <section className={`ecosystem-slider ecosystem-slider-${appSlug} relative isolate mb-4 overflow-hidden rounded-2xl shadow-lg`} aria-label={`Promosi ${appLabels[appSlug]}`} aria-roledescription="carousel" onPointerDown={handlePointerDown} onPointerUp={handlePointerUp} onPointerCancel={() => { dragStart.current = null; }}>
+  return <section className={`ecosystem-slider ecosystem-slider-${appSlug} relative isolate mb-4 overflow-hidden rounded-2xl shadow-lg`} aria-label={t.ecoPromo.replace('{app}', appLabels[appSlug])} aria-roledescription="carousel" onPointerDown={handlePointerDown} onPointerUp={handlePointerUp} onPointerCancel={() => { dragStart.current = null; }}>
     <div className="relative min-h-[11rem] cursor-grab overflow-hidden active:cursor-grabbing sm:min-h-[14rem]">
-      {banners.map((banner, index) => <div key={banner.id} role="group" aria-roledescription="slide" aria-label={`${index + 1} dari ${banners.length}: ${banner.title}`} aria-hidden={index !== active} className={`absolute inset-0 transition-opacity duration-500 motion-reduce:transition-none ${index === active ? 'opacity-100' : 'pointer-events-none opacity-0'}`}>
+      {banners.map((banner, index) => <div key={banner.id} role="group" aria-roledescription="slide" aria-label={t.ecoSlideOf.replace('{n}', String(index + 1)).replace('{total}', String(banners.length)).replace('{title}', banner.title)} aria-hidden={index !== active} className={`absolute inset-0 transition-opacity duration-500 motion-reduce:transition-none ${index === active ? 'opacity-100' : 'pointer-events-none opacity-0'}`}>
         <Image src={banner.image_url} alt={banner.title} fill priority={index === 0} sizes="(max-width: 768px) calc(100vw - 28px), 1200px" className="object-cover" />
         <div className="ecosystem-slider-overlay absolute inset-0" />
         <div className="ecosystem-slider-copy relative z-10 flex min-h-[11rem] max-w-2xl flex-col justify-center p-4 sm:min-h-[14rem] sm:p-6">
@@ -88,7 +97,7 @@ export function EcosystemSlider({ appSlug, banners: initialBanners = [] }: Props
         </div>
       </div>)}
     </div>
-    {banners.length > 1 && <div className="ecosystem-slider-dots absolute bottom-3 left-4 right-4 z-20 flex items-center justify-center gap-1.5" role="group" aria-label="Pilih slide">{banners.map((banner, index) => <button key={banner.id} type="button" onClick={() => selectSlide(index)} aria-label={`Tampilkan slide ${index + 1}`} aria-current={index === active} className={`h-1.5 rounded-full transition-all motion-reduce:transition-none ${index === active ? `w-6 ${tone.dot}` : 'w-1.5 bg-white/70 hover:bg-white'}`} />)}</div>}
+    {banners.length > 1 && <div className="ecosystem-slider-dots absolute bottom-3 left-4 right-4 z-20 flex items-center justify-center gap-1.5" role="group" aria-label={t.ecoChooseSlide}>{banners.map((banner, index) => <button key={banner.id} type="button" onClick={() => selectSlide(index)} aria-label={t.ecoShowSlide.replace('{n}', String(index + 1))} aria-current={index === active} className={`h-1.5 rounded-full transition-all motion-reduce:transition-none ${index === active ? `w-6 ${tone.dot}` : 'w-1.5 bg-white/70 hover:bg-white'}`} />)}</div>}
   </section>;
 }
 

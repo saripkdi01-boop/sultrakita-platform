@@ -3,6 +3,8 @@
 import { useEffect, useRef } from 'react';
 import { ADSENSE_CLIENT_ID } from '@/lib/ads/config';
 import styles from './ads.module.css';
+import { usePreferences } from '@/lib/preferences';
+import { getMiscLabels } from '@/lib/i18n/dict-misc';
 
 declare global {
   interface Window {
@@ -27,6 +29,8 @@ interface AdSenseUnitProps {
  */
 export function AdSenseUnit({ slot, fluid = true, fixedSize, nonPersonalized = true }: AdSenseUnitProps) {
   const pushedRef = useRef(false);
+  const { language } = usePreferences();
+  const t = getMiscLabels(language);
 
   useEffect(() => {
     if (pushedRef.current) return;
@@ -45,7 +49,7 @@ export function AdSenseUnit({ slot, fluid = true, fixedSize, nonPersonalized = t
 
   return (
     <div className={styles['skad-unit']}>
-      <span className={styles['skad-label']}>Iklan</span>
+      <span className={styles['skad-label']}>{t.adLabel}</span>
       <ins
         className="adsbygoogle"
         style={fluid ? { display: 'block' } : { display: 'inline-block', width: fixedSize?.w, height: fixedSize?.h }}

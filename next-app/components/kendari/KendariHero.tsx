@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { usePreferences } from '@/lib/preferences';
+import { getCoreLabels } from '@/lib/i18n/dictionaries';
 import Link from 'next/link';
 import { ArrowRight, Check } from 'lucide-react';
 import WcReveal from '@/components/ui/WcReveal';
@@ -14,6 +16,8 @@ import ImageSlot from './ImageSlot';
  */
 export default function KendariHero() {
   const bgRef = useRef<HTMLDivElement>(null);
+  const { language } = usePreferences();
+  const t: Record<string, string> = getCoreLabels(language);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -57,43 +61,41 @@ export default function KendariHero() {
         <WcReveal>
           <span className="kh-badge">
             <i aria-hidden="true" />
-            Dibuat untuk Sulawesi Tenggara
+            {t.heroBadgeKendari}
           </span>
         </WcReveal>
         <WcReveal delay={1}>
           <h1 className="kh-title" id="kh-hero-title">
-            Temukan yang dekat.
+            {t.heroTitleA}
             <br />
-            <span className="kh-gold">Bangun yang berarti.</span>
+            <span className="kh-gold">{t.heroTitleB}</span>
           </h1>
         </WcReveal>
         <WcReveal delay={2}>
           <p className="kh-sub">
-            SUKI Apps menghubungkan produk lokal, properti, peluang kerja,
-            komunitas, dan bisnis dalam satu pengalaman digital yang sederhana —
-            dari Kendari, untuk Sulawesi Tenggara.
+            {t.heroSubKendari}
           </p>
         </WcReveal>
         <WcReveal delay={3}>
           <div className="kh-ctas">
             <Link href="/beranda" className="kh-btn kh-btn-gold">
-              Mulai menjelajah <ArrowRight size={17} aria-hidden="true" />
+              {t.heroCtaExplore} <ArrowRight size={17} aria-hidden="true" />
             </Link>
             <Link href="/marketplace" className="kh-btn kh-btn-ghost">
-              Jelajahi marketplace
+              {t.heroCtaMarketplace}
             </Link>
           </div>
-          <div className="kh-proof" aria-label="Nilai yang dipegang SUKI Apps">
-            <span><Check size={14} aria-hidden="true" /> Lokal-first</span>
-            <span><Check size={14} aria-hidden="true" /> Mudah digunakan</span>
-            <span><Check size={14} aria-hidden="true" /> Terus berkembang</span>
+          <div className="kh-proof" aria-label={t.heroProofLabel}>
+            <span><Check size={14} aria-hidden="true" /> {t.proofLocalFirst}</span>
+            <span><Check size={14} aria-hidden="true" /> {t.proofEasy}</span>
+            <span><Check size={14} aria-hidden="true" /> {t.proofGrowing}</span>
           </div>
         </WcReveal>
       </div>
 
       <div className="kh-scroll" aria-hidden="true">
         <i />
-        <span>Gulir</span>
+        <span>{t.scrollDown}</span>
       </div>
 
       <div className="kh-wave" aria-hidden="true">

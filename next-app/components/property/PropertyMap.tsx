@@ -7,6 +7,15 @@
 import { useEffect, useRef } from 'react';
 import type { MapView, MapBounds } from '@/lib/geo';
 import { shortPriceIdr, isValidCoord } from '@/lib/geo';
+import { usePreferences } from '@/lib/preferences';
+import { tpj } from '@/lib/i18n/dict-propertijobs';
+
+/** Decimal separator per language for the map popup distance. */
+function decimalSep(language: string): string {
+  if (language === 'ar' || language === 'fa') return '٫';
+  if (['id', 'ms', 'jv', 'su', 'es', 'fr', 'de', 'pt', 'it', 'nl', 'ru', 'tr', 'vi'].includes(language)) return ',';
+  return '.';
+}
 
 export type PropertyPin = {
   id: string;
@@ -38,6 +47,7 @@ function escapeHtml(value: string): string {
 }
 
 export default function PropertyMap({ pins, initialView, hoveredId, onViewportChange, onPinClick, radiusCircle = null }: PropertyMapProps) {
+  const { language } = usePreferences();
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
   const clusterRef = useRef<any>(null);
@@ -48,6 +58,8 @@ export default function PropertyMap({ pins, initialView, hoveredId, onViewportCh
   pinsRef.current = pins;
   const hoveredRef = useRef(hoveredId);
   hoveredRef.current = hoveredId;
+  const languageRef = useRef(language);
+  languageRef.current = language;
 
   // Inisialisasi Leaflet sekali, hanya di client.
   useEffect(() => {
@@ -93,7 +105,7 @@ export default function PropertyMap({ pins, initialView, hoveredId, onViewportCh
       map.on('moveend', moveHandler);
 
       // Render pin awal.
-      renderPins(L, cluster, pinsRef.current, hoveredRef.current, callbacksRef.current.onPinClick, map);
+      renderPins(L, cluster, pinsRef.current, hoveredRef.current, callbacksRef.current.onPinClick, map, languageRef.current);
       // Kabari viewport awal ke parent agar query bbox langsung jalan.
       moveHandler();
 
@@ -124,7 +136,7 @@ export default function PropertyMap({ pins, initialView, hoveredId, onViewportCh
     (async () => {
       const L = (await import('leaflet')).default;
       if (clusterRef.current && mapRef.current) {
-        renderPins(L, clusterRef.current, pinsRef.current, hoveredRef.current, callbacksRef.current.onPinClick, mapRef.current);
+        renderPins(L, clusterRef.current, pinsRef.current, hoveredRef.current, callbacksRef.current.onPinClick, mapRef.current, languageRef.current);
       }
     })();
   }, [pins, hoveredId]);
@@ -175,14 +187,14 @@ export default function PropertyMap({ pins, initialView, hoveredId, onViewportCh
 
   return (
     <div className="relative h-full w-full">
-      <div ref={containerRef} className="absolute inset-0 z-0" role="application" aria-label="Peta properti SultraKita" />
+      <div ref={containerRef} className="absolute inset-0 z-0" role="application" aria-label={tpj(language, 'pjMapAria')} />
       <button
         type="button"
         onClick={handleLocate}
         className="absolute bottom-4 right-4 z-10 inline-flex h-10 items-center gap-2 rounded-full bg-white px-4 text-sm font-medium text-slate-700 shadow-md ring-1 ring-slate-900/10 transition hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600"
-        aria-label="Tampilkan lokasi saya di peta"
+        aria-label={tpj(language, 'pjMapMyLocation')}
       >
-        <span aria-hidden="true">📍</span> Lokasi saya
+        <span aria-hidden="true">📍</span> {tpj(language, 'pjMyLocation')}
       </button>
     </div>
   );
@@ -195,6 +207,7 @@ function renderPins(
   hoveredId: string | null | undefined,
   onPinClick: ((id: string) => void) | undefined,
   map: any,
+  language: string,
 ) {
   cluster.clearLayers();
   for (const pin of pins) {
@@ -207,14 +220,14 @@ function renderPins(
     });
     const marker = L.marker([pin.lat, pin.lng], { icon, title: pin.title });
     const distanceLine = typeof pin.distanceKm === 'number' && Number.isFinite(pin.distanceKm)
-      ? `<br/><span>± ${escapeHtml(pin.distanceKm < 1 ? `${Math.round(pin.distanceKm * 1000)} m` : `${pin.distanceKm.toFixed(1).replace('.', ',')} km`)} dari titik peta</span>`
+      ? `<br/><span>${escapeHtml(tpj(language, 'pjMapFromPoint', { dist: pin.distanceKm < 1 ? `${Math.round(pin.distanceKm * 1000)} m` : `${pin.distanceKm.toFixed(1).replace('.', decimalSep(language))} km` }))}</span>`
       : '';
     marker.bindPopup(
       `<div style="min-width:180px">` +
         `<strong>${escapeHtml(pin.title)}</strong><br/>` +
         `<span>${escapeHtml(shortPriceIdr(pin.price))}</span>` +
         distanceLine +
-        `<br/><a href="${escapeHtml(pin.detailUrl)}">Lihat detail &rarr;</a>` +
+        `<br/><a href="${escapeHtml(pin.detailUrl)}">${escapeHtml(tpj(language, 'pjMapViewDetail'))}</a>` +
         `</div>`,
     );
     marker.on('click', () => onPinClick?.(pin.id));

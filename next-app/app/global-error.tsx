@@ -2,19 +2,23 @@
 
 import { useEffect } from 'react';
 import ErrorShell from '@/components/seo/ErrorShell';
+import { usePreferences } from '@/lib/preferences';
+import { getMiscLabels } from '@/lib/i18n/dict-misc';
 
 /**
- * Global error boundary (P1-3 LAUNCH_AUDIT).
+ * Global error boundary.
  *
  * Menggantikan root layout saat error fatal, jadi harus mandiri penuh:
  * - mendefinisikan <html> dan <body> sendiri,
  * - styling inline penuh (tanpa globals.css),
  * - tanpa next/link (pakai <a> biasa) agar tidak bergantung pada router context.
  *
- * TIDAK menampilkan stack trace ke pengguna.
+ * TIDAK menampilkan stack trace ke pengguna. Teks mengikuti bahasa aktif.
  */
 export default function GlobalError({ error }: { error: Error & { digest?: string } }) {
-  // T5(c): laporkan error fatal ke log server via /api/log-error (fire-and-forget).
+  const { language } = usePreferences();
+  const t = getMiscLabels(language);
+
   useEffect(() => {
     try {
       const payload = JSON.stringify({
@@ -39,29 +43,24 @@ export default function GlobalError({ error }: { error: Error & { digest?: strin
   }, [error]);
 
   return (
-    <html lang="id">
+    <html lang={language}>
       <body style={{ margin: 0 }}>
         <ErrorShell
           code="500"
-          title="Aplikasi mengalami gangguan"
-          description={
-            <>
-              Maaf, SukiApps mengalami gangguan yang tidak terduga. Tim kami sudah menerima
-              laporan otomatis. Silakan muat ulang halaman atau kembali lagi beberapa saat.
-            </>
-          }
+          title={t.gerrTitle}
+          description={t.gerrDesc}
           actions={[
             {
-              label: 'Muat ulang halaman',
+              label: t.gerrReload,
               href: typeof window !== 'undefined' ? window.location.href : '/',
               primary: true,
             },
-            { label: 'Kembali ke Beranda', href: '/' },
+            { label: t.gerrBackHome, href: '/' },
           ]}
           footnote={
             error?.digest ? (
               <>
-                Kode rujukan: <code style={{ fontFamily: 'monospace' }}>{error.digest}</code>
+                {t.errRefCode} <code style={{ fontFamily: 'monospace' }}>{error.digest}</code>
               </>
             ) : undefined
           }
