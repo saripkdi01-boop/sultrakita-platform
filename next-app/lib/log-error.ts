@@ -90,5 +90,24 @@ export function logError(context: LogErrorContext, error: unknown): LogErrorEntr
   } catch {
     // Abaikan: pencatatan tidak boleh mematahkan request.
   }
+  // FASE B1 — persistensi best-effort ke tabel error_events (pipeline terpusat,
+  // dibaca di /admin/errors). Fire-and-forget: tak menunggu, tak pernah throw.
+  try {
+    if (typeof window === 'undefined') {
+      void import('@/lib/server/error-events')
+        .then((m) =>
+          m.recordErrorEvent({
+            route: entry.route,
+            requestId: entry.request_id,
+            userHash: entry.user_hash,
+            errorName: entry.error_name,
+            errorMessage: entry.error_message,
+          }),
+        )
+        .catch(() => {});
+    }
+  } catch {
+    // Abaikan.
+  }
   return entry;
 }
