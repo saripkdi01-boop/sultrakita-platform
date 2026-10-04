@@ -101,3 +101,34 @@ semua warna/spasi/radius/motion dari `var(--sk-*)`. Import: `import { Button } f
 5. **Aksesibilitas bukan opsional:** label untuk ikon, `alt`/`aria-label` untuk gambar, kontras teks ≥ 4.5:1, keyboard (Tab/Esc/panah) untuk semua overlay & tab, `prefers-reduced-motion` dihormati.
 6. **Bahasa UI default id-ID** (konsisten dengan komposer beranda); string yang akan di-i18n-kan ditaruh di props, bukan di-hardcode di dalam primitif bila memungkinkan.
 7. **Tidak ada data palsu** di komponen — empty/error state jujur (keputusan Fase 0 D-07).
+
+## 9. World-Class Overhaul (2026-10-03) — evolusi "Teluk Senja"
+
+**Konteks:** mandat pemilik — sukiapps.web.id harus "mencolok amazing", world-class.
+Arah visual "Teluk Senja" diputuskan Fase 1 (dark-premium, deep teal + gold, glass
+restrained). Ini **evolusi** §"DILARANG" di header: larangan "glassmorphism berlebih"
+tetap berlaku — yang ditambah adalah **kaca fungsional** (kartu, chip, eyebrow,
+nav), bukan dekorasi. Batasan restraint:
+
+1. Glass hanya untuk permukaan interaktif/informatif (`.wc-glass-card`, `.wc-chip`,
+   `.wc-eyebrow`); tidak untuk blob/dekorasi latar.
+2. Aurora hero = SATU lapis radial-gradient halus per hero (token `--wc-hero-bg`),
+   opacity rendah; tidak ada animasi blob bergerak.
+3. Token baru memakai namespace `--wc-*` (file `design-system/tokens-wc.css`),
+   hidup berdampingan dengan `--sk-*` tanpa menimpa. Justifikasi per token:
+
+| Token | Alasan tertulis |
+|---|---|
+| `--wc-glass-bg/line/blur/shadow` | Bahasa kaca fungsional — diferensiasi vs kompetitor terang; blur 18px + border 1px menjaga keterbacaan |
+| `--wc-glow-gold/teal` | Glow CTA — satu-satunya efek "mencolok"; hanya di tombol primer |
+| `--wc-grad-gold/teal/text` | Gradasi teks/CTA dari warna brand yang sudah ada (bukan warna baru) |
+| `--wc-tenun` | Aksen lokal tenun 8px — identitas Sultra, dipakai hemat (strip pemisah) |
+| `--wc-hero-bg` | Latar hero "Teluk Senja" — menggantikan hero generik; dark = teal abyss + gold glow |
+| `--wc-shimmer` | Skeleton ber-brand — perbaikan perceived loading /beranda (temuan Fase 0) |
+| `--wc-shadow-lift` | Hover kartu — feedback taktil, konsisten dengan `--sk-ease` |
+| `--wc-d-reveal/ease-reveal` | Scroll-reveal 560ms — dimatikan total saat `prefers-reduced-motion` |
+
+4. Semua primitif `.wc-*` (`app/wc-overhaul.css`) punya varian dark via token yang
+   sama; kontras teks tetap mengikuti `--sk-*` (≥ 4.5:1).
+5. Hindari kelas Tailwind `teal-*` (bug skala-teal di `tailwind.config.ts`,
+   diperbaiki branch `ui/polish-v2`) — pakai `var(--sk-teal)` / `var(--wc-*)`.

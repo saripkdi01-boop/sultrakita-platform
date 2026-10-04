@@ -1,0 +1,59 @@
+/* ==========================================================================
+   WORLD-CLASS OVERHAUL — layer "Teluk Senja" untuk /marketplace
+   Override di atas marketplace-fb.css (namespace fbm-* dihormati).
+   ========================================================================== */
+@import '../wc-overhaul.css';
+
+/* Latar halaman */
+.fbm-page {
+  background:
+    radial-gradient(760px 360px at 88% 0%, rgba(14, 98, 88, 0.08), transparent 60%),
+    radial-gradient(560px 300px at 4% 10%, rgba(212, 175, 55, 0.07), transparent 60%);
+}
+.dark .fbm-page {
+  background:
+    radial-gradient(860px 400px at 88% 0%, rgba(20, 101, 91, 0.25), transparent 62%),
+    radial-gradient(620px 320px at 4% 10%, rgba(212, 175, 55, 0.06), transparent 60%);
+}
+
+/* Kartu: radius + border + angkat */
+.fbm-card {
+  border-radius: var(--sk-r-lg) !important;
+  border: 1px solid var(--wc-glass-line);
+  transition: transform var(--sk-d-base) var(--sk-ease), box-shadow var(--sk-d-base) var(--sk-ease), border-color var(--sk-d-base) !important;
+}
+@media (hover: hover) {
+  .fbm-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--wc-shadow-lift) !important;
+    border-color: rgba(212, 175, 55, 0.35);
+  }
+}
+
+/* Harga: teal tegas */
+.fbm-card-price {
+  color: var(--sk-teal) !important;
+  font-size: 17px !important;
+}
+
+/* Badge diskon: emas brand */
+.fbm-badge-discount {
+  background: var(--wc-grad-gold) !important;
+  color: #241c05 !important;
+  font-weight: 800;
+  box-shadow: 0 4px 14px rgba(161, 98, 7, 0.35);
+}
+
+/* Toolbar filter: kaca */
+.fbm-toolbar {
+  background: var(--wc-glass-bg) !important;
+  border: 1px solid var(--wc-glass-line) !important;
+  backdrop-filter: blur(var(--wc-glass-blur));
+  -webkit-backdrop-filter: blur(var(--wc-glass-blur));
+  border-radius: var(--sk-r-lg) !important;
+  box-shadow: var(--wc-glass-shadow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fbm-card:hover { transform: none; }
+}

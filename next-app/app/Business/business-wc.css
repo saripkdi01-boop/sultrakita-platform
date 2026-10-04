@@ -1,0 +1,40 @@
+/* ==========================================================================
+   WORLD-CLASS OVERHAUL — layer "Teluk Senja" untuk /Business
+   Style dasar tetap di globals.css (tidak disentuh); ini hanya aksen.
+   ========================================================================== */
+@import '../wc-overhaul.css';
+
+/* Hero: aurora Teluk Senja */
+.suki-business-hero {
+  background:
+    radial-gradient(900px 440px at 85% 8%, rgba(14, 98, 88, 0.16), transparent 62%),
+    radial-gradient(640px 380px at 5% 90%, rgba(212, 175, 55, 0.12), transparent 60%) !important;
+}
+
+/* Kicker: emas */
+.suki-business-kicker {
+  color: var(--sk-brand) !important;
+}
+
+/* Tombol primer: emas + glow */
+.suki-business-button-teal {
+  background: var(--wc-grad-gold) !important;
+  color: #241c05 !important;
+  box-shadow: var(--wc-glow-gold) !important;
+  border-radius: var(--sk-r-pill) !important;
+}
+
+/* Kartu audiens & bisnis: angkat + sorot emas */
+.suki-business-audience-card,
+.suki-business-card {
+  transition: transform var(--sk-d-base) var(--sk-ease), box-shadow var(--sk-d-base) var(--sk-ease) !important;
+}
+.suki-business-audience-card:hover,
+.suki-business-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--wc-shadow-lift) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .suki-business-audience-card:hover, .suki-business-card:hover { transform: none; }
+}

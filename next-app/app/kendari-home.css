@@ -1,0 +1,439 @@
+/* ==========================================================================
+   KENDARI IDENTITY — lapisan visual homepage (/) "Teluk Senja" Kendari
+   Namespace KHUSUS .kh-* (tidak menyentuh .wc-*, .sk-*, globals.css).
+   Palet literal mandiri (deep teal + emas) — TIDAK mendefinisikan ulang token.
+   Tanpa reset global, tanpa styled-jsx, tanpa @import font eksternal.
+   Hormati prefers-reduced-motion.
+   ========================================================================== */
+
+/* ---------- ImageSlot ---------- */
+.kh-slot { position: relative; overflow: hidden; width: 100%; height: 100%; }
+.kh-slot-img {
+  position: absolute; inset: 0; z-index: 1;
+  width: 100%; height: 100%; object-fit: cover;
+}
+.kh-slot-fb { position: absolute; inset: 0; z-index: 0; }
+.kh-slot-duo {
+  position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  background: linear-gradient(160deg, rgba(10,46,46,.55) 0%, rgba(15,64,64,.25) 50%, rgba(212,168,83,.12) 100%);
+  mix-blend-mode: multiply;
+}
+/* Fallback: Masjid Al-Alam (simulasi pantulan masjid di teluk saat senja) */
+.kh-fb-masjid { background: linear-gradient(160deg, #061a1a 0%, #0a3535 30%, #0f4a4a 50%, #1a5c5c 70%, #0d3838 100%); }
+.kh-fb-masjid::after {
+  content: ""; position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 70%, rgba(212,168,83,.16) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 30% at 50% 85%, rgba(212,168,83,.10) 0%, transparent 60%);
+}
+/* Fallback: Jembatan Bahteramas (cahaya jembatan di atas teluk) */
+.kh-fb-bahteramas { background: linear-gradient(135deg, #061a1a 0%, #0a2e2e 40%, #1a5c5c 80%, #0f4040 100%); }
+.kh-fb-bahteramas::after {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 100% 40% at 50% 60%, rgba(212,168,83,.13) 0%, transparent 70%);
+}
+/* Fallback: Tugu MTQ */
+.kh-fb-tugu { background: linear-gradient(145deg, #0a2e2e 0%, #1a5c5c 60%, #0f4040 100%); }
+.kh-fb-tugu::after {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(212,168,83,.12) 0%, transparent 60%);
+}
+/* Fallback: Komunitas */
+.kh-fb-komunitas { background: linear-gradient(135deg, #0a2e2e 0%, #1a5c5c 50%, #0f4040 100%); }
+.kh-fb-komunitas::after {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 60% 60% at 50% 60%, rgba(212,168,83,.07) 0%, transparent 70%);
+}
+
+/* ---------- Kit section ---------- */
+.kh-section { position: relative; padding: clamp(4rem, 8vw, 6.5rem) 0; }
+.kh-wrap { max-width: 1200px; margin: 0 auto; padding: 0 1.25rem; }
+@media (min-width: 768px) { .kh-wrap { padding: 0 2.5rem; } }
+.kh-label {
+  display: inline-flex; align-items: center; gap: .5rem;
+  font-size: .7rem; font-weight: 700; letter-spacing: 3px; text-transform: uppercase;
+  color: #d4a853; margin-bottom: 1rem;
+}
+.kh-label::before { content: ""; width: 24px; height: 1px; background: #d4a853; }
+.kh-h2 {
+  font-size: clamp(1.75rem, 4vw, 2.75rem); font-weight: 800; line-height: 1.15;
+  letter-spacing: -.5px; color: #f5f0e8; margin-bottom: 1rem; text-wrap: balance;
+}
+.kh-h2 .kh-gold, .kh-gold {
+  background: linear-gradient(135deg, #d4a853, #e8c97a);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.kh-desc {
+  font-size: clamp(.95rem, 2vw, 1.1rem); line-height: 1.7;
+  color: rgba(245,240,232,.68); max-width: 560px;
+}
+.kh-center { text-align: center; }
+.kh-center .kh-desc { margin-inline: auto; }
+.kh-center .kh-label { justify-content: center; }
+
+/* ---------- HERO ---------- */
+.kh-hero {
+  position: relative; min-height: 100svh;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; background: #061a1a;
+}
+.kh-hero-bg { position: absolute; inset: -12% 0; z-index: 0; will-change: transform; }
+.kh-hero-kb { position: absolute; inset: 0; animation: kh-kenburns 28s ease-in-out infinite; }
+@keyframes kh-kenburns {
+  0%, 100% { transform: scale(1) translate(0, 0); }
+  50% { transform: scale(1.1) translate(-1.5%, -1%); }
+}
+.kh-hero-veil {
+  position: absolute; inset: 0; z-index: 2;
+  background:
+    linear-gradient(180deg, rgba(6,26,26,.74) 0%, rgba(6,26,26,.30) 38%, rgba(6,26,26,.48) 68%, #04110f 100%),
+    linear-gradient(90deg, rgba(6,26,26,.45) 0%, transparent 50%, rgba(6,26,26,.45) 100%);
+}
+.kh-hero-inner {
+  position: relative; z-index: 3; text-align: center;
+  padding: 4rem 1.25rem 5rem; max-width: 840px;
+}
+.kh-badge {
+  display: inline-flex; align-items: center; gap: .5rem;
+  padding: .45rem 1.1rem; margin-bottom: 1.5rem;
+  background: rgba(212,168,83,.12); border: 1px solid rgba(212,168,83,.28);
+  border-radius: 100px; font-size: .75rem; font-weight: 600; color: #e8c97a;
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+}
+.kh-badge i { width: 6px; height: 6px; border-radius: 50%; background: #d4a853; animation: kh-pulse 2s ease-in-out infinite; }
+@keyframes kh-pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .5; transform: scale(1.6); } }
+.kh-title {
+  font-size: clamp(2.4rem, 7vw, 4.5rem); font-weight: 800; line-height: 1.08;
+  letter-spacing: -1px; color: #f5f0e8; margin-bottom: 1.25rem;
+  text-shadow: 0 2px 44px rgba(0,0,0,.55); text-wrap: balance;
+}
+.kh-sub {
+  font-size: clamp(1rem, 2.4vw, 1.2rem); color: rgba(245,240,232,.82);
+  max-width: 580px; margin: 0 auto 2.25rem; line-height: 1.65;
+  text-shadow: 0 1px 12px rgba(0,0,0,.4);
+}
+.kh-ctas { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; }
+.kh-btn {
+  display: inline-flex; align-items: center; gap: .5rem;
+  padding: .9rem 2.1rem; border-radius: 100px;
+  font-weight: 700; font-size: .95rem; cursor: pointer; border: none;
+  transition: transform .35s cubic-bezier(.25,.46,.45,.94), box-shadow .35s;
+}
+.kh-btn-gold {
+  background: linear-gradient(135deg, #d4a853, #b8923f); color: #061a1a;
+  box-shadow: 0 4px 26px rgba(212,168,83,.30);
+}
+.kh-btn-gold:hover { transform: translateY(-2px); box-shadow: 0 10px 34px rgba(212,168,83,.45); }
+.kh-btn-ghost {
+  background: rgba(245,240,232,.06); color: #f5f0e8;
+  border: 1px solid rgba(245,240,232,.22);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+}
+.kh-btn-ghost:hover { transform: translateY(-2px); border-color: #d4a853; color: #e8c97a; }
+.kh-proof {
+  display: flex; flex-wrap: wrap; gap: .75rem 1.75rem; justify-content: center;
+  margin-top: 2.25rem; font-size: .85rem; font-weight: 600; color: rgba(245,240,232,.75);
+}
+.kh-proof span { display: inline-flex; align-items: center; gap: .45rem; }
+.kh-proof svg { color: #d4a853; }
+.kh-scroll {
+  position: absolute; bottom: 5.5rem; left: 50%; transform: translateX(-50%); z-index: 3;
+  display: flex; flex-direction: column; align-items: center; gap: .5rem;
+  color: rgba(245,240,232,.45); font-size: .68rem; font-weight: 500;
+  letter-spacing: 2px; text-transform: uppercase;
+}
+.kh-scroll i {
+  width: 1px; height: 38px; display: block;
+  background: linear-gradient(180deg, #d4a853, transparent);
+  animation: kh-scrollline 2.2s ease-in-out infinite;
+}
+@keyframes kh-scrollline {
+  0% { opacity: 0; transform: scaleY(0); transform-origin: top; }
+  50% { opacity: 1; transform: scaleY(1); transform-origin: top; }
+  100% { opacity: 0; transform: scaleY(1); transform-origin: bottom; }
+}
+.kh-wave { position: absolute; bottom: -1px; left: 0; right: 0; z-index: 4; line-height: 0; pointer-events: none; }
+.kh-wave svg { display: block; width: 100%; height: auto; }
+
+/* ---------- Value strip ---------- */
+.kh-value { background: linear-gradient(180deg, #04110f 0%, #0a2e2e 100%); }
+.kh-value-grid { display: grid; gap: 1rem; margin-top: 3rem; }
+@media (min-width: 800px) { .kh-value-grid { grid-template-columns: repeat(3, 1fr); gap: 2.5rem; } }
+.kh-value-card { text-align: center; padding: 2rem 1.25rem; }
+.kh-value-icon {
+  width: 58px; height: 58px; margin: 0 auto 1.25rem;
+  display: grid; place-items: center; border-radius: 18px;
+  background: rgba(212,168,83,.09); border: 1px solid rgba(212,168,83,.18);
+  color: #d4a853;
+}
+.kh-value-card h3 { color: #f5f0e8; font-size: 1.08rem; font-weight: 700; margin-bottom: .5rem; }
+.kh-value-card p { color: rgba(245,240,232,.62); font-size: .9rem; line-height: 1.65; }
+
+/* ---------- Ekosistem ---------- */
+.kh-eco { background: #0a2e2e; }
+.kh-eco-grid { display: grid; gap: 1.25rem; margin-top: 3rem; }
+@media (min-width: 560px) { .kh-eco-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 960px) { .kh-eco-grid { grid-template-columns: repeat(3, 1fr); } }
+.kh-eco-card {
+  position: relative; display: block; padding: 1.9rem 1.6rem 1.7rem;
+  background: rgba(10,46,46,.55); border: 1px solid rgba(212,168,83,.16);
+  border-radius: 20px; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  transition: transform .35s cubic-bezier(.25,.46,.45,.94), border-color .35s, box-shadow .35s, background .35s;
+  overflow: hidden; color: inherit; text-decoration: none;
+}
+.kh-eco-card::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, #d4a853, transparent);
+  opacity: 0; transition: opacity .35s;
+}
+.kh-eco-card:hover { transform: translateY(-4px); border-color: rgba(212,168,83,.42); background: rgba(10,46,46,.72); box-shadow: 0 18px 44px rgba(0,0,0,.35); }
+.kh-eco-card:hover::before { opacity: 1; }
+.kh-eco-icon {
+  width: 52px; height: 52px; border-radius: 15px; display: grid; place-items: center;
+  background: linear-gradient(135deg, rgba(212,168,83,.20), rgba(212,168,83,.06));
+  color: #e8c97a; margin-bottom: 1.2rem; transition: transform .35s;
+}
+.kh-eco-card:hover .kh-eco-icon { transform: scale(1.06); }
+.kh-eco-icon svg { width: 26px; height: 26px; }
+.kh-eco-card h3 { color: #f5f0e8; font-size: 1.12rem; font-weight: 700; margin-bottom: .45rem; }
+.kh-eco-card p { color: rgba(245,240,232,.62); font-size: .87rem; line-height: 1.6; padding-right: 2rem; }
+.kh-eco-arrow {
+  position: absolute; bottom: 1.5rem; right: 1.4rem;
+  width: 30px; height: 30px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: rgba(212,168,83,.12); color: #d4a853; font-size: .85rem;
+  opacity: 0; transform: translateX(-8px); transition: opacity .35s, transform .35s;
+}
+.kh-eco-card:hover .kh-eco-arrow { opacity: 1; transform: none; }
+
+/* ---------- Bahteramas ---------- */
+.kh-baht { position: relative; overflow: hidden; background: #04110f; padding: clamp(5rem, 10vw, 8rem) 0; }
+.kh-baht-bg { position: absolute; inset: 0; z-index: 0; }
+.kh-baht-veil {
+  position: absolute; inset: 0; z-index: 1;
+  background: linear-gradient(180deg, #04110f 0%, rgba(6,26,26,.84) 28%, rgba(6,26,26,.84) 72%, #04110f 100%);
+}
+.kh-baht-grid { position: relative; z-index: 2; display: grid; gap: 3rem; align-items: center; }
+@media (min-width: 860px) { .kh-baht-grid { grid-template-columns: 1.05fr .95fr; gap: 4rem; } }
+.kh-baht-feats { display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem; }
+.kh-baht-feat {
+  display: flex; gap: 1rem; align-items: flex-start;
+  padding: 1rem 1.2rem; border-radius: 12px;
+  background: rgba(245,240,232,.045); border: 1px solid rgba(245,240,232,.09);
+  transition: background .3s, border-color .3s; color: inherit; text-decoration: none;
+}
+a.kh-baht-feat:hover { background: rgba(212,168,83,.07); border-color: rgba(212,168,83,.25); }
+.kh-baht-feat-ic {
+  width: 38px; height: 38px; flex: none; border-radius: 11px;
+  display: grid; place-items: center;
+  background: rgba(212,168,83,.12); color: #d4a853;
+}
+.kh-baht-feat-ic svg { width: 19px; height: 19px; }
+.kh-baht-feat h4 { color: #f5f0e8; font-size: .95rem; font-weight: 700; margin-bottom: .2rem; }
+.kh-baht-feat p { color: rgba(245,240,232,.62); font-size: .83rem; line-height: 1.55; }
+.kh-baht-visual {
+  position: relative; aspect-ratio: 4/3; border-radius: 22px; overflow: hidden;
+  border: 1px solid rgba(212,168,83,.2); box-shadow: 0 24px 60px rgba(0,0,0,.4);
+}
+
+/* ---------- Komunitas ---------- */
+.kh-kom { background: linear-gradient(180deg, #04110f 0%, #0a2e2e 55%, #04110f 100%); overflow: hidden; }
+.kh-kom-grid { display: grid; gap: 1.25rem; margin-top: 3rem; position: relative; z-index: 2; }
+@media (min-width: 620px) { .kh-kom-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 960px) { .kh-kom-grid { grid-template-columns: repeat(3, 1fr); } }
+.kh-kom-card {
+  border-radius: 18px; overflow: hidden; background: #0a2e2e;
+  border: 1px solid rgba(212,168,83,.16);
+  transition: transform .35s, box-shadow .35s, border-color .35s;
+}
+.kh-kom-card:hover { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(0,0,0,.35); border-color: rgba(212,168,83,.35); }
+.kh-kom-media { position: relative; height: 215px; }
+.kh-kom-shade {
+  position: absolute; inset: 0; z-index: 3;
+  background: linear-gradient(180deg, transparent 42%, rgba(6,26,26,.92) 100%);
+}
+.kh-kom-body { position: relative; z-index: 4; margin-top: -4.5rem; padding: 0 1.4rem 1.5rem; }
+.kh-kom-tag {
+  display: inline-block; padding: .22rem .65rem; margin-bottom: .55rem;
+  background: rgba(212,168,83,.18); border: 1px solid rgba(212,168,83,.32);
+  border-radius: 100px; font-size: .64rem; font-weight: 700; letter-spacing: 1px;
+  text-transform: uppercase; color: #e8c97a;
+}
+.kh-kom-body h3 { color: #f5f0e8; font-size: 1.05rem; font-weight: 700; margin-bottom: .3rem; }
+.kh-kom-body p { color: rgba(245,240,232,.62); font-size: .82rem; line-height: 1.55; }
+.kh-tugu {
+  position: absolute; top: 4.5rem; right: 1.25rem; z-index: 1;
+  width: 104px; height: 104px; border-radius: 50%; overflow: hidden;
+  border: 2px solid rgba(212,168,83,.28); opacity: .9;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+}
+@media (min-width: 768px) { .kh-tugu { width: 150px; height: 150px; top: 5rem; right: 2.5rem; } }
+
+/* ---------- Perisai tema ----------
+   globals.css memuat aturan global `html[data-theme] :where(h1..h6, strong, p, …)`
+   dengan `!important` yang memaksa warna tipografi tema aplikasi. Section Kendari
+   sengaja dark-immersive di kedua tema, sehingga warnanya dikunci dalam scope
+   .kh-* (spesifisitas (0,2,0) mengalahkan :where() yang (0,1,1)). */
+.kh-hero .kh-title,
+.kh-wrap .kh-h2,
+.kh-value-card h3,
+.kh-eco-card h3,
+.kh-baht-feat h4,
+.kh-kom-body h3 { color: #f5f0e8 !important; }
+.kh-sub { color: rgba(245,240,232,.82) !important; }
+.kh-desc,
+.kh-value-card p,
+.kh-eco-card p,
+.kh-baht-feat p,
+.kh-kom-body p { color: rgba(245,240,232,.68) !important; }
+.kh-badge { color: #e8c97a !important; }
+.kh-label { color: #d4a853 !important; }
+.kh-proof { color: rgba(245,240,232,.75) !important; }
+.kh-proof svg { color: #d4a853 !important; }
+.kh-kom-tag { color: #e8c97a !important; }
+.kh-eco-icon { color: #e8c97a !important; }
+.kh-eco-arrow { color: #d4a853 !important; }
+.kh-baht-feat-ic { color: #d4a853 !important; }
+.kh-scroll { color: rgba(245,240,232,.45) !important; }
+.kh-btn-gold { color: #061a1a !important; }
+.kh-btn-ghost { color: #f5f0e8 !important; }
+.kh-value-icon { color: #d4a853 !important; }
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .kh-hero-kb, .kh-badge i, .kh-scroll i { animation: none; }
+  .kh-eco-card:hover, .kh-kom-card:hover, .kh-btn-gold:hover, .kh-btn-ghost:hover { transform: none; }
+}
+
+/* ==========================================================================
+   MODE TERANG — light theme yang benar-benar terang (bukan gelap)
+   Aturan: mode gelap = background gelap; mode terang = background terang.
+   Scope: html[data-theme="light"] + !important untuk mengalahkan "Perisai tema".
+   ========================================================================== */
+html[data-theme="light"] .kh-hero { background: #f5f0e8; }
+html[data-theme="light"] .kh-hero-veil {
+  background:
+    linear-gradient(180deg, rgba(250,247,240,.86) 0%, rgba(250,247,240,.38) 38%, rgba(250,247,240,.55) 68%, #f5f0e8 100%),
+    linear-gradient(90deg, rgba(250,247,240,.5) 0%, transparent 50%, rgba(250,247,240,.5) 100%);
+}
+html[data-theme="light"] .kh-hero .kh-title { color: #0b2b2b !important; text-shadow: none !important; }
+html[data-theme="light"] .kh-sub { color: rgba(11,43,43,.74) !important; text-shadow: none !important; }
+html[data-theme="light"] .kh-badge {
+  background: rgba(168,127,46,.10) !important;
+  border-color: rgba(168,127,46,.35) !important;
+  color: #8a6a24 !important;
+}
+html[data-theme="light"] .kh-badge i { background: #a87f2e; }
+html[data-theme="light"] .kh-btn-ghost {
+  background: #ffffff !important; color: #0b2b2b !important;
+  border: 1px solid rgba(11,43,43,.2) !important;
+}
+html[data-theme="light"] .kh-btn-ghost:hover { border-color: #a87f2e !important; color: #8a6a24 !important; }
+html[data-theme="light"] .kh-proof { color: rgba(11,43,43,.7) !important; }
+html[data-theme="light"] .kh-proof svg { color: #9a742a !important; }
+html[data-theme="light"] .kh-scroll { color: rgba(11,43,43,.5) !important; }
+html[data-theme="light"] .kh-wave path { fill: #faf7f0 !important; }
+
+/* Fallback foto — versi terang */
+html[data-theme="light"] .kh-fb-masjid {
+  background: linear-gradient(160deg, #f8f2e4 0%, #f1e6cc 30%, #faf5e9 50%, #f3ead4 70%, #eee2c8 100%) !important;
+}
+html[data-theme="light"] .kh-fb-bahteramas {
+  background: linear-gradient(135deg, #f8f2e4 0%, #f5edd9 40%, #efe3c6 80%, #f3ead4 100%) !important;
+}
+html[data-theme="light"] .kh-fb-tugu {
+  background: linear-gradient(145deg, #f5edd9 0%, #efe3c6 60%, #f3ead4 100%) !important;
+}
+html[data-theme="light"] .kh-fb-komunitas {
+  background: linear-gradient(135deg, #f8f2e4 0%, #f1e6cc 50%, #efe3c6 100%) !important;
+}
+html[data-theme="light"] .kh-slot-duo {
+  background: linear-gradient(160deg, rgba(212,168,83,.10) 0%, rgba(245,240,232,.12) 50%, rgba(212,168,83,.06) 100%) !important;
+}
+
+/* Tipografi & aksen */
+html[data-theme="light"] .kh-wrap .kh-h2 { color: #0b2b2b !important; }
+html[data-theme="light"] .kh-desc,
+html[data-theme="light"] .kh-value-card p,
+html[data-theme="light"] .kh-eco-card p,
+html[data-theme="light"] .kh-baht-feat p,
+html[data-theme="light"] .kh-kom-body p { color: rgba(11,43,43,.68) !important; }
+html[data-theme="light"] .kh-label { color: #9a742a !important; }
+html[data-theme="light"] .kh-label::before { background: #9a742a !important; }
+html[data-theme="light"] .kh-h2 .kh-gold, html[data-theme="light"] .kh-gold {
+  background-image: linear-gradient(135deg, #a87f2e, #d4a853) !important;
+  -webkit-background-clip: text !important; background-clip: text !important; color: transparent !important;
+}
+
+/* Value strip */
+html[data-theme="light"] .kh-value { background: linear-gradient(180deg, #faf7f0 0%, #f5f0e8 100%) !important; }
+html[data-theme="light"] .kh-value-card h3 { color: #0b2b2b !important; }
+html[data-theme="light"] .kh-value-icon {
+  background: rgba(168,127,46,.10) !important;
+  border-color: rgba(168,127,46,.28) !important;
+  color: #9a742a !important;
+}
+
+/* Ekosistem */
+html[data-theme="light"] .kh-eco { background: #f5f0e8 !important; }
+html[data-theme="light"] .kh-eco-card {
+  background: #ffffff !important;
+  border-color: rgba(11,43,43,.1) !important;
+  box-shadow: 0 6px 22px rgba(11,43,43,.06);
+}
+html[data-theme="light"] .kh-eco-card:hover {
+  background: #ffffff !important;
+  border-color: rgba(168,127,46,.5) !important;
+  box-shadow: 0 16px 38px rgba(11,43,43,.1) !important;
+}
+html[data-theme="light"] .kh-eco-card h3 { color: #0b2b2b !important; }
+html[data-theme="light"] .kh-eco-icon { color: #9a742a !important; }
+html[data-theme="light"] .kh-eco-arrow {
+  background: rgba(168,127,46,.12) !important;
+  color: #9a742a !important;
+}
+
+/* Bahteramas */
+html[data-theme="light"] .kh-baht { background: #faf7f0 !important; }
+html[data-theme="light"] .kh-baht-veil {
+  background: linear-gradient(180deg, #faf7f0 0%, rgba(250,247,240,.88) 28%, rgba(250,247,240,.88) 72%, #faf7f0 100%) !important;
+}
+html[data-theme="light"] .kh-baht-feat {
+  background: #ffffff !important;
+  border-color: rgba(11,43,43,.1) !important;
+}
+html[data-theme="light"] a.kh-baht-feat:hover {
+  background: rgba(212,168,83,.1) !important;
+  border-color: rgba(168,127,46,.35) !important;
+}
+html[data-theme="light"] .kh-baht-feat h4 { color: #0b2b2b !important; }
+html[data-theme="light"] .kh-baht-feat-ic {
+  background: rgba(168,127,46,.12) !important;
+  color: #9a742a !important;
+}
+html[data-theme="light"] .kh-baht-visual {
+  border-color: rgba(11,43,43,.12) !important;
+  box-shadow: 0 20px 50px rgba(11,43,43,.12) !important;
+}
+
+/* Komunitas */
+html[data-theme="light"] .kh-kom {
+  background: linear-gradient(180deg, #faf7f0 0%, #f5f0e8 55%, #faf7f0 100%) !important;
+}
+html[data-theme="light"] .kh-kom-card {
+  background: #ffffff !important;
+  border-color: rgba(11,43,43,.1) !important;
+}
+html[data-theme="light"] .kh-kom-card:hover {
+  border-color: rgba(168,127,46,.4) !important;
+  box-shadow: 0 14px 34px rgba(11,43,43,.1) !important;
+}
+html[data-theme="light"] .kh-kom-shade {
+  background: linear-gradient(180deg, transparent 42%, rgba(250,247,240,.96) 100%) !important;
+}
+html[data-theme="light"] .kh-kom-body h3 { color: #0b2b2b !important; }
+html[data-theme="light"] .kh-kom-tag {
+  background: rgba(168,127,46,.12) !important;
+  border-color: rgba(168,127,46,.32) !important;
+  color: #8a6a24 !important;
+}

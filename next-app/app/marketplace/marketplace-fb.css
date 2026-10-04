@@ -502,6 +502,20 @@
   filter: brightness(0.94);
 }
 
+/* Tombol akses posting/jual ala Facebook — Link disamakan tampilannya dengan button */
+a.fbm-action-btn {
+  text-decoration: none;
+}
+
+@media (max-width: 640px) {
+  /* Di layar kecil tombol Jual selalu terlihat di awal baris aksi */
+  .fbm-sell-btn {
+    order: -1;
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+}
+
 /* Chip filter aktif */
 .fbm-chips {
   display: flex;

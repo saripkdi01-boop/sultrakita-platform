@@ -1,5 +1,7 @@
 'use client';
 
+import './home-wc.css';
+import './kendari-home.css';
 import Image from 'next/image';
 import Link from 'next/link';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
@@ -23,30 +25,20 @@ import {
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { sukiMotion } from '@/lib/motion-tokens';
+import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
+import KendariHero from '@/components/kendari/KendariHero';
 import {
-  EcosystemJobs,
-  EcosystemKomunitas,
-  EcosystemMarketplace,
-  EcosystemProperti,
-  NusantaraHero,
-} from '@/components/illustrations';
-import { Reveal } from '@/components/ui/Reveal';
+  KendariBahteramas,
+  KendariEcosystem,
+  KendariKomunitas,
+  KendariValue,
+} from '@/components/kendari/KendariSections';
 
-type EcosystemKey = 'marketplace' | 'properti' | 'jobs' | 'groups';
-
-const ecosystem: Array<{
-  key: EcosystemKey;
-  icon: typeof ShoppingBag;
-  label: string;
-  title: string;
-  text: string;
-  href: string;
-  tone: string;
-}> = [
-  { key: 'marketplace', icon: ShoppingBag, label: 'Marketplace', title: 'Belanja lokal', text: 'Produk dan layanan yang dibuat dekat dengan kebutuhan warga.', href: '/marketplace', tone: 'mint' },
-  { key: 'properti', icon: Building2, label: 'Properti', title: 'Ruang & properti', text: 'Rumah, tanah, ruang usaha, dan peluang di sekitar Anda.', href: '/properti', tone: 'sand' },
-  { key: 'jobs', icon: BriefcaseBusiness, label: 'Peluang', title: 'Kerja & karier', text: 'Lowongan dan peluang kolaborasi dengan talenta lokal.', href: '/jobs', tone: 'blue' },
-  { key: 'groups', icon: Users, label: 'Komunitas', title: 'Ruang warga', text: 'Cerita, diskusi, dan hubungan yang tumbuh dari sekitar.', href: '/groups', tone: 'peach' },
+const ecosystemLinks = [
+  { label: 'Marketplace', href: '/marketplace' },
+  { label: 'Properti', href: '/properti' },
+  { label: 'Peluang', href: '/jobs' },
+  { label: 'Komunitas', href: '/groups' },
 ];
 
 const quickLinks = [
@@ -57,133 +49,12 @@ const quickLinks = [
   { icon: Store, label: 'Untuk bisnis', href: '/Business' },
 ];
 
-// Visual Transformation V1.0 — ilustrasi tiap ruang + aksen warna khasnya.
-const ecosystemArt: Record<EcosystemKey, { Art: typeof EcosystemMarketplace; accent: string }> = {
-  marketplace: { Art: EcosystemMarketplace, accent: 'accent-teal' },
-  properti: { Art: EcosystemProperti, accent: 'accent-ocean' },
-  jobs: { Art: EcosystemJobs, accent: 'accent-gold' },
-  groups: { Art: EcosystemKomunitas, accent: 'accent-coral' },
-};
-
-/**
- * HeroArt — ilustrasi Digital Nusantara berlapis dengan parallax pointer.
- * Hanya menggerakkan transform (tanpa layout shift); nonaktif total saat
- * prefers-reduced-motion. Murni visual, tidak mengubah fungsi hero.
- */
-function HeroArt() {
-  const reduceMotion = useReducedMotion();
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || reduceMotion) return;
-    let raf = 0;
-    const onMove = (event: PointerEvent) => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => {
-        const rect = el.getBoundingClientRect();
-        const x = (event.clientX - rect.left) / rect.width - 0.5;
-        const y = (event.clientY - rect.top) / rect.height - 0.5;
-        el.querySelectorAll<SVGGElement>('.dn-layer').forEach((layer) => {
-          const depth = parseFloat(layer.dataset.depth || '0');
-          layer.style.transform =
-            `translate3d(${(-x * depth * 44).toFixed(1)}px, ${(-y * depth * 28).toFixed(1)}px, 0)`;
-        });
-      });
-    };
-    el.addEventListener('pointermove', onMove);
-    return () => { el.removeEventListener('pointermove', onMove); cancelAnimationFrame(raf); };
-  }, [reduceMotion]);
-
-  return (
-    <div ref={ref} className="dn-hero-art">
-      <NusantaraHero
-        className="dn-hero-svg"
-        title="Ilustrasi Digital Nusantara: pesisir Sulawesi Tenggara — rumah panggung, nelayan, pedagang pasar, pelaku UMKM, dan anak muda berteknologi"
-      />
-      <div className="dn-hero-badges" aria-hidden="true">
-        <span className="dn-hero-badge"><i />Pasar lokal</span>
-        <span className="dn-hero-badge"><i />Komunitas</span>
-      </div>
-    </div>
-  );
-}
-
-const principles = [
-  { number: '01', title: 'Dekat dengan kebutuhan', text: 'Mulai dari hal yang memang dicari warga setiap hari.' },
-  { number: '02', title: 'Satu ruang yang terhubung', text: 'Pindah dari menemukan ke berinteraksi tanpa kehilangan konteks.' },
-  { number: '03', title: 'Dibangun untuk bertumbuh', text: 'Ruang yang sama dapat berkembang bersama warga dan pelaku usaha.' },
-];
-
-function EcosystemMap({ active, onSelect }: { active: EcosystemKey; onSelect: (key: EcosystemKey) => void }) {
-  const reduceMotion = useReducedMotion();
-  const activeItem = ecosystem.find((item) => item.key === active) ?? ecosystem[0];
-  const ActiveIcon = activeItem.icon;
-  return (
-    <div className="suki-map" role="group" aria-label="Peta interaktif ekosistem SUKI">
-      <div className="suki-map-ring ring-large" aria-hidden="true" />
-      <div className="suki-map-ring ring-small" aria-hidden="true" />
-      <div className="suki-map-lines" aria-hidden="true"><i /><i /><i /><i /></div>
-      <motion.div
-        className="suki-map-core"
-        layout={!reduceMotion}
-        transition={sukiMotion.spring.gentle}
-      >
-        <span><Image src="/brand/suki-logo-mark.svg" alt="" width={23} height={23} /></span>
-        <strong>SUKI</strong>
-        <small>ruang lokal</small>
-      </motion.div>
-      {ecosystem.map((item) => {
-        const Icon = item.icon;
-        const selected = item.key === active;
-        return (
-          <motion.button
-            key={item.key}
-            type="button"
-            className={`suki-map-node node-${item.key} ${selected ? 'is-active' : ''}`}
-            onClick={() => onSelect(item.key)}
-            onMouseEnter={() => onSelect(item.key)}
-            onFocus={() => onSelect(item.key)}
-            aria-pressed={selected}
-            aria-label={`${item.title}: ${item.text}`}
-            whileHover={reduceMotion ? undefined : { scale: 1.04 }}
-            whileTap={reduceMotion ? undefined : { scale: 0.97 }}
-            transition={sukiMotion.spring.press}
-          >
-            <span className="suki-map-node-icon"><Icon size={18} aria-hidden="true" /></span>
-            <span><b>{item.label}</b><small>{selected ? 'dipilih' : 'jelajahi'}</small></span>
-          </motion.button>
-        );
-      })}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeItem.key}
-          className="suki-map-detail-wrap"
-          initial={reduceMotion ? false : { opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -8 }}
-          transition={{ duration: sukiMotion.duration.standard, ease: sukiMotion.ease.out }}
-        >
-          <Link href={activeItem.href} className="suki-map-detail" aria-label={`Jelajahi ${activeItem.title}`}>
-            <span className={`suki-map-detail-icon tone-${activeItem.tone}`}><ActiveIcon size={16} aria-hidden="true" /></span>
-            <span><small>{activeItem.label}</small><strong>{activeItem.title}</strong></span>
-            <ArrowRight size={16} aria-hidden="true" />
-          </Link>
-        </motion.div>
-      </AnimatePresence>
-    </div>
-  );
-}
-
 export default function HomeClient() {
   const reduceMotion = useReducedMotion();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
-  const [activeNode, setActiveNode] = useState<EcosystemKey>('marketplace');
-  const [activeStep, setActiveStep] = useState(0);
-  const stepsRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchShellRef = useRef<HTMLDivElement>(null);
@@ -191,20 +62,6 @@ export default function HomeClient() {
   useEffect(() => {
     const current = document.documentElement.dataset.theme;
     if (current === 'dark' || current === 'light') setTheme(current);
-  }, []);
-
-  useEffect(() => {
-    const root = stepsRef.current;
-    if (!root) return;
-    const items = Array.from(root.querySelectorAll<HTMLElement>('[data-step]'));
-    const observer = new IntersectionObserver(
-      (entries) => entries.forEach((entry) => {
-        if (entry.isIntersecting) setActiveStep(Number(entry.target.getAttribute('data-step')));
-      }),
-      { rootMargin: '-35% 0px -45% 0px', threshold: 0 },
-    );
-    items.forEach((item) => observer.observe(item));
-    return () => observer.disconnect();
   }, []);
 
   // Keyboard: ⌘K / Ctrl+K membuka–menutup (toggle) pencarian, Escape menutup menu & pencarian.
@@ -260,16 +117,6 @@ export default function HomeClient() {
     [reduceMotion],
   );
 
-  const heroItem = useMemo(
-    () => (reduceMotion
-      ? { hidden: { opacity: 1 }, show: { opacity: 1 } }
-      : {
-          hidden: { opacity: 0, y: 26 },
-          show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: sukiMotion.ease.out } },
-        }),
-    [reduceMotion],
-  );
-
   function toggleTheme() {
     const next = theme === 'dark' ? 'light' : 'dark';
     document.documentElement.dataset.theme = next;
@@ -306,7 +153,8 @@ export default function HomeClient() {
           </Link>
           <nav id="suki-primary-navigation" aria-label="Navigasi utama">
             <a href="#ekosistem" onClick={closeMenu}>Ekosistem</a>
-            <a href="#cara-kerja" onClick={closeMenu}>Cara kerja</a>
+            <a href="#menghubungkan" onClick={closeMenu}>Menghubungkan</a>
+            <a href="#komunitas" onClick={closeMenu}>Komunitas</a>
             <a href="#tentang" onClick={closeMenu}>Tentang</a>
             <Link href="/Business" onClick={closeMenu}>Untuk bisnis</Link>
             <span className="suki-overhaul-menu-extra">
@@ -315,6 +163,7 @@ export default function HomeClient() {
             </span>
           </nav>
           <div className="suki-overhaul-header-actions">
+            <LanguageSwitcher variant="dropdown" showLabel={false} />
             <button
               className="suki-overhaul-theme"
               type="button"
@@ -329,6 +178,16 @@ export default function HomeClient() {
             <Link href="/beranda" className="suki-overhaul-header-cta">Buka SUKI <ArrowRight size={15} aria-hidden="true" /></Link>
           </div>
           <button
+            className="suki-overhaul-theme-icon"
+            type="button"
+            onClick={toggleTheme}
+            aria-label={`Aktifkan mode ${theme === 'dark' ? 'terang' : 'gelap'}`}
+            aria-pressed={theme === 'dark'}
+            title={theme === 'dark' ? 'Mode terang' : 'Mode gelap'}
+          >
+            {theme === 'dark' ? <Sun size={18} aria-hidden="true" /> : <span className="suki-moon" aria-hidden="true" />}
+          </button>
+          <button
             ref={menuButtonRef}
             className="suki-overhaul-menu"
             type="button"
@@ -342,39 +201,13 @@ export default function HomeClient() {
         </div>
       </header>
 
-      <section id="main-content" className="suki-overhaul-hero" aria-labelledby="hero-title">
-        <div className="suki-overhaul-container suki-overhaul-hero-grid">
-          <motion.div
-            className="suki-overhaul-hero-copy"
-            variants={{ hidden: {}, show: { transition: { staggerChildren: reduceMotion ? 0 : 0.09, delayChildren: 0.05 } } }}
-            initial="hidden"
-            animate="show"
-          >
-            <motion.div variants={heroItem}>
-              <span className="suki-overhaul-pill"><i aria-hidden="true" /> Dibuat untuk Sulawesi Tenggara</span>
-            </motion.div>
-            <motion.h1 id="hero-title" variants={heroItem}>Temukan yang dekat.<br /><em>Bangun yang berarti.</em></motion.h1>
-            <motion.p variants={heroItem}>SUKI Apps menghubungkan produk lokal, properti, peluang kerja, komunitas, dan bisnis dalam satu pengalaman digital yang sederhana.</motion.p>
-            <motion.div className="suki-overhaul-hero-actions" variants={heroItem}>
-              <Link href="/beranda" className="suki-overhaul-primary">Mulai menjelajah <ArrowRight size={17} aria-hidden="true" /></Link>
-              <Link href="/Business" className="suki-overhaul-secondary">Saya punya bisnis <BriefcaseBusiness size={16} aria-hidden="true" /></Link>
-            </motion.div>
-            <motion.div className="suki-overhaul-proof" variants={heroItem} aria-label="Nilai yang dipegang SUKI Apps">
-              <span><Check size={14} aria-hidden="true" /> Lokal-first</span>
-              <span><Check size={14} aria-hidden="true" /> Mudah digunakan</span>
-              <span><Check size={14} aria-hidden="true" /> Terus berkembang</span>
-            </motion.div>
-          </motion.div>
-          <motion.div
-            className="suki-overhaul-hero-map"
-            initial={reduceMotion ? false : { opacity: 0, scale: 0.97 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, ease: sukiMotion.ease.out, delay: reduceMotion ? 0 : 0.15 }}
-          >
-            <HeroArt />
-          </motion.div>
-        </div>
-      </section>
+      <div id="main-content">
+        <KendariHero />
+      </div>
+
+      <div className="wc-tenun-strip" aria-hidden="true" />
+
+      <KendariValue />
 
       <section className="suki-overhaul-search-band" aria-label="Pencarian SUKI Apps">
         <div className="suki-overhaul-container">
@@ -420,8 +253,8 @@ export default function HomeClient() {
                   <div className="suki-overhaul-search-suggestions">
                     <span id="suki-search-suggestions-label">Atau jelajahi ruang:</span>
                     <div role="group" aria-labelledby="suki-search-suggestions-label">
-                      {ecosystem.map((item) => (
-                        <Link key={item.key} href={item.href}>{item.label}</Link>
+                      {ecosystemLinks.map((item) => (
+                        <Link key={item.label} href={item.href}>{item.label}</Link>
                       ))}
                     </div>
                   </div>
@@ -443,72 +276,11 @@ export default function HomeClient() {
         </div>
       </section>
 
-      <motion.section className="suki-overhaul-section" id="ekosistem" aria-labelledby="ecosystem-title" {...revealProps}>
-        <div className="suki-overhaul-container">
-          <div className="suki-overhaul-section-heading">
-            <div>
-              <span className="suki-overhaul-kicker">Ekosistem SUKI</span>
-              <h2 id="ecosystem-title">Empat ruang.<br /><em>Satu koneksi.</em></h2>
-            </div>
-            <p>SUKI membantu kebutuhan, peluang, dan hubungan lokal bergerak dalam satu alur yang terasa dekat.</p>
-          </div>
-          <EcosystemMap active={activeNode} onSelect={setActiveNode} />
-          <div className="dn-eco-grid">
-            {ecosystem.map((item, index) => {
-              const { Art, accent } = ecosystemArt[item.key];
-              return (
-                <Reveal key={item.key} delay={index * 70} className="dn-eco-reveal">
-                  <Link
-                    href={item.href}
-                    className={`dn-eco-card ${accent}`}
-                    aria-label={`${item.label} — ${item.title}: ${item.text}`}
-                  >
-                    <span className={`dn-eco-art ${accent}`} aria-hidden="true"><Art /></span>
-                    <span className="dn-eco-body">
-                      <span className="dn-eco-label">{item.label}</span>
-                      <strong className="dn-eco-title">{item.title}</strong>
-                      <span className="dn-eco-text">{item.text}</span>
-                      <span className="dn-eco-link">Jelajahi ruang <ArrowRight size={15} aria-hidden="true" /></span>
-                    </span>
-                  </Link>
-                </Reveal>
-              );
-            })}
-          </div>
-        </div>
-      </motion.section>
+      <KendariEcosystem />
 
-      <section className="suki-overhaul-process" id="cara-kerja" aria-labelledby="process-title">
-        <div className="suki-overhaul-container">
-          <div className="suki-overhaul-section-heading">
-            <div>
-              <span className="suki-overhaul-kicker">Cara kerja</span>
-              <h2 id="process-title">Sederhana dari awal<br />sampai <em>selesai.</em></h2>
-            </div>
-            <p>Jangan membuat pengguna berpikir terlalu keras. SUKI membantu bergerak dari kebutuhan ke aksi dengan jalur yang jelas.</p>
-          </div>
-          <div className="suki-overhaul-process-layout">
-            <div className="suki-overhaul-process-rail" aria-hidden="true">
-              <span className="rail-track" /><span className="rail-progress" style={{ height: `${((activeStep + 1) / principles.length) * 100}%` }} />
-            </div>
-            <div className="suki-overhaul-process-steps" ref={stepsRef}>
-              {principles.map((step, index) => (
-                <article key={step.number} data-step={index} className={activeStep === index ? 'is-active' : ''}>
-                  <span className="suki-overhaul-step-number">{step.number}</span>
-                  <div><h3>{step.title}</h3><p>{step.text}</p></div>
-                  <motion.span
-                    className="suki-overhaul-step-arrow"
-                    animate={{ x: activeStep === index && !reduceMotion ? 5 : 0 }}
-                    aria-hidden="true"
-                  >
-                    <ArrowRight size={18} />
-                  </motion.span>
-                </article>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+      <KendariBahteramas />
+
+      <KendariKomunitas />
 
       <motion.section className="suki-overhaul-about" id="tentang" aria-labelledby="about-title" {...revealProps}>
         <div className="suki-overhaul-container suki-overhaul-about-grid">
@@ -557,6 +329,8 @@ export default function HomeClient() {
           </div>
         </div>
       </section>
+
+      <div className="wc-tenun-strip" aria-hidden="true" />
 
       <footer className="suki-overhaul-footer">
         <div className="suki-overhaul-container">

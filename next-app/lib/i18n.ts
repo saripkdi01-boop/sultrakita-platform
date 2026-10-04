@@ -26,5 +26,8 @@ const labels: Record<LanguageCode, Labels> = {
   sw: { settings: 'Mipangilio', privacy: 'Kituo cha Faragha', language: 'Lugha', darkMode: 'Hali nyeusi', lightMode: 'Hali angavu', active: 'Inatumika', chooseLanguage: 'Chagua lugha', system: 'Fuata kifaa', premium: 'SultraKita Premium', logout: 'Toka' },
   bn: { settings: 'সেটিংস', privacy: 'গোপনীয়তা কেন্দ্র', language: 'ভাষা', darkMode: 'ডার্ক মোড', lightMode: 'লাইট মোড', active: 'সক্রিয়', chooseLanguage: 'ভাষা বেছে নিন', system: 'ডিভাইস অনুসরণ করুন', premium: 'SultraKita Premium', logout: 'লগ আউট' },
   ur: { settings: 'ترتیبات', privacy: 'رازداری مرکز', language: 'زبان', darkMode: 'ڈارک موڈ', lightMode: 'لائٹ موڈ', active: 'فعال', chooseLanguage: 'زبان منتخب کریں', system: 'ڈیوائس کی پیروی کریں', premium: 'SultraKita Premium', logout: 'لاگ آؤٹ' },
+  ta: { settings: 'அமைப்புகள்', privacy: 'தனியுரிமை மையம்', language: 'மொழி', darkMode: 'இருண்ட பயன்முறை', lightMode: 'ஒளி பயன்முறை', active: 'செயலில்', chooseLanguage: 'மொழியைத் தேர்வு', system: 'சாதனத்தைப் பின்பற்று', premium: 'SultraKita Premium', logout: 'வெளியேறு' },
+  fa: { settings: 'تنظیمات', privacy: 'مرکز حریم خصوصی', language: 'زبان', darkMode: 'حالت تیره', lightMode: 'حالت روشن', active: 'فعال', chooseLanguage: 'انتخاب زبان', system: 'پیروی از دستگاه', premium: 'SultraKita Premium', logout: 'خروج' },
+  my: { settings: 'ဆက်တင်များ', privacy: 'ကိုယ်ရေးကိုယ်တာ စင်တာ', language: 'ဘာသာစကား', darkMode: 'အမှောင် မုဒ်', lightMode: 'အလင်း မုဒ်', active: 'တက်ကြွ', chooseLanguage: 'ဘာသာစကား ရွေးပါ', system: 'စက်ပစ္စည်း အတိုင်း', premium: 'SultraKita Premium', logout: 'ထွက်ရန်' },
 };
 export function getLabels(language: LanguageCode) { return labels[language] || labels.id; }

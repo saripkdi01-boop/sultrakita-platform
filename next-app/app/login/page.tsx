@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import './login-wc.css';
 import { AuthGate } from '@/components/auth/AuthGate';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { isFacebookLoginEnabled } from '@/lib/settings/feature-flags';

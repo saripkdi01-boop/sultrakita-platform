@@ -1,0 +1,59 @@
+/* SUKI Apps — Language Switcher styles */
+
+.suki-lang-dropdown { position: relative; display: inline-block; }
+.suki-lang-toggle {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 12px; border-radius: 999px;
+  border: 1px solid var(--line, #e5e7eb);
+  background: var(--surface, #fff); color: inherit;
+  font-size: 13px; font-weight: 500; cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+.suki-lang-toggle:hover { border-color: var(--sultra-teal, #0d7377); }
+.suki-lang-toggle svg:last-child { transition: transform .15s; }
+.suki-lang-toggle svg.rotate-180 { transform: rotate(180deg); }
+
+.suki-lang-menu {
+  position: absolute; top: calc(100% + 8px); right: 0;
+  min-width: 220px; max-height: 320px; overflow-y: auto;
+  background: var(--surface, #fff);
+  border: 1px solid var(--line, #e5e7eb); border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0,0,0,.12);
+  padding: 6px; z-index: 100;
+}
+.suki-lang-menu button {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; padding: 9px 12px; border: 0; border-radius: 8px;
+  background: transparent; font-size: 13px; cursor: pointer; color: inherit;
+}
+.suki-lang-menu button:hover { background: var(--hover, #f3f4f6); }
+.suki-lang-menu button.active { background: var(--sultra-mint, #e6f4f1); font-weight: 600; }
+
+.suki-lang-select { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.suki-lang-select > span { display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }
+.suki-lang-select select {
+  padding: 8px 12px; border-radius: 8px;
+  border: 1px solid var(--line, #e5e7eb);
+  background: var(--surface, #fff); color: inherit; font-size: 14px; cursor: pointer;
+}
+
+.suki-lang-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+.suki-lang-grid button {
+  display: flex; align-items: center; gap: 6px;
+  padding: 10px 12px; border-radius: 10px;
+  border: 1px solid var(--line, #e5e7eb);
+  background: var(--surface, #fff); color: inherit;
+  font-size: 13px; cursor: pointer; text-align: left;
+}
+.suki-lang-grid button:hover { border-color: var(--sultra-teal, #0d7377); }
+.suki-lang-grid button.active {
+  border-color: var(--sultra-teal, #0d7377);
+  background: var(--sultra-mint, #e6f4f1); font-weight: 600;
+}
+
+/* RTL support */
+[dir="rtl"] .suki-lang-menu { right: auto; left: 0; }
+
+@media (max-width: 640px) {
+  .suki-lang-menu { min-width: 180px; }
+}

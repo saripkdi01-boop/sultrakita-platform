@@ -159,6 +159,22 @@ async function hasCreateColumns(client: PromoProbeClient): Promise<boolean> {
   return createColumnsAvailable;
 }
 
+// Kolom moderation_status (migrasi 018_listing_moderation_status.sql).
+// Dipakai agar listing yang DITARIK admin (moderation_status='rejected')
+// tidak tampil di publik. Di-probe seperti kolom lain agar aman bila
+// migrasi belum dijalankan di environment tertentu.
+let moderationColumnAvailable: boolean | null = null;
+async function hasModerationColumn(client: PromoProbeClient): Promise<boolean> {
+  if (moderationColumnAvailable !== null) return moderationColumnAvailable;
+  try {
+    const { error } = await client.from('listings').select('moderation_status').limit(1);
+    moderationColumnAvailable = !error;
+  } catch {
+    moderationColumnAvailable = false;
+  }
+  return moderationColumnAvailable;
+}
+
 export async function fetchPublicListings(filters: ListingFilters): Promise<ListingsQueryResult> {
   const queryText = filters.q?.trim();
   const district = filters.district?.trim();
@@ -183,6 +199,11 @@ export async function fetchPublicListings(filters: ListingFilters): Promise<List
     // varian tanpa images/owner_id dipakai bila kolom belum ada di DB.
     const selectColumns = (createColumns ? fullSelect : baseSelect) as typeof fullSelect;
     let query = client.from('listings').select(selectColumns).in('status', ['published', 'active']).or('is_demo.is.null,is_demo.eq.false');
+    // Listing yang ditarik admin (moderation_status='rejected') disembunyikan
+    // dari publik meski status legacy-nya masih 'active'.
+    if (await hasModerationColumn(client as unknown as PromoProbeClient)) {
+      query = query.neq('moderation_status', 'rejected');
+    }
     // Fase 2.1: sort server-side agar konsisten antara SSR & API.
     if (sort === 'termurah') query = query.order('price', { ascending: true }).order('created_at', { ascending: false });
     else if (sort === 'termahal') query = query.order('price', { ascending: false }).order('created_at', { ascending: false });

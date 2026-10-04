@@ -1,36 +1,78 @@
+import { createElement } from 'react';
+import type { ComponentType, ReactElement, SVGProps } from 'react';
 import {
   AlertTriangle,
   Bookmark,
   BriefcaseBusiness,
-  CalendarDays,
   Check,
   Clock3,
   CreditCard,
   FileText,
-  Globe2,
-  Handshake,
   HelpCircle,
-  History,
-  Building2,
+  Home,
+  Inbox,
+  KeyRound,
+  Languages,
   Link2,
   LockKeyhole,
   Megaphone,
-  MessageCircle,
   Palette,
   Shield,
-  ShoppingBag,
-  Sparkles,
   Store,
-  UserRound,
-  Users,
-  UserPlus,
   type LucideIcon,
 } from 'lucide-react';
+import {
+  SukiIconAjakTeman,
+  SukiIconBisnis,
+  SukiIconJobs,
+  SukiIconKampung,
+  SukiIconKomunitas,
+  SukiIconMarketplace,
+  SukiIconPesan,
+  SukiIconProperti,
+  SukiIconWebStudio,
+} from '@/components/layout/SukiIcons';
+
+/* ==========================================================================
+   Ikon & nama menu sidebar.
+
+   Setiap item HARUS mencerminkan realita ekosistem: nama menunya = nama
+   produk/fitur yang benar-benar ada (rute + backend/API-nya hidup), ikonnya
+   memakai set ikon khas SUKI (garis 2px + titik emas #FFD766) bila tersedia,
+   fallback ke Lucide bila belum ada ikon khasnya.
+
+   Audit realita 2026-10-03:
+   - /chat DINONAKTIFKAN (placeholder "segera hadir", gateway WebSocket belum
+     ada) -> menu SUKI Chat diberi badge jujur "Segera", bukan seolah hidup.
+   - Tidak ada backend/frontend AI apapun di main (CS WA masih di branch
+     fitur/ai-customer-service, belum deploy) -> item "SUKI AI" DIHAPUS.
+   - Tidak ada fitur, tabel, API, maupun anchor "Kenangan" dimanapun ->
+     item "Kenangan" DIHAPUS.
+   - Badge jumlah "Tersimpan" sebelumnya hardcoded '4' (data palsu) ->
+     badge dihapus; jumlah nyata bisa dihitung dari GET /api/saved.
+   - "SUKI Suits" -> "SUKI Properti": /properti adalah direktori real estate
+     (tabel properties + inquiry hidup), bukan "suits".
+   - "SUKI Events" -> /groups adalah label salah (itu Grup/Komunitas);
+     diganti "SUKI Kampung" (/kampung live, mode demo jujur).
+   ========================================================================== */
+
+export type MenuIconProps = { size?: number | string; className?: string };
+export type MenuIcon = ComponentType<MenuIconProps>;
+
+/** Bungkus ikon khas SUKI (SVGProps) agar bisa dipakai sebagai ikon menu. */
+function suki(SukiIcon: (props: SVGProps<SVGSVGElement>) => ReactElement): MenuIcon {
+  return function SukiMenuIcon({ size = 18, className }: MenuIconProps) {
+    return createElement(SukiIcon, { width: size, height: size, className, 'aria-hidden': true });
+  };
+}
+
+/** LucideIcon sudah kompatibel dengan MenuIcon (size + className opsional). */
+const lucide = (Icon: LucideIcon): MenuIcon => Icon;
 
 export type MenuItemConfig = {
   label: string;
   route: string;
-  icon: LucideIcon;
+  icon: MenuIcon;
   badge?: string;
   active?: boolean;
   interactive?: 'campaign';
@@ -41,60 +83,59 @@ export const menuSections: { title: string; items: MenuItemConfig[] }[] = [
   {
     title: 'Pintasan Anda',
     items: [
-      { label: 'Beranda', route: '/beranda', icon: Globe2 },
-      { label: 'SUKI Marketplace', route: '/marketplace', icon: ShoppingBag },
-      { label: 'SUKI Suits', route: '/properti', icon: Building2 },
-      { label: 'SUKI Chat', route: '/chat', icon: MessageCircle },
-      { label: 'Grup', route: '/groups', icon: Users },
+      { label: 'Beranda', route: '/beranda', icon: lucide(Home) },
+      { label: 'SUKI Marketplace', route: '/marketplace', icon: suki(SukiIconMarketplace) },
+      { label: 'SUKI Properti', route: '/properti', icon: suki(SukiIconProperti) },
+      { label: 'SUKI Chat', route: '/chat', icon: suki(SukiIconPesan), badge: 'Segera' },
+      { label: 'Grup', route: '/groups', icon: suki(SukiIconKomunitas) },
     ],
   },
   {
     title: 'Menu Utama',
     items: [
-      { label: 'SUKI AI', route: '/chat', icon: Sparkles },
-      { label: 'Tersimpan', route: '/marketplace/profile#saved', icon: Bookmark, badge: '4' },
-      { label: 'Kenangan', route: '/beranda#memories', icon: History },
-      { label: 'Ajak Teman', route: '/ajak-teman', icon: UserPlus, badge: 'NEW' },
-      { label: 'Properti Saya', route: '/dashboard/properties', icon: Building2 },
-      { label: 'Pesan Properti', route: '/dashboard/inquiries', icon: MessageCircle },
+      { label: 'Tersimpan', route: '/marketplace/profile#saved', icon: lucide(Bookmark) },
+      { label: 'Ajak Teman', route: '/ajak-teman', icon: suki(SukiIconAjakTeman), badge: 'NEW' },
+      { label: 'Properti Saya', route: '/dashboard/properties', icon: lucide(KeyRound) },
+      { label: 'Pesan Properti', route: '/dashboard/inquiries', icon: lucide(Inbox) },
     ],
   },
   {
     title: 'Bantuan dan Dukungan',
     items: [
-      { label: 'Pusat Perlindungan Penipuan', route: '/security-center', icon: Shield },
-      { label: 'Dukungan', route: '/support', icon: HelpCircle },
-      { label: 'Laporkan masalah', route: '/support#report', icon: AlertTriangle },
-      { label: 'Ketentuan dan Kebijakan', route: '/help-center', icon: FileText },
+      { label: 'Pusat Perlindungan Penipuan', route: '/security-center', icon: lucide(Shield) },
+      { label: 'Dukungan', route: '/support', icon: lucide(HelpCircle) },
+      { label: 'Laporkan masalah', route: '/support#report', icon: lucide(AlertTriangle) },
+      { label: 'Ketentuan dan Kebijakan', route: '/help-center', icon: lucide(FileText) },
     ],
   },
   {
     title: 'Pengaturan dan Privasi',
     items: [
-      { label: 'Pengaturan', route: '/dashboard', icon: Palette },
-      { label: 'Pusat Privasi', route: '/security-center', icon: LockKeyhole },
-      { label: 'Manajemen waktu', route: '/dashboard', icon: Clock3 },
-      { label: 'Permintaan perangkat', route: '/security-center', icon: Check },
-      { label: 'Aktivitas iklan terkini', route: '/help-center', icon: BriefcaseBusiness },
-      { label: 'Pesanan dan pembayaran', route: '/dashboard/inquiries', icon: CreditCard },
-      { label: 'Riwayat tautan', route: '/security-center', icon: Link2 },
-      { label: 'Mode gelap', route: '#dark-mode', icon: Palette },
-      { label: 'Bahasa', route: '#language', icon: Globe2 },
+      { label: 'Pengaturan', route: '/dashboard', icon: lucide(Palette) },
+      { label: 'Pusat Privasi', route: '/security-center', icon: lucide(LockKeyhole) },
+      { label: 'Manajemen waktu', route: '/dashboard', icon: lucide(Clock3) },
+      { label: 'Permintaan perangkat', route: '/security-center', icon: lucide(Check) },
+      { label: 'Aktivitas iklan terkini', route: '/help-center', icon: lucide(BriefcaseBusiness) },
+      { label: 'Pesanan dan pembayaran', route: '/dashboard/inquiries', icon: lucide(CreditCard) },
+      { label: 'Riwayat tautan', route: '/security-center', icon: lucide(Link2) },
+      { label: 'Mode gelap', route: '#dark-mode', icon: lucide(Palette) },
+      { label: 'Bahasa', route: '#language', icon: lucide(Languages) },
     ],
   },
   {
     title: 'EKOSISTEM SUKI',
     items: [
-      { label: 'SUKI Chat', route: '/chat', icon: MessageCircle },
-      { label: 'SUKI Campaign Hub', route: '/campaigns', icon: Megaphone, badge: 'LIVE', interactive: 'campaign' },
-      { label: 'SUKI Events', route: '/groups', icon: CalendarDays },
-      { label: 'SUKI Jobs', route: '/jobs', icon: BriefcaseBusiness, badge: 'NEW' },
-      { label: 'SUKI Suits', route: '/properti', icon: Building2 },
+      { label: 'SUKI Properti', route: '/properti', icon: suki(SukiIconProperti) },
+      { label: 'SUKI Jobs', route: '/jobs', icon: suki(SukiIconJobs), badge: 'NEW' },
+      { label: 'SUKI Kampung', route: '/kampung', icon: suki(SukiIconKampung), badge: 'Baru' },
+      { label: 'SUKI Web Studio', route: '/web-studio', icon: suki(SukiIconWebStudio), badge: 'Baru' },
+      { label: 'SUKI Campaign Hub', route: '/campaigns', icon: lucide(Megaphone), badge: 'LIVE', interactive: 'campaign' },
+      { label: 'Direktori Bisnis', route: '/Business', icon: suki(SukiIconBisnis) },
     ],
   },
   {
     title: 'Ekosistem Digital SultraKita',
-    items: [{ label: 'SUKI Partner', route: '#partner', icon: Handshake, badge: 'Segera hadir' }],
+    items: [{ label: 'SUKI Partner', route: '#partner', icon: lucide(Store), badge: 'Segera hadir' }],
   },
 ];
 

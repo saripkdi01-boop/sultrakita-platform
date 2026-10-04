@@ -14,6 +14,13 @@
 --   memperkenalkan kolom-kolom ini TIDAK PERNAH di-apply ke production,
 --   sehingga tabel production masih berwujud legacy (id integer, dst).
 --
+-- TAMBAHAN 2026-10-04 (fitur "Jual + auto-approve"):
+--   - moderation_status diperluas: 'auto_approved' (posting yang lolos
+--     prosedur ketentuan form -> disetujui otomatis, langsung tayang tanpa
+--     persetujuan manual admin)
+--   - approved_at / approved_by / rejection_reason: jejak audit moderasi
+--     yang tampil di halaman admin /admin/listings ("Listing").
+--
 -- IDEMPOTEN: aman dijalankan berulang (IF NOT EXISTS di semua pernyataan).
 -- TANPA perubahan data: hanya ADD COLUMN + INDEX + POLICY.
 -- RLS: tanpa auth.uid() = owner_id, insert terautentikasi tidak bisa
@@ -56,3 +63,30 @@ drop policy if exists "owners manage listings" on public.listings;
 create policy "owners manage listings" on public.listings
   for all using (auth.uid() = owner_id)
   with check (auth.uid() = owner_id);
+
+-- 6. Jejak auto-approve & moderasi admin (fitur "Jual + auto-approve") ----------
+--    Prosedur: POST /api/listings hanya menyetujui otomatis bila SEMUA
+--    ketentuan form lolos (rate limit, CSRF, login, validasi zod, sanitasi).
+--    Admin meninjau belakangan via /admin/listings: tarik (rejected) atau
+--    pulihkan (approved). Kolom ini opsional bagi kode (probe di
+--    lib/listings-query.ts) sehingga aman sebelum/sesudah migrasi jalan.
+alter table public.listings
+  add column if not exists approved_at timestamptz;
+
+alter table public.listings
+  add column if not exists approved_by text;
+
+alter table public.listings
+  add column if not exists rejection_reason text;
+
+-- Perluas nilai moderation_status: 'auto_approved' =
+-- disetujui otomatis sistem karena lolos seluruh ketentuan form.
+alter table public.listings
+  drop constraint if exists listings_moderation_status_check;
+
+alter table public.listings
+  add constraint listings_moderation_status_check
+  check (moderation_status in ('pending', 'approved', 'auto_approved', 'rejected'));
+
+create index if not exists listings_moderation_approved_idx
+  on public.listings (moderation_status, created_at desc);
