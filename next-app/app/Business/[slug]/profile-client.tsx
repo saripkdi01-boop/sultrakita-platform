@@ -10,10 +10,8 @@ import {
   MessageCircle,
   Phone,
 } from 'lucide-react';
-import {
-  BUSINESS_CATEGORIES,
-  type PublicBusiness,
-} from '@/lib/businesses-query';
+import { BUSINESS_CATEGORIES } from '@/lib/business-categories';
+import type { PublicBusiness } from '@/lib/businesses-query';
 import InquiryForm from './inquiry-form';
 import { toWaDigits, waLink } from '@/lib/whatsapp';
 import { usePreferences } from '@/lib/preferences';

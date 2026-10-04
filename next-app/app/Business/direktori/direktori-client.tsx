@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { ArrowLeft, BadgeCheck, Search } from 'lucide-react';
-import { BUSINESS_CATEGORIES, type PublicBusiness } from '@/lib/businesses-query';
+import { BUSINESS_CATEGORIES } from '@/lib/business-categories';
+import type { PublicBusiness } from '@/lib/businesses-query';
 import { usePreferences } from '@/lib/preferences';
 import { getGroupsLabels } from '@/lib/i18n/dict-groups';
 
