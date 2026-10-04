@@ -70,7 +70,14 @@ export async function getWishlistIds() {
   } catch (error) { return { ok: false as const, error: friendly(error), ids: [] as string[] }; }
 }
 
-// ---- Fase 2.3: galeri multi-foto via listing_media + direct upload R2 ----
+// ---- Galeri multi-foto: upload langsung ke Supabase Storage ----
+//
+// Menggantikan R2 (bucket expired 2026-10-04) dengan Supabase Storage bucket
+// `listing-photos` (public read). Alur: server memvalidasi + menyiapkan object
+// key (folder pertama = UID user, sesuai policy storage), browser mengunggah
+// bytes-nya langsung via supabase-js (tanpa melewatkan file lewat server).
+
+export const LISTING_PHOTOS_BUCKET = 'listing-photos';
 
 const mediaUploadSchema = z.object({
   fileName: z.string().trim().min(1).max(160),
@@ -78,27 +85,30 @@ const mediaUploadSchema = z.object({
   size: z.number().int().min(1).max(20 * 1024 * 1024, 'Ukuran file maksimal 20 MB.'),
 });
 
+export type ListingMediaUploadOk = {
+  ok: true;
+  key: string;
+  publicUrl: string;
+  contentType: string;
+};
+
 /**
- * Minta URL presigned POST agar browser upload langsung ke R2
- * (tanpa melewatkan byte file lewat server — hemat bandwidth & memori).
+ * Siapkan upload foto: validasi di server, kembalikan object key + URL publik.
+ * Browser kemudian mengunggah file-nya sendiri ke Supabase Storage.
  */
-export async function createListingMediaUpload(input: { fileName: string; contentType: string; size: number }) {
+export async function createListingMediaUpload(input: { fileName: string; contentType: string; size: number }): Promise<ListingMediaUploadOk | { ok: false; error: string }> {
   try {
-    await requireServerUser();
+    const { user } = await requireServerUser();
     const parsed = mediaUploadSchema.safeParse(input);
     if (!parsed.success) return { ok: false as const, error: parsed.error.issues[0]?.message || 'File tidak valid.' };
-    const endpoint = process.env.R2_ENDPOINT; const bucket = process.env.R2_BUCKET; const publicBaseUrl = process.env.R2_PUBLIC_BASE_URL;
-    if (!endpoint || !bucket || !process.env.R2_ACCESS_KEY_ID || !process.env.R2_SECRET_ACCESS_KEY) {
-      return { ok: false as const, error: 'Storage media belum dikonfigurasi.' };
-    }
-    const { S3Client } = await import('@aws-sdk/client-s3');
-    const { createPresignedPost } = await import('@aws-sdk/s3-presigned-post');
+    const base = (process.env.NEXT_PUBLIC_SUPABASE_URL || '').replace(/\/$/, '');
+    if (!base) return { ok: false as const, error: 'Konfigurasi Supabase belum lengkap.' };
     const { randomUUID } = await import('crypto');
     const safeName = parsed.data.fileName.toLowerCase().replace(/[^a-z0-9._-]/g, '-').slice(-120);
-    const key = `marketplace/${new Date().toISOString().slice(0, 10)}/${randomUUID()}-${safeName}`;
-    const client = new S3Client({ region: 'auto', endpoint, credentials: { accessKeyId: process.env.R2_ACCESS_KEY_ID, secretAccessKey: process.env.R2_SECRET_ACCESS_KEY } });
-    const presigned = await createPresignedPost(client, { Bucket: bucket, Key: key, Conditions: [['content-length-range', 1, parsed.data.size], ['eq', '$Content-Type', parsed.data.contentType]], Fields: { 'Content-Type': parsed.data.contentType }, Expires: 600 });
-    return { ok: true as const, ...(presigned as object), key, publicUrl: `${(publicBaseUrl || endpoint).replace(/\/$/, '')}/${key}` };
+    // Folder pertama HARUS uid user — diwajibkan policy storage "owner insert".
+    const key = `${user.id}/marketplace/${new Date().toISOString().slice(0, 10)}/${randomUUID()}-${safeName}`;
+    const publicUrl = `${base}/storage/v1/object/public/${LISTING_PHOTOS_BUCKET}/${key}`;
+    return { ok: true as const, key, publicUrl, contentType: parsed.data.contentType };
   } catch (error) { return { ok: false as const, error: friendly(error) }; }
 }
 

@@ -65,12 +65,11 @@ type FieldKey = 'title' | 'category' | 'condition' | 'price' | 'stock' | 'descri
 type FieldErrors = Partial<Record<FieldKey, string>>;
 type SubmitState = 'idle' | 'sending' | 'success';
 
-type PresignedOk = {
+type UploadOk = {
   ok: true;
-  url: string;
-  fields: Record<string, string>;
   key: string;
   publicUrl: string;
+  contentType: string;
 };
 
 function newId(): string {
@@ -249,19 +248,21 @@ export default function CreateListingForm() {
   const uploadOne = useCallback(async (itemId: string, file: File) => {
     setPhotos((prev) => prev.map((p) => (p.id === itemId ? { ...p, status: 'uploading' as const, error: undefined } : p)));
     try {
-      const sig = (await createListingMediaUpload({
+      // 1. Server menyiapkan object key (validasi tipe/ukuran di server).
+      const prep = (await createListingMediaUpload({
         fileName: file.name,
         contentType: file.type,
         size: file.size,
-      })) as PresignedOk | { ok: false; error: string };
-      if (!sig.ok) throw new Error(sig.error || 'Layanan unggah belum tersedia.');
-      const formData = new FormData();
-      for (const [k, v] of Object.entries(sig.fields)) formData.append(k, v);
-      formData.append('file', file);
-      const res = await fetch(sig.url, { method: 'POST', body: formData });
-      if (!res.ok) throw new Error('Unggah foto gagal. Periksa koneksi lalu coba lagi.');
+      })) as UploadOk | { ok: false; error: string };
+      if (!prep.ok) throw new Error(prep.error || 'Layanan unggah belum tersedia.');
+      // 2. Browser mengunggah langsung ke Supabase Storage (folder milik user).
+      if (!supabase) throw new Error('Klien Supabase belum tersedia. Muat ulang halaman.');
+      const { error: upError } = await supabase.storage
+        .from('listing-photos')
+        .upload(prep.key, file, { contentType: prep.contentType || file.type, upsert: false });
+      if (upError) throw new Error('Unggah foto gagal. Periksa koneksi lalu coba lagi.');
       setPhotos((prev) =>
-        prev.map((p) => (p.id === itemId ? { ...p, status: 'done' as const, url: sig.publicUrl, key: sig.key } : p)),
+        prev.map((p) => (p.id === itemId ? { ...p, status: 'done' as const, url: prep.publicUrl, key: prep.key } : p)),
       );
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unggah foto gagal.';
