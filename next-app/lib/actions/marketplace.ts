@@ -77,7 +77,7 @@ export async function getWishlistIds() {
 // key (folder pertama = UID user, sesuai policy storage), browser mengunggah
 // bytes-nya langsung via supabase-js (tanpa melewatkan file lewat server).
 
-export const LISTING_PHOTOS_BUCKET = 'listing-photos';
+const LISTING_PHOTOS_BUCKET = 'listing-photos';
 
 const mediaUploadSchema = z.object({
   fileName: z.string().trim().min(1).max(160),
