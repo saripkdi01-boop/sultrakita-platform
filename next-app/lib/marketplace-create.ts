@@ -50,21 +50,25 @@ export function mapConditionToDb(value: CreateCondition): 'new' | 'second' {
   return value === 'new' ? 'new' : 'second';
 }
 
-/** ID kategori kanonis (1-11) sejajar dengan CREATE_CATEGORY_LABELS.
- *  Dipakai sebagai fallback bila tabel `categories` di DB kosong / tidak
- *  dapat di-resolve — kolom `listings.category_id` NOT NULL di production,
- *  jadi insert tidak boleh menerima null. */
+/** ID kategori kanonis sejajar dengan CREATE_CATEGORY_LABELS.
+ *  Dipakai sebagai fallback bila tabel `categories` di DB tidak terbaca
+ *  (mis. RLS) — kolom `listings.category_id` NOT NULL di production, jadi
+ *  insert tidak boleh menerima null.
+ *  Nilai diselaraskan dengan isi riil tabel public.categories per 2026-10-04:
+ *  1=Properti, 2=Elektronik, 3=Kendaraan, 4=Fashion, 5=Perabotan, 6=Jasa,
+ *  7=Kuliner, 8=Hobi & Koleksi, 9=Lowongan Kerja, 10=Lainnya, 11=Olahraga,
+ *  12=Furnitur, 13=Pertanian, 14=Perikanan, 15=Kecantikan. */
 export const CREATE_CATEGORY_IDS: Record<string, number> = {
-  Elektronik: 1,
-  Kendaraan: 2,
-  Properti: 3,
+  Elektronik: 2,
+  Kendaraan: 3,
+  Properti: 1,
   Fashion: 4,
-  Kuliner: 5,
-  Furnitur: 6,
-  Jasa: 7,
-  Pertanian: 8,
-  Perikanan: 9,
-  Kecantikan: 10,
+  Kuliner: 7,
+  Furnitur: 12,
+  Jasa: 6,
+  Pertanian: 13,
+  Perikanan: 14,
+  Kecantikan: 15,
   Olahraga: 11,
 };
 
