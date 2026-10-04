@@ -3,7 +3,47 @@
 -- Jalankan di Supabase SQL Editor. Idempotent: lewati slug yang sudah ada.
 
 INSERT INTO public.properties (id,seller_id,category,property_type,title,slug,description,province,city,regency_name,district,subdistrict_name,address_detail,postal_code,latitude,longitude,maps_link,price,price_type,is_negotiable,bedrooms,bathrooms,building_area_sqm,land_area_sqm,floors,images,amenities,subsidy_program,can_kpr,certificate_type,condition,status,is_admin_verified,is_featured,views_count,favorites_count,inquiries_count,published_at,ai_generated)
-SELECT * FROM (VALUES
+SELECT
+  v.id::uuid,
+  v.seller_id::uuid,
+  v.category,
+  v.property_type,
+  v.title,
+  v.slug,
+  v.description,
+  v.province,
+  v.city,
+  v.regency_name,
+  v.district,
+  v.subdistrict_name,
+  v.address_detail,
+  v.postal_code,
+  v.latitude,
+  v.longitude,
+  v.maps_link,
+  v.price,
+  v.price_type,
+  v.is_negotiable,
+  v.bedrooms,
+  v.bathrooms,
+  v.building_area_sqm::integer,
+  v.land_area_sqm::integer,
+  v.floors,
+  v.images::text[],
+  v.amenities::text[],
+  v.subsidy_program,
+  v.can_kpr,
+  v.certificate_type,
+  v.condition,
+  v.status,
+  v.is_admin_verified,
+  v.is_featured,
+  v.views_count,
+  v.favorites_count,
+  v.inquiries_count,
+  v.published_at::timestamptz,
+  v.ai_generated
+FROM (VALUES
 ('a551fe49-1d51-444e-9402-c0ae59d97884',NULL,'rumah_subsidi','rumah_tapak','SERENIA CAMPUS','sikumbang-kdi1010042026t001','SERENIA CAMPUS oleh PT TALLASA SANDY KARSA (REI).
 Alamat: Lalolara, Kec. Kambu, Kota Kendari, Sulawesi Tenggara.
 Total unit: 0 subsidi / 0 komersil.
