@@ -3,16 +3,17 @@
 // Navigasi lengkap Operations Center — dirender di app/admin/layout.tsx
 // (semua halaman /admin/* sudah terproteksi requireAdminUser di layout)
 // dan di app/dashboard/admin/page.tsx.
-// 18 seksi: overview, users, team, moderation, monitoring, errors, database,
-// audit, billing, ads, settings, announcements, support-tickets,
-// ecosystem-banners, property-verification, businesses, affiliate-rewards, launch.
+// 19 seksi: overview, users, team, moderation, listings (marketplace),
+// monitoring, errors, database, audit, billing, ads, announcements,
+// support-tickets, ecosystem-banners, property-verification, businesses,
+// affiliate-rewards, settings, launch.
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, UsersRound, KeyRound, ShieldCheck, Activity, Bug, Database, ScrollText,
   CreditCard, Megaphone, Settings2, BellRing, LifeBuoy, Images, House,
-  Building2, Gift, Rocket,
+  Building2, Gift, Rocket, Tag,
 } from 'lucide-react';
 
 const SECTIONS = [
@@ -20,6 +21,7 @@ const SECTIONS = [
   { href: '/admin/users', label: 'Pengguna', icon: UsersRound },
   { href: '/admin/team', label: 'Tim', icon: KeyRound },
   { href: '/admin/moderation', label: 'Moderasi', icon: ShieldCheck },
+  { href: '/admin/listings', label: 'Listing', icon: Tag },
   { href: '/admin/monitoring', label: 'Monitoring', icon: Activity },
   { href: '/admin/errors', label: 'Error', icon: Bug },
   { href: '/admin/database', label: 'Database', icon: Database },
