@@ -6,6 +6,8 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { getServerSupabase } from '@/lib/supabase/server';
 import { requireRole, redirectToLogin } from '@/lib/admin/guards';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { ActivityFeed, type ActivityItem } from './_components/ActivityFeed';
+import { SystemStatus } from './_components/SystemStatus';
 
 export const dynamic = 'force-dynamic';
 
@@ -83,6 +85,75 @@ async function recentAudit(client: SupabaseClient): Promise<{ rows: AuditRow[]; 
   } catch {
     return { rows: [], available: false };
   }
+}
+
+/**
+ * Command Center v2 — aktivitas terbaru lintas tabel untuk satu timeline.
+ * Setiap sumber dibungkus try/catch: yang gagal dilewati, tidak dikarang.
+ */
+async function recentActivity(
+  client: SupabaseClient,
+  auditRows: AuditRow[],
+): Promise<ActivityItem[]> {
+  const items: ActivityItem[] = [];
+
+  const [users, listings, errors, reports] = await Promise.all([
+    client.from('profiles').select('id, created_at').order('created_at', { ascending: false }).limit(5)
+      .then((r) => ({ rows: r.error ? [] : (r.data ?? []), ok: !r.error })),
+    client.from('listings').select('id, title, moderation_status, created_at').order('created_at', { ascending: false }).limit(5)
+      .then((r) => ({ rows: r.error ? [] : (r.data ?? []), ok: !r.error })),
+    client.from('error_events').select('id, error_name, last_seen').eq('resolved', false).order('last_seen', { ascending: false }).limit(5)
+      .then((r) => ({ rows: r.error ? [] : (r.data ?? []), ok: !r.error })),
+    client.from('marketplace_reports').select('id, reason, created_at').order('created_at', { ascending: false }).limit(5)
+      .then((r) => ({ rows: r.error ? [] : (r.data ?? []), ok: !r.error })),
+  ]);
+
+  for (const u of users.rows as Array<{ id: string; created_at: string | null }>) {
+    items.push({ id: u.id, kind: 'user', title: 'Pengguna baru mendaftar', at: u.created_at, href: '/admin/users' });
+  }
+  for (const l of listings.rows as Array<{ id: string; title: string | null; moderation_status: string | null; created_at: string | null }>) {
+    items.push({
+      id: l.id,
+      kind: 'listing',
+      title: `Listing: ${(l.title ?? 'tanpa judul').slice(0, 50)}`,
+      detail: l.moderation_status ?? undefined,
+      at: l.created_at,
+      href: '/admin/listings',
+    });
+  }
+  for (const e of errors.rows as Array<{ id: string; error_name: string | null; last_seen: string | null }>) {
+    items.push({
+      id: e.id,
+      kind: 'error',
+      title: `Error: ${(e.error_name ?? 'unknown').slice(0, 50)}`,
+      detail: 'belum di-resolve',
+      at: e.last_seen,
+      href: '/admin/errors',
+    });
+  }
+  for (const r of reports.rows as Array<{ id: string; reason: string | null; created_at: string | null }>) {
+    items.push({
+      id: r.id,
+      kind: 'report',
+      title: `Laporan: ${(r.reason ?? 'tanpa alasan').slice(0, 50)}`,
+      at: r.created_at,
+      href: '/admin/moderation',
+    });
+  }
+  for (const a of auditRows) {
+    items.push({
+      id: a.id,
+      kind: 'audit',
+      title: `Admin: ${a.action}`,
+      detail: a.target_type ?? undefined,
+      at: a.created_at,
+      href: '/admin/audit',
+    });
+  }
+
+  return items
+    .sort((x, y) => String(y.at ?? '').localeCompare(String(x.at ?? '')))
+    .slice(0, 12);
 }
 
 /* ── METRIK LAUNCH (30 hari) ────────────────────────────────────────────── */
@@ -241,20 +312,28 @@ async function utmSignups(client: SupabaseClient, days = 30): Promise<UtmResult>
 }
 
 function KpiCard({ kpi }: { kpi: Kpi }) {
-  return (
-    <div className="rounded-3xl border border-[#dcebe5] bg-white p-6 shadow-sm dark:border-white/10 dark:bg-[#10231f]">
+  const body = (
+    <>
       <p className="text-xs font-extrabold uppercase tracking-[.16em] text-[#1b806f]">{kpi.label}</p>
       <p className="mt-3 text-4xl font-extrabold text-[#123f38] dark:text-white">
         {kpi.value === null ? '—' : kpi.value.toLocaleString('id-ID')}
       </p>
       <p className="mt-2 text-xs leading-5 text-[#55736b] dark:text-[#9db8b0]">{kpi.hint}</p>
       {kpi.href && (
-        <Link href={kpi.href} className="mt-4 inline-flex text-sm font-bold text-[#1b806f]">
-          Lihat detail →
-        </Link>
+        <span className="mt-4 inline-flex text-sm font-bold text-[#1b806f]">Lihat detail →</span>
       )}
-    </div>
+    </>
   );
+  const classes =
+    'block rounded-3xl border border-[#dcebe5] bg-white p-6 shadow-sm dark:border-white/10 dark:bg-[#10231f]';
+  if (kpi.href) {
+    return (
+      <Link href={kpi.href} className={`${classes} transition hover:-translate-y-0.5 hover:shadow-md`}>
+        {body}
+      </Link>
+    );
+  }
+  return <div className={classes}>{body}</div>;
 }
 
 function TrendBar({ label, trend }: { label: string; trend: { labels: string[]; values: (number | null)[]; available: boolean } }) {
@@ -520,6 +599,10 @@ export default async function AdminOverviewPage() {
     utmSignups(supabase, 30),
   ]);
 
+  // Command Center v2 — feed aktivitas memakai baris audit yang sudah diambil.
+  const activity = await recentActivity(supabase, audit.rows);
+  const dbOk = totalUsers !== null;
+
   const kpis: Kpi[] = [
     { label: 'Total pengguna', value: totalUsers, hint: 'Jumlah baris di tabel profiles (query nyata).', href: '/admin/users' },
     { label: 'Listing aktif', value: listingsAktif, hint: 'Listings berstatus published.', href: '/admin/moderation' },
@@ -554,6 +637,36 @@ export default async function AdminOverviewPage() {
         <section className="mt-8 grid gap-4 lg:grid-cols-2">
           <TrendBar label="Pengguna baru (7 hari)" trend={usersTrend} />
           <TrendBar label="Listing dibuat (7 hari)" trend={listingsTrend} />
+        </section>
+
+        {/* ── COMMAND CENTER v2: aksi cepat + feed aktivitas + status sistem ── */}
+        <section className="mt-8" aria-label="Aksi cepat">
+          <div className="flex flex-wrap gap-2">
+            {[
+              { href: '/admin/moderation', label: 'Antrean moderasi' },
+              { href: '/admin/listings', label: 'Kelola listing' },
+              { href: '/admin/errors', label: 'Lihat error' },
+              { href: '/admin/announcements', label: 'Buat pengumuman' },
+              { href: '/admin/audit', label: 'Jejak audit' },
+            ].map((a) => (
+              <Link
+                key={a.href}
+                href={a.href}
+                className="rounded-xl border border-[#dcebe5] bg-white px-4 py-2 text-sm font-bold text-[#0e6258] shadow-sm transition hover:bg-[#e9f7f2] dark:border-white/10 dark:bg-[#10231f] dark:text-white dark:hover:bg-white/10"
+              >
+                {a.label}
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        <section className="mt-4 grid gap-4 lg:grid-cols-5">
+          <div className="lg:col-span-3">
+            <ActivityFeed items={activity} />
+          </div>
+          <div className="lg:col-span-2">
+            <SystemStatus dbOk={dbOk} />
+          </div>
         </section>
 
         {/* ── METRIK LAUNCH (30 hari) ─────────────────────────────────── */}

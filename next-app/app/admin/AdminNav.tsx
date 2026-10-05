@@ -38,7 +38,39 @@ const SECTIONS = [
   { href: '/admin/launch', label: 'Launch', icon: Rocket },
 ] as const;
 
-export function AdminNav() {
+export interface AdminAlerts {
+  /** listing marketplace menunggu moderasi */
+  pendingModeration: number | null;
+  /** error_events yang belum di-resolve */
+  unresolvedErrors: number | null;
+  /** tiket support berstatus open */
+  openTickets: number | null;
+}
+
+const ALERT_FOR: Record<string, keyof AdminAlerts> = {
+  '/admin/moderation': 'pendingModeration',
+  '/admin/listings': 'pendingModeration',
+  '/admin/errors': 'unresolvedErrors',
+  '/admin/support-tickets': 'openTickets',
+};
+
+function AlertBadge({ count, tone }: { count: number; tone: 'amber' | 'red' | 'blue' }) {
+  const tones = {
+    amber: 'bg-amber-500 text-white',
+    red: 'bg-red-600 text-white',
+    blue: 'bg-sky-600 text-white',
+  } as const;
+  return (
+    <span
+      aria-label={`${count} perlu perhatian`}
+      className={`ml-0.5 inline-flex min-w-[18px] items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-extrabold leading-none ${tones[tone]}`}
+    >
+      {count > 99 ? '99+' : count}
+    </span>
+  );
+}
+
+export function AdminNav({ alerts }: { alerts?: AdminAlerts }) {
   const pathname = usePathname() ?? '';
   return (
     <nav aria-label="Navigasi admin" className="sticky top-0 z-40 border-b border-[#dcebe5] bg-white/95 backdrop-blur dark:border-white/10 dark:bg-[#0d1512]/95">
@@ -48,6 +80,10 @@ export function AdminNav() {
         </span>
         {SECTIONS.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(`${href}/`);
+          const alertKey = ALERT_FOR[href];
+          const alertCount = alertKey && alerts ? alerts[alertKey] : null;
+          const tone =
+            alertKey === 'unresolvedErrors' ? 'red' : alertKey === 'openTickets' ? 'blue' : 'amber';
           return (
             <Link
               key={href}
@@ -61,6 +97,9 @@ export function AdminNav() {
             >
               <Icon size={15} aria-hidden="true" />
               {label}
+              {alertCount !== null && alertCount !== undefined && alertCount > 0 && (
+                <AlertBadge count={alertCount} tone={tone} />
+              )}
             </Link>
           );
         })}
