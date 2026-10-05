@@ -1,0 +1,140 @@
+/* ============================================================
+   SukiAboutCard v2 — kartu "Tentang" modern, hidup & interaktif
+   Otomatis: mesh gradient, orb, partikel, orbit berputar,
+             satelit mengorbit, pin berdenyut, shimmer emas, chip melayang.
+   Interaktif: tilt 3D + parallax mengikuti pointer/sentuh.
+   ============================================================ */
+.suki-about-card-v2{
+  --tilt-x:0deg; --tilt-y:0deg; --px:0; --py:0;
+  position:relative;min-height:480px;padding:32px;border-radius:28px;overflow:hidden;color:#fff;
+  background:linear-gradient(150deg,#0b3d33 0%,#0d5a4b 45%,#0a4a3e 70%,#083a31 100%);
+  background-size:220% 220%;
+  animation:sac-mesh 14s ease-in-out infinite alternate;
+  box-shadow:0 28px 64px rgb(8 66 54/.28), inset 0 1px 0 rgb(255 255 255/.14);
+  border:1px solid rgb(255 255 255/.14);
+  transform:perspective(1100px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
+  transition:transform .25s ease-out;
+  will-change:transform;
+  isolation:isolate;
+}
+@keyframes sac-mesh{
+  0%{background-position:0% 20%}
+  50%{background-position:100% 80%}
+  100%{background-position:20% 0%}
+}
+
+/* --- Orb melayang --- */
+.sac-bg{position:absolute;inset:0;z-index:0;pointer-events:none}
+.sac-orb{position:absolute;border-radius:50%;filter:blur(56px);opacity:.5}
+.sac-orb-a{width:260px;height:260px;left:-70px;top:-60px;background:#17a98f;animation:sac-drift 11s ease-in-out infinite alternate}
+.sac-orb-b{width:200px;height:200px;right:-40px;top:32%;background:#0e7d6c;animation:sac-drift 13s ease-in-out infinite alternate-reverse}
+.sac-orb-c{width:150px;height:150px;left:38%;bottom:-50px;background:#d4a94e;opacity:.28;animation:sac-drift 9s ease-in-out infinite alternate}
+@keyframes sac-drift{
+  from{transform:translate(0,0) scale(1)}
+  to{transform:translate(46px,34px) scale(1.18)}
+}
+.sac-grid{
+  position:absolute;inset:0;opacity:.5;
+  background-image:linear-gradient(rgb(255 255 255/.045) 1px,transparent 1px),linear-gradient(90deg,rgb(255 255 255/.045) 1px,transparent 1px);
+  background-size:44px 44px;
+  mask-image:radial-gradient(70% 70% at 50% 40%,#000 30%,transparent 100%);
+  transform:translate(calc(var(--px) * -14px),calc(var(--py) * -10px));
+}
+
+/* --- Partikel naik --- */
+.sac-particle{
+  position:absolute;bottom:-12px;left:var(--x);width:5px;height:5px;border-radius:50%;
+  background:#9de0d0;opacity:0;animation:sac-rise 9s linear infinite;animation-delay:var(--d);
+}
+@keyframes sac-rise{
+  0%{transform:translateY(0);opacity:0}
+  12%{opacity:.75}
+  100%{transform:translateY(-460px);opacity:0}
+}
+
+/* --- Header --- */
+.sac-top{position:relative;z-index:2;display:flex;align-items:center;gap:13px}
+.sac-logo{display:grid;place-items:center;width:50px;height:50px;border-radius:16px;flex:none;
+  background:rgb(255 255 255/.14);border:1px solid rgb(255 255 255/.2);
+  box-shadow:0 8px 20px rgb(0 0 0/.18);backdrop-filter:blur(6px);
+  animation:sac-float 5s ease-in-out infinite}
+@keyframes sac-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.sac-top-text small,.sac-top-text b{display:block}
+.sac-top-text small{color:#a9d9cc;font-size:.62rem;letter-spacing:.18em;font-weight:700}
+.sac-top-text b{margin-top:7px;font-size:.82rem}
+.sac-live{margin-left:auto;display:inline-flex;align-items:center;gap:7px;font-size:.68rem;font-weight:800;
+  letter-spacing:.14em;color:#bff3e6;background:rgb(255 255 255/.1);
+  border:1px solid rgb(255 255 255/.18);padding:7px 12px;border-radius:999px;backdrop-filter:blur(6px)}
+.sac-live i{width:8px;height:8px;border-radius:50%;background:#4ade80;box-shadow:0 0 10px #4ade80;animation:sac-blink 1.6s ease-in-out infinite}
+@keyframes sac-blink{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
+
+/* --- Judul --- */
+.sac-title{position:relative;z-index:2;display:block;margin-top:52px;font-size:2.9rem;line-height:1.02;letter-spacing:-.045em;font-weight:800}
+.sac-line{display:block;overflow:hidden}
+.sac-line{animation:sac-line-in .9s cubic-bezier(.2,.7,.2,1) both}
+.sac-line:nth-child(2){animation-delay:.12s}
+.sac-line:nth-child(3){animation-delay:.24s}
+@keyframes sac-line-in{from{transform:translateY(110%);opacity:0}to{transform:translateY(0);opacity:1}}
+.sac-gold{
+  background:linear-gradient(100deg,#f3d48a 20%,#fff7e0 40%,#e8b64c 60%,#f3d48a 80%);
+  background-size:220% auto;-webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:sac-line-in .9s cubic-bezier(.2,.7,.2,1) .24s both,sac-shimmer 4s linear infinite;
+}
+@keyframes sac-shimmer{to{background-position:220% center}}
+
+/* --- Chip modul --- */
+.sac-modules{position:relative;z-index:2;display:flex;flex-wrap:wrap;gap:8px;margin-top:26px}
+.sac-chip{display:inline-flex;align-items:center;gap:7px;font-size:.74rem;font-weight:700;color:#d8f3ea;
+  background:rgb(255 255 255/.09);border:1px solid rgb(255 255 255/.16);
+  padding:8px 13px;border-radius:999px;backdrop-filter:blur(8px);
+  animation:sac-chip-float 4.5s ease-in-out infinite;animation-delay:var(--d);
+  transition:transform .2s ease,background .2s ease}
+.sac-chip:hover{transform:translateY(-3px) scale(1.05);background:rgb(255 255 255/.18)}
+@keyframes sac-chip-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+
+/* --- Orbit --- */
+.sac-orbit{position:absolute;right:26px;bottom:22px;width:220px;height:190px;z-index:2;
+  transform:translate(calc(var(--px) * 18px),calc(var(--py) * 14px));transition:transform .3s ease-out}
+.sac-ring{position:absolute;border:1px solid rgb(255 255 255/.18);border-radius:50%}
+.sac-ring-1{inset:8px 0;transform:rotate(-14deg);animation:sac-spin 26s linear infinite}
+.sac-ring-2{inset:30px 24px;transform:rotate(10deg);animation:sac-spin-rev 18s linear infinite}
+@keyframes sac-spin{to{transform:rotate(346deg)}}
+@keyframes sac-spin-rev{to{transform:rotate(-350deg)}}
+.sac-sat{position:absolute;width:9px;height:9px;border-radius:50%;background:#9de0d0;
+  box-shadow:0 0 12px #9de0d0,0 0 0 7px rgb(157 224 208/.12)}
+.sac-sat-1{animation:sac-orbit-1 9s linear infinite}
+.sac-sat-2{animation:sac-orbit-2 13s linear infinite}
+.sac-sat-3{animation:sac-orbit-1 17s linear infinite reverse}
+@keyframes sac-orbit-1{
+  from{transform:rotate(0) translateX(104px) rotate(0)}
+  to{transform:rotate(360deg) translateX(104px) rotate(-360deg)}
+}
+@keyframes sac-orbit-2{
+  from{transform:rotate(0) translate(76px,62px) rotate(0)}
+  to{transform:rotate(360deg) translate(76px,62px) rotate(-360deg)}
+}
+.sac-pin{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  display:grid;place-items:center;width:52px;height:52px;border-radius:17px;background:#fff;color:#0b5a4c;
+  box-shadow:0 16px 32px rgb(0 0 0/.25);animation:sac-pin-bounce 3s ease-in-out infinite}
+@keyframes sac-pin-bounce{0%,100%{transform:translate(-50%,-50%)}50%{transform:translate(-50%,-62%)}}
+.sac-ripple{position:absolute;inset:0;border-radius:17px;border:2px solid rgb(255 255 255/.7);animation:sac-ripple 2.4s ease-out infinite}
+.sac-ripple-2{animation-delay:1.2s}
+@keyframes sac-ripple{from{transform:scale(1);opacity:.8}to{transform:scale(2.1);opacity:0}}
+
+/* --- Responsif --- */
+@media(max-width:640px){
+  .suki-about-card-v2{min-height:440px;padding:26px}
+  .sac-title{font-size:2.3rem;margin-top:40px}
+  .sac-orbit{width:170px;height:150px;right:14px;bottom:14px}
+  @keyframes sac-orbit-1{
+    from{transform:rotate(0) translateX(80px) rotate(0)}
+    to{transform:rotate(360deg) translateX(80px) rotate(-360deg)}
+  }
+}
+
+/* --- Hormat reduced motion --- */
+@media(prefers-reduced-motion:reduce){
+  .suki-about-card-v2,.suki-about-card-v2 *{animation:none !important;transition:none !important}
+  .suki-about-card-v2{transform:none}
+  .sac-gold{background:none;color:#f3d48a}
+}

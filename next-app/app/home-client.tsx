@@ -12,7 +12,6 @@ import {
   Check,
   ChevronRight,
   Compass,
-  MapPin,
   Menu,
   Search,
   ShoppingBag,
@@ -29,6 +28,8 @@ import { usePreferences } from '@/lib/preferences';
 import { getCoreLabels } from '@/lib/i18n/dictionaries';
 import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 import KendariHero from '@/components/kendari/KendariHero';
+import SukiAboutCard from '@/components/kendari/SukiAboutCard';
+import '@/components/kendari/suki-about-card.css';
 import {
   KendariBahteramas,
   KendariEcosystem,
@@ -299,14 +300,7 @@ export default function HomeClient() {
             </div>
             <Link href="/help-center" className="suki-overhaul-text-link">{t.aboutLink} <ArrowRight size={15} aria-hidden="true" /></Link>
           </div>
-          <div className="suki-overhaul-about-card">
-            <div className="suki-about-card-top">
-              <span className="suki-about-logo"><Image src="/brand/suki-logo-mark.svg" alt="" width={26} height={26} /></span>
-              <span><small>LOCAL DIGITAL ECOSYSTEM</small><b>Kendari, Sultra</b></span>
-            </div>
-            <strong>{t.heroTitle1}<br />{t.heroTitle2}<br /><em>{t.heroTitle3}</em></strong>
-            <div className="suki-about-route" aria-hidden="true"><i /><i /><i /><span><MapPin size={18} /></span></div>
-          </div>
+          <SukiAboutCard />
         </div>
       </motion.section>
 
