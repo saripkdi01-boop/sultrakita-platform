@@ -2,92 +2,21 @@
 
 import { MessageCircle, Send, X, Zap } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
+import { smartAnswer } from './jsswat-brain';
 
-type Msg = { from: 'bot' | 'user'; text: string };
-
-// Basis pengetahuan FAQ JS SWAT (Bahasa Indonesia)
-const FAQ: Array<{ keys: string[]; answer: string }> = [
-  {
-    keys: ['suki apps', 'apa itu', 'tentang'],
-    answer: 'SUKI Apps adalah super-app lokal Sulawesi Tenggara — marketplace, properti, komunitas, lowongan kerja, dan game dalam satu platform. Semua dalam Bahasa Indonesia! 🇮🇩',
-  },
-  {
-    keys: ['jual', 'jualan', 'pasang iklan', 'listing'],
-    answer: 'Untuk jualan: buka SUKI Marketplace → tekan tombol "+ Jual" → isi foto, judul, harga, dan deskripsi → tekan Terbitkan. Listing langsung tayang otomatis! 📸',
-  },
-  {
-    keys: ['beli', 'belanja', 'order'],
-    answer: 'Untuk beli: cari barang di SUKI Marketplace, buka detailnya, lalu hubungi penjual via tombol chat atau WhatsApp yang tersedia. 💬',
-  },
-  {
-    keys: ['properti', 'rumah', 'tanah', 'kos', 'kontrakan'],
-    answer: 'Cari properti di menu SUKI Properti — ada 800+ listing rumah, tanah, dan kos di Sulawesi Tenggara dengan foto dan peta lokasi! 🏠',
-  },
-  {
-    keys: ['game', 'jala', 'kampung', 'main'],
-    answer: 'Main game di SUKI Games! Ada JALA (simulasi nelayan) dan SUKI Kampung (game berkebun). Buka menu Ekosistem → SUKI Games. 🎮',
-  },
-  {
-    keys: ['daftar', 'register', 'akun', 'signup'],
-    answer: 'Daftar gratis: tekan "Masuk" di kanan atas → pilih "Daftar" → bisa pakai Google atau email. Tanpa biaya! ✨',
-  },
-  {
-    keys: ['masuk', 'login'],
-    answer: 'Tekan tombol "Masuk" di kanan atas, lalu login dengan Google atau email yang sudah terdaftar. 🔑',
-  },
-  {
-    keys: ['lupa password', 'reset password'],
-    answer: 'Klik "Lupa password" di halaman masuk, masukkan emailmu, lalu cek inbox untuk link reset. 📧',
-  },
-  {
-    keys: ['gratis', 'bayar', 'biaya', 'harga'],
-    answer: 'SUKI Apps gratis untuk pengguna! Pasang iklan marketplace juga gratis. Layanan Web Studio (pembuatan website) berbayar mulai Rp 1,5 juta. 💰',
-  },
-  {
-    keys: ['web studio', 'bikin web', 'website'],
-    answer: 'SUKI Web Studio melayani pembuatan website: Landing Page Rp 1,5jt, Company Profile Rp 3jt, Toko Online Rp 6jt. Lihat menu SUKI Web Studio untuk detail! 🌐',
-  },
-  {
-    keys: ['kerja', 'loker', 'lowongan', 'jobs'],
-    answer: 'Cek SUKI Jobs untuk lowongan kerja di Sulawesi Tenggara. Perusahaan juga bisa pasang loker di sana! 💼',
-  },
-  {
-    keys: ['komunitas', 'grup', 'group'],
-    answer: 'Gabung komunitas di menu Komunitas — ada berbagai grup sesuai minat dan daerahmu! 👥',
-  },
-  {
-    keys: ['kontak', 'hubungi', 'cs', 'bantuan', 'help', 'whatsapp', 'wa'],
-    answer: 'Butuh bantuan manusia? Hubungi tim SUKI via WhatsApp. Kami siap membantu! 📱',
-  },
-  {
-    keys: ['halo', 'hai', 'pagi', 'siang', 'sore', 'malam', 'assalamu'],
-    answer: 'Halo! 👋 Senang bertemu denganmu. Ada yang bisa JS SWAT bantu? Tanya soal jualan, properti, game, atau apapun tentang SUKI Apps!',
-  },
-  {
-    keys: ['terima kasih', 'makasih', 'thanks', 'thank you'],
-    answer: 'Sama-sama! 😊 Senang bisa membantu. Jangan ragu tanya lagi kalau butuh apa-apa.',
-  },
-];
+type Msg = { from: 'bot' | 'user'; text: string; followUp?: string[] };
 
 const QUICK_QUESTIONS = [
-  'Apa itu SUKI Apps?',
+  'List pertanyaan?',
   'Cara jualan di marketplace?',
   'Cari properti di mana?',
   'Game apa saja yang ada?',
 ];
 
-function findAnswer(question: string): string {
-  const q = question.toLowerCase();
-  for (const item of FAQ) {
-    if (item.keys.some((k) => q.includes(k))) return item.answer;
-  }
-  return 'Hmm, JS SWAT belum tahu jawabannya. 🤔 Coba tanya dengan kata kunci lain, atau hubungi tim SUKI via WhatsApp untuk bantuan langsung!';
-}
-
 export function JsSwatWidget() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([
-    { from: 'bot', text: 'Halo! 👋 Saya **JS SWAT**, asisten support SUKI Apps. Ada yang bisa saya bantu?' },
+    { from: 'bot', text: 'Halo! 👋 Saya JS SWAT, asisten support SUKI Apps. Ketik "list pertanyaan" untuk lihat semua yang bisa saya bantu!', followUp: ['List pertanyaan?'] },
   ]);
   const [input, setInput] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -101,10 +30,11 @@ export function JsSwatWidget() {
     if (!clean) return;
     setMessages((m) => [...m, { from: 'user', text: clean }]);
     setInput('');
-    // Simulasi jeda mengetik
+    // Otak cerdas v2: intent + skor
     setTimeout(() => {
-      setMessages((m) => [...m, { from: 'bot', text: findAnswer(clean) }]);
-    }, 600);
+      const result = smartAnswer(clean);
+      setMessages((m) => [...m, { from: 'bot', text: result.answer, followUp: result.followUp }]);
+    }, 500);
   };
 
   return (
@@ -123,8 +53,17 @@ export function JsSwatWidget() {
           </div>
           <div className="js-swat-messages">
             {messages.map((msg, i) => (
-              <div key={i} className={`js-swat-msg js-swat-${msg.from}`}>
-                <span>{msg.text}</span>
+              <div key={i}>
+                <div className={`js-swat-msg js-swat-${msg.from}`}>
+                  <span>{msg.text}</span>
+                </div>
+                {msg.from === 'bot' && msg.followUp && msg.followUp.length > 0 && (
+                  <div className="js-swat-followup">
+                    {msg.followUp.map((q) => (
+                      <button key={q} onClick={() => send(q)}>{q}</button>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
             <div ref={bottomRef} />
@@ -197,6 +136,11 @@ export function JsSwatWidget() {
         .js-swat-quick button { font-size: 11px; padding: 7px 11px; border-radius: 999px; cursor: pointer;
           border: 1px solid #138a7d; background: #fff; color: #0e6258; font-weight: 700; }
         .js-swat-quick button:hover { background: #e7f3ef; }
+        .js-swat-followup { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }
+        .js-swat-followup button { font-size: 11px; padding: 6px 10px; border-radius: 999px; cursor: pointer;
+          border: 1px dashed #138a7d; background: transparent; color: #0e6258; font-weight: 600; }
+        .js-swat-followup button:hover { background: #e7f3ef; }
+        html[data-theme='dark'] .js-swat-followup button { color: #8ed3c4; border-color: #294a44; }
         .js-swat-input { display: flex; gap: 8px; padding: 12px 14px; background: #fff; border-top: 1px solid #dbe8e2; }
         .js-swat-input input { flex: 1; height: 42px; border: 1px solid #dbe8e2; border-radius: 12px; padding: 0 13px;
           font-size: 13px; outline: none; font-family: inherit; }
