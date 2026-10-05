@@ -13,12 +13,26 @@ const securityHeaders = [
 ];
 
 const nextConfig = {
-  images: { remotePatterns: [{ protocol: 'https', hostname: 'images.unsplash.com' }, { protocol: 'https', hostname: '**.supabase.co' }, { protocol: 'https', hostname: '**.r2.dev' }] },
+  images: {
+    // Audit 2026-10-06 (P1-SEC, CVE-2026-94483): wildcard hostname
+    // `**.supabase.co` / `**.r2.dev` TANPA pathname memungkinkan SSRF via
+    // Image Optimization bila URL user-controlled. Sekarang dibatasi ke
+    // path storage publik resmi saja. SafeImage sudah punya fallback <img>
+    // biasa untuk host di luar daftar ini (halaman tidak crash).
+    remotePatterns: [
+      { protocol: 'https', hostname: 'images.unsplash.com' },
+      { protocol: 'https', hostname: '**.supabase.co', pathname: '/storage/v1/object/public/**' },
+      { protocol: 'https', hostname: '**.r2.dev' },
+    ],
+  },
   async headers() {
     return [
       { source: '/(.*)', headers: securityHeaders },
       // Area admin tidak boleh terindeks mesin pencari.
       { source: '/admin/:path*', headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }] },
+      // Audit 2026-10-06 (P1-SEO): dashboard & seller privat — jangan indeks.
+      { source: '/dashboard/:path*', headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }] },
+      { source: '/seller/:path*', headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }] },
     ];
   },
   // Fase 0: rapikan URL duplikat/mati. `permanent: true` menghasilkan 308.

@@ -34,6 +34,9 @@ export default function ImageSlot({
           src={src}
           alt={imgAltHidden ? '' : alt}
           loading={eager ? 'eager' : 'lazy'}
+          // Audit 2026-10-06 (P1-PERF): gambar hero (eager) diberi
+          // fetchPriority tinggi agar LCP lebih cepat ditemukan browser.
+          fetchPriority={eager ? 'high' : 'auto'}
           decoding="async"
           className="kh-slot-img"
           onError={() => setFailed(true)}

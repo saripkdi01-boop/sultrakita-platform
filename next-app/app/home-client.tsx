@@ -25,7 +25,9 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { sukiMotion } from '@/lib/motion-tokens';
 import { usePreferences } from '@/lib/preferences';
-import { getCoreLabels } from '@/lib/i18n/dictionaries';
+// Audit 2026-10-06 (P0-PERF): lazy-load kamus i18n per bahasa agar homepage
+// tidak memuat 27 bahasa (~1,7 MB JS) sekaligus.
+import { useCoreLabels } from '@/lib/i18n/dictionaries-lazy';
 import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 import KendariHero from '@/components/kendari/KendariHero';
 import SukiAboutCard from '@/components/kendari/SukiAboutCard';
@@ -44,7 +46,7 @@ export default function HomeClient() {
   const [query, setQuery] = useState('');
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const { language } = usePreferences();
-  const t: Record<string, string> = getCoreLabels(language);
+  const t: Record<string, string> = useCoreLabels(language);
 
   const ecosystemLinks = [
     { label: t.marketplace, href: '/marketplace' },

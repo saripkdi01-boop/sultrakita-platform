@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { usePreferences } from '@/lib/preferences';
-import { getCoreLabels } from '@/lib/i18n/dictionaries';
+import { useCoreLabels } from '@/lib/i18n/dictionaries-lazy';
 import Link from 'next/link';
 import { ArrowRight, Check } from 'lucide-react';
 import WcReveal from '@/components/ui/WcReveal';
@@ -17,7 +17,7 @@ import ImageSlot from './ImageSlot';
 export default function KendariHero() {
   const bgRef = useRef<HTMLDivElement>(null);
   const { language } = usePreferences();
-  const t: Record<string, string> = getCoreLabels(language);
+  const t: Record<string, string> = useCoreLabels(language);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
