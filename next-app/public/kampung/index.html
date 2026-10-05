@@ -598,9 +598,19 @@ function harvest(st,key,now){
   return{ok:true,amount:amt,events:ev};
 }
 function harvestAll(st,now){
-  now=now||Date.now();var total=0,n=0,evs=[];
-  for(var k in st.grid){var r=harvest(st,k,now);if(r.ok){total+=r.amount;n++;evs.push(r.events);}}
-  return{count:n,total:total};
+  now=now||Date.now();var total=0,n=0,leveled=false,unlocks=[],seen={};
+  for(var k in st.grid){
+    var r=harvest(st,k,now);
+    if(r.ok){
+      total+=r.amount;n++;
+      if(r.events){
+        if(r.events.leveledUp)leveled=true;
+        var ul=r.events.unlocks||[];
+        for(var i=0;i<ul.length;i++)if(!seen[ul[i].id]){seen[ul[i].id]=1;unlocks.push(ul[i]);}
+      }
+    }
+  }
+  return{count:n,total:total,events:{leveledUp:leveled,unlocks:unlocks}};
 }
 function upgradeBuilding(st,key){
   var b=st.grid[key];
@@ -1046,8 +1056,7 @@ $("btnHarvestAll").addEventListener("click",function(){
   var r=SK.harvestAll(state,Date.now());
   if(r.count===0){toast("Belum ada panen yang siap.","teal");return;}
   toast("Panen "+r.count+" bangunan: +"+fmt(r.total)+" Koin!");
-  var ach=SK.checkAchievements(state);
-  if(ach.achievements.length)na(ach.achievements);
+  window.SKAPP.afterEvents(r.events);
   renderHeader();renderMap();saveState();rq();
 });
 
@@ -1120,7 +1129,7 @@ function tickCountdown(){
 }
 
 /* ---------- Kuis Sultra ---------- */
-var quiz={diff:1,questions:[],idx:0,score:0,correct:0,results:[],timer:null,timeLeft:0,lock:false};
+var quiz={diff:1,questions:[],idx:0,score:0,correct:0,results:[],timer:null,timeLeft:0,lock:false,advanceTimer:null};
 function renderDiffs(){
   var g=$("diffGrid");g.innerHTML="";
   SK.QUIZ_DIFFS.forEach(function(d){
@@ -1143,7 +1152,7 @@ function openQuiz(){
   $("quizResult").classList.add("hidden");
   renderDiffs();
 }
-function closeQuiz(){stopTimer();$("quizOverlay").classList.remove("open");}
+function closeQuiz(){stopTimer();if(quiz.advanceTimer){clearTimeout(quiz.advanceTimer);quiz.advanceTimer=null;}$("quizOverlay").classList.remove("open");}
 $("btnStartQuiz").addEventListener("click",openQuiz);
 $("btnQuizClose").addEventListener("click",closeQuiz);
 $("btnQuitQuiz").addEventListener("click",function(){
@@ -1215,7 +1224,8 @@ function answer(pick,btn){
   $("quizScoreLive").textContent="Skor: "+fmt(quiz.score);
   $("quizFeedback").textContent=correct?("\u2713 Benar! +"+pts+" poin"):("\u2717 Kurang tepat. Jawaban: "+q.o[q.a]);
   $("quizFeedback").style.color=correct?"var(--ok)":"var(--danger)";
-  setTimeout(function(){
+  quiz.advanceTimer=setTimeout(function(){
+    quiz.advanceTimer=null;
     quiz.idx++;
     if(quiz.idx<quiz.questions.length)showQuestion();
     else finishQuizRound();
