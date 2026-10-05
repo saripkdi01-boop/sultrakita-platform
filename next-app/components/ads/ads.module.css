@@ -83,6 +83,7 @@
   .skad-house:hover { transform: none; }
 }
 .skad-house-media {
+  display: block;
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 9;
@@ -102,8 +103,9 @@
   height: 100%;
   object-fit: cover;
 }
-.skad-house-body { padding: 10px 12px 12px; }
+.skad-house-body { display: block; padding: 10px 12px 12px; }
 .skad-house-title {
+  display: block;
   margin: 0;
   font-size: 14px;
   font-weight: 700;
@@ -140,4 +142,81 @@
 .skad-sidebar-wrap {
   margin: 12px 0;
   padding: 0 12px;
+}
+
+/* ============ Popup interstitial beranda (placement 'beranda-popup') ============
+   Overlay fixed: tidak ada layout shift, tidak mengganggu konten halaman.
+   Hormat dark mode (token --suki-theme-*) & prefers-reduced-motion. */
+.skad-popup-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(8, 22, 19, 0.55);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  animation: skad-popup-fade 0.25s ease-out;
+}
+
+.skad-popup-card {
+  position: relative;
+  width: min(400px, 100%);
+  max-height: min(82vh, 660px);
+  overflow: auto;
+  padding: 40px 20px 20px;
+  border: 1px solid var(--suki-theme-border);
+  border-radius: 20px;
+  background: var(--suki-theme-surface);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.28);
+  animation: skad-popup-pop 0.28s cubic-bezier(0.2, 0.9, 0.3, 1.15);
+}
+
+/* Mobile: kartu hampir full-width agar kreatif jaringan tetap terbaca */
+@media (max-width: 480px) {
+  .skad-popup-card {
+    width: 100%;
+    padding: 38px 14px 14px;
+  }
+}
+
+.skad-popup-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--suki-theme-border);
+  border-radius: 999px;
+  background: var(--suki-theme-surface-muted);
+  color: var(--suki-theme-text-muted);
+  cursor: pointer;
+}
+.skad-popup-close:hover {
+  color: var(--suki-theme-text);
+  border-color: var(--suki-theme-text-subtle);
+}
+
+/* Kontainer kode HTML/JS jaringan iklan pihak ketiga */
+.skad-snippet {
+  width: 100%;
+  min-height: 120px;
+}
+.skad-snippet > * {
+  max-width: 100%;
+}
+
+@keyframes skad-popup-fade {
+  from { opacity: 0; }
+}
+@keyframes skad-popup-pop {
+  from { opacity: 0; transform: scale(0.92) translateY(12px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skad-popup-backdrop,
+  .skad-popup-card { animation: none; }
 }

@@ -10,7 +10,9 @@ export interface HouseAdCreative {
   placement: string;
   title: string;
   image_url: string | null;
-  link_url: string;
+  link_url: string | null;
+  /** Kode HTML/JS mentah dari jaringan iklan (MGID, Adsterra, dsb). Bila ada, menggantikan gambar+link. */
+  html_snippet?: string | null;
 }
 
 /** Rasio kontainer house ad mengikuti template placement (tidak boleh distorsi). */
@@ -26,11 +28,14 @@ function ratioKey(placementId: PlacementId): string {
 export function HouseAd({ creative, placementId }: { creative: HouseAdCreative; placementId: PlacementId }) {
   const { language } = usePreferences();
   const t = getMiscLabels(language);
+  // Kreatif berbasis kode HTML/JS (tanpa gambar) hanya dirender oleh PopupAd
+  // (butuh eksekusi script client-side) — di slot inline dilewati dengan aman.
+  if (creative.html_snippet && !creative.image_url) return null;
   return (
     <div className={styles['skad-unit']}>
       <span className={styles['skad-label']}>{t.adSponsored}</span>
       <a
-        href={creative.link_url}
+        href={creative.link_url ?? undefined}
         target="_blank"
         rel="sponsored noopener noreferrer"
         className={styles['skad-house']}

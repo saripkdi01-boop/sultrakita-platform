@@ -37,7 +37,7 @@ export async function GET(request: Request) {
       const now = new Date().toISOString();
       const { data: ad, error: adError } = await supabase
         .from('house_ads')
-        .select('id, placement, title, image_url, link_url')
+        .select('id, placement, title, image_url, link_url, html_snippet')
         .eq('placement', placement)
         .eq('active', true)
         .or(`starts_at.is.null,starts_at.lte.${now}`)
@@ -49,7 +49,7 @@ export async function GET(request: Request) {
       if (ad) {
         return NextResponse.json({
           provider: 'house',
-          houseAd: { id: ad.id, placement: ad.placement, title: ad.title, image_url: ad.image_url, link_url: ad.link_url },
+          houseAd: { id: ad.id, placement: ad.placement, title: ad.title, image_url: ad.image_url, link_url: ad.link_url, html_snippet: ad.html_snippet ?? null },
         });
       }
     }

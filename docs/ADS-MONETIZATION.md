@@ -22,11 +22,12 @@ diatur per placement di `/admin/ads` (provider: `adsense` / `house` / `off`).
 | `mobile-banner` | Marketplace, atas konten | 320×50 (fallback 320×100) | Maks 1/viewport, ≤780px saja, TIDAK sticky, dismissible | Iklan |
 | `properti-detail-sidebar` | Kolom kanan detail properti | 300×250 | 1/halaman detail | Iklan |
 | `jobs-list` | Bawah daftar lowongan /jobs | FLUID native | 1 setelah daftar | Iklan / Bersponsor |
+| `beranda-popup` | Modal popup interstitial di /beranda | ~336×280 fluid responsif ATAU kode HTML/JS kustom | Maks 1×/24 jam/pengunjung, delay 5 dtk, dismissible (✕ / ESC / backdrop) | Iklan / Bersponsor |
 
 Placement yang terintegrasi di kode (langsung tampil saat diaktifkan):
 `feed-infeed` ✓, `marketplace-leaderboard` ✓, `sidebar-desktop` ✓,
 `marketplace-grid` ✓, `mobile-banner` ✓, `properti-detail-sidebar` ✓,
-`jobs-list` ✓.
+`jobs-list` ✓, `news-infeed` ✓, `beranda-popup` ✓ (popup, khusus /beranda).
 
 Cara menambah slot baru di halaman mana pun:
 
@@ -111,19 +112,50 @@ File: `supabase/migrations/20261002081000_house_ads.sql` — **FILE-ONLY, BELUM
 dijalankan**. Jalankan manual via SQL editor dashboard Supabase, lalu verifikasi:
 
 ```sql
-select placement, provider from public.ad_placements; -- 7 baris, semua 'off'
+select placement, provider from public.ad_placements; -- 8 baris, semua 'off'
 ```
+
+File tambahan: `supabase/migrations/20261005183000_popup_ads.sql` — menambah
+kolom `house_ads.html_snippet` (kode HTML/JS jaringan iklan manapun; bila diisi
+menggantikan gambar+link), membuat `link_url` nullable, dan me-seed placement
+`beranda-popup` + `news-infeed`. **FILE-ONLY, BELUM dijalankan.**
 
 Tanpa migrasi, `/api/ads/slot` mengembalikan `provider: 'off'` secara defensif
 dan `/admin/ads` menampilkan pesan bahwa migrasi belum dijalankan.
 
-## 8. File-file T-ADS
+## 8. Slot popup beranda (`beranda-popup`)
+
+Komponen: `next-app/components/ads/PopupAd.tsx` — dipasang di
+`/beranda` (`app/beranda/page-client.tsx`). Ikut sistem provider yang sama
+(`adsense` / `house` / `off`, dikonfigurasi di `/admin/ads`), default
+`'off'` — tidak ada popup tampil sebelum diaktifkan.
+
+Perilaku:
+- Muncul **maks 1× per 24 jam per pengunjung** (frequency cap via `localStorage`),
+  setelah **delay 5 detik** — pengunjung sempat membaca halaman dulu.
+- Dismissible: tombol ✕, tombol ESC, atau klik area gelap (backdrop).
+- Overlay fixed → **zero layout shift**; hormat `prefers-reduced-motion`;
+  scroll body dikunci saat terbuka; dark mode via token tema.
+- `house` dengan **gambar+link** → kreatif sponsor langsung seperti biasa.
+- `house` dengan **kode HTML/JS** → kolom `html_snippet` di `/admin/ads`
+  (textarea, hanya admin). `<script>` di dalam kode **dijalankan** agar tag
+  jaringan iklan (MGID, Adsterra, dsb) bekerja. Peringatan keamanan tampil
+  di form: hanya tempel kode dari jaringan terpercaya.
+
+⚠️ **KEBIJAKAN AdSense — penting**: JANGAN set provider `adsense` di
+placement popup ini untuk unit AdSense biasa. Membungkus unit AdSense dalam
+popup/popunder kustom **melanggar kebijakan AdSense** (risiko suspend akun).
+Untuk iklan layar-penuh yang patuh kebijakan, aktifkan **Vignette ads**
+di menu Auto ads dashboard AdSense — itu popup resmi dari Google.
+
+## 9. File-file T-ADS
 
 | File | Peran |
 |---|---|
 | `next-app/lib/ads/config.ts` | Registry placement, template rasio, `validateAdImageRatio`, env reader |
 | `next-app/lib/ads/consent.ts` | Consent defensif (default npa), titik integrasi banner T6 |
 | `next-app/components/ads/AdSlot.tsx` | Slot agnostik-provider: reserve anti-CLS, lazy IO, blokir path sensitif |
+| `next-app/components/ads/PopupAd.tsx` | Slot popup interstitial `beranda-popup`: modal, delay 5 dtk, cap 1×/24 jam, executor kode HTML/JS jaringan iklan |
 | `next-app/components/ads/AdSenseUnit.tsx` | Unit AdSense (`data-ad-client/slot`, npa) |
 | `next-app/components/ads/HouseAd.tsx` | Kreatif sponsor langsung berlabel "Bersponsor" |
 | `next-app/components/ads/AdSenseScript.tsx` | Loader pagead2 via `next/script` (hanya bila env di-set) |
@@ -133,8 +165,9 @@ dan `/admin/ads` menampilkan pesan bahwa migrasi belum dijalankan.
 | `next-app/lib/actions/ads.ts` | Server actions admin (CRUD house ads + placement) |
 | `next-app/app/admin/ads/` | Halaman admin: CRUD + toggle provider + validasi dimensi gambar |
 | `supabase/migrations/20261002081000_house_ads.sql` | Skema `house_ads` + `ad_placements` (FILE-ONLY) |
+| `supabase/migrations/20261005183000_popup_ads.sql` | Kolom `html_snippet`, `link_url` nullable, seed `beranda-popup` + `news-infeed` (FILE-ONLY) |
 
-## 9. Keterbatasan & follow-up
+## 10. Keterbatasan & follow-up
 
 - Banner consent cookie (track T6) belum ada → default `npa=1` sampai T6
   memanggil `setAdConsent('granted'|'denied')` (lihat `lib/ads/consent.ts`).

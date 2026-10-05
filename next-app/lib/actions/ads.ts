@@ -16,7 +16,8 @@ export interface HouseAdRow {
   placement: string;
   title: string;
   image_url: string | null;
-  link_url: string;
+  link_url: string | null;
+  html_snippet: string | null;
   active: boolean;
   starts_at: string | null;
   ends_at: string | null;
@@ -29,6 +30,8 @@ export interface HouseAdInput {
   title: string;
   image_url: string;
   link_url: string;
+  /** Kode HTML/JS mentah dari jaringan iklan (MGID, Adsterra, dsb). Bila diisi, gambar+link tidak wajib. */
+  html_snippet: string;
   active: boolean;
   starts_at: string | null;
   ends_at: string | null;
@@ -50,8 +53,14 @@ function isHttpUrl(value: string): boolean {
 function validateInput(input: HouseAdInput): string | null {
   if (!isPlacementId(input.placement)) return 'Placement tidak valid.';
   if (!input.title.trim() || input.title.trim().length > 120) return 'Judul wajib diisi (maks 120 karakter).';
-  if (!input.image_url.trim() || !isHttpUrl(input.image_url.trim())) return 'URL gambar wajib berupa http(s) yang valid.';
-  if (!input.link_url.trim() || !isHttpUrl(input.link_url.trim())) return 'URL tujuan wajib berupa http(s) yang valid.';
+  const snippet = input.html_snippet.trim();
+  if (snippet) {
+    // Kreatif jaringan iklan pihak ketiga: kode HTML/JS menggantikan gambar+link.
+    if (snippet.length > 20000) return 'Kode HTML/JS terlalu panjang (maks 20.000 karakter).';
+  } else {
+    if (!input.image_url.trim() || !isHttpUrl(input.image_url.trim())) return 'URL gambar wajib berupa http(s) yang valid.';
+    if (!input.link_url.trim() || !isHttpUrl(input.link_url.trim())) return 'URL tujuan wajib berupa http(s) yang valid.';
+  }
   if (input.starts_at && Number.isNaN(Date.parse(input.starts_at))) return 'Tanggal mulai tidak valid.';
   if (input.ends_at && Number.isNaN(Date.parse(input.ends_at))) return 'Tanggal berakhir tidak valid.';
   if (input.starts_at && input.ends_at && Date.parse(input.ends_at) <= Date.parse(input.starts_at)) {
@@ -131,11 +140,13 @@ export async function listHouseAds(): Promise<Ok<{ ads: HouseAdRow[] }> | Fail> 
 }
 
 function toRow(input: HouseAdInput) {
+  const snippet = input.html_snippet.trim();
   return {
     placement: input.placement,
     title: input.title.trim(),
-    image_url: input.image_url.trim(),
-    link_url: input.link_url.trim(),
+    image_url: input.image_url.trim() || null,
+    link_url: input.link_url.trim() || null,
+    html_snippet: snippet || null,
     active: input.active,
     starts_at: input.starts_at || null,
     ends_at: input.ends_at || null,
