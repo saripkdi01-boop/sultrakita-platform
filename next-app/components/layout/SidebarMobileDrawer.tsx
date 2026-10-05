@@ -60,7 +60,7 @@ export function SidebarMobileDrawer({ open }: { open: boolean }) {
       'Permintaan perangkat': t.deviceRequests, 'Aktivitas iklan terkini': t.recentAdActivity,
       'Pesanan dan pembayaran': t.ordersAndPayments, 'Riwayat tautan': t.linkHistory,
       'Mode gelap': theme === 'dark' ? t.lightMode : t.darkMode, 'Bahasa': t.language,
-      'SUKI Jobs': t.sukiJobs, 'SUKI Kampung': t.sukiKampung, 'SUKI Campaign Hub': t.sukiCampaignHub,
+      'SUKI Jobs': t.sukiJobs, 'SUKI Kampung': t.sukiKampung, 'SUKI Games': t.sukiGames, 'SUKI Campaign Hub': t.sukiCampaignHub,
       'Direktori Bisnis': t.businessDirectory, 'SUKI Partner': t.sukiPartner,
     };
     return map[label] ?? label;
