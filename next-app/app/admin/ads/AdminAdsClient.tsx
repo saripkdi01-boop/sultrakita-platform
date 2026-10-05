@@ -25,6 +25,7 @@ const emptyForm: HouseAdInput = {
   title: '',
   image_url: '',
   link_url: '',
+  html_snippet: '',
   active: true,
   starts_at: null,
   ends_at: null,
@@ -86,7 +87,9 @@ export function AdminAdsClient({ initialPlacements, placementsError, initialAds,
   }
 
   async function handleSubmit() {
-    const ratioError = imageCheck.startsWith('Rasio gambar') || imageCheck.startsWith('Template') ? imageCheck : null;
+    // Bila kode HTML/JS diisi, gambar+link tidak wajib → lewati cek rasio gambar.
+    const hasSnippet = form.html_snippet.trim().length > 0;
+    const ratioError = !hasSnippet && (imageCheck.startsWith('Rasio gambar') || imageCheck.startsWith('Template')) ? imageCheck : null;
     if (ratioError) {
       setStatus(`Tidak dapat menyimpan: ${ratioError}`);
       return;
@@ -133,7 +136,8 @@ export function AdminAdsClient({ initialPlacements, placementsError, initialAds,
       placement: ad.placement,
       title: ad.title,
       image_url: ad.image_url || '',
-      link_url: ad.link_url,
+      link_url: ad.link_url || '',
+      html_snippet: ad.html_snippet || '',
       active: ad.active,
       starts_at: ad.starts_at,
       ends_at: ad.ends_at,
@@ -232,6 +236,24 @@ export function AdminAdsClient({ initialPlacements, placementsError, initialAds,
           <label className="grid gap-1 text-sm sm:col-span-2">
             <span className="font-semibold">URL tujuan (link sponsor)</span>
             <input value={form.link_url} onChange={(event) => setField('link_url', event.target.value)} placeholder="https://…" inputMode="url" className="rounded-xl border border-gray-200 bg-white px-3 py-2 dark:border-white/10 dark:bg-black/20" />
+            <span className="text-xs text-[#78948c]">
+              Bila memakai kode HTML/JS jaringan iklan di bawah, URL gambar & tujuan boleh dikosongkan.
+            </span>
+          </label>
+          <label className="grid gap-1 text-sm sm:col-span-2">
+            <span className="font-semibold">Kode HTML/JS jaringan iklan <span className="font-normal text-[#78948c]">(opsional)</span></span>
+            <textarea
+              value={form.html_snippet}
+              onChange={(event) => setField('html_snippet', event.target.value)}
+              rows={4}
+              spellCheck={false}
+              placeholder='<script async src="https://…"></script>'
+              className="rounded-xl border border-gray-200 bg-white px-3 py-2 font-mono text-xs dark:border-white/10 dark:bg-black/20"
+            />
+            <span className="text-xs text-[#78948c]">
+              Tempel kode dari jaringan iklan manapun (MGID, Adsterra, dsb). Kode menggantikan gambar+link di atas.
+              <span className="font-semibold text-amber-700 dark:text-amber-400"> Hanya tempel kode dari sumber terpercaya</span> — kode ini berjalan sebagai script di browser pengunjung.
+            </span>
           </label>
           <label className="grid gap-1 text-sm">
             <span className="font-semibold">Mulai tayang (opsional)</span>
@@ -275,7 +297,14 @@ export function AdminAdsClient({ initialPlacements, placementsError, initialAds,
               <li key={ad.id} className="flex flex-wrap items-center gap-3 rounded-2xl border border-[#dcebe5] bg-white p-4 dark:border-white/10 dark:bg-white/5">
                 {ad.image_url && <img src={ad.image_url} alt="" className="h-12 w-20 rounded-lg object-cover" loading="lazy" />}
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-bold text-[#123f38] dark:text-white">{ad.title}</p>
+                  <p className="truncate text-sm font-bold text-[#123f38] dark:text-white">
+                    {ad.title}
+                    {ad.html_snippet && (
+                      <span className="ml-2 rounded-md bg-violet-100 px-1.5 py-0.5 text-[10px] font-bold uppercase text-violet-700 dark:bg-violet-500/20 dark:text-violet-300">
+                        kode HTML/JS
+                      </span>
+                    )}
+                  </p>
                   <p className="text-xs text-[#78948c]">
                     {AD_PLACEMENTS[ad.placement as PlacementId]?.title ?? ad.placement} · {statusOf(ad)}
                   </p>

@@ -9,6 +9,7 @@ import { CreatePostModal } from '@/components/beranda/CreatePostModal';
 import { FeedPost, FeedPostSkeleton } from '@/components/beranda/FeedPost';
 import { RightSidebar } from '@/components/beranda/RightSidebar';
 import { AdSlot } from '@/components/ads/AdSlot';
+import { PopupAd } from '@/components/ads/PopupAd';
 import { NewsPortal } from '@/components/news/NewsPortal';
 import { StoriesSection } from '@/components/beranda/StoriesSection';
 import { useInfiniteFeed, type FeedTab } from '@/hooks/useInfiniteFeed';
@@ -175,5 +176,7 @@ export default function BerandaPage() {
       </div>
     </main>
     <CreatePostModal open={composerOpen} initialType={composerType} onClose={() => setComposerOpen(false)} onCreated={(message) => { setNotice(message); reload(); }} />
+    {/* T-ADS popup: slot iklan interstitial beranda (beranda-popup). Nonaktif bila belum dikonfigurasi di /admin/ads. */}
+    <PopupAd />
   </AppLayout>;
 }

@@ -14,7 +14,8 @@ export type PlacementId =
   | 'mobile-banner'
   | 'properti-detail-sidebar'
   | 'jobs-list'
-  | 'news-infeed';
+  | 'news-infeed'
+  | 'beranda-popup';
 
 export interface PlacementSpec {
   /** id unik placement */
@@ -115,6 +116,17 @@ export const AD_PLACEMENTS: Record<PlacementId, PlacementSpec> = {
     minHeight: 140,
     templates: ['native-16:9', 'native-1:1'],
     policyNote: 'Native menyerupai konten; label "Iklan"/"Bersponsor" wajib. AdSense-ready: aktif otomatis bila placement dikonfigurasi provider=adsense di ad_placements + NEXT_PUBLIC_ADSENSE_CLIENT_ID terisi.',
+  },
+  'beranda-popup': {
+    id: 'beranda-popup',
+    title: 'Popup Beranda (interstitial)',
+    description: 'Modal popup interstitial di /beranda, tampil setelah delay singkat. Bisa diisi AdSense, house ads (gambar), atau kode HTML/JS dari jaringan iklan manapun (MGID, Adsterra, dsb).',
+    sizes: ['~336×280 fluid responsif', 'kode HTML/JS kustom (ukuran mengikuti kreatif jaringan)'],
+    frequency: 'Maks 1× per 24 jam per pengunjung, delay 5 dtk, bisa ditutup (tombol ✕, ESC, klik backdrop)',
+    minHeight: 0,
+    templates: ['300×250', 'native-16:9', 'native-1:1'],
+    policyNote:
+      'PENTING — AdSense: JANGAN bungkus unit AdSense di popup kustom ini (melanggar kebijakan popup/popunder AdSense). Untuk iklan layar-penuh yang patuh, aktifkan Vignette ads di Auto ads dashboard AdSense. Slot popup ini untuk house ads/sponsor langsung dan jaringan iklan yang MENGIZINKAN interstitial (mis. MGID, Adsterra via kolom kode HTML/JS).',
   },
 };
 
