@@ -193,6 +193,19 @@ export function SukiIconKampung(props: P) {
   );
 }
 
+/** SUKI Games — gamepad; titik emas sebagai tombol aksi. */
+export function SukiIconGames(props: P) {
+  return (
+    <Base {...props}>
+      <rect x="2.5" y="7" width="19" height="11" rx="5.5" />
+      <path d="M7.5 10.5v4M5.5 12.5h4" />
+      <circle cx={15.5} cy={11.5} r={1.1} />
+      <circle cx={18} cy={14} r={1.1} />
+      <Dot cx={12} cy={5} r={1.4} />
+    </Base>
+  );
+}
+
 /** SUKI Web Studio — jendela browser dengan kurung kode; titik emas sebagai lampu studio. */
 export function SukiIconWebStudio(props: P) {
   return (
