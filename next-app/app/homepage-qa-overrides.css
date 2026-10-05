@@ -1,0 +1,44 @@
+/* QA Visual Homepage 2026-10-05 — perbaikan kontras terang/gelap.
+   File terpisah agar mudah di-maintain; diimpor setelah globals.css. */
+
+/* B1 — proof-point: kontras 5.2:1 (lolos WCAG AA) */
+.suki-overhaul-home .suki-overhaul-proof { color: #5a6b66; }
+
+/* B3 — tombol sekunder lebih tegas */
+.suki-overhaul-home .suki-overhaul-secondary {
+  background: rgba(255, 255, 255, .88);
+  box-shadow: 0 2px 10px rgba(18, 33, 31, .06);
+}
+
+/* B2 — hierarki font: nav lebih berwibawa */
+.suki-overhaul-home .suki-overhaul-header nav a,
+.suki-overhaul-home .suki-overhaul-login { font-size: 12px; }
+.suki-overhaul-home .suki-overhaul-topbar { font-size: 11px; }
+
+/* A1 — header dark: background gelap agar teks nav terbaca */
+[data-theme="dark"] .suki-overhaul-home .suki-overhaul-header {
+  background: rgba(23, 30, 28, .9);
+  border-color: var(--so-border-subtle);
+}
+/* A2 — logo brand dark: kotak gelap agar logo putih terlihat */
+[data-theme="dark"] .suki-overhaul-home .suki-overhaul-brand-mark { background: #0e6258; }
+/* A3 — lingkaran peta dark: teal gelap, teks putih terbaca */
+[data-theme="dark"] .suki-overhaul-home .suki-map-core { background: #0e6258; color: #fff; }
+/* A4 — kartu CTA final dark: background gelap */
+[data-theme="dark"] .suki-overhaul-home .suki-overhaul-final-card { background: #1d3832; color: #fff; }
+[data-theme="dark"] .suki-overhaul-home .suki-overhaul-final-card .suki-overhaul-primary {
+  background: #e7f5f0; color: #0e6258 !important;
+}
+/* D1 — ikon kartu ekosistem selaras palette gelap */
+[data-theme="dark"] .suki-overhaul-home .suki-overhaul-item-icon { background: rgba(113, 213, 193, .16); }
+/* D2 — pill hero tidak lagi keputihan */
+[data-theme="dark"] .suki-overhaul-home .suki-overhaul-pill {
+  background: rgba(113, 213, 193, .12);
+  border-color: var(--so-border-subtle);
+}
+/* D3 — quick links menyatu dengan dark mode */
+[data-theme="dark"] .suki-overhaul-home .suki-overhaul-quick-links a {
+  background: rgba(113, 213, 193, .1);
+  color: var(--so-teal);
+  border-color: var(--so-border-subtle);
+}
