@@ -517,6 +517,26 @@
   .sknav-mbar-actions .create-fab-label { display: none; }
   .sknav-mbar-actions .sknav-search-toggle { display: inline-flex; }
 
+  /* Ikon aksi mobile dibuat minimalis: ghost button ramping 38px,
+     ikon 18px, tanpa lingkaran penuh — hemat ruang, terlihat profesional. */
+  .sknav-mbar-actions { gap: 2px; }
+  .sknav-mbar-actions .sknav-icon-btn {
+    width: 38px;
+    height: 38px;
+    background: transparent;
+  }
+  .sknav-mbar-actions .sknav-icon-btn:hover { background: var(--sk-surface-2, #f5eedb); }
+  .sknav-mbar-actions .sknav-icon-btn svg { width: 18px; height: 18px; }
+  .sknav-mbar-actions .create-fab {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    background: transparent;
+    color: var(--sk-teal, #0e6258);
+  }
+  .sknav-mbar-actions .create-fab:hover { background: var(--sk-surface-2, #f5eedb); }
+  .sknav-mbar-actions .create-fab-icon { width: 18px; height: 18px; }
+
   .sknav-search-expand {
     top: 58px;
     left: 8px;
