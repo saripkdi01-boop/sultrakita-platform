@@ -24,6 +24,7 @@ import {
 import {
   SukiIconAjakTeman,
   SukiIconBisnis,
+  SukiIconGames,
   SukiIconJobs,
   SukiIconKampung,
   SukiIconKomunitas,
@@ -127,7 +128,7 @@ export const menuSections: { title: string; items: MenuItemConfig[] }[] = [
     items: [
       { label: 'SUKI Properti', route: '/properti', icon: suki(SukiIconProperti) },
       { label: 'SUKI Jobs', route: '/jobs', icon: suki(SukiIconJobs), badge: 'NEW' },
-      { label: 'SUKI Kampung', route: '/kampung', icon: suki(SukiIconKampung), badge: 'Baru' },
+      { label: 'SUKI Games', route: '/games', icon: suki(SukiIconGames), badge: 'Baru' },
       { label: 'SUKI Web Studio', route: '/web-studio', icon: suki(SukiIconWebStudio), badge: 'Baru' },
       { label: 'SUKI Campaign Hub', route: '/campaigns', icon: lucide(Megaphone), badge: 'LIVE', interactive: 'campaign' },
       { label: 'Direktori Bisnis', route: '/Business', icon: suki(SukiIconBisnis) },
