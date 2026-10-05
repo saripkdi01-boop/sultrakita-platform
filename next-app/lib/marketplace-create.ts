@@ -125,12 +125,16 @@ const photoSchema = z.object({
     .url('Tautan foto tidak valid.')
     .max(500, 'Tautan foto terlalu panjang.')
     .refine((u) => u.startsWith('https://'), 'Tautan foto harus HTTPS.'),
+  // Format key: `<uid>/marketplace/<tanggal>/<uuid>-<nama>` (dibuat oleh
+  // createListingMediaUpload; folder pertama = UID sesuai policy storage
+  // "owner insert"). Varian lawas `marketplace/...` tetap diterima agar
+  // draft lama tidak rusak.
   key: z
     .string()
     .trim()
     .min(1, 'Kunci foto tidak valid.')
     .max(500, 'Kunci foto terlalu panjang.')
-    .regex(/^marketplace\//, 'Kunci foto tidak valid.'),
+    .regex(/^([0-9a-fA-F-]{36}\/)?marketplace\//, 'Kunci foto tidak valid.'),
 });
 
 /** Payload client -> POST /api/listings. Dipakai di client (validasi awal)
