@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePreferences } from '@/lib/preferences';
-import { getCoreLabels } from '@/lib/i18n/dictionaries';
+import { useCoreLabels } from '@/lib/i18n/dictionaries-lazy';
 import { Globe, ShieldCheck, Users } from 'lucide-react';
 import WcReveal from '@/components/ui/WcReveal';
 import {
@@ -26,7 +26,7 @@ const getValues = (t: Record<string, string>) => [
 
 export function KendariValue() {
   const { language } = usePreferences();
-  const t: Record<string, string> = getCoreLabels(language);
+  const t: Record<string, string> = useCoreLabels(language);
   const values = getValues(t);
   return (
     <section className="kh-section kh-value" aria-label={t.ecoLabel}>
@@ -63,7 +63,7 @@ const getModules = (t: Record<string, string>) => [
 
 export function KendariEcosystem() {
   const { language } = usePreferences();
-  const t: Record<string, string> = getCoreLabels(language);
+  const t: Record<string, string> = useCoreLabels(language);
   const modules = getModules(t);
   return (
     <section className="kh-section kh-eco" id="ekosistem" aria-labelledby="kh-eco-title">
@@ -117,7 +117,7 @@ const getBahteraLinks = (t: Record<string, string>) => [
 
 export function KendariBahteramas() {
   const { language } = usePreferences();
-  const t: Record<string, string> = getCoreLabels(language);
+  const t: Record<string, string> = useCoreLabels(language);
   const bahteraLinks = getBahteraLinks(t);
   return (
     <section className="kh-baht" id="menghubungkan" aria-labelledby="kh-baht-title">
@@ -187,7 +187,7 @@ const getKomCards = (t: Record<string, string>) => [
 
 export function KendariKomunitas() {
   const { language } = usePreferences();
-  const t: Record<string, string> = getCoreLabels(language);
+  const t: Record<string, string> = useCoreLabels(language);
   const komCards = getKomCards(t);
   return (
     <section className="kh-section kh-kom" id="komunitas" aria-labelledby="kh-kom-title">

@@ -5,6 +5,9 @@ import { useState, useRef, useEffect } from 'react';
 import { Languages, Check, ChevronDown } from 'lucide-react';
 import { LANGUAGES, usePreferences, type LanguageCode } from '@/lib/preferences';
 import { getLabels } from '@/lib/i18n';
+// Audit 2026-10-06 (P0-PERF): preload chunk kamus bahasa saat menu dibuka
+// agar transisi bahasa terasa instan (chunk tiba sebelum user memilih).
+import { preloadLanguage } from '@/lib/i18n/dictionaries-lazy';
 
 type LanguageSwitcherProps = {
   /** 'dropdown' = tombol + menu, 'select' = elemen select native, 'grid' = daftar tombol */
@@ -81,13 +84,17 @@ export function LanguageSwitcher({ variant = 'dropdown', className = '', showLab
       {open && (
         <div className="suki-lang-menu" role="listbox" aria-label={labels.chooseLanguage}>
           {LANGUAGES.map(([code, name]) => (
-            <button
-              key={code}
-              role="option"
-              aria-selected={language === code}
-              onClick={() => { setLanguage(code); setOpen(false); }}
-              className={language === code ? 'active' : ''}
-            >
+          <button
+            key={code}
+            role="option"
+            aria-selected={language === code}
+            onClick={() => { setLanguage(code); setOpen(false); }}
+            // Audit 2026-10-06 (P0-PERF): preload chunk kamus bahasa ini
+            // saat kursor menyentuhnya — chunk tiba sebelum user mengklik.
+            onMouseEnter={() => preloadLanguage(code)}
+            onFocus={() => preloadLanguage(code)}
+            className={language === code ? 'active' : ''}
+          >
               <span>{name}</span>
               {language === code && <Check size={14} />}
             </button>

@@ -115,12 +115,15 @@ export async function getConversationPresence(conversationId: string) {
 }
 
 async function sendWhatsAppNotice(supabase: Awaited<ReturnType<typeof requireServerUser>>['supabase'], listingId: number, sellerId: string, content: string, buyerId: string) {
-  const [{ data: listing }, { data: buyer }, { data: seller }] = await Promise.all([
+  // Audit 2026-10-06 (P0-SEC): profiles.phone tidak lagi terbaca langsung;
+  // pakai RPC get_seller_contact (hanya seller berlisting aktif).
+  const [{ data: listing }, { data: buyer }, { data: contact }] = await Promise.all([
     supabase.from('listings').select('title').eq('id', listingId).maybeSingle(),
     supabase.from('profiles').select('full_name').eq('id', buyerId).maybeSingle(),
-    supabase.from('profiles').select('phone').eq('id', sellerId).maybeSingle(),
+    supabase.rpc('get_seller_contact', { seller: sellerId }).maybeSingle(),
   ]);
-  await notifyN8n({ seller_phone: seller?.phone || null, buyer_name: buyer?.full_name || 'Warga SultraKita', listing_title: listing?.title || 'Listing SultraKita', message_content: content });
+  const sellerPhone = (contact as { phone?: string | null } | null)?.phone ?? null;
+  await notifyN8n({ seller_phone: sellerPhone, buyer_name: buyer?.full_name || 'Warga SultraKita', listing_title: listing?.title || 'Listing SultraKita', message_content: content });
 }
 
 export async function getChatInbox() {

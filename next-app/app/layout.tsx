@@ -28,6 +28,47 @@ export const metadata: Metadata = {
     apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
   },
   manifest: '/manifest.webmanifest',
+  // Audit 2026-10-06 (P1-SEO): default Open Graph + Twitter Card untuk
+  // SEMUA halaman yang tidak mendefinisikan metadata sendiri (45 dari 77
+  // halaman belum punya metadata). Halaman dengan metadata sendiri
+  // otomatis menimpa nilai default ini.
+  openGraph: {
+    title: {
+      default: 'SUKI Apps - Ekosistem Digital Sulawesi Tenggara',
+      template: '%s | SUKI Apps',
+    },
+    description:
+      'SUKI Apps adalah ekosistem digital Sulawesi Tenggara untuk menemukan properti, peluang kerja, marketplace, komunitas, dan layanan warga.',
+    url: 'https://sukiapps.web.id',
+    siteName: 'SUKI Apps',
+    locale: 'id_ID',
+    type: 'website',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'SUKI Apps — Ekosistem Digital Sulawesi Tenggara',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'SUKI Apps - Ekosistem Digital Sulawesi Tenggara',
+    description:
+      'Temukan produk lokal, properti, peluang kerja, komunitas, dan layanan bisnis di satu ekosistem.',
+    images: ['/og-image.png'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

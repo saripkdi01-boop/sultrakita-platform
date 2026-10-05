@@ -22,12 +22,26 @@ export async function getPublicPropertyById(id: string) {
 
   let seller: { full_name?: string | null; avatar_url?: string | null; phone?: string | null } | null = null;
   if (data.seller_id) {
+    // Audit 2026-10-06 (P0-SEC): kolom profiles.phone tidak lagi terbaca
+    // publik langsung (GRANT kolom dicabut). Profil publik diambil seperti
+    // biasa, phone seller diambil via RPC get_seller_contact yang hanya
+    // mengembalikan phone bila seller punya listing aktif.
     const { data: profile } = await supabase
       .from('profiles')
-      .select('full_name,avatar_url,phone')
+      .select('full_name,avatar_url')
       .eq('id', data.seller_id)
       .maybeSingle();
-    seller = profile;
+    let phone: string | null = null;
+    try {
+      const { data: contact } = await supabase.rpc('get_seller_contact', {
+        seller: data.seller_id,
+      });
+      const row = Array.isArray(contact) ? contact[0] : contact;
+      phone = (row as { phone?: string | null } | null)?.phone ?? null;
+    } catch {
+      phone = null;
+    }
+    seller = { ...(profile ?? {}), phone };
   }
   return { ...data, seller };
 }

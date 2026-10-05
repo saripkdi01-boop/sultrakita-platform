@@ -22,9 +22,33 @@ export async function getProperties(filters: { category?: string; district?: str
 }
 
 export async function getPropertyById(id: string) {
-  const { data, error } = await (await getServerSupabase()).from('properties').select('*, seller:profiles!seller_id(full_name,avatar_url,phone)').eq('id', id).single();
+  // Audit 2026-10-06 (P0-SEC): profiles.phone tidak lagi terbaca publik
+  // langsung. Ambil profil publik dulu, lalu phone via RPC get_seller_contact
+  // (hanya untuk seller berlisting aktif). Join FK dihapus karena FK
+  // properties.seller_id menunjuk auth.users (bukan profiles) — lihat
+  // catatan di lib/actions/property-public.ts.
+  const supabase = await getServerSupabase();
+  const { data, error } = await supabase.from('properties').select('*').eq('id', id).single();
   if (error) throw error;
-  return data;
+  let seller: { full_name?: string | null; avatar_url?: string | null; phone?: string | null } | null = null;
+  const sellerId = (data as { seller_id?: string | null })?.seller_id;
+  if (sellerId) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('full_name,avatar_url')
+      .eq('id', sellerId)
+      .maybeSingle();
+    let phone: string | null = null;
+    try {
+      const { data: contact } = await supabase.rpc('get_seller_contact', { seller: sellerId });
+      const row = Array.isArray(contact) ? contact[0] : contact;
+      phone = (row as { phone?: string | null } | null)?.phone ?? null;
+    } catch {
+      phone = null;
+    }
+    seller = { ...(profile ?? {}), phone };
+  }
+  return { ...data, seller };
 }
 
 export async function createProperty(propertyData: Record<string, unknown>) {

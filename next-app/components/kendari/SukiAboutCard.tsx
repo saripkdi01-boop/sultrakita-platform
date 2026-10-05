@@ -2,7 +2,7 @@
 
 import { useRef, useCallback } from 'react';
 import { usePreferences } from '@/lib/preferences';
-import { getCoreLabels } from '@/lib/i18n/dictionaries';
+import { useCoreLabels } from '@/lib/i18n/dictionaries-lazy';
 import Image from 'next/image';
 import { MapPin, Store, Building2, Gamepad2, Briefcase } from 'lucide-react';
 
@@ -24,7 +24,7 @@ const MODULES = [
 export default function SukiAboutCard() {
   const cardRef = useRef<HTMLDivElement>(null);
   const { language } = usePreferences();
-  const t: Record<string, string> = getCoreLabels(language);
+  const t: Record<string, string> = useCoreLabels(language);
 
   const handleMove = useCallback((clientX: number, clientY: number) => {
     const el = cardRef.current;

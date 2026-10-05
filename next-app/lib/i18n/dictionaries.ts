@@ -1,6 +1,14 @@
 /**
  * SUKI Apps — Kamus terpadu 27 bahasa
  * Merakit semua kamus per region + per fitur menjadi satu Record<LanguageCode, CoreLabels>
+ *
+ * AUDIT 2026-10-06 (P0-PERF): modul ini mem-bundle SEMUA kamus 27 bahasa
+ * (~3,7 MB source) ke setiap client yang mengimpornya. JANGAN dipakai di
+ * client components baru — pakai `useCoreLabels()` dari
+ * `@/lib/i18n/dictionaries-lazy` (lazy-load per bahasa, fallback Indonesia
+ * sinkron). Modul ini dipertahankan untuk server components & kode yang
+ * belum migrasi; halaman yang sudah migrasi: homepage (home-client +
+ * komponen kendari). Lihat dictionaries-lazy.ts untuk pola migrasi.
  */
 
 import type { LanguageCode } from '@/lib/preferences';
