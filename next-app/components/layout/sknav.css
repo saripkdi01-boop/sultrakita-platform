@@ -933,4 +933,8 @@
 @media (min-width: 781px) {
   body .app-frame { min-height: calc(100vh - 64px); }
   body .desktop-sidebar { top: 64px; height: calc(100vh - 64px); }
+
+  /* QuickNavBar (pill nav efek kaca) disembunyikan di desktop/tablet:
+     navigasi sudah ada di header atas + sidebar, agar tidak menumpuk. */
+  .quick-nav { display: none !important; }
 }
