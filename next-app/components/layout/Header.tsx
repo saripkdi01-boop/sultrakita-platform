@@ -18,7 +18,6 @@ import { BrandLogo } from './BrandLogo';
 import { CreateMenu } from './CreateMenu';
 import { EcosystemHub } from './EcosystemHub';
 import { NotificationCenter } from './NotificationCenter';
-import { ThemeToggle } from './ThemeToggle';
 import { ProfileHub } from '@/components/profile/ProfileHub';
 import { getProfileNickname, useSessionProfile } from '@/hooks/useSessionProfile';
 import { usePreferences } from '@/lib/preferences';
@@ -155,10 +154,10 @@ export function Header({ onCreate }: { onCreate?: (type?: 'post' | 'reel') => vo
         </div>
       </div>
 
-      {/* Baris 1 mobile (tidak diubah): hamburger + logo | Buat, Cari, Pesan */}
+      {/* Baris 1 mobile: hamburger + logo | Buat, Cari, Pesan.
+          (Toggle tema dipindah ke drawer menu — lihat SidebarMobileDrawer.) */}
       <div className="sknav-mbar">
         <div className="sknav-mbar-left">
-          <ThemeToggle />
           <button
             type="button"
             className="sknav-hamburger"
