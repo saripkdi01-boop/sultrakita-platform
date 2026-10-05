@@ -9,10 +9,16 @@ const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), 'u
 test('property navigation uses the canonical SUKI Suits label and iconic building mark', () => {
   const navigation = read('next-app/config/navigation.ts');
   const quickNav = read('next-app/components/layout/QuickNavBar.tsx');
-  assert.match(navigation, /label: 'SUKI Suits'/);
-  assert.doesNotMatch(navigation, /SUKI Properti/);
-  assert.match(navigation, /icon: Building2/);
-  assert.match(quickNav, /label: 'SUKI Suits', Icon: Building2/);
+  const navDict = read('next-app/lib/i18n/dict-navigation.ts');
+  // Audit realita 2026-10-03 (lihat komentar di navigation.ts): /properti adalah
+  // direktori real estate sehingga sidebar memakai label 'SUKI Properti' + ikon khas
+  // SUKI. TODO(owner): BrandLogo + registry + dict-navigation masih memakai 'SUKI
+  // Suits' — putuskan SATU nama kanonis lalu selaraskan semua permukaan + test ini.
+  assert.match(navigation, /label: 'SUKI Properti'/);
+  assert.match(navigation, /icon: suki\(SukiIconProperti\)/);
+  // QuickNavBar memakai label i18n (kunci t.sukiSuits) + ikon Building2.
+  assert.match(quickNav, /label: t\.sukiSuits, Icon: Building2/);
+  assert.match(navDict, /"sukiSuits": "SUKI Suits"/);
 });
 
 test('property header branding is contextual and accessible', () => {
