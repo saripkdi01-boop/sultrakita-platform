@@ -20,7 +20,7 @@ const GAMES: Game[] = [
     title: 'JALA — Simulasi Nelayan Sultra',
     tagline: 'Lempar jala, tarik rezeki',
     desc: 'Rasakan jadi nelayan Sulawesi Tenggara: cek cuaca laut, pilih spot (Teluk Kendari, Pulau Bokori, Wakatobi), lempar jala dengan timing tepat, tarik ikan, lelang hasil, dan upgrade perahumu. 100% skill, tanpa untung-untungan.',
-    badge: 'Baru',
+    badge: 'Online + Peringkat',
   },
   {
     slug: '/kampung',
@@ -34,7 +34,7 @@ const GAMES: Game[] = [
 /**
  * SUKI GAMES — hub game SUKI Apps.
  * Menampung game-game HTML5 yang berjalan via iframe dari /public.
- * Semua game mode demo: progres di localStorage perangkat.
+ * JALA tersinkron ke server (tangkapan + leaderboard); game lain masih lokal.
  */
 export default function GamesPage() {
   return (
@@ -55,8 +55,8 @@ export default function GamesPage() {
         </div>
 
         <div className="skg-demo" role="status">
-          <b>MODE DEMO</b> — progres game tersimpan di perangkat ini, belum
-          terhubung akun SUKI.
+          <b>JALA ONLINE</b> — tangkapan JALA tersimpan di server & masuk papan
+          peringkat. Game lain masih tersimpan di perangkat ini.
         </div>
 
         <div className="skg-grid">

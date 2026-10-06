@@ -72,6 +72,13 @@ export async function GET(request: NextRequest) {
 
   if (!player) return ok({ exists: false, player_key: parsed.data.key });
 
+  // Peringkat 1-based berdasar total_kg (sama dengan urutan leaderboard).
+  const { count: diAtas } = await admin
+    .from('jala_players')
+    .select('id', { count: 'exact', head: true })
+    .gt('total_kg', (player as { total_kg: number }).total_kg);
+  const rank = (diAtas ?? 0) + 1;
+ 
   // Ambil 5 tangkapan terakhir
   const { data: catches } = await admin
     .from('jala_catches')
@@ -80,8 +87,8 @@ export async function GET(request: NextRequest) {
       .eq('player_key', parsed.data.key).single()).data?.id)
     .order('caught_at', { ascending: false })
     .limit(5);
-
-  return ok({ exists: true, player, recent_catches: catches || [] });
+ 
+  return ok({ exists: true, player, rank, recent_catches: catches || [] });
 }
 
 export async function POST(request: NextRequest) {
