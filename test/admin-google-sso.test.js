@@ -4,7 +4,8 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 
 const root = path.join(__dirname, '..');
-const server = fs.readFileSync(path.join(root, 'server.js'), 'utf8');
+// Pasca-refactor: kode server tersebar di server.js + routes/ + lib/.
+const { serverSource: server } = require('./helpers/server-source');
 const helper = fs.readFileSync(path.join(root, 'google-admin-sso.js'), 'utf8');
 const adminLogin = fs.readFileSync(path.join(root, 'public/admin/index.html'), 'utf8');
 
@@ -17,7 +18,7 @@ test('Google Admin SSO memakai allowlist dan verified profile', () => {
 });
 
 test('Google Admin SSO tidak auto-provisioning user baru', () => {
-  const adminCallback = server.slice(server.indexOf("app.get('/api/auth/google/admin/callback'"), server.indexOf("app.post('/api/auth/google/admin/exchange'"));
+  const adminCallback = server.slice(server.indexOf("router.get('/auth/google/admin/callback'"), server.indexOf("router.post('/auth/google/admin/exchange'"));
   assert.doesNotMatch(adminCallback, /INSERT INTO users/);
   assert.match(adminCallback, /WHERE u\.google_sub = \? OR lower\(u\.email\) = lower\(\?\)/);
 });

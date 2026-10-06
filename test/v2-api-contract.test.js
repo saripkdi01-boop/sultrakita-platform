@@ -52,10 +52,11 @@ test('v2 migration is additive and uses deny-by-default RLS for server-owned tab
 
 
 test('seller SEO surface uses canonical verification and indexable URLs', () => {
-  const serverSource = fs.readFileSync(path.join(__dirname, '..', 'server.js'), 'utf8');
+  // Pasca-refactor: kode server tersebar di server.js + routes/ + lib/.
+  const { serverSource } = require('./helpers/server-source');
   const seoSource = fs.readFileSync(path.join(__dirname, '..', 'seo.js'), 'utf8');
   const migration = fs.readFileSync(path.join(__dirname, '..', 'database', 'migrations', '021_seller_verification_source_of_truth.sql'), 'utf8');
-  assert.match(serverSource, /app\.get\('\/seller\/:slug-:id'/);
+  assert.match(serverSource, /router\.get\('\/seller\/:slug-:id'/);
   assert.match(serverSource, /verified: seller\.verification_status === 'approved'/);
   assert.doesNotMatch(serverSource, /verified: Boolean\(seller\.is_verified \|\| seller\.phone_verified \|\| seller\.verification_status === 'approved'\)/);
   assert.match(serverSource, /sellerPage\(seller, listings\)/);
@@ -67,7 +68,7 @@ test('seller SEO surface uses canonical verification and indexable URLs', () => 
 });
 
 test('SEO search no longer assumes the optional search_vector column', () => {
-  const serverSource = fs.readFileSync(path.join(__dirname, '..', 'server.js'), 'utf8');
+  const { serverSource } = require('./helpers/server-source');
   assert.match(serverSource, /to_tsvector\('simple'/);
   assert.match(serverSource, /coalesce\(description, ''\)/);
 });

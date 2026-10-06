@@ -20,13 +20,21 @@ const berandaPage = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'app'
 // composer, dsb.) pindah ke page-client.tsx. Contract test membaca keduanya.
 const berandaClient = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'app', 'beranda', 'page-client.tsx'), 'utf8');
 const groupsClient = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'app', 'groups', 'page-client.tsx'), 'utf8');
+// String UI bermigrasi ke kamus i18n; kontrak memverifikasi dua lapis:
+// kunci i18n dipakai komponen + string Indonesia tersedia di kamus.
+const berandaDict = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'lib', 'i18n', 'dict-beranda.ts'), 'utf8');
+const authProfileDict = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'lib', 'i18n', 'dict-authprofile.ts'), 'utf8');
+const groupsDict = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'lib', 'i18n', 'dict-groups.ts'), 'utf8');
 
 test('feed route selects only profile columns that exist in Supabase', () => {
   assert.match(feedRoute, /profiles\(display_name,username,avatar_url,visibility_settings\)/);
   assert.match(feedRoute, /visibility_settings\?\.avatar !== 'public'/);
   assert.match(feedRoute, /eq\('status', 'published'\)/);
   assert.match(postsAction, /privacy/);
-  assert.match(composer, /Publikasikan sekarang/);
+  // String composer kini memakai kamus i18n (dict-beranda): komponen
+  // memakai kunci brPublishNow, kamus menyediakan string Indonesianya.
+  assert.match(composer, /brPublishNow/);
+  assert.match(berandaDict, /brPublishNow: "Publikasikan sekarang"/);
   assert.match(composer, /post-location/);
   assert.doesNotMatch(feedRoute, /profiles\([^)]*\bname\b/);
 });
@@ -70,9 +78,13 @@ test('Create Post binds identity server-side and supports safe idempotent publis
   assert.match(postsAction, /mediaUrls/);
   assert.match(postsAction, /status: 'published'/);
   assert.match(postsAction, /profiles/);
-  assert.match(composer, /Simpan Draft/);
-  assert.match(composer, /Publikasikan sekarang/);
-  assert.match(composer, /Mempublikasikan/);
+  // Label composer via kamus i18n dict-beranda (verifikasi dua lapis).
+  assert.match(composer, /brSaveDraft/);
+  assert.match(composer, /brPublishNow/);
+  assert.match(composer, /brPublishing/);
+  assert.match(berandaDict, /brSaveDraft: "Simpan Draft"/);
+  assert.match(berandaDict, /brPublishNow: "Publikasikan sekarang"/);
+  assert.match(berandaDict, /brPublishing: "Mempublikasikan/);
   assert.match(composer, /localStorage/);
   assert.match(composer, /type="file"/);
   assert.match(composer, /signed URL/);
@@ -107,7 +119,9 @@ test('profile identity uses authenticated nickname and live profile columns', ()
   assert.match(sessionHook, /recipient_id/);
   assert.match(sessionHook, /city/);
   assert.match(sessionHook, /profile_id/);
-  assert.match(profileHub, /Nama panggilan \/ username/);
+  // Label profil via kamus i18n dict-authprofile (verifikasi dua lapis).
+  assert.match(profileHub, /profileSetupUsername/);
+  assert.match(authProfileDict, /profileSetupUsername: "Nama panggilan \/ username"/);
   assert.match(profileHub, /supabase\.from\('profiles'\)\.update/);
   assert.doesNotMatch(stories, /Aulia|UMKM Sultra|Cerita Kendari|Wakatobi/);
 });
@@ -119,8 +133,11 @@ test('Groups is a real authenticated community surface, not demo content', () =>
   assert.match(groupsClient, /createGroup/);
   assert.match(groupsClient, /joinGroup/);
   assert.match(groupsClient, /createGroupPost/);
-  assert.match(groupsClient, /Cari komunitas berdasarkan nama/);
-  assert.match(groupsClient, /Buat komunitas baru/);
+  // Label groups via kamus i18n dict-groups (verifikasi dua lapis).
+  assert.match(groupsClient, /gSearchPh/);
+  assert.match(groupsClient, /gCreateTitle/);
+  assert.match(groupsDict, /gSearchPh: "Cari komunitas berdasarkan nama/);
+  assert.match(groupsDict, /gCreateTitle: "Buat komunitas baru"/);
   assert.match(groupsAction, /requireServerUser/);
   assert.match(groupsAction, /create_suki_group/);
   assert.match(groupsAction, /group_posts/);

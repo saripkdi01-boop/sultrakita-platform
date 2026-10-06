@@ -3,7 +3,8 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 
 const auth = fs.readFileSync('auth.js', 'utf8');
-const server = fs.readFileSync('server.js', 'utf8');
+// Pasca-refactor: kode server tersebar di server.js + routes/ + lib/.
+const { serverSource: server } = require('./helpers/server-source');
 
 test('session authentication accepts bearer and canonical/legacy cookie transports through one extractor', () => {
   assert.match(auth, /const getSessionToken = req =>/);
@@ -14,7 +15,7 @@ test('session authentication accepts bearer and canonical/legacy cookie transpor
 
 test('issued sessions are stored as one-way hashes with bounded expiry', () => {
   assert.match(server, /crypto\.randomBytes\(32\)\.toString\('hex'\)/);
-  assert.match(server, /crypto\.createHash\('sha256'\)\.update\(token\)/);
+  assert.match(server, /crypto\.createHash\('sha256'\)\.update\(token\)\.digest\('hex'\)/);
   assert.match(server, /ttlMs = 30 \* 24 \* 60 \* 60 \* 1000/);
   assert.match(server, /expires_at\) VALUES/);
 });
@@ -22,12 +23,12 @@ test('issued sessions are stored as one-way hashes with bounded expiry', () => {
 test('login sets an HttpOnly same-site session cookie and responses are not cached', () => {
   assert.match(server, /sultra_session=\$\{token\}/);
   assert.match(server, /HttpOnly; SameSite=Lax/);
-  assert.match(server, /const setSessionResponse = \(res, token\)/);
+  assert.match(server, /const setSessionResponse = \(res, token\) =>/);
   assert.match(server, /setSessionResponse\(res, token\)/);
 });
 
 test('logout revokes the extracted token and clears the canonical cookie', () => {
   assert.match(server, /revokeToken\(getSessionToken\(req\)\)/);
   assert.match(server, /res\.setHeader\('Set-Cookie', clearSessionCookie\)/);
-  assert.match(server, /app\.post\('\/api\/auth\/logout', requireAuth/);
+  assert.match(server, /router\.post\('\/auth\/logout', requireAuth/);
 });

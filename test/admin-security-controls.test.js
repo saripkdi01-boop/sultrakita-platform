@@ -6,7 +6,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.join(__dirname, '..');
-const server = fs.readFileSync(path.join(root, 'server.js'), 'utf8');
+// Pasca-refactor: kode server tersebar di server.js + routes/ + lib/.
+const { serverSource: server } = require('./helpers/server-source');
 const rbac = fs.readFileSync(path.join(root, 'rbac.js'), 'utf8');
 const auth = fs.readFileSync(path.join(root, 'auth.js'), 'utf8');
 

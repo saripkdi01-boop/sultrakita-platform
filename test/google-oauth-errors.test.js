@@ -4,7 +4,8 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 
 const root = path.join(__dirname, '..');
-const server = fs.readFileSync(path.join(root, 'server.js'), 'utf8');
+// Pasca-refactor: kode server tersebar di server.js + routes/ + lib/.
+const { serverSource: server } = require('./helpers/server-source');
 const adminSso = fs.readFileSync(path.join(root, 'google-admin-sso.js'), 'utf8');
 
 test('Google token exchange exposes bounded provider diagnostics only', () => {
