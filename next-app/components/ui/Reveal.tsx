@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type ElementType, type ReactElement, type ReactNode } from 'react';
 
 export interface RevealProps {
   /** Elemen pembungkus yang dirender. Default: 'div'. */
-  as?: keyof JSX.IntrinsicElements;
+  as?: ElementType;
   /** Jeda sebelum animasi mulai, dalam milidetik. */
   delay?: number;
   /** Jarak geser vertikal awal (px) sebelum elemen terlihat. */
@@ -27,7 +27,7 @@ export function Reveal({
   y = 24,
   className,
   children,
-}: RevealProps): JSX.Element {
+}: RevealProps): ReactElement {
   const [visible, setVisible] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
 

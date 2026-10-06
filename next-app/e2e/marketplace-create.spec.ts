@@ -82,9 +82,15 @@ test.describe('/marketplace/create — form terautentikasi (stub)', () => {
   test.beforeEach(async ({ page, context }) => {
     // @supabase/ssr menyimpan sesi di cookie; gotrue-js hanya memanggil
     // /auth/v1/user bila ada access_token — jadi tanam sesi palsu dulu.
+    // Nama cookie mengikuti project ref dari SUPABASE_URL (di sini "example"),
+    // dan domain harus cocok dengan baseURL Playwright (127.0.0.1).
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://example.supabase.co';
+    const projectRef = new URL(supabaseUrl).hostname.split('.')[0];
+    const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://127.0.0.1:3200';
+    const cookieDomain = new URL(baseURL).hostname;
     await context.addCookies([
       {
-        name: 'sb-dummy-auth-token',
+        name: `sb-${projectRef}-auth-token`,
         value: JSON.stringify({
           access_token: 'fake-access-token',
           token_type: 'bearer',
@@ -93,7 +99,7 @@ test.describe('/marketplace/create — form terautentikasi (stub)', () => {
           refresh_token: 'fake-refresh-token',
           user: FAKE_USER,
         }),
-        domain: 'localhost',
+        domain: cookieDomain,
         path: '/',
       },
     ]);

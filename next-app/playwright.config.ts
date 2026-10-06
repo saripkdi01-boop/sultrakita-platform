@@ -16,7 +16,6 @@ export default defineConfig({
     video: 'retain-on-failure',
     locale: 'id-ID',
     colorScheme: 'light',
-    extraHTTPHeaders: { 'x-e2e-suite': 'suki-chat' },
   },
   webServer: process.env.PLAYWRIGHT_BASE_URL ? undefined : {
     command: 'npm run build && npm run start -- -H 127.0.0.1 -p 3200',

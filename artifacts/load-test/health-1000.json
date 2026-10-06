@@ -1,0 +1,15 @@
+{
+  "target": "http://127.0.0.1:3210/api/health",
+  "total": 1000,
+  "concurrency": 100,
+  "duration_ms": 72016,
+  "requests_per_second": 13.89,
+  "ok": 0,
+  "fail": 1000,
+  "latency_ms": {
+    "p50": 7074,
+    "p95": 7438,
+    "p99": 7747,
+    "max": 7903
+  }
+}

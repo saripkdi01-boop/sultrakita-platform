@@ -4,10 +4,10 @@ test.describe('SUKI Apps UI/UX baseline', () => {
   test('landing page exposes the primary journey and keyboard-visible controls', async ({ page }) => {
     await page.goto('/');
 
-    await expect(page.getByRole('heading', { name: /Temukan yang dekat/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Temukan yang dekat/i }).first()).toBeVisible();
     await expect(page.getByRole('link', { name: /Mulai menjelajah/i })).toBeVisible();
-    await expect(page.getByRole('link', { name: /Saya punya bisnis/i })).toBeVisible();
     const navigation = page.locator('#suki-primary-navigation');
+    await expect(navigation.getByRole('link', { name: /Untuk bisnis/i })).toBeVisible();
     const viewport = page.viewportSize();
     if (viewport && viewport.width >= 921) {
       await expect(navigation).toBeVisible();

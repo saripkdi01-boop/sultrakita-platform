@@ -13,7 +13,7 @@ export interface OverlayOptions {
 }
 
 export interface OverlayRefs {
-  containerRef: RefObject<HTMLDivElement>;
+  containerRef: RefObject<HTMLDivElement | null>;
 }
 
 /**
@@ -24,7 +24,7 @@ export interface OverlayRefs {
  * - scroll body dikunci, fokus dikembalikan ke pemicu saat ditutup
  */
 export function useOverlay({ open, onClose, labelledBy, describedBy }: OverlayOptions): OverlayRefs {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
