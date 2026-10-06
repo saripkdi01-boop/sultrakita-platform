@@ -20,13 +20,17 @@ const berandaPage = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'app'
 // composer, dsb.) pindah ke page-client.tsx. Contract test membaca keduanya.
 const berandaClient = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'app', 'beranda', 'page-client.tsx'), 'utf8');
 const groupsClient = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'app', 'groups', 'page-client.tsx'), 'utf8');
+// i18n (PR #81): literal UI pindah ke dictionary; contract test menegaskan kunci
+// dipakai komponen DAN literal ada di dictionary.
+const berandaDict = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'lib', 'i18n', 'dict-beranda.ts'), 'utf8');
 
 test('feed route selects only profile columns that exist in Supabase', () => {
   assert.match(feedRoute, /profiles\(display_name,username,avatar_url,visibility_settings\)/);
   assert.match(feedRoute, /visibility_settings\?\.avatar !== 'public'/);
   assert.match(feedRoute, /eq\('status', 'published'\)/);
   assert.match(postsAction, /privacy/);
-  assert.match(composer, /Publikasikan sekarang/);
+  assert.match(composer, /b\.brPublishNow/);
+  assert.match(berandaDict, /brPublishNow: "Publikasikan sekarang"/);
   assert.match(composer, /post-location/);
   assert.doesNotMatch(feedRoute, /profiles\([^)]*\bname\b/);
 });
@@ -70,9 +74,12 @@ test('Create Post binds identity server-side and supports safe idempotent publis
   assert.match(postsAction, /mediaUrls/);
   assert.match(postsAction, /status: 'published'/);
   assert.match(postsAction, /profiles/);
-  assert.match(composer, /Simpan Draft/);
-  assert.match(composer, /Publikasikan sekarang/);
-  assert.match(composer, /Mempublikasikan/);
+  assert.match(composer, /b\.brSaveDraft/);
+  assert.match(berandaDict, /brSaveDraft: "Simpan Draft"/);
+  assert.match(composer, /b\.brPublishNow/);
+  assert.match(berandaDict, /brPublishNow: "Publikasikan sekarang"/);
+  assert.match(composer, /b\.brPublishing/);
+  assert.match(berandaDict, /brPublishing: "Mempublikasikan…"/);
   assert.match(composer, /localStorage/);
   assert.match(composer, /type="file"/);
   assert.match(composer, /signed URL/);
@@ -102,12 +109,14 @@ test('profile identity uses authenticated nickname and live profile columns', ()
   const sessionHook = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'hooks', 'useSessionProfile.ts'), 'utf8');
   const profileHub = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'components', 'profile', 'ProfileHub.tsx'), 'utf8');
   const stories = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'components', 'beranda', 'StoriesSection.tsx'), 'utf8');
+  const authProfileDict = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'lib', 'i18n', 'dict-authprofile.ts'), 'utf8');
   assert.match(sessionHook, /getProfileNickname/);
   assert.match(sessionHook, /username.*display_name/);
   assert.match(sessionHook, /recipient_id/);
   assert.match(sessionHook, /city/);
   assert.match(sessionHook, /profile_id/);
-  assert.match(profileHub, /Nama panggilan \/ username/);
+  assert.match(profileHub, /t\.profileSetupUsername/);
+  assert.match(authProfileDict, /profileSetupUsername: "Nama panggilan \/ username"/);
   assert.match(profileHub, /supabase\.from\('profiles'\)\.update/);
   assert.doesNotMatch(stories, /Aulia|UMKM Sultra|Cerita Kendari|Wakatobi/);
 });
@@ -119,8 +128,11 @@ test('Groups is a real authenticated community surface, not demo content', () =>
   assert.match(groupsClient, /createGroup/);
   assert.match(groupsClient, /joinGroup/);
   assert.match(groupsClient, /createGroupPost/);
-  assert.match(groupsClient, /Cari komunitas berdasarkan nama/);
-  assert.match(groupsClient, /Buat komunitas baru/);
+  const groupsDict = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'lib', 'i18n', 'dict-groups.ts'), 'utf8');
+  assert.match(groupsClient, /g\.gSearchPh/);
+  assert.match(groupsDict, /gSearchPh: "Cari komunitas berdasarkan nama…"/);
+  assert.match(groupsClient, /g\.gCreateTitle/);
+  assert.match(groupsDict, /gCreateTitle: "Buat komunitas baru"/);
   assert.match(groupsAction, /requireServerUser/);
   assert.match(groupsAction, /create_suki_group/);
   assert.match(groupsAction, /group_posts/);

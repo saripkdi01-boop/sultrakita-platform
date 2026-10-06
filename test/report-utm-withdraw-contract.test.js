@@ -88,7 +88,10 @@ test('B2: withdrawApplication validasi kepemilikan + status sebelum update', () 
 
 test('B3: UI /jobs/applications punya tombol Tarik lamaran untuk status aktif', () => {
   const src = read('next-app/app/jobs/applications/applications-client.tsx');
-  assert.match(src, /Tarik lamaran/);
+  // i18n (PR #81): literal pindah ke dict-propertijobs (kunci pjWithdraw).
+  const dict = read('next-app/lib/i18n/dict-propertijobs.ts');
+  assert.match(src, /p\('pjWithdraw'\)/);
+  assert.match(dict, /pjWithdraw: 'Tarik lamaran'/);
   assert.match(src, /withdrawApplication\(/);
   assert.match(src, /window\.confirm/);
 });
