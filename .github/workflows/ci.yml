@@ -28,6 +28,8 @@ jobs:
       CORS_ORIGINS: http://127.0.0.1:3000
     steps:
       - uses: actions/checkout@v5
+      - name: Validate images (no base64 text files)
+        run: python3 scripts/validate-images.py --check-only
       - uses: actions/setup-node@v5
         with:
           node-version: 22
