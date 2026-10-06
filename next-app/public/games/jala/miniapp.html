@@ -249,6 +249,7 @@ table.papan td.kanan,table.papan th.kanan{text-align:right}
 .kosong{text-align:center;color:var(--ink-dim);font-size:13px;padding:24px 10px;line-height:1.7}
 .footer-note{text-align:center;font-size:11px;color:var(--ink-dim);padding:16px;line-height:1.7}
 </style>
+<link rel="stylesheet" href="jala-visual.css">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
@@ -401,6 +402,8 @@ table.papan td.kanan,table.papan th.kanan{text-align:right}
 <div class="toast" id="toast"></div>
 
 <!-- JALA 3D ringan: dimuat sebelum script utama -->
+<!-- JALA visual semi-3D: modul ikan SVG (file bersama, sebelum jala-3d.js) -->
+<script src="jala-fish.js"></script>
 <script src="jala-3d.js"></script>
 <script>
 'use strict';
@@ -419,6 +422,8 @@ function acakInt(min, max){ return Math.floor(acak(min, max + 1)); }
 function pilihAcak(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
 function rp(n){ return 'Rp ' + Math.round(n).toLocaleString('id-ID'); }
 function bulatkan500(n){ return Math.round(n / 500) * 500; }
+/* Ikon ikan semi-3D (SVG) + fallback emoji bila modul visual belum dimuat. */
+function ikanArt(f, px, opts){ return (typeof JALAFISH !== 'undefined') ? JALAFISH.art(f.id, f.emoji, px, opts) : f.emoji; }
 
 // ---------- data ikan asli Sultra ----------
 const IKAN = [
@@ -774,7 +779,7 @@ function renderPagi(){
     if(sebab && sebab !== '➖ Harga stabil') penggerak.push(`${f.emoji} ${f.nama}: ${sebab}`);
     const tr = document.createElement('tr');
     tr.title = sebab;
-    tr.innerHTML = `<td>${f.emoji} ${f.nama}<br><small style="color:var(--ink-dim);font-size:10px">${sebab}</small></td><td class="kanan">${rp(hrg)}</td><td class="kanan ${cls}">${tren}</td>`;
+    tr.innerHTML = `<td>${ikanArt(f, 40, {anim:false})} ${f.nama}<br><small style="color:var(--ink-dim);font-size:10px">${sebab}</small></td><td class="kanan">${rp(hrg)}</td><td class="kanan ${cls}">${tren}</td>`;
     tb.appendChild(tr);
   });
   // misi
@@ -832,7 +837,7 @@ function renderPeta(){
     const ikanSpot = [...IKAN.filter(f => f.spots.includes(spot.id))];
     if(spot.id === 'teluk') ikanSpot.push(LEGENDA);
     const tags = ikanSpot.map(f =>
-      `<span class="tag${f.rarity === 'langka' || f.rarity === 'legenda' ? ' langka' : ''}">${f.emoji} ${f.nama}</span>`).join('');
+      `<span class="tag${f.rarity === 'langka' || f.rarity === 'legenda' ? ' langka' : ''}">${ikanArt(f, 30, {anim:false})} ${f.nama}</span>`).join('');
     const div = document.createElement('div');
     div.className = 'kartu spot' + (kunci.terkunci ? ' terkunci' : '');
     div.innerHTML = `
@@ -865,7 +870,7 @@ function renderLelang(){
         const div = document.createElement('div');
         div.className = 'inv-item';
         div.innerHTML = `
-          <div class="em">${f.emoji}</div>
+          <div class="em">${ikanArt(f, 56)}</div>
           <div class="inf"><b>${f.nama}</b><small>${kg} kg × ${rp(S.harga[ikanId])}/kg = <b style="color:var(--gold)">${rp(nilai)}</b></small></div>
           <button class="btn gold kecil" style="width:auto" data-jual="${idx}">Jual</button>`;
         wadah.appendChild(div);
@@ -930,7 +935,7 @@ function renderKatalog(){
     const div = document.createElement('div');
     div.className = 'kat' + (c ? '' : ' belum') + (f.rarity === 'legenda' ? ' legenda' : '');
     div.innerHTML = c
-      ? `<div class="em">${f.emoji}</div><b>${f.nama}</b><small>${c.ekor} ekor · maks ${c.maxKg} kg</small>`
+      ? `<div class="em">${ikanArt(f, 72)}</div><b>${f.nama}</b><small>${c.ekor} ekor · maks ${c.maxKg} kg</small>`
       : `<div class="em">❓</div><b>???</b><small>${f.spots.map(s => SPOTS.find(x => x.id === s).nama).join(', ')}</small>`;
     // M5: tap ikan yang sudah tertangkap → galeri edukasi
     if(c) div.addEventListener('click', () => tampilkanGaleri(f, c));
@@ -951,7 +956,7 @@ function tampilkanGaleri(f, c){
     ? 'Umpan favorit: ' + f.umpanFavorit.map(i => UMPAN[i-1].nama).join(', ')
     : 'Mau semua umpan';
   tampilkanModal(`
-    <div style="text-align:center"><div style="font-size:56px">${f.emoji}</div>
+    <div style="text-align:center"><div class="jframe r-${f.rarity}">${ikanArt(f, 200)}</div>
     <h3 style="margin:6px 0 2px">${f.nama}</h3>
     <div style="font-size:12px;color:var(--ink-dim)">${f.lokal || ''}</div></div>
     <div style="font-size:13px;margin-top:10px;line-height:1.7">
@@ -1371,14 +1376,14 @@ function hasilTangkapan(ikan, kg){
   const infoNaik = catatTangkapan(ikan.id, kg);
   const misiSelesai = S.misi.some(m => m.selesai && !m.diklaim);
   const adalahLegenda = ikan.rarity === 'legenda';
-  // Showcase 3D ringan saat dapat ikan (khusus langka/legenda agar tidak spam)
-  if (window.JALA3D && (adalahLegenda || ikan.rarity === 'langka')) {
-    window.JALA3D.showCatch(ikan.nama, ikan.emoji, ikan.rarity);
+  // Showcase sinematik semi-3D (SVG + CSS, ringan untuk semua rarity)
+  if (window.JALA3D) {
+    window.JALA3D.showCatch(ikan.nama, ikan.emoji, ikan.rarity, {fishId: ikan.id, kg: kg, nilai: rp(nilai)});
   }
   $('mancing-body').innerHTML = `
     <div class="hasil-ikan kartu${adalahLegenda ? ' legenda-frame' : ''}" style="width:100%;max-width:340px">
       ${adalahLegenda ? '<div style="color:var(--gold);font-weight:800;letter-spacing:1px">👑 IKAN LEGENDA! 👑</div>' : ''}
-      <div class="emoji">${ikan.emoji}</div>
+      <div class="jframe r-${ikan.rarity}">${ikanArt(ikan, 220)}</div>
       <h3>${ikan.nama}</h3>
       <div class="berat">${kg} kg</div>
       <div class="nilai">≈ ${rp(nilai)} di pelelangan hari ini</div>

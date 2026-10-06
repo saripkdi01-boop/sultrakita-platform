@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0b3b37">
+<title>JALA — Demo Visual Semi-3D (Fase A+C)</title>
+<link rel="stylesheet" href="jala-visual.css">
+<style>
+:root{--sk-teal-950:#062a28;--sk-teal-900:#0b3b37;--sk-teal-500:#14b8a6;--gold:#ffd766;--ink:#ecfdf9;--ink-dim:#a7cfc9}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--sk-teal-950);color:var(--ink);min-height:100vh;
+background-image:radial-gradient(1200px 500px at 50% -120px,rgba(20,184,166,.22),transparent 60%)}
+.wrap{max-width:560px;margin:0 auto;padding:20px 14px 60px}
+h1{font-size:20px;text-align:center}h1 span{color:var(--gold)}
+.sub{text-align:center;font-size:13px;color:var(--ink-dim);margin:6px 0 18px}
+h2{font-size:15px;margin:22px 0 10px;color:var(--gold)}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.kartu{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px;text-align:center}
+.kartu b{display:block;font-size:13px;margin-top:6px}
+.kartu small{font-size:11px;color:var(--ink-dim)}
+.pill{display:inline-block;font-size:10px;font-weight:800;letter-spacing:1px;border-radius:99px;padding:2px 10px;margin-top:6px}
+.pill.umum{background:rgba(167,207,201,.15);color:#a7cfc9}
+.pill.sedang{background:rgba(20,184,166,.18);color:#14b8a6}
+.pill.langka{background:rgba(103,232,249,.15);color:#67e8f9}
+.pill.legenda{background:rgba(255,215,102,.15);color:var(--gold)}
+.btn{display:block;width:100%;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:800;cursor:pointer;margin-top:8px;
+background:linear-gradient(135deg,#14b8a6,#0f766e);color:#fff}
+.btn.gold{background:linear-gradient(135deg,#f5c542,#d9a91f);color:#3a2b00}
+.row{display:flex;gap:8px}.row .btn{flex:1}
+.note{font-size:11px;color:var(--ink-dim);text-align:center;margin-top:18px;line-height:1.6}
+@media(min-width:480px){.grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🎣 JALA <span>Semi-3D</span> — Demo Fase A+C</h1>
+  <p class="sub">10 ikan SVG per-spesies + showcase sinematik. Goyang kartu untuk efek tilt-3D.</p>
+
+  <h2>🐟 Galeri 10 Ikan (SVG + animasi renang)</h2>
+  <div class="grid" id="galeri"></div>
+
+  <h2>✨ Showcase Sinematik per Rarity</h2>
+  <div class="row">
+    <button class="btn" data-demo="umum">Umum</button>
+    <button class="btn" data-demo="sedang">Sedang</button>
+  </div>
+  <div class="row">
+    <button class="btn" data-demo="langka">Langka</button>
+    <button class="btn gold" data-demo="legenda">👑 Legenda</button>
+  </div>
+
+  <h2>🖼️ Bingkai Hasil (jframe)</h2>
+  <div class="jframe r-legenda" id="frame-demo"></div>
+
+  <p class="note">Aset: jala-fish.js + jala-visual.css (file bersama index.html &amp; miniapp.html).<br>
+  Fallback emoji aktif bila modul visual gagal dimuat. Hormati prefers-reduced-motion.</p>
+</div>
+<script src="jala-fish.js"></script>
+<script src="jala-3d.js"></script>
+<script>
+(function(){
+  var DATA = [
+    {id:'layang', nama:'Layang', latin:'Decapterus'},
+    {id:'baronang', nama:'Baronang', latin:'Siganus'},
+    {id:'cakalang', nama:'Cakalang', latin:'Katsuwonus pelamis'},
+    {id:'kakap', nama:'Kakap Merah', latin:'Lutjanus'},
+    {id:'kerapu', nama:'Kerapu', latin:'Epinephelus'},
+    {id:'tenggiri', nama:'Tenggiri', latin:'Scomberomorus'},
+    {id:'kuwe', nama:'Kuwe', latin:'Caranx (Giant Trevally)'},
+    {id:'tuna', nama:'Tuna Sirip Kuning', latin:'Thunnus albacares'},
+    {id:'lobster', nama:'Lobster', latin:'Panulirus'},
+    {id:'legenda', nama:'Tuna Raksasa Teluk Kendari', latin:'Legenda lokal'}
+  ];
+  var g = document.getElementById('galeri');
+  DATA.forEach(function(d){
+    var r = JALAFISH.rarityOf(d.id);
+    var div = document.createElement('div');
+    div.className = 'kartu';
+    div.innerHTML = JALAFISH.art(d.id, '🐟', 150) +
+      '<b>' + d.nama + '</b><small>' + d.latin + '</small><br>' +
+      '<span class="pill ' + r + '">' + r.toUpperCase() + '</span>';
+    g.appendChild(div);
+  });
+  document.getElementById('frame-demo').innerHTML = JALAFISH.art('legenda', '👑', 220);
+
+  var DEMO = {
+    umum:   {nama:'Layang', emoji:'🐟', rarity:'umum', fishId:'layang', kg:'0,6', nilai:'Rp 12.000'},
+    sedang: {nama:'Kakap Merah', emoji:'🐡', rarity:'sedang', fishId:'kakap', kg:'3,2', nilai:'Rp 176.000'},
+    langka: {nama:'Tuna Sirip Kuning', emoji:'🍣', rarity:'langka', fishId:'tuna', kg:'18,5', nilai:'Rp 832.500'},
+    legenda:{nama:'Tuna Raksasa Teluk Kendari', emoji:'👑', rarity:'legenda', fishId:'legenda', kg:'112,0', nilai:'Rp 6.720.000'}
+  };
+  document.querySelectorAll('[data-demo]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var d = DEMO[b.getAttribute('data-demo')];
+      window.JALA3D.showCatch(d.nama, d.emoji, d.rarity, {fishId:d.fishId, kg:d.kg, nilai:d.nilai});
+    });
+  });
+})();
+</script>
+</body>
+</html>

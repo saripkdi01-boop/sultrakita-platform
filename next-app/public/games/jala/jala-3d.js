@@ -1,8 +1,12 @@
 /* =========================================================
-   JALA 3D — underwater scene ringan (Three.js)
-   Prinsip: low-poly, material sederhana, pixel-ratio dibatasi.
-   Dipanggil via window.JALA3D.init(container).
-   ========================================================= */
+  JALA 3D — underwater scene ringan (Three.js)
+  Prinsip: low-poly, material sederhana, pixel-ratio dibatasi.
+  Dipanggil via window.JALA3D.init(container).
+  Showcase: window.JALA3D.showCatch(nama, emoji, rarity, opts).
+  opts opsional: {fishId, kg, nilai} — bila ada JALAFISH + CSS
+  jala-visual.css, tampil versi sinematik; bila tidak, fallback
+  ke kartu emoji ringan (kompatibel pemanggil lama).
+  ========================================================= */
 (function(){
 'use strict';
 
@@ -190,39 +194,152 @@ function tick(){
 }
 
 /* ---- showcase 3D untuk momen tangkapan ----
-   showCatch(emoji, nama): tampilkan overlay ikan berputar 3D.
-   Versi ringan: pakai CSS 3D (tanpa WebGL) agar tidak berat. */
-function showCatch(nama, emoji, rarity){
+   showCatch(nama, emoji, rarity, opts): overlay sinematik.
+   Versi sinematik (bila JALAFISH + jala-visual.css ada):
+   ikan SVG per-spesies + tilt-3D + efek per rarity + haptic.
+   Fallback: kartu emoji ringan bila modul visual belum dimuat. */
+function esc(s){
+  return String(s == null ? '' : s).replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function showCatchLegacy(nama, emoji, rarity){
+  var old = document.getElementById('jala-3d-catch');
+  if (old) old.remove();
+  var ov = document.createElement('div');
+  ov.id = 'jala-3d-catch';
+  ov.style.cssText = 'position:fixed;inset:0;z-index:200;display:flex;' +
+    'align-items:center;justify-content:center;background:rgba(4,30,28,.78);' +
+    'padding:20px;';
+  var card = document.createElement('div');
+  card.style.cssText = 'text-align:center;background:#0e4a45;' +
+    'border:1px solid rgba(255,215,102,.35);border-radius:20px;' +
+    'padding:24px;max-width:320px;width:100%;';
+  card.innerHTML =
+    '<div style="font-size:96px">' + emoji + '</div>' +
+    '<div style="margin-top:10px;font-size:22px;font-weight:800;color:#fff">' + esc(nama) + '</div>' +
+    '<div style="margin-top:6px;font-size:13px;color:#ffd766;letter-spacing:3px;font-weight:800">' +
+    esc(String(rarity || '').toUpperCase()) + '</div>' +
+    '<button id="jlegacy-ok" style="margin-top:16px;width:100%;border:none;border-radius:14px;' +
+    'padding:14px;font-size:16px;font-weight:800;cursor:pointer;' +
+    'background:linear-gradient(135deg,#f5c542,#d9a91f);color:#3a2b00">Lanjut 🎣</button>';
+  ov.appendChild(card);
+  var tutup = function(){ if (ov.parentNode) ov.remove(); };
+  card.querySelector('#jlegacy-ok').addEventListener('click', function(e){ e.stopPropagation(); tutup(); });
+  ov.addEventListener('click', tutup);
+  setTimeout(tutup, 6000);
+  document.body.appendChild(ov);
+}
+
+function showCatch(nama, emoji, rarity, opts){
+  opts = opts || {};
+  rarity = String(rarity || 'umum').toLowerCase();
+  if (['umum', 'sedang', 'langka', 'legenda'].indexOf(rarity) < 0) rarity = 'umum';
+  if (!window.JALAFISH) { showCatchLegacy(nama, emoji, rarity); return; }
+
+  var reduceMotion = false;
+  try { reduceMotion = window.matchMedia &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch(e){}
+
   var old = document.getElementById('jala-3d-catch');
   if (old) old.remove();
 
   var ov = document.createElement('div');
+  ov.className = 'jcatch r-' + rarity;
   ov.id = 'jala-3d-catch';
-  ov.style.cssText = 'position:fixed;inset:0;z-index:200;display:flex;' +
-    'align-items:center;justify-content:center;background:rgba(4,30,28,.72);' +
-    'backdrop-filter:blur(3px);perspective:800px;';
+  ov.setAttribute('role', 'dialog');
+  ov.setAttribute('aria-label', 'Tangkapan: ' + nama);
 
-  var card = document.createElement('div');
-  card.style.cssText = 'text-align:center;transform-style:preserve-3d;' +
-    'animation:jalaSpin 2.4s ease-in-out;';
-  card.innerHTML =
-    '<div style="font-size:110px;transform:translateZ(60px);' +
-    'filter:drop-shadow(0 18px 24px rgba(0,0,0,.5));">' + emoji + '</div>' +
-    '<div style="margin-top:14px;font-size:24px;font-weight:800;color:#fff">' + nama + '</div>' +
-    '<div style="margin-top:6px;font-size:14px;color:#ffd766;letter-spacing:2px">' +
-    rarity.toUpperCase() + '</div>' +
-    '<div style="margin-top:18px;font-size:13px;color:#a7cfc9">Ketuk untuk lanjut</div>';
+  var fish = window.JALAFISH.art(opts.fishId || '', emoji, 200);
+  var sub = '';
+  if (opts.kg != null) sub += '<b>' + esc(opts.kg) + ' kg</b>';
+  if (opts.nilai) sub += (sub ? ' · ' : '') + '≈ ' + esc(opts.nilai);
+  if (rarity === 'legenda') sub += '<div class="jlegenda-banner">👑 TANGKAPAN LEGENDA 👑</div>';
+  else if (rarity === 'langka') sub = '<div class="jlegenda-banner" style="color:#67e8f9">✨ IKAN LANGKA! ✨</div>' + sub;
 
-  var st = document.createElement('style');
-  st.textContent = '@keyframes jalaSpin{' +
-    '0%{transform:rotateY(-540deg) scale(.3);opacity:0}' +
-    '60%{transform:rotateY(20deg) scale(1.08);opacity:1}' +
-    '80%{transform:rotateY(-12deg) scale(1)}' +
-    '100%{transform:rotateY(0) scale(1)}}';
+  ov.innerHTML =
+    '<div class="jcatch-card">' +
+    (rarity === 'langka' || rarity === 'legenda' ? '<div class="jray"></div>' : '') +
+    '<div class="jcatch-fish">' + fish + '</div>' +
+    '<div class="jcatch-name">' + esc(nama) + '</div>' +
+    (sub ? '<div class="jcatch-sub">' + sub + '</div>' : '') +
+    '<div class="jcatch-rarity r-' + rarity + '">' + esc(rarity.toUpperCase()) + '</div>' +
+    '<button class="jcatch-btn" type="button">Lanjut 🎣</button>' +
+    '<div class="jcatch-hint">Ketuk tombol atau area gelap untuk lanjut</div>' +
+    '</div>';
 
-  ov.appendChild(st); ov.appendChild(card);
-  ov.addEventListener('click', function(){ ov.remove(); });
-  setTimeout(function(){ if (ov.parentNode) ov.remove(); }, 5000);
+  var card = ov.firstChild;
+  var tutup = function(){ if (ov.parentNode) ov.remove(); };
+  card.querySelector('.jcatch-btn').addEventListener('click', function(e){ e.stopPropagation(); tutup(); });
+  ov.addEventListener('click', function(e){ if (e.target === ov) tutup(); });
+  setTimeout(tutup, 6000);
+
+  /* tilt-3D mengikuti sentuhan (maks 12 derajat) */
+  if (!reduceMotion) {
+    var raf = null, rx = 0, ry = 0, tx = 0, ty = 0;
+    var render = function(){
+      rx += (tx - rx) * 0.18; ry += (ty - ry) * 0.18;
+      card.style.transform = 'perspective(700px) rotateX(' + rx.toFixed(2) +
+        'deg) rotateY(' + ry.toFixed(2) + 'deg)';
+      if (Math.abs(tx - rx) > 0.05 || Math.abs(ty - ry) > 0.05) raf = requestAnimationFrame(render);
+      else raf = null;
+    };
+    var gerak = function(cx, cy){
+      var r = card.getBoundingClientRect();
+      var px = (cx - (r.left + r.width / 2)) / (r.width / 2);
+      var py = (cy - (r.top + r.height / 2)) / (r.height / 2);
+      px = Math.max(-1, Math.min(1, px)); py = Math.max(-1, Math.min(1, py));
+      ty = px * 12; tx = -py * 12;
+      if (!raf) raf = requestAnimationFrame(render);
+    };
+    var reset = function(){ tx = 0; ty = 0; if (!raf) raf = requestAnimationFrame(render); };
+    ov.addEventListener('pointermove', function(e){ gerak(e.clientX, e.clientY); });
+    ov.addEventListener('touchmove', function(e){
+      if (e.touches && e.touches[0]) gerak(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: true });
+    ov.addEventListener('pointerleave', reset);
+    ov.addEventListener('touchend', reset);
+  }
+
+  /* efek partikel per rarity */
+  if (!reduceMotion) {
+    var i, el;
+    var splashN = rarity === 'umum' ? 10 : rarity === 'sedang' ? 14 : 20;
+    for (i = 0; i < splashN; i++){
+      el = document.createElement('i');
+      el.className = 'jsplash';
+      el.style.left = (20 + Math.random() * 60) + '%';
+      el.style.setProperty('--dx', Math.round((Math.random() - 0.5) * 160) + 'px');
+      el.style.animationDelay = (Math.random() * 0.3) + 's';
+      if (rarity === 'sedang') el.style.background = '#ffd766';
+      if (rarity === 'legenda') el.style.background = ['#ffd766', '#fff3cf', '#ffb700'][i % 3];
+      card.appendChild(el);
+    }
+    var rip = document.createElement('i');
+    rip.className = 'jripple' + (rarity === 'umum' ? '' : ' gold');
+    card.appendChild(rip);
+    if (rarity === 'legenda') {
+      var warna = ['#ffd766', '#fff3cf', '#ffb700', '#14b8a6', '#ffffff'];
+      for (i = 0; i < 36; i++){
+        el = document.createElement('i');
+        el.className = 'jconfetti';
+        el.style.left = (Math.random() * 100) + '%';
+        el.style.background = warna[i % warna.length];
+        el.style.animationDelay = (Math.random() * 0.8) + 's';
+        card.appendChild(el);
+      }
+    }
+  }
+
+  /* haptic Telegram bila tersedia */
+  try {
+    if (window.JALA_HAPTIC) window.JALA_HAPTIC(rarity === 'legenda' ? 'success' : 'medium');
+    else if (window.Telegram && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
+      if (rarity === 'legenda') Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+      else Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+    }
+  } catch(e){}
+
   document.body.appendChild(ov);
 }
 
