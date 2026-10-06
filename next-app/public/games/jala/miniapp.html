@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0b3b37">
-<title>JALA — Simulasi Nelayan Sultra (Demo)</title>
+<title>JALA — Mini App</title>
 <style>
 /* ============ JALA · tema "Teluk & Tenun" SUKI ============ */
 :root{
@@ -249,6 +249,7 @@ table.papan td.kanan,table.papan th.kanan{text-align:right}
 .kosong{text-align:center;color:var(--ink-dim);font-size:13px;padding:24px 10px;line-height:1.7}
 .footer-note{text-align:center;font-size:11px;color:var(--ink-dim);padding:16px;line-height:1.7}
 </style>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
 
@@ -1443,6 +1444,125 @@ $('btn-reset').addEventListener('click', () => {
     app.style.position = 'relative';
     window.JALA3D.init(app);
   }
+})();
+</script>
+<script>
+/* ================= TELEGRAM MINI APP INTEGRATION ================= */
+(function(){
+  if (!window.Telegram || !Telegram.WebApp) {
+    console.warn('[JALA-MiniApp] Telegram WebApp SDK tidak tersedia.');
+    return;
+  }
+  var tg = Telegram.WebApp;
+  tg.ready();
+  tg.expand();
+
+  // Terapkan tema Telegram
+  try {
+    var cs = tg.colorScheme; // 'light' | 'dark'
+    var tp = tg.themeParams || {};
+    if (tp.bg_color) document.documentElement.style.setProperty('--sk-teal-950', tp.bg_color);
+    if (tp.text_color) document.documentElement.style.setProperty('--ink', tp.text_color);
+    if (tp.button_color) document.documentElement.style.setProperty('--gold', tp.button_color);
+    document.body.setAttribute('data-tg-theme', cs);
+  } catch(e){}
+
+  // Identitas pemain dari Telegram
+  var tgUser = (tg.initDataUnsafe && tg.initDataUnsafe.user) || {};
+  var playerKey = tgUser.id ? 'tg:' + tgUser.id : null;
+  var playerName = tgUser.username || tgUser.first_name || 'Nelayan';
+
+  // Tampilkan info pemain di topbar
+  if (playerKey) {
+    var badge = document.createElement('div');
+    badge.style.cssText = 'font-size:11px;color:var(--ink-dim);padding:4px 10px;text-align:center;';
+    badge.textContent = '🎣 ' + playerName + ' • Progress sinkron cloud';
+    var app = document.querySelector('.app');
+    if (app) app.insertBefore(badge, app.firstChild);
+  }
+
+  // Haptic feedback helper
+  function haptic(type){
+    try {
+      if (type === 'success') tg.HapticFeedback.notificationOccurred('success');
+      else if (type === 'error') tg.HapticFeedback.notificationOccurred('error');
+      else tg.HapticFeedback.impactOccurred(type || 'medium');
+    } catch(e){}
+  }
+  window.JALA_HAPTIC = haptic;
+
+  // Sync progress ke API (fire-and-forget)
+  var API = 'https://sukiapps.web.id/api/games/jala';
+  function apiSync(){
+    if (!playerKey || typeof S === 'undefined') return;
+    try {
+      fetch(API + '/player', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ player_key: playerKey, username: playerName, platform: 'telegram' })
+      }).catch(function(){});
+    } catch(e){}
+  }
+
+  function apiCatch(ikan, kg, coins){
+    if (!playerKey) return;
+    try {
+      fetch(API + '/catch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          player_key: playerKey, fish_id: ikan.id, fish_name: ikan.nama,
+          rarity: ikan.rarity, kg: kg, coins: coins || 0,
+          spot: (S && S.spot) || 'teluk', username: playerName
+        })
+      }).catch(function(){});
+    } catch(e){}
+  }
+  window.JALA_API_CATCH = apiCatch;
+
+  // Hook hasilTangkapan untuk haptic + sync
+  if (typeof hasilTangkapan === 'function') {
+    var origHasil = hasilTangkapan;
+    hasilTangkapan = function(ikan, kg){
+      haptic(ikan.rarity === 'legenda' ? 'success' : 'medium');
+      var nilai = 0;
+      try { nilai = Math.round(nilaiIkan(ikan.id, kg) / 1000); } catch(e){}
+      apiCatch(ikan, kg, nilai);
+      apiSync();
+      return origHasil(ikan, kg);
+    };
+  }
+
+  // Haptic saat lempar
+  if (typeof faseLempar === 'function') {
+    var origLempar = faseLempar;
+    faseLempar = function(){ haptic('light'); return origLempar(); };
+  }
+
+  // Tombol share ke teman
+  var shareBtn = document.createElement('button');
+  shareBtn.className = 'btn ghost';
+  shareBtn.style.cssText = 'position:fixed;bottom:90px;right:14px;z-index:100;border-radius:50%;width:48px;height:48px;font-size:20px;';
+  shareBtn.textContent = '📤';
+  shareBtn.title = 'Ajak teman main JALA';
+  shareBtn.onclick = function(){
+    haptic('light');
+    var url = 'https://t.me/SukiJala_bot/jala';
+    if (tg.share) { tg.share(url); }
+    else { tg.openTelegramLink(url); }
+  };
+  document.body.appendChild(shareBtn);
+
+  // BackButton Telegram
+  try {
+    tg.BackButton.onClick(function(){ haptic('light'); });
+  } catch(e){}
+
+  // Sync awal
+  setTimeout(apiSync, 2000);
+
+  // Tutup konfirmasi saat ada progres
+  try { tg.enableClosingConfirmation(); } catch(e){}
 })();
 </script>
 </body>
