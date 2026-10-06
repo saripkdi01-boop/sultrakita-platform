@@ -248,14 +248,22 @@ table.papan td.kanan,table.papan th.kanan{text-align:right}
 
 .kosong{text-align:center;color:var(--ink-dim);font-size:13px;padding:24px 10px;line-height:1.7}
 .footer-note{text-align:center;font-size:11px;color:var(--ink-dim);padding:16px;line-height:1.7}
+/* ---- peringkat ---- */
+.rank-row{display:flex;align-items:center;gap:10px;padding:9px 2px;border-bottom:1px solid rgba(255,255,255,.07);font-size:13px}
+.rank-row:last-child{border:none}
+.rank-no{font-size:16px;font-weight:800;width:34px;text-align:center;flex:none}
+.rank-nama{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rank-nama small{display:block;color:var(--ink-dim);font-size:11px}
+.rank-kg{font-weight:800;color:var(--gold);white-space:nowrap}
+.rank-row.saya{background:rgba(255,215,102,.08);border-radius:10px;padding-left:8px;padding-right:8px}
 </style>
 </head>
 <body>
 
-<!-- Banner demo permanen -->
+<!-- Banner status online -->
 <div class="demo-banner">
-  🎮 MODE DEMO — JALA v0.1 (prototipe)
-  <small>Progres tersimpan otomatis di perangkat ini saja (localStorage). Belum ada akun, belum ada backend, belum ada hadiah uang asli.</small>
+  🌊 JALA ONLINE — tangkapan tersimpan di server & masuk papan peringkat
+  <small id="sync-status">Menghubungkan ke server…</small>
 </div>
 
 <div class="app">
@@ -361,6 +369,29 @@ table.papan td.kanan,table.papan th.kanan{text-align:right}
         <div id="legenda-box" style="font-size:13px;line-height:1.7"></div>
       </div>
     </section>
+    <!-- ============ LAYAR: PERINGKAT ============ -->
+    <section class="layar" id="layar-peringkat">
+      <h2 class="judul">🏆 Papan <span class="em">Peringkat</span></h2>
+      <p class="sub">Nelayan terhebat se-Sultra, diurut total berat tangkapan. Lintas web & Telegram.</p>
+      <div class="kartu">
+        <h3><span class="ico">🎣</span>Profilku</h3>
+        <div id="profilku-box" style="font-size:13px;line-height:1.8">Memuat…</div>
+        <div class="row2" style="margin-top:10px">
+          <input id="input-nama" maxlength="24" placeholder="Nama nelayanmu…"
+            style="flex:1;background:rgba(0,0,0,.3);border:1px solid var(--card-border);border-radius:10px;color:#fff;padding:10px 12px;font-size:14px;min-width:0">
+          <button class="btn gold kecil" id="btn-simpan-nama" style="flex:none;width:auto">Simpan</button>
+        </div>
+      </div>
+      <div class="kartu">
+        <h3><span class="ico">🏆</span>Top Nelayan</h3>
+        <div id="leaderboard-box" style="font-size:13px">Memuat…</div>
+        <button class="btn ghost kecil" id="btn-refresh-rank" style="margin-top:10px">🔄 Muat ulang</button>
+      </div>
+      <div class="kartu">
+        <h3><span class="ico">🕒</span>Tangkapan Terakhirku</h3>
+        <div id="recent-box" style="font-size:13px">Memuat…</div>
+      </div>
+    </section>
   </main>
 
   <div class="footer-note">
@@ -376,6 +407,7 @@ table.papan td.kanan,table.papan th.kanan{text-align:right}
     <button class="tab" data-layar="layar-pelelangan"><span class="ti">⚖️</span>Lelang <span class="badge" id="badge-inv" style="display:none">0</span></button>
     <button class="tab" data-layar="layar-toko"><span class="ti">🛠️</span>Toko</button>
     <button class="tab" data-layar="layar-katalog"><span class="ti">📖</span>Katalog</button>
+    <button class="tab" data-layar="layar-peringkat"><span class="ti">🏆</span>Peringkat</button>
   </nav>
 </div>
 
@@ -730,6 +762,7 @@ function pindahLayar(id){
   if(id === 'layar-pelelangan') renderLelang();
   if(id === 'layar-toko') renderToko();
   if(id === 'layar-katalog') renderKatalog();
+  if(id === 'layar-peringkat') renderPeringkat();
 }
 document.querySelectorAll('.tab').forEach(t =>
   t.addEventListener('click', () => pindahLayar(t.dataset.layar)));
@@ -1368,6 +1401,11 @@ function hasilTangkapan(ikan, kg){
   $('mancing-fase-label').textContent = 'Tangkapan!';
   const nilai = nilaiIkan(ikan.id, kg);
   const infoNaik = catatTangkapan(ikan.id, kg);
+  // Sinkron cloud (fire-and-forget — tidak blokir UI, antre bila offline)
+  try {
+    const spotId = (typeof MANCING !== 'undefined' && MANCING && MANCING.spot) ? MANCING.spot.id : 'teluk';
+    cloudKirimTangkapan(ikan, kg, spotId);
+  } catch(e){}
   const misiSelesai = S.misi.some(m => m.selesai && !m.diklaim);
   const adalahLegenda = ikan.rarity === 'legenda';
   // Showcase 3D ringan saat dapat ikan (khusus langka/legenda agar tidak spam)
@@ -1435,6 +1473,7 @@ $('btn-reset').addEventListener('click', () => {
 /* ================= INIT ================= */
 (function init(){
   if(!muat()){ S = stateAwal(); simpan(); }
+  cloudInit();
   renderPagi();
   if(!S.sdhLihatBantuan) setTimeout(tampilkanBantuan, 400);
   // 3D ringan: underwater scene sebagai background
@@ -1444,6 +1483,180 @@ $('btn-reset').addEventListener('click', () => {
     window.JALA3D.init(app);
   }
 })();
+
+/* ================= SINKRON CLOUD (server SUKI) =================
+   Identitas: web:<uuid> acak per perangkat (localStorage, dibuat sekali).
+   Setiap tangkapan dikirim ke POST /api/games/jala/sync; antrean lokal
+   menampung yang gagal terkirim dan dicoba ulang otomatis. Game tetap
+   100% bisa dimainkan offline — sync murni fire-and-forget.
+   ================================================================= */
+const JALA_API = '/api/games/jala';
+const KUNCI_KEY = 'jala_player_key_v1';
+const KUNCI_NAMA = 'jala_username_v1';
+const KUNCI_ANTRE = 'jala_outbox_v1';
+let jalaKey = null;
+let jalaNama = '';
+let jalaOnline = false;
+
+function uuidAcak(){
+  if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0;
+    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+}
+function bacaAntre(){
+  try { return JSON.parse(localStorage.getItem(KUNCI_ANTRE) || '[]'); }
+  catch(e){ return []; }
+}
+function tulisAntre(a){
+  try { localStorage.setItem(KUNCI_ANTRE, JSON.stringify(a.slice(-50))); }
+  catch(e){}
+}
+function setStatusSync(teks){
+  const el = document.getElementById('sync-status');
+  if (el) el.textContent = teks;
+}
+function cloudInit(){
+  try {
+    jalaKey = localStorage.getItem(KUNCI_KEY);
+    if (!jalaKey) {
+      jalaKey = 'web:' + uuidAcak();
+      localStorage.setItem(KUNCI_KEY, jalaKey);
+    }
+    jalaNama = localStorage.getItem(KUNCI_NAMA) || '';
+  } catch(e){ jalaKey = null; }
+  if (!jalaKey) { setStatusSync('Mode offline — progres hanya di perangkat ini.'); return; }
+  // Daftarkan pemain + kirim antrean tertunda
+  setTimeout(() => { cloudSync([]); }, 1500);
+  window.addEventListener('online', () => cloudSync([]));
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) cloudSync([]);
+  });
+}
+// Kirim tangkapan baru + antrean tertunda. return Promise<boolean> sukses?
+async function cloudSync(tangkapanBaru){
+  if (!jalaKey) return false;
+  const antre = bacaAntre();
+  const semua = [...antre, ...tangkapanBaru].slice(-50);
+  const body = { player_key: jalaKey, catches: semua };
+  if (jalaNama) body.username = jalaNama;
+  try {
+    const res = await fetch(JALA_API + '/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const j = await res.json();
+    if (!j.ok) throw new Error(j.error || 'sync gagal');
+    tulisAntre([]);
+    jalaOnline = true;
+    setStatusSync('☁️ Tersinkron — ' + (j.data.player.total_catch || 0) + ' tangkapan tercatat di server.');
+    return true;
+  } catch(e){
+    jalaOnline = false;
+    if (tangkapanBaru.length) tulisAntre(semua);
+    const n = bacaAntre().length;
+    setStatusSync(n > 0
+      ? '📴 Offline — ' + n + ' tangkapan menunggu dikirim otomatis.'
+      : '📴 Offline — progres aman di perangkat ini.');
+    return false;
+  }
+}
+// Dipanggil dari hasilTangkapan: antre + kirim (tanpa blokir UI)
+function cloudKirimTangkapan(ikan, kg, spotId){
+  if (!jalaKey || !ikan) return;
+  const item = {
+    fish_id: ikan.id, fish_name: ikan.nama, rarity: ikan.rarity,
+    kg: kg, spot: spotId || 'teluk',
+    caught_at: new Date().toISOString(),
+  };
+  cloudSync([item]);
+}
+function cloudSimpanNama(nama){
+  jalaNama = (nama || '').trim().slice(0, 24);
+  try { localStorage.setItem(KUNCI_NAMA, jalaNama); } catch(e){}
+  cloudSync([]);
+}
+// ---------- layar peringkat ----------
+function escHtml(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+const MEDALI = ['🥇', '🥈', '🥉'];
+// Tombol simpan nama + muat ulang (di-bind sekali saat script dimuat)
+document.getElementById('btn-simpan-nama').addEventListener('click', () => {
+  const v = document.getElementById('input-nama').value;
+  cloudSimpanNama(v);
+  toast(jalaNama ? '✅ Nama "' + jalaNama + '" tersimpan!' : 'Nama dikosongkan.');
+  renderPeringkat();
+});
+document.getElementById('btn-refresh-rank').addEventListener('click', () => {
+  renderPeringkat();
+});
+async function renderPeringkat(){
+  const boxProfil = $('profilku-box');
+  const boxRank = $('leaderboard-box');
+  const boxRecent = $('recent-box');
+  const inputNama = $('input-nama');
+  if (inputNama && !inputNama.value && jalaNama) inputNama.value = jalaNama;
+  // Profil saya
+  try {
+    const r = await fetch(JALA_API + '/player?key=' + encodeURIComponent(jalaKey || ''));
+    const j = await r.json();
+    if (j.ok && j.data.exists) {
+      const p = j.data.player;
+      boxProfil.innerHTML =
+        '🎣 <b>' + escHtml(p.username || jalaNama || 'Nelayan tanpa nama') + '</b>' +
+        (j.data.rank ? ' · peringkat <b style="color:var(--gold)">#' + j.data.rank + '</b>' : '') +
+        '<br>🐟 ' + (p.total_catch || 0) + ' ekor · ⚖️ ' + Number(p.total_kg || 0).toFixed(1) + ' kg' +
+        ' · 🪙 ' + (p.coins || 0) + ' koin' +
+        (p.legendary > 0 ? ' · 👑 ' + p.legendary + ' legenda' : '');
+      const rc = j.data.recent_catches || [];
+      boxRecent.innerHTML = rc.length === 0
+        ? '<span style="color:var(--ink-dim)">Belum ada tangkapan tersinkron.</span>'
+        : rc.map(c => {
+            const f = (typeof cariIkan === 'function') ? cariIkan(c.fish_id) : null;
+            const em = (f && f.emoji) || '🐟';
+            return '<div class="rank-row"><div class="rank-no">' + em + '</div>' +
+              '<div class="rank-nama"><b>' + escHtml(c.fish_name) + '</b>' +
+              '<small>' + escHtml(c.rarity) + ' · ' + escHtml(c.spot) + '</small></div>' +
+              '<div class="rank-kg">' + Number(c.kg).toFixed(1) + ' kg</div></div>';
+          }).join('');
+    } else {
+      boxProfil.innerHTML = '<span style="color:var(--ink-dim)">Belum ada data server — tangkap ikan pertamamu! 🎣</span>';
+      boxRecent.innerHTML = '<span style="color:var(--ink-dim)">—</span>';
+    }
+  } catch(e){
+    boxProfil.innerHTML = '<span style="color:var(--ink-dim)">📴 Tidak terhubung ke server.</span>';
+    boxRecent.innerHTML = '<span style="color:var(--ink-dim)">—</span>';
+  }
+  // Leaderboard
+  try {
+    const r = await fetch(JALA_API + '/leaderboard?limit=10');
+    const j = await r.json();
+    if (j.ok && j.data.length > 0) {
+      boxRank.innerHTML = j.data.map((p, i) => {
+        const saya = jalaNama && p.username === jalaNama;
+        const med = MEDALI[i] || ('#' + (i + 1));
+        return '<div class="rank-row' + (saya ? ' saya' : '') + '">' +
+          '<div class="rank-no">' + med + '</div>' +
+          '<div class="rank-nama"><b>' + escHtml(p.username || 'Nelayan') + '</b>' +
+          '<small>' + (p.platform === 'telegram' ? '📱 Telegram' : '🌐 Web') +
+          ' · 🐟 ' + (p.total_catch || 0) + ' ekor' +
+          (p.legendary > 0 ? ' · 👑 ' + p.legendary : '') + '</small></div>' +
+          '<div class="rank-kg">' + Number(p.total_kg || 0).toFixed(1) + ' kg</div></div>';
+      }).join('');
+    } else if (j.ok) {
+      boxRank.innerHTML = '<div class="kosong">🏆 Belum ada nelayan di papan.<br>Jadilah yang pertama!</div>';
+    } else {
+      boxRank.innerHTML = '<span style="color:var(--ink-dim)">Gagal memuat peringkat.</span>';
+    }
+  } catch(e){
+    boxRank.innerHTML = '<span style="color:var(--ink-dim)">📴 Tidak terhubung ke server.</span>';
+  }
+}
 </script>
 </body>
 </html>

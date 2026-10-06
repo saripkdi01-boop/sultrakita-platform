@@ -7,7 +7,8 @@ import '../games.css';
 /**
  * JALA — Simulasi Nelayan Sultra (v0.1).
  * Game HTML5 single-file di next-app/public/games/jala/index.html.
- * Mode demo: progres di localStorage perangkat. Non-gambling, 100% skill-based.
+ * Tangkapan tersinkron ke server (anonim, kunci perangkat) + leaderboard live.
+ * Non-gambling, 100% skill-based.
  */
 export default function JalaPage() {
   return (
@@ -28,8 +29,8 @@ export default function JalaPage() {
         </div>
 
         <div className="skg-demo" role="status">
-          <b>MODE DEMO</b> — cuaca dalam game adalah simulasi, bukan data BMKG.
-          Progres tersimpan di perangkat ini.
+          <b>ONLINE</b> — tangkapan tersimpan di server & masuk papan peringkat.
+          Cuaca dalam game adalah simulasi, bukan data BMKG.
         </div>
 
         <div className="skk-frame-wrap">
