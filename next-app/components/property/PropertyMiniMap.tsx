@@ -3,7 +3,7 @@
 // Mini-map satu pin untuk halaman detail properti. Client-only via dynamic ssr:false.
 
 import { useEffect, useRef } from 'react';
-import { isValidCoord } from '@/lib/geo';
+import { isValidCoord, cartoTileUrl, CARTO_ATTRIBUTION } from '@/lib/geo';
 import { usePreferences } from '@/lib/preferences';
 import { tpj } from '@/lib/i18n/dict-propertijobs';
 
@@ -25,8 +25,8 @@ export default function PropertyMiniMap({ lat, lng, title, isEstimate = false }:
         dragging: true,
         scrollWheelZoom: false,
       }).setView([lat, lng], isEstimate ? 11 : 14);
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      L.tileLayer(cartoTileUrl(), {
+        attribution: CARTO_ATTRIBUTION,
         maxZoom: 19,
       }).addTo(map);
       L.circleMarker([lat, lng], {
