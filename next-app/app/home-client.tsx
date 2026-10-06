@@ -66,7 +66,19 @@ export default function HomeClient() {
 
   useEffect(() => {
     const current = document.documentElement.dataset.theme;
-    if (current === 'dark' || current === 'light') setTheme(current);
+    if (current === 'dark' || current === 'light') {
+      setTheme(current);
+      // Sinkronkan class .dark saat load
+      document.documentElement.classList.toggle('dark', current === 'dark');
+    } else {
+      // Cek localStorage jika data-theme belum diset
+      const stored = window.localStorage.getItem('sultrakita-theme');
+      if (stored === 'dark') {
+        document.documentElement.dataset.theme = 'dark';
+        document.documentElement.classList.add('dark');
+        setTheme('dark');
+      }
+    }
   }, []);
 
   // Keyboard: ⌘K / Ctrl+K membuka–menutup (toggle) pencarian, Escape menutup menu & pencarian.
@@ -126,6 +138,8 @@ export default function HomeClient() {
     const next = theme === 'dark' ? 'light' : 'dark';
     document.documentElement.dataset.theme = next;
     document.documentElement.style.colorScheme = next;
+    // Sinkronkan class .dark untuk CSS global (globals.css pakai html.dark)
+    document.documentElement.classList.toggle('dark', next === 'dark');
     window.localStorage.setItem('sultrakita-theme', next);
     setTheme(next);
   }
