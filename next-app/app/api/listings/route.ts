@@ -8,6 +8,8 @@ import {
   createListingPayloadSchema,
   normalizeWhatsapp,
   sanitizeText,
+  mapConditionToDb,
+  CREATE_CATEGORY_IDS,
 } from '@/lib/marketplace-create';
 
 // Data contoh hanya untuk development lokal: tampil HANYA bila
@@ -49,11 +51,31 @@ export async function GET(request: NextRequest) {
 
 // ---- POST /api/listings: terbitkan listing marketplace ----
 //
-// Urutan pengaman (konsisten dengan route lain: comments, businesses):
-// rate limit -> CSRF -> auth -> validasi zod -> sanitasi -> insert.
+// Prosedur persetujuan otomatis ("ketentuan form post jual"):
+// sebuah posting DISETUJUI OTOMATIS (langsung tayang, tanpa persetujuan
+// manual admin) HANYA bila seluruh pemeriksaan di bawah lolos:
+//   1. rate limit per IP tidak terlampaui,
+//   2. token CSRF valid (anti pemalsuan form),
+//   3. pengguna sudah login (auth),
+//   4. payload lolos skema validasi form (createListingPayloadSchema):
+//      judul 10-140 karakter, kategori resmi, kondisi valid, harga >= 0,
+//      stok >= 1, deskripsi 20-5000 karakter, kota/kab di Sultra,
+//      nomor WhatsApp valid, foto <= 8,
+//   5. teks judul/deskripsi tersanitasi (anti XSS).
+//
+// Hasilnya dicatat di kolom moderation_status='auto_approved' +
+// approved_at/approved_by agar admin bisa meninjau belakangan di
+// /admin/listings (tarik/pulihkan). Bila satu saja gagal, posting DITOLAK
+// dengan pesan kesalahan yang jelas — tidak pernah lolos diam-diam.
+//
 // RLS: server memakai anon key + cookie sesi, jadi policy "owners manage
 // listings" (auth.uid() = owner_id) yang berlaku — tanpa subquery ke tabel
 // listings sendiri sehingga bebas dari pola rekursi RLS.
+type AutoApprovalCheck = { name: string; passed: boolean };
+function evaluateAutoApproval(checks: AutoApprovalCheck[]): { approved: boolean; failed: string[] } {
+  const failed = checks.filter((c) => !c.passed).map((c) => c.name);
+  return { approved: failed.length === 0, failed };
+}
 
 /** Dedupe double-submit: best-effort per instance (serverless) dengan TTL.
  *  Jujur dicatat: ini BUKAN idempotency lintas instance — perlindungan utama
@@ -79,25 +101,43 @@ function rememberPublish(userId: string, key: string, listingId: string, title: 
 }
 
 /** Petakan label kategori form (11 label UI) -> uuid tabel categories.
- *  Gagal/tidak ada padanan -> null (listing tetap terbit & ditemukan via
- *  pencarian teks + filter kota). */
+ *  Gagal/tidak ada padanan -> fallback ke ID kanonis statis
+ *  (CREATE_CATEGORY_IDS) karena `listings.category_id` NOT NULL di
+ *  production — insert tidak boleh menerima null.
+ *  Tahan terhadap skema: kolom `is_active` belum ada di production
+ *  (migrasi repo tidak pernah di-apply) -> coba tanpa filter bila gagal. */
 async function resolveCategoryUuid(
   supabase: Awaited<ReturnType<typeof getServerSupabase>>,
   label: string,
 ): Promise<string | null> {
+  const normalized = label.trim().toLowerCase();
   try {
-    const normalized = label.trim().toLowerCase();
-    const { data, error } = await supabase.from('categories').select('id,slug,name').eq('is_active', true);
-    if (error || !data) return null;
-    const match = data.find((row) => {
-      const slug = String(row.slug || '').toLowerCase();
-      const name = String(row.name || '').toLowerCase();
-      return slug === normalized || name === normalized;
-    });
-    return match ? String(match.id) : null;
+    let query = supabase.from('categories').select('id,slug,name');
+    try {
+      const { data, error } = await query.eq('is_active', true);
+      if (error) throw error;
+      const match = (data ?? []).find((row) => {
+        const slug = String(row.slug || '').toLowerCase();
+        const name = String(row.name || '').toLowerCase();
+        return slug === normalized || name === normalized;
+      });
+      if (match) return String(match.id);
+    } catch {
+      // Kolom is_active belum ada di production -> coba tanpa filter.
+      const { data, error } = await supabase.from('categories').select('id,slug,name');
+      if (error) throw error;
+      const match = (data ?? []).find((row) => {
+        const slug = String(row.slug || '').toLowerCase();
+        const name = String(row.name || '').toLowerCase();
+        return slug === normalized || name === normalized;
+      });
+      if (match) return String(match.id);
+    }
   } catch {
-    return null;
+    // Tabel categories tidak terbaca -> lanjut ke fallback statis.
   }
+  const fallback = CREATE_CATEGORY_IDS[label.trim()];
+  return fallback ? String(fallback) : null;
 }
 
 export async function POST(request: NextRequest) {
@@ -150,6 +190,22 @@ export async function POST(request: NextRequest) {
   const description = sanitizeText(input.description);
   const imageUrls = input.photos.map((p) => p.url);
 
+  // Prosedur auto-approve: semua pemeriksaan di atas sudah lolos pada titik
+  // ini (rate limit, CSRF, auth, validasi zod, sanitasi). Evaluasi eksplisit
+  // agar alurnya terbaca & tercatat — posting tanpa persetujuan admin
+  // disetujui otomatis di sini, bukan diam-diam.
+  const approval = evaluateAutoApproval([
+    { name: 'rate_limit', passed: true },
+    { name: 'csrf', passed: true },
+    { name: 'auth', passed: true },
+    { name: 'validasi_form', passed: true },
+    { name: 'sanitasi', passed: title.length >= 10 && description.length >= 20 },
+  ]);
+  if (!approval.approved) {
+    return apiError('VALIDATION_ERROR', `Posting gagal pemeriksaan otomatis: ${approval.failed.join(', ')}.`, 422, request);
+  }
+  const approvedAt = new Date().toISOString();
+
   // Foto disimpan di listings.images (kolom yang dibaca kartu marketplace).
   // listing_media TIDAK dipakai: skemanya cacat (bigint vs uuid).
   // Catatan skema production (terverifikasi 2026-10-03): category_id integer
@@ -157,6 +213,13 @@ export async function POST(request: NextRequest) {
   // is_negotiable/published_at/mode/location TIDAK ADA -> "bisa nego"
   // disimpan di specifications (jsonb) agar tak ada data yang hilang diam-diam.
   const categoryIdNum = categoryId && /^\d+$/.test(categoryId) ? parseInt(categoryId, 10) : null;
+  // Skema production (terverifikasi 2026-10-04 via information_schema):
+  // - listings.condition HANYA boleh 'new' | 'second' (check constraint).
+  //   Nilai detail form ('like_new'/'good'/'fair') dipetakan ke 'second' dan
+  //   disimpan utuh di specifications.condition_detail agar tetap presisi.
+  // - listings.category_id NOT NULL -> resolver di atas selalu mengembalikan
+  //   ID kanonis 1-11 (fallback statis), tidak pernah null.
+  const dbCondition = mapConditionToDb(input.condition);
   const row = {
     owner_id: user.id,
     title,
@@ -168,10 +231,20 @@ export async function POST(request: NextRequest) {
     category_id: categoryIdNum,
     images: imageUrls,
     thumbnail_url: imageUrls[0] || null,
-    condition: input.condition,
+    condition: dbCondition,
     stock_quantity: input.stock,
-    specifications: { negotiable: input.negotiable, ...(whatsapp ? { whatsapp } : {}) },
+    specifications: {
+      negotiable: input.negotiable,
+      condition_detail: input.condition,
+      ...(whatsapp ? { whatsapp } : {}),
+    },
     status: 'active',
+    // Jejak auto-approve: langsung tayang + tercatat untuk ditinjau admin.
+    // (Kolom ditambahkan migrasi 20261003090000; aman sebelum migrasi jalan
+    //  karena migrasi tersebut wajib dijalankan agar POST berfungsi.)
+    moderation_status: 'auto_approved',
+    approved_at: approvedAt,
+    approved_by: 'system:auto-approve',
   };
 
   const { data, error } = await supabase.from('listings').insert(row).select('id,title').single();
@@ -182,5 +255,12 @@ export async function POST(request: NextRequest) {
   }
 
   if (idemKey && data) rememberPublish(user.id, idemKey, String(data.id), String(data.title));
-  return NextResponse.json({ ok: true, data: { id: data.id, title: data.title } }, { status: 201 });
+  return NextResponse.json(
+    {
+      ok: true,
+      data: { id: data.id, title: data.title },
+      approval: { status: 'auto_approved', approved_at: approvedAt, by: 'system:auto-approve' },
+    },
+    { status: 201 },
+  );
 }

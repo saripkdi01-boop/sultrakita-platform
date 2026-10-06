@@ -1,0 +1,23 @@
+/* AdminHomeContent — teks yang duduk langsung di backdrop .app-frame.
+   Backdrop SELALU terang (#EDF5F2) di desktop ≥1101px bahkan saat dark mode,
+   jadi heading harus memakai tinta gelap di sana; di mobile (<1101px) ikuti tema. */
+.backdropHeading {
+  color: #123f38;
+}
+.backdropMuted {
+  color: #55736b;
+}
+:global(html[data-theme='dark']) .backdropHeading {
+  color: #f5f5f4;
+}
+:global(html[data-theme='dark']) .backdropMuted {
+  color: #a8bdb7;
+}
+@media (min-width: 1101px) {
+  :global(html[data-theme='dark']) .backdropHeading {
+    color: #123f38;
+  }
+  :global(html[data-theme='dark']) .backdropMuted {
+    color: #55736b;
+  }
+}

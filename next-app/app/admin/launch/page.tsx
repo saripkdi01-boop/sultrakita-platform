@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
 // pada tahap assembly/T7; halaman ini me-render apa pun isi JSON-nya,
 // termasuk empty state jujur bila belum ada item.
 
-type ItemStatus = 'lolos' | 'gagal' | 'belum_diperiksa';
+type ItemStatus = 'lolos' | 'gagal' | 'belum_diperiksa' | 'tidak_relevan';
 
 interface ChecklistItem {
   id: string;
@@ -54,10 +54,12 @@ const STATUS_META: Record<ItemStatus, { label: string; cls: string }> = {
   lolos: { label: 'LOLOS', cls: 'bg-[#e9f7f2] text-[#146355]' },
   gagal: { label: 'GAGAL', cls: 'bg-red-50 text-red-700' },
   belum_diperiksa: { label: 'BELUM DIPERIKSA', cls: 'bg-amber-50 text-amber-800' },
+  tidak_relevan: { label: 'TIDAK RELEVAN', cls: 'bg-gray-100 text-gray-500' },
 };
 
 function statusOf(raw: unknown): ItemStatus {
-  return raw === 'lolos' || raw === 'gagal' ? raw : 'belum_diperiksa';
+  if (raw === 'lolos' || raw === 'gagal' || raw === 'tidak_relevan') return raw;
+  return 'belum_diperiksa';
 }
 
 export default async function AdminLaunchPage() {
@@ -69,7 +71,7 @@ export default async function AdminLaunchPage() {
 
   const { data, error, source } = await loadChecklist();
   const items = data.categories.flatMap((c) => c.items ?? []);
-  const counts: Record<ItemStatus, number> = { lolos: 0, gagal: 0, belum_diperiksa: 0 };
+  const counts: Record<ItemStatus, number> = { lolos: 0, gagal: 0, belum_diperiksa: 0, tidak_relevan: 0 };
   for (const item of items) counts[statusOf(item.status)] += 1;
 
   return (

@@ -1,12 +1,18 @@
+'use client';
+
 import { AD_TEMPLATES, getPlacement, type PlacementId } from '@/lib/ads/config';
 import styles from './ads.module.css';
+import { usePreferences } from '@/lib/preferences';
+import { getMiscLabels } from '@/lib/i18n/dict-misc';
 
 export interface HouseAdCreative {
   id: string;
   placement: string;
   title: string;
   image_url: string | null;
-  link_url: string;
+  link_url: string | null;
+  /** Kode HTML/JS mentah dari jaringan iklan (MGID, Adsterra, dsb). Bila ada, menggantikan gambar+link. */
+  html_snippet?: string | null;
 }
 
 /** Rasio kontainer house ad mengikuti template placement (tidak boleh distorsi). */
@@ -20,15 +26,20 @@ function ratioKey(placementId: PlacementId): string {
 
 /** House ad: kreatif sponsor langsung (UMKM lokal). Selalu berlabel "Bersponsor". */
 export function HouseAd({ creative, placementId }: { creative: HouseAdCreative; placementId: PlacementId }) {
+  const { language } = usePreferences();
+  const t = getMiscLabels(language);
+  // Kreatif berbasis kode HTML/JS (tanpa gambar) hanya dirender oleh PopupAd
+  // (butuh eksekusi script client-side) — di slot inline dilewati dengan aman.
+  if (creative.html_snippet && !creative.image_url) return null;
   return (
     <div className={styles['skad-unit']}>
-      <span className={styles['skad-label']}>Bersponsor</span>
+      <span className={styles['skad-label']}>{t.adSponsored}</span>
       <a
-        href={creative.link_url}
+        href={creative.link_url ?? undefined}
         target="_blank"
         rel="sponsored noopener noreferrer"
         className={styles['skad-house']}
-        aria-label={`Iklan bersponsor: ${creative.title}`}
+        aria-label={t.adSponsoredTitle.replace('{title}', creative.title)}
       >
         {creative.image_url ? (
           <span className={styles['skad-house-media']} data-ratio={ratioKey(placementId)}>
@@ -38,7 +49,7 @@ export function HouseAd({ creative, placementId }: { creative: HouseAdCreative; 
         ) : null}
         <span className={styles['skad-house-body']}>
           <span className={styles['skad-house-title']}>{creative.title}</span>
-          <span className={styles['skad-house-cta']}>Kunjungi →</span>
+          <span className={styles['skad-house-cta']}>{t.adVisit}</span>
         </span>
       </a>
     </div>

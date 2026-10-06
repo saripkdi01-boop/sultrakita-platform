@@ -1,0 +1,29 @@
+/* ==========================================================================
+   WORLD-CLASS OVERHAUL — layer "Teluk Senja" untuk /properti
+   ========================================================================== */
+@import '../wc-overhaul.css';
+
+/* Latar halaman */
+.platform-shell {
+  background:
+    radial-gradient(760px 360px at 90% 0%, rgba(14, 98, 88, 0.08), transparent 60%),
+    radial-gradient(560px 300px at 2% 8%, rgba(212, 175, 55, 0.07), transparent 60%);
+}
+.dark .platform-shell {
+  background:
+    radial-gradient(860px 400px at 90% 0%, rgba(20, 101, 91, 0.25), transparent 62%),
+    radial-gradient(620px 320px at 2% 8%, rgba(212, 175, 55, 0.06), transparent 60%);
+}
+
+/* Kicker hero: aksen emas */
+.platform-shell section .text-sultra-teal.uppercase {
+  color: var(--sk-brand) !important;
+}
+
+/* Kartu properti: sorot emas saat hover */
+.platform-shell .group:hover {
+  border-color: rgba(212, 175, 55, 0.4) !important;
+}
+
+/* Skeleton ber-brand */
+.wc-skeleton.h-80 { min-height: 20rem; }

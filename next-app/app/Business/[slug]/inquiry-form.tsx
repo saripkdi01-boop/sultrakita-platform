@@ -2,16 +2,10 @@
 
 import { useState, type FormEvent } from 'react';
 import { Send } from 'lucide-react';
+import { usePreferences } from '@/lib/preferences';
+import { getGroupsLabels } from '@/lib/i18n/dict-groups';
 
 type Status = 'idle' | 'loading' | 'success' | 'error';
-
-async function getCsrfToken(): Promise<string> {
-  const response = await fetch('/api/csrf', { credentials: 'include', cache: 'no-store' });
-  if (!response.ok) throw new Error('Token keamanan belum tersedia. Silakan coba lagi.');
-  const payload = (await response.json()) as { csrfToken?: string };
-  if (!payload.csrfToken) throw new Error('Token keamanan tidak valid. Silakan coba lagi.');
-  return payload.csrfToken;
-}
 
 export default function InquiryForm({
   businessId,
@@ -25,13 +19,23 @@ export default function InquiryForm({
   const [pesan, setPesan] = useState('');
   const [status, setStatus] = useState<Status>('idle');
   const [statusMessage, setStatusMessage] = useState('');
+  const { language } = usePreferences();
+  const b = getGroupsLabels(language);
+
+  async function getCsrfToken(): Promise<string> {
+    const response = await fetch('/api/csrf', { credentials: 'include', cache: 'no-store' });
+    if (!response.ok) throw new Error(b.bInqCsrfUnavailable);
+    const payload = (await response.json()) as { csrfToken?: string };
+    if (!payload.csrfToken) throw new Error(b.bInqCsrfInvalid);
+    return payload.csrfToken;
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (status === 'loading') return;
     if (!nama.trim() || !kontak.trim() || !pesan.trim()) {
       setStatus('error');
-      setStatusMessage('Mohon lengkapi nama, kontak, dan pesan Anda.');
+      setStatusMessage(b.bInqRequired);
       return;
     }
     setStatus('loading');
@@ -53,12 +57,12 @@ export default function InquiryForm({
         | null;
       if (!response.ok) {
         throw new Error(
-          payload?.error?.message || payload?.message || 'Pertanyaan gagal dikirim. Silakan coba lagi.',
+          payload?.error?.message || payload?.message || b.bInqSendFailed,
         );
       }
       setStatus('success');
       setStatusMessage(
-        `Pertanyaan Anda terkirim ke ${businessName}. Mereka akan menghubungi Anda melalui kontak yang diberikan.`,
+        b.bInqSent.replace('{name}', businessName),
       );
       setNama('');
       setKontak('');
@@ -66,7 +70,7 @@ export default function InquiryForm({
     } catch (error) {
       setStatus('error');
       setStatusMessage(
-        error instanceof Error ? error.message : 'Terjadi kesalahan. Silakan coba lagi.',
+        error instanceof Error ? error.message : b.bInqGenericError,
       );
     }
   }
@@ -75,17 +79,17 @@ export default function InquiryForm({
     <form
       className="suki-business-inquiry-form"
       onSubmit={handleSubmit}
-      aria-label={`Formulir pertanyaan untuk ${businessName}`}
+      aria-label={b.bInqFormAria.replace('{name}', businessName)}
     >
       <label htmlFor="inquiry-nama">
-        Nama Anda
+        {b.bInqName}
         <input
           id="inquiry-nama"
           type="text"
           name="nama"
           value={nama}
           onChange={(e) => setNama(e.target.value)}
-          placeholder="Nama lengkap"
+          placeholder={b.bInqNamePh}
           autoComplete="name"
           required
           maxLength={120}
@@ -93,14 +97,14 @@ export default function InquiryForm({
         />
       </label>
       <label htmlFor="inquiry-kontak">
-        Kontak (no. HP / email)
+        {b.bInqContact}
         <input
           id="inquiry-kontak"
           type="text"
           name="kontak"
           value={kontak}
           onChange={(e) => setKontak(e.target.value)}
-          placeholder="08xx-xxxx-xxxx atau email@anda.id"
+          placeholder={b.bInqContactPh}
           autoComplete="tel"
           required
           maxLength={160}
@@ -108,13 +112,13 @@ export default function InquiryForm({
         />
       </label>
       <label htmlFor="inquiry-pesan">
-        Pesan
+        {b.bInqMessage}
         <textarea
           id="inquiry-pesan"
           name="pesan"
           value={pesan}
           onChange={(e) => setPesan(e.target.value)}
-          placeholder={`Tulis pertanyaan Anda untuk ${businessName}…`}
+          placeholder={b.bInqMessagePh.replace('{name}', businessName)}
           required
           minLength={10}
           maxLength={2000}
@@ -127,7 +131,7 @@ export default function InquiryForm({
         disabled={status === 'loading'}
       >
         <Send size={15} aria-hidden="true" />
-        {status === 'loading' ? 'Mengirim…' : 'Kirim pertanyaan'}
+        {status === 'loading' ? b.bInqSending : b.bInqSend}
       </button>
       {statusMessage && (
         <p

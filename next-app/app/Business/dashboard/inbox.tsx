@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { getBusinessInquiries } from '../_components/business-api';
 import InquiryList, { normalizeInquiry, type InquiryItem } from '../_components/InquiryList';
+import { usePreferences } from '@/lib/preferences';
+import { getGroupsLabels } from '@/lib/i18n/dict-groups';
 
 type BusinessInquiriesProps = {
   businessId: string;
@@ -16,6 +18,8 @@ export default function BusinessInquiries({ businessId, onCount }: BusinessInqui
   const [error, setError] = useState<string | null>(null);
   const onCountRef = useRef(onCount);
   onCountRef.current = onCount;
+  const { language } = usePreferences();
+  const b = getGroupsLabels(language);
 
   const load = useCallback(async () => {
     setError(null);
@@ -25,11 +29,11 @@ export default function BusinessInquiries({ businessId, onCount }: BusinessInqui
       setItems(normalized);
       onCountRef.current?.(normalized.length);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Gagal memuat pertanyaan masuk. Silakan coba lagi.');
+      setError(err instanceof Error ? err.message : b.bInqLoadError);
       setItems([]);
       onCountRef.current?.(0);
     }
-  }, [businessId]);
+  }, [businessId, b]);
 
   useEffect(() => {
     void load();
@@ -61,7 +65,7 @@ export default function BusinessInquiries({ businessId, onCount }: BusinessInqui
           className="suki-business-button suki-business-button-light"
           style={{ minHeight: 38, fontSize: 12 }}
         >
-          Coba lagi
+          {b.bInqRetry}
         </button>
       </div>
     );
@@ -70,7 +74,7 @@ export default function BusinessInquiries({ businessId, onCount }: BusinessInqui
   if (items === null) {
     return (
       <p style={{ margin: 0, fontSize: 13, color: 'var(--sb-muted)' }} aria-live="polite">
-        Memuat pertanyaan masuk…
+        {b.bInqLoading}
       </p>
     );
   }

@@ -1,13 +1,10 @@
-import Link from 'next/link';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { requireServerUser } from '@/lib/supabase/server';
 import { BUSINESS_CATEGORIES, fetchBusinessByIdForOwner, type OwnerBusiness } from '@/lib/businesses-query';
-import BusinessHeader from '../../../_components/BusinessHeader';
-import EditBusinessForm from './edit-form';
+import EditClient from './edit-client';
 import { normalizeHours } from '../../../_components/HoursEditor';
 import type { BusinessFormData, CategoryOption } from '../../../_components/BusinessForm';
-import { backLink, containerNarrow, pageKicker, pageSubtitle, pageTitle } from '../../../_components/formStyles';
 
 export const metadata: Metadata = {
   title: 'Ubah Bisnis — SUKI Business',
@@ -56,40 +53,19 @@ export default async function EditBusinessPage({ params }: { params: Promise<{ i
   }
 
   if (!business) {
-    return (
-      <main className="suki-business-page">
-        <BusinessHeader />
-        <div style={containerNarrow}>
-          <h1 style={pageTitle}>Bisnis tidak ditemukan</h1>
-          <p style={pageSubtitle}>
-            Bisnis yang Anda cari tidak ada atau bukan milik akun ini.
-          </p>
-          <Link href="/Business/dashboard" className="suki-business-button suki-business-button-dark">
-            Kembali ke dashboard
-          </Link>
-        </div>
-      </main>
-    );
+    return <EditClient businessId={id} initial={null} categories={toCategoryOptions()} businessName="" notFound />;
   }
 
   const initial = toInitial(business);
   const businessName = initial.nama || 'Bisnis Anda';
 
   return (
-    <main className="suki-business-page">
-      <BusinessHeader />
-      <div style={containerNarrow}>
-        <Link href="/Business/dashboard" style={backLink}>
-          <span aria-hidden="true">←</span> Kembali ke dashboard
-        </Link>
-        <p style={pageKicker}>
-          <span aria-hidden="true" style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: 'var(--sb-gold)' }} />
-          Ubah bisnis
-        </p>
-        <h1 style={pageTitle}>{businessName}</h1>
-        <p style={pageSubtitle}>Perbarui informasi usaha Anda. Perubahan hanya berlaku untuk bisnis milik akun ini.</p>
-        <EditBusinessForm businessId={id} initial={initial} categories={toCategoryOptions()} />
-      </div>
-    </main>
+    <EditClient
+      businessId={id}
+      initial={initial}
+      categories={toCategoryOptions()}
+      businessName={businessName}
+      notFound={false}
+    />
   );
 }

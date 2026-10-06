@@ -6,6 +6,8 @@ import type { PublicListing } from '@/lib/listings-query';
 import { sellerRatingText, sellerTier } from '@/lib/seller-trust';
 import { SafeImage } from './SafeImage';
 import { discountPercent } from './promo';
+import { usePreferences } from '@/lib/preferences';
+import { getMarketplaceLabels } from '@/lib/i18n/dict-marketplace';
 
 // Tipe kanonis listing publik — diimpor komponen marketplace lain dari sini.
 export type MarketplaceListing = PublicListing;
@@ -20,8 +22,6 @@ export type MarketplaceListing = PublicListing;
 // - Kartu bersih: tanpa tombol Lihat cepat/Bandingkan (pindah ke QuickViewModal)
 // - Klik gambar/judul membuka quick view (?listing= deep link tetap didukung)
 
-const conditionLabels: Record<string, string> = { new: 'Baru', like_new: 'Seperti baru', good: 'Bekas baik', fair: 'Bekas layak' };
-
 function rupiah(value: number) {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(value);
 }
@@ -35,11 +35,14 @@ type Props = {
 };
 
 export function MarketplaceCard({ listing, index = 0, saved = false, onToggleWishlist, onQuickView }: Props) {
+  const { language } = usePreferences();
+  const mp = getMarketplaceLabels(language);
+  const conditionLabels: Record<string, string> = { new: mp.mpCondNew, like_new: mp.mpCondLikeNew, good: mp.mpCondGoodShort, fair: mp.mpCondFairShort };
   const id = String(listing.id);
   const images = Array.isArray(listing.images) && listing.images.length > 0 ? listing.images : listing.thumbnail_url ? [listing.thumbnail_url] : [];
   const image = images[0];
   const price = Math.trunc(Number(listing.price) || 0);
-  const priceText = price > 0 ? rupiah(price) : 'Harga hubungi penjual';
+  const priceText = price > 0 ? rupiah(price) : mp.mpContactSellerPrice;
   const tier = sellerTier(listing.seller);
   const ratingText = sellerRatingText(listing.seller);
   const ratingAverage = Number(listing.seller?.rating_average || 0);
@@ -54,9 +57,9 @@ export function MarketplaceCard({ listing, index = 0, saved = false, onToggleWis
     <>
       {image ? <SafeImage src={image} alt={listing.title} priority={index < 4} /> : <div className="fbm-card-empty" aria-hidden="true">📦</div>}
       <div className="fbm-card-badges">
-        {discount > 0 && <span className="fbm-badge fbm-badge-discount" aria-label={`Diskon ${discount} persen`}>-{discount}%</span>}
+        {discount > 0 && <span className="fbm-badge fbm-badge-discount" aria-label={mp.mpDiscountPercent.replace('{n}', String(discount))}>-{discount}%</span>}
         {listing.condition && conditionLabels[listing.condition] && <span className="fbm-badge fbm-badge-condition">{conditionLabels[listing.condition]}</span>}
-        {listing.is_featured ? <span className="fbm-badge fbm-badge-featured">Pilihan SUKI</span> : null}
+        {listing.is_featured ? <span className="fbm-badge fbm-badge-featured">{mp.mpFeaturedPick}</span> : null}
       </div>
     </>
   );
@@ -65,7 +68,7 @@ export function MarketplaceCard({ listing, index = 0, saved = false, onToggleWis
     <article className="fbm-card" aria-label={listing.title}>
       <div className="fbm-card-media">
         {onQuickView ? (
-          <button type="button" className="fbm-card-media-btn" onClick={onQuickView} aria-label={`Lihat ${listing.title}`}>
+          <button type="button" className="fbm-card-media-btn" onClick={onQuickView} aria-label={`${mp.mpView} ${listing.title}`}>
             {media}
           </button>
         ) : (
@@ -77,7 +80,7 @@ export function MarketplaceCard({ listing, index = 0, saved = false, onToggleWis
             className={`fbm-card-wishlist${saved ? ' saved' : ''}`}
             onClick={onToggleWishlist}
             aria-pressed={saved}
-            aria-label={saved ? `Hapus ${listing.title} dari wishlist` : `Simpan ${listing.title} ke wishlist`}
+            aria-label={saved ? mp.mpRemoveFromWishlistTitle.replace('{title}', listing.title) : mp.mpSaveToWishlistTitle.replace('{title}', listing.title)}
           >
             <Heart size={17} aria-hidden="true" fill={saved ? 'currentColor' : 'none'} />
           </button>
@@ -93,7 +96,7 @@ export function MarketplaceCard({ listing, index = 0, saved = false, onToggleWis
         )}
 
         {ratingCount > 0 && ratingText && (
-          <span className="fbm-stars" aria-label={`Rating penjual ${ratingText}`}>
+          <span className="fbm-stars" aria-label={mp.mpSellerRating.replace('{rating}', ratingText)}>
             <span className="fbm-stars-icons" aria-hidden="true">
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star key={star} size={12} className={star <= Math.round(ratingAverage) ? '' : 'off'} fill="currentColor" strokeWidth={0} />
@@ -104,7 +107,7 @@ export function MarketplaceCard({ listing, index = 0, saved = false, onToggleWis
         )}
 
         {listing.seller && sellerId && (
-          <Link href={`/marketplace/toko/${encodeURIComponent(sellerId)}`} className="fbm-card-shop" aria-label={`Kunjungi toko ${listing.seller.name}`}>
+          <Link href={`/marketplace/toko/${encodeURIComponent(sellerId)}`} className="fbm-card-shop" aria-label={`${mp.mpVisitStore} ${listing.seller.name}`}>
             <span className="fbm-shop-avatar" aria-hidden="true">
               {listing.seller.avatar_url ? <img src={listing.seller.avatar_url} alt="" loading="lazy" /> : listing.seller.name.slice(0, 1).toUpperCase()}
             </span>

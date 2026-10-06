@@ -1,25 +1,39 @@
 'use client';
 
-// Navigasi 8 seksi Operations Center — dirender di app/admin/layout.tsx
-// (semua halaman /admin/* sudah terproteksi requireAdminUser di layout).
-// Daftar seksi: overview, users, moderation, monitoring, billing, ads, settings, launch.
-// CATATAN: /admin/ads dibangun track T-ADS (branch upgrade/launch-ad-monetization);
-// link sudah disiapkan di sini agar navigasi lengkap setelah assembly.
+// Navigasi lengkap Operations Center — dirender di app/admin/layout.tsx
+// (semua halaman /admin/* sudah terproteksi requireAdminUser di layout)
+// dan di app/dashboard/admin/page.tsx.
+// 19 seksi: overview, users, team, moderation, listings (marketplace),
+// monitoring, errors, database, audit, billing, ads, announcements,
+// support-tickets, ecosystem-banners, property-verification, businesses,
+// affiliate-rewards, settings, launch.
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  LayoutDashboard, UsersRound, ShieldCheck, Activity,
-  CreditCard, Megaphone, Settings2, Rocket,
+  LayoutDashboard, UsersRound, KeyRound, ShieldCheck, Activity, Bug, Database, ScrollText,
+  CreditCard, Megaphone, Settings2, BellRing, LifeBuoy, Images, House,
+  Building2, Gift, Rocket, Tag,
 } from 'lucide-react';
 
 const SECTIONS = [
   { href: '/admin/overview', label: 'Ringkasan', icon: LayoutDashboard },
   { href: '/admin/users', label: 'Pengguna', icon: UsersRound },
+  { href: '/admin/team', label: 'Tim', icon: KeyRound },
   { href: '/admin/moderation', label: 'Moderasi', icon: ShieldCheck },
+  { href: '/admin/listings', label: 'Listing', icon: Tag },
   { href: '/admin/monitoring', label: 'Monitoring', icon: Activity },
+  { href: '/admin/errors', label: 'Error', icon: Bug },
+  { href: '/admin/database', label: 'Database', icon: Database },
+  { href: '/admin/audit', label: 'Audit', icon: ScrollText },
   { href: '/admin/billing', label: 'Billing', icon: CreditCard },
   { href: '/admin/ads', label: 'Iklan', icon: Megaphone },
+  { href: '/admin/announcements', label: 'Pengumuman', icon: BellRing },
+  { href: '/admin/businesses', label: 'Bisnis', icon: Building2 },
+  { href: '/admin/property-verification', label: 'Properti', icon: House },
+  { href: '/admin/support-tickets', label: 'Tiket', icon: LifeBuoy },
+  { href: '/admin/ecosystem-banners', label: 'Banner', icon: Images },
+  { href: '/admin/affiliate-rewards', label: 'Afiliasi', icon: Gift },
   { href: '/admin/settings', label: 'Pengaturan', icon: Settings2 },
   { href: '/admin/launch', label: 'Launch', icon: Rocket },
 ] as const;

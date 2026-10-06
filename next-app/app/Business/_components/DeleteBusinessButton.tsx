@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { deleteBusiness } from './business-api';
+import { usePreferences } from '@/lib/preferences';
+import { getGroupsLabels } from '@/lib/i18n/dict-groups';
 
 type DeleteBusinessButtonProps = {
   id: string;
@@ -14,12 +16,14 @@ export default function DeleteBusinessButton({ id, name }: DeleteBusinessButtonP
   const router = useRouter();
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { language } = usePreferences();
+  const b = getGroupsLabels(language);
 
   async function handleClick() {
     if (deleting) return;
     setError(null);
     const confirmed = window.confirm(
-      `Hapus "${name}" dari SUKI Business?\n\nBisnis yang dihapus tidak dapat dikembalikan.`,
+      b.bDeleteConfirm.replace('{name}', name),
     );
     if (!confirmed) return;
     setDeleting(true);
@@ -27,7 +31,7 @@ export default function DeleteBusinessButton({ id, name }: DeleteBusinessButtonP
       await deleteBusiness(id);
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Menghapus bisnis gagal. Silakan coba lagi.');
+      setError(err instanceof Error ? err.message : b.bDeleteError);
     } finally {
       setDeleting(false);
     }
@@ -40,9 +44,9 @@ export default function DeleteBusinessButton({ id, name }: DeleteBusinessButtonP
         onClick={() => void handleClick()}
         disabled={deleting}
         className="suki-business-button suki-business-button-light"
-        aria-label={`Hapus bisnis ${name}`}
+        aria-label={b.bDeleteAria.replace('{name}', name)}
       >
-        {deleting ? 'Menghapus…' : 'Hapus'}
+        {deleting ? b.bDeleting : b.bDelete}
       </button>
       {error && (
         <span role="alert" style={{ fontSize: 12, fontWeight: 600, color: 'var(--sb-danger)', maxWidth: 240 }}>

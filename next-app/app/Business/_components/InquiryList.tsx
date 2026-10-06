@@ -1,3 +1,8 @@
+'use client';
+
+import { usePreferences } from '@/lib/preferences';
+import { getGroupsLabels } from '@/lib/i18n/dict-groups';
+
 export type InquiryItem = {
   id: string;
   nama: string;
@@ -7,11 +12,11 @@ export type InquiryItem = {
   created_at: string;
 };
 
-const STATUS_LABELS: Record<string, string> = {
-  new: 'Baru',
-  read: 'Dibaca',
-  replied: 'Dibalas',
-  archived: 'Diarsipkan',
+const STATUS_KEYS: Record<string, 'bInqNew' | 'bInqRead' | 'bInqReplied' | 'bInqArchived'> = {
+  new: 'bInqNew',
+  read: 'bInqRead',
+  replied: 'bInqReplied',
+  archived: 'bInqArchived',
 };
 
 const soft = (token: string, pct: number) =>
@@ -53,6 +58,8 @@ function formatTime(iso: string): string {
 
 /** Daftar pertanyaan masuk — murni presentasional. */
 export default function InquiryList({ items }: { items: InquiryItem[] }) {
+  const { language } = usePreferences();
+  const b = getGroupsLabels(language);
   if (items.length === 0) {
     return (
       <p
@@ -67,7 +74,7 @@ export default function InquiryList({ items }: { items: InquiryItem[] }) {
           textAlign: 'center',
         }}
       >
-        Belum ada pertanyaan masuk untuk bisnis ini.
+        {b.bInqEmpty}
       </p>
     );
   }
@@ -76,7 +83,8 @@ export default function InquiryList({ items }: { items: InquiryItem[] }) {
     <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 10 }}>
       {items.map((item) => {
         const color = STATUS_COLORS[item.status] ?? STATUS_COLORS.new;
-        const label = STATUS_LABELS[item.status] ?? item.status;
+        const statusKey = STATUS_KEYS[item.status];
+        const label = statusKey ? b[statusKey] : item.status;
         const time = formatTime(item.created_at);
         return (
           <li

@@ -1,0 +1,139 @@
+/* ==========================================================================
+   WORLD-CLASS OVERHAUL — primitif UI (namespace .wc-*)
+   Arah visual "Teluk Senja" (Fase 1, 2026-10-03).
+   File kecil per konvensi repo — diimpor dari page-client yang disentuh.
+   JANGAN tambah ke app/globals.css (568KB, di luar batas push konektor).
+   ========================================================================== */
+@import '../design-system/tokens-wc.css';
+
+/* --- Hero --- */
+.wc-hero {
+  background: var(--wc-hero-bg);
+  position: relative;
+  overflow: hidden;
+}
+.wc-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.22em;
+  color: var(--sk-brand);
+  border: 1px solid var(--wc-glass-line);
+  background: var(--wc-glass-bg);
+  backdrop-filter: blur(var(--wc-glass-blur));
+  -webkit-backdrop-filter: blur(var(--wc-glass-blur));
+  border-radius: var(--sk-r-pill);
+  padding: 8px 16px; margin-bottom: 26px;
+}
+.wc-eyebrow i {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--sk-brand); box-shadow: 0 0 12px var(--sk-brand);
+}
+.wc-display {
+  font-size: clamp(38px, 5.6vw, 72px);
+  line-height: 1.04; font-weight: 800; letter-spacing: -0.02em;
+  color: var(--sk-ink); text-wrap: balance;
+}
+.wc-grad-text {
+  background: var(--wc-grad-text);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.wc-sub {
+  margin-top: 18px; max-width: 58ch;
+  color: var(--sk-muted); font-size: 17px; line-height: 1.7;
+}
+.wc-cta-row { display: flex; gap: 12px; margin-top: 30px; flex-wrap: wrap; }
+
+/* --- Tombol --- */
+.wc-btn {
+  border: 0; border-radius: var(--sk-r-pill);
+  padding: 14px 30px; font-weight: 700; font-size: 15px; cursor: pointer;
+  font-family: var(--sk-font);
+  transition: transform var(--sk-d-base) var(--sk-ease), box-shadow var(--sk-d-base) var(--sk-ease);
+}
+.wc-btn:hover { transform: translateY(-2px); }
+.wc-btn:active { transform: translateY(0) scale(0.98); }
+.wc-btn:focus-visible { outline: 3px solid var(--sk-focus); outline-offset: 3px; }
+.wc-btn-gold { background: var(--wc-grad-gold); color: #241c05; box-shadow: var(--wc-glow-gold); }
+.wc-btn-teal { background: var(--wc-grad-teal); color: #fff; box-shadow: var(--wc-glow-teal); }
+.wc-btn-ghost {
+  background: var(--wc-glass-bg); color: var(--sk-ink);
+  border: 1px solid var(--wc-glass-line);
+  backdrop-filter: blur(var(--wc-glass-blur));
+  -webkit-backdrop-filter: blur(var(--wc-glass-blur));
+}
+
+/* --- Kartu kaca --- */
+.wc-glass-card {
+  background: var(--wc-glass-bg);
+  border: 1px solid var(--wc-glass-line);
+  border-radius: var(--sk-r-xl);
+  backdrop-filter: blur(var(--wc-glass-blur));
+  -webkit-backdrop-filter: blur(var(--wc-glass-blur));
+  box-shadow: var(--wc-glass-shadow);
+  transition: transform var(--sk-d-base) var(--sk-ease), box-shadow var(--sk-d-base) var(--sk-ease);
+}
+a.wc-glass-card:hover, .wc-glass-card.wc-hoverable:hover {
+  transform: translateY(-4px); box-shadow: var(--wc-shadow-lift);
+}
+
+/* --- Chip --- */
+.wc-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.06em;
+  padding: 7px 14px; border-radius: var(--sk-r-pill);
+  background: var(--wc-glass-bg); border: 1px solid var(--wc-glass-line);
+  color: var(--sk-muted);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+}
+
+/* --- Kepala section --- */
+.wc-section-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 16px; margin-bottom: 24px;
+}
+.wc-section-head h2 {
+  font-size: clamp(22px, 3vw, 30px); font-weight: 800;
+  letter-spacing: -0.015em; color: var(--sk-ink);
+}
+.wc-section-head a {
+  color: var(--sk-teal); font-weight: 700; font-size: 14px; white-space: nowrap;
+}
+
+/* --- Strip tenun (aksen lokal, restrained) --- */
+.wc-tenun-strip { height: 8px; background: var(--wc-tenun); opacity: 0.9; }
+
+/* --- Statistik hero --- */
+.wc-stats { display: flex; gap: 40px; margin-top: 44px; flex-wrap: wrap; }
+.wc-stat b { display: block; font-size: 28px; font-weight: 800; color: var(--sk-ink); }
+.wc-stat span { font-size: 12px; letter-spacing: 0.08em; color: var(--sk-muted); }
+
+/* --- Skeleton ber-brand (perceived loading) --- */
+.wc-skeleton {
+  position: relative; overflow: hidden; border-radius: var(--sk-r-md);
+  background: var(--sk-surface-2);
+}
+.wc-skeleton::after {
+  content: ""; position: absolute; inset: 0;
+  background: var(--wc-shimmer); background-size: 200% 100%;
+  animation: wc-shimmer 1.6s linear infinite;
+}
+@keyframes wc-shimmer {
+  from { background-position: 180% 0; }
+  to { background-position: -80% 0; }
+}
+
+/* --- Reveal on scroll (dipicu .is-visible oleh WcReveal) --- */
+.wc-reveal {
+  opacity: 0; transform: translateY(26px);
+  transition: opacity var(--wc-d-reveal) var(--wc-ease-reveal),
+              transform var(--wc-d-reveal) var(--wc-ease-reveal);
+}
+.wc-reveal.is-visible { opacity: 1; transform: none; }
+.wc-reveal[data-delay="1"] { transition-delay: 90ms; }
+.wc-reveal[data-delay="2"] { transition-delay: 180ms; }
+.wc-reveal[data-delay="3"] { transition-delay: 270ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .wc-reveal { opacity: 1; transform: none; transition: none; }
+  .wc-skeleton::after { animation: none; }
+  .wc-btn:hover, a.wc-glass-card:hover, .wc-glass-card.wc-hoverable:hover { transform: none; }
+}

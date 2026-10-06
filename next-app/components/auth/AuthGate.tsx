@@ -9,6 +9,8 @@ import {
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import { usePreferences } from '@/lib/preferences';
+import { getCoreLabels } from '@/lib/i18n/dictionaries';
+import { mergeLabels } from '@/lib/i18n/dict-authprofile';
 import { clearUtmCookie, readUtmFromCookie } from '@/lib/utm';
 import { claimReferralBestEffort } from '@/lib/referral-claim-client';
 import { NusantaraHero } from '@/components/illustrations';
@@ -26,7 +28,7 @@ const MAX_SIGNUP_AVATAR_BYTES = 5 * 1024 * 1024;
 // Untuk menyalakan: (1) enable provider Facebook di dashboard Supabase,
 // (2) nyalakan flag facebook_login_enabled di /admin/settings.
 
-function prepareSignupAvatar(file: File): Promise<File> {
+function prepareSignupAvatar(file: File, msgs: { canvas: string; process: string; read: string }): Promise<File> {
   return new Promise((resolve, reject) => {
     const image = new Image();
     const objectUrl = URL.createObjectURL(file);
@@ -37,15 +39,15 @@ function prepareSignupAvatar(file: File): Promise<File> {
       const canvas = document.createElement('canvas');
       canvas.width = 512; canvas.height = 512;
       const context = canvas.getContext('2d');
-      if (!context) { URL.revokeObjectURL(objectUrl); reject(new Error('Canvas tidak tersedia.')); return; }
+      if (!context) { URL.revokeObjectURL(objectUrl); reject(new Error(msgs.canvas)); return; }
       context.drawImage(image, sx, sy, size, size, 0, 0, 512, 512);
       canvas.toBlob(blob => {
         URL.revokeObjectURL(objectUrl);
-        if (!blob) { reject(new Error('Foto tidak dapat diproses.')); return; }
+        if (!blob) { reject(new Error(msgs.process)); return; }
         resolve(new File([blob], 'profile-avatar.jpg', { type: 'image/jpeg' }));
       }, 'image/jpeg', 0.88);
     };
-    image.onerror = () => { URL.revokeObjectURL(objectUrl); reject(new Error('Foto tidak dapat dibaca.')); };
+    image.onerror = () => { URL.revokeObjectURL(objectUrl); reject(new Error(msgs.read)); };
     image.src = objectUrl;
   });
 }
@@ -58,20 +60,6 @@ function safeRedirect(value: string | null) {
 
 type Mode = 'login' | 'signup';
 
-const copy = {
-  id: {
-    login: 'Selamat datang kembali', signup: 'Bangun ruangmu di SUKI Apps',
-    sub: 'Satu pintu untuk warga, usaha, dan cerita Sulawesi Tenggara.',
-    loginCta: 'Masuk ke SUKI Apps', signupCta: 'Buat akun gratis',
-    gmail: 'Lanjutkan dengan Google', facebook: 'Lanjutkan dengan Facebook'
-  },
-  en: {
-    login: 'Welcome back', signup: 'Build your space on SUKI Apps',
-    sub: 'One home for people, businesses, and stories from Southeast Sulawesi.',
-    loginCta: 'Enter SUKI Apps', signupCta: 'Create free account',
-    gmail: 'Continue with Google', facebook: 'Continue with Facebook'
-  }
-} as const;
 
 function Logo({ compact = false }: { compact?: boolean }) {
   return (
@@ -120,11 +108,11 @@ export function AuthGate({
   const [remember, setRemember] = useState(true);
   const { language } = usePreferences();
 
-  const t = copy[language === 'en' ? 'en' : 'id'];
+  const t = mergeLabels(getCoreLabels(language), language);
   const score = useMemo(() => strength(password), [password]);
 
   useEffect(() => {
-    if (params.get('error')) setError('Sesi sosial belum dapat diselesaikan. Coba lagi atau gunakan email.');
+    if (params.get('error')) setError(t.authErrSocialSession);
   }, [params]);
 
   function changeMode(next: Mode) {
@@ -135,13 +123,13 @@ export function AuthGate({
   async function selectSignupAvatar(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]; event.target.value = ''; if (!file) return;
     if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type)) {
-      setError('Foto profil harus JPG, PNG, WebP, atau GIF.'); return;
+      setError(t.authErrPhotoType); return;
     }
-    if (file.size > MAX_SIGNUP_AVATAR_BYTES) { setError('Ukuran foto profil maksimal 5 MB.'); return; }
+    if (file.size > MAX_SIGNUP_AVATAR_BYTES) { setError(t.authErrPhotoSize); return; }
     try {
-      const processed = await prepareSignupAvatar(file);
+      const processed = await prepareSignupAvatar(file, { canvas: t.authErrCanvas, process: t.authErrPhotoProcess, read: t.authErrPhotoRead });
       setSignupAvatar(processed); setSignupAvatarPreview(URL.createObjectURL(processed)); setError('');
-    } catch { setError('Foto profil tidak dapat diproses. Coba pilih foto lain.'); }
+    } catch { setError(t.authErrPhotoProcessRetry); }
   }
 
   async function saveSignupAvatar(userId: string, file: File) {
@@ -159,7 +147,7 @@ export function AuthGate({
     // Guard: jangan pernah memicu OAuth Facebook selagi flag mati (provider belum
     // di-enable di Supabase -> akan error "Unsupported provider").
     if (provider === 'facebook' && !facebookLoginEnabled) {
-      setError('Login Facebook belum tersedia. Silakan masuk dengan Google atau email.');
+      setError(t.authErrFacebookOff);
       return;
     }
     setBusy(provider); setError('');
@@ -169,7 +157,7 @@ export function AuthGate({
       gateway.searchParams.set('next', next);
       window.location.assign(gateway.toString()); return;
     }
-    if (!supabase) { setBusy(null); setError('Autentikasi belum dikonfigurasi di environment ini.'); return; }
+    if (!supabase) { setBusy(null); setError(t.authErrNotConfigured); return; }
     const { error: authError } = await supabase.auth.signInWithOAuth({
       provider,
       options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}` }
@@ -179,14 +167,14 @@ export function AuthGate({
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (!supabase) { setError('Autentikasi belum dikonfigurasi di environment ini.'); return; }
+    if (!supabase) { setError(t.authErrNotConfigured); return; }
     setBusy('email'); setError(''); setNotice('');
     if (mode === 'signup') {
       if (username.length < 3 || !/^[a-zA-Z0-9_]+$/.test(username)) {
-        setError('Username minimal 3 karakter dan hanya boleh berisi huruf, angka, atau underscore.'); setBusy(null); return;
+        setError(t.authErrUsername); setBusy(null); return;
       }
-      if (password !== confirm) { setError('Konfirmasi password belum cocok.'); setBusy(null); return; }
-      if (score < 4) { setError('Gunakan password dengan 8+ karakter, huruf besar, angka, dan simbol.'); setBusy(null); return; }
+      if (password !== confirm) { setError(t.authErrPasswordMismatch); setBusy(null); return; }
+      if (score < 4) { setError(t.authErrPasswordWeak); setBusy(null); return; }
       const utm = readUtmFromCookie();
       const { data, error: authError } = await supabase.auth.signUp({
         email, password, options: { data: {
@@ -198,7 +186,7 @@ export function AuthGate({
       else if (data.session) {
         if (signupAvatar && data.user) {
           try { await saveSignupAvatar(data.user.id, signupAvatar); }
-          catch { setNotice('Akun berhasil dibuat. Foto belum tersimpan, kamu bisa menggantinya di Pengaturan Profil.'); }
+          catch { setNotice(t.authNoticeAvatarPending); }
         }
         // Atribusi UTM sudah disalin trigger ke profiles → cookie boleh dihapus.
         if (utm) clearUtmCookie();
@@ -208,8 +196,8 @@ export function AuthGate({
         router.push('/');
       } else {
         setNotice(signupAvatar
-          ? 'Link verifikasi sudah dikirim. Setelah akun aktif, unggah foto profil dari Pengaturan Profil.'
-          : 'Link verifikasi sudah dikirim ke email kamu. Buka email tersebut untuk mengaktifkan akun.');
+          ? t.authNoticeVerifyAvatar
+          : t.authNoticeVerifyEmail);
       }
     } else {
       const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
@@ -218,17 +206,36 @@ export function AuthGate({
         // Pengguna yang login via link referral namun belum terklaim (mis. signup
         // butuh verifikasi email): coba klaim sekarang, best-effort.
         claimReferralBestEffort();
-        router.push(safeRedirect(params.get('redirect')));
+        // Admin-aware redirect: akun admin/super_admin TANPA tujuan eksplisit
+        // langsung diarahkan ke /dashboard/admin. Best-effort.
+        let dest = safeRedirect(params.get('redirect'));
+        if ((dest === '/dashboard' || dest === '/') && supabase) {
+          try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user?.id) {
+              const { data: profile } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', user.id)
+                .maybeSingle();
+              const role = (profile as { role?: string } | null)?.role;
+              if (role === 'admin' || role === 'super_admin') dest = '/dashboard/admin';
+            }
+          } catch {
+            // Abaikan — tetap ke tujuan default.
+          }
+        }
+        router.push(dest);
       }
     }
     setBusy(null);
   }
 
   async function forgot() {
-    if (!supabase || !email) { setError('Masukkan email terlebih dahulu untuk reset password.'); return; }
+    if (!supabase || !email) { setError(t.authErrEmailFirst); return; }
     const { error: authError } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/login` });
     if (authError) setError(authError.message);
-    else setNotice('Link reset password sudah dikirim jika email terdaftar.');
+    else setNotice(t.authNoticeResetSent);
   }
 
   return (
@@ -243,22 +250,22 @@ export function AuthGate({
         <section className="hidden lg:block">
           <div className="max-w-[590px]">
             <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-[#d7e9e2] bg-white/65 px-3.5 py-2 text-[11px] font-extrabold uppercase tracking-[.16em] text-[#39776c] backdrop-blur">
-              <Sparkles size={14} /> Ekosistem digital Sulawesi Tenggara
+              <Sparkles size={14} /> {t.authHeroBadge}
             </div>
             <h1 className="font-display text-[clamp(3.4rem,5vw,5.4rem)] font-black leading-[.94] tracking-[-.055em] text-[#103e37]">
-              Satu ruang untuk
-              <span className="mt-2 block text-[#188875]">banyak kemungkinan.</span>
+              {t.authHeroTitleA}
+              <span className="mt-2 block text-[#188875]">{t.authHeroTitleB}</span>
             </h1>
             <p className="mt-7 max-w-[500px] text-[16px] leading-7 text-[#607d76]">
-              Temukan marketplace lokal, properti, peluang kerja, komunitas, dan bisnis dalam satu pengalaman yang dekat dengan kehidupan Sultra.
+              {t.authHeroDesc}
             </p>
 
             <div className="mt-10 grid max-w-[550px] grid-cols-2 gap-2.5 sm:grid-cols-4">
               {[
-                { icon: ShoppingBag, label: 'Marketplace' },
-                { icon: House, label: 'Properti' },
-                { icon: BriefcaseBusiness, label: 'Peluang kerja' },
-                { icon: UsersRound, label: 'Komunitas' },
+                { icon: ShoppingBag, label: t.marketplace },
+                { icon: House, label: t.property },
+                { icon: BriefcaseBusiness, label: t.authFeatureJobs },
+                { icon: UsersRound, label: t.groups },
               ].map(({ icon: Icon, label }) => (
                 <div key={label} className="rounded-2xl border border-[#deebe6] bg-white/70 p-3.5 shadow-[0_8px_30px_rgba(21,73,64,.05)] backdrop-blur">
                   <Icon size={17} className="text-[#188875]" />
@@ -269,7 +276,7 @@ export function AuthGate({
 
             <div className="mt-8 flex items-center gap-2 text-xs font-semibold text-[#718b85]">
               <span className="grid h-7 w-7 place-items-center rounded-full bg-[#e3f4ed]"><ShieldCheck size={15} className="text-[#188875]" /></span>
-              Akun dan sesi autentikasi diproses melalui alur aman SUKI Apps.
+              {t.authSecureNote}
             </div>
 
             {/* Visual Transformation V1.0 — ilustrasi Digital Nusantara (dekoratif). */}
@@ -282,20 +289,20 @@ export function AuthGate({
         <section className="auth-card mx-auto w-full max-w-[470px] rounded-[26px] border border-white/90 bg-white/95 p-4 shadow-[0_24px_80px_rgba(18,70,61,.13)] backdrop-blur-xl sm:p-5 lg:p-6">
           <div className="mb-5 flex items-center justify-between lg:hidden"><Logo compact /></div>
 
-          <div className="grid grid-cols-2 rounded-[15px] bg-[#eef6f2] p-1" aria-label="Mode autentikasi">
-            <button type="button" onClick={() => changeMode('login')} aria-current={mode === 'login'} className={`min-h-10 rounded-[11px] text-[13px] font-extrabold transition focus:outline-none focus:ring-2 focus:ring-[#188875]/20 ${mode === 'login' ? 'bg-white text-[#153e38] shadow-sm' : 'text-[#718a84] hover:text-[#476961]'}`}>Masuk</button>
-            <button type="button" onClick={() => changeMode('signup')} aria-current={mode === 'signup'} className={`min-h-10 rounded-[11px] text-[13px] font-extrabold transition focus:outline-none focus:ring-2 focus:ring-[#188875]/20 ${mode === 'signup' ? 'bg-white text-[#153e38] shadow-sm' : 'text-[#718a84] hover:text-[#476961]'}`}>Daftar</button>
+          <div className="grid grid-cols-2 rounded-[15px] bg-[#eef6f2] p-1" aria-label={t.authModeLabel}>
+            <button type="button" onClick={() => changeMode('login')} aria-current={mode === 'login'} className={`min-h-10 rounded-[11px] text-[13px] font-extrabold transition focus:outline-none focus:ring-2 focus:ring-[#188875]/20 ${mode === 'login' ? 'bg-white text-[#153e38] shadow-sm' : 'text-[#718a84] hover:text-[#476961]'}`}>{t.login}</button>
+            <button type="button" onClick={() => changeMode('signup')} aria-current={mode === 'signup'} className={`min-h-10 rounded-[11px] text-[13px] font-extrabold transition focus:outline-none focus:ring-2 focus:ring-[#188875]/20 ${mode === 'signup' ? 'bg-white text-[#153e38] shadow-sm' : 'text-[#718a84] hover:text-[#476961]'}`}>{t.register}</button>
           </div>
 
           <div className="mt-6">
-            <h2 className="font-display text-[28px] font-black leading-tight tracking-[-.035em] text-[#123d36]">{mode === 'login' ? t.login : t.signup}</h2>
-            <p className="mt-2 text-[13px] leading-5 text-[#718983]">{t.sub}</p>
+            <h2 className="font-display text-[28px] font-black leading-tight tracking-[-.035em] text-[#123d36]">{mode === 'login' ? t.authWelcomeBack : t.authSignupTitle}</h2>
+            <p className="mt-2 text-[13px] leading-5 text-[#718983]">{t.authSub}</p>
           </div>
 
           <div className={`mt-5 grid gap-2.5 ${facebookLoginEnabled ? 'grid-cols-2' : 'grid-cols-1'}`}>
             <button type="button" disabled={!!busy} onClick={() => void social('google')} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[13px] border border-[#dce8e3] bg-white px-2.5 text-[12px] font-extrabold text-[#38564f] transition hover:-translate-y-px hover:border-[#c6d9d2] hover:shadow-sm focus:outline-none focus:ring-4 focus:ring-[#188875]/10 disabled:cursor-wait disabled:opacity-50">
               <span className="grid h-5 w-5 place-items-center rounded-full border border-[#e5ebe8] bg-white text-[13px] font-black text-[#4285f4]">G</span>
-              {busy === 'google' ? '...' : t.gmail}
+              {busy === 'google' ? '...' : t.authContinueGoogle}
             </button>
             {/* Tombol Facebook disembunyikan bila flag facebookLoginEnabled mati — lihat TODO di atas. */}
             {facebookLoginEnabled && (
@@ -306,68 +313,68 @@ export function AuthGate({
           </div>
 
           <div className="my-5 flex items-center gap-3 text-[10px] font-bold uppercase tracking-[.12em] text-[#a0b1ac]">
-            <span className="h-px flex-1 bg-[#e7efec]" /> atau email <span className="h-px flex-1 bg-[#e7efec]" />
+            <span className="h-px flex-1 bg-[#e7efec]" /> {t.authOrEmail} <span className="h-px flex-1 bg-[#e7efec]" />
           </div>
 
           <form onSubmit={submit} className="space-y-2.5">
             {mode === 'signup' && (
               <>
                 <div className="relative">
-                  <label className="sr-only" htmlFor="fullName">Nama lengkap</label>
+                  <label className="sr-only" htmlFor="fullName">{t.authFullName}</label>
                   <UserRound className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#78938c]" size={16} aria-hidden="true" />
-                  <input id="fullName" required value={fullName} onChange={event => setFullName(event.target.value)} className={fieldClass} placeholder="Nama lengkap" autoComplete="name" />
+                  <input id="fullName" required value={fullName} onChange={event => setFullName(event.target.value)} className={fieldClass} placeholder={t.authFullName} autoComplete="name" />
                 </div>
                 <div className="relative">
-                  <label className="sr-only" htmlFor="username">Username</label>
+                  <label className="sr-only" htmlFor="username">{t.authUsername}</label>
                   <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[13px] font-black text-[#78938c]" aria-hidden="true">@</span>
-                  <input id="username" required value={username} onChange={event => setUsername(event.target.value.toLowerCase())} className={fieldClass} placeholder="Username" autoComplete="username" />
+                  <input id="username" required value={username} onChange={event => setUsername(event.target.value.toLowerCase())} className={fieldClass} placeholder={t.authUsername} autoComplete="username" />
                 </div>
 
                 <div className="flex items-center gap-3 rounded-[14px] border border-[#dce8e3] bg-[#fbfdfc] p-2.5">
                   <div className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-full bg-[#e6f6ef] text-[11px] font-black text-[#188875]">
-                    {signupAvatarPreview ? <img src={signupAvatarPreview} alt="Pratinjau foto profil" className="h-full w-full object-cover" /> : fullName.slice(0, 2).toUpperCase() || 'FK'}
+                    {signupAvatarPreview ? <img src={signupAvatarPreview} alt={t.authPhotoPreview} className="h-full w-full object-cover" /> : fullName.slice(0, 2).toUpperCase() || 'FK'}
                   </div>
                   <label className="min-w-0 flex-1 cursor-pointer">
                     <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={selectSignupAvatar} className="sr-only" disabled={!!busy} />
-                    <span className="block text-[12px] font-extrabold text-[#188875]">{signupAvatar ? 'Ganti foto profil' : 'Tambahkan foto profil'}</span>
-                    <small className="mt-0.5 block text-[10px] leading-4 text-[#819891]">Opsional · JPG, PNG, WebP, GIF · maks. 5 MB</small>
+                    <span className="block text-[12px] font-extrabold text-[#188875]">{signupAvatar ? t.authChangePhoto : t.authAddPhoto}</span>
+                    <small className="mt-0.5 block text-[10px] leading-4 text-[#819891]">{t.authPhotoHint}</small>
                   </label>
                 </div>
               </>
             )}
 
             <div className="relative">
-              <label className="sr-only" htmlFor="email">Email</label>
+              <label className="sr-only" htmlFor="email">{t.profileEmail}</label>
               <Mail className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#78938c]" size={16} aria-hidden="true" />
-              <input id="email" type="email" required value={email} onChange={event => setEmail(event.target.value)} className={fieldClass} placeholder="Email kamu" autoComplete="email" />
+              <input id="email" type="email" required value={email} onChange={event => setEmail(event.target.value)} className={fieldClass} placeholder={t.authEmailPlaceholder} autoComplete="email" />
             </div>
 
             <div className="relative">
-              <label className="sr-only" htmlFor="password">Password</label>
+              <label className="sr-only" htmlFor="password">{t.authPassword}</label>
               <LockKeyhole className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#78938c]" size={16} aria-hidden="true" />
-              <input id="password" type={showPassword ? 'text' : 'password'} required value={password} onChange={event => setPassword(event.target.value)} className={`${fieldClass} pr-11`} placeholder="Password" autoComplete={mode === 'login' ? 'current-password' : 'new-password'} />
-              <button type="button" onClick={() => setShowPassword(value => !value)} className="absolute right-2.5 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-lg text-[#78938c] hover:bg-[#edf6f2] focus:outline-none focus:ring-2 focus:ring-[#188875]/20" aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}>
+              <input id="password" type={showPassword ? 'text' : 'password'} required value={password} onChange={event => setPassword(event.target.value)} className={`${fieldClass} pr-11`} placeholder={t.authPassword} autoComplete={mode === 'login' ? 'current-password' : 'new-password'} />
+              <button type="button" onClick={() => setShowPassword(value => !value)} className="absolute right-2.5 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-lg text-[#78938c] hover:bg-[#edf6f2] focus:outline-none focus:ring-2 focus:ring-[#188875]/20" aria-label={showPassword ? t.authHidePassword : t.authShowPassword}>
                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
 
             {mode === 'signup' && (
               <>
-                <div className="flex gap-1.5 pt-0.5" aria-label={`Kekuatan password: ${score} dari 4`}>
+                <div className="flex gap-1.5 pt-0.5" aria-label={t.authPasswordStrength.replace('{score}', String(score))}>
                   {[1, 2, 3, 4].map(item => (
                     <span key={item} className={`h-1.5 flex-1 rounded-full transition-colors ${score >= item ? (score >= 4 ? 'bg-[#188875]' : score >= 2 ? 'bg-[#d9ad4e]' : 'bg-[#d67d69]') : 'bg-[#e7efec]'}`} />
                   ))}
                 </div>
                 <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[10px] text-[#7e958f]">
                   {[
-                    [password.length >= 8, '8+ karakter'], [/[A-Z]/.test(password), 'Huruf besar'],
-                    [/[0-9]/.test(password), 'Angka'], [/[^A-Za-z0-9]/.test(password), 'Simbol']
+                    [password.length >= 8, t.authPw8Chars], [/[A-Z]/.test(password), t.authPwUpper],
+                    [/[0-9]/.test(password), t.authPwDigit], [/[^A-Za-z0-9]/.test(password), t.authPwSymbol]
                   ].map(([ok, label]) => <span key={label as string} className={ok ? 'text-[#188875]' : ''}>{ok ? <Check size={11} className="mr-1 inline" /> : <X size={11} className="mr-1 inline" />}{label as string}</span>)}
                 </div>
                 <div className="relative">
-                  <label className="sr-only" htmlFor="confirm">Konfirmasi password</label>
+                  <label className="sr-only" htmlFor="confirm">{t.authConfirmPassword}</label>
                   <LockKeyhole className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#78938c]" size={16} aria-hidden="true" />
-                  <input id="confirm" type={showPassword ? 'text' : 'password'} required value={confirm} onChange={event => setConfirm(event.target.value)} className={fieldClass} placeholder="Konfirmasi password" autoComplete="new-password" />
+                  <input id="confirm" type={showPassword ? 'text' : 'password'} required value={confirm} onChange={event => setConfirm(event.target.value)} className={fieldClass} placeholder={t.authConfirmPassword} autoComplete="new-password" />
                 </div>
               </>
             )}
@@ -376,9 +383,9 @@ export function AuthGate({
               <div className="flex items-center justify-between px-0.5 text-[11px]">
                 <label className="inline-flex items-center gap-2 text-[#718983]">
                   <input type="checkbox" checked={remember} onChange={event => setRemember(event.target.checked)} className="h-3.5 w-3.5 rounded accent-[#188875] focus:ring-[#188875]" />
-                  Ingat saya
+                  {t.authRememberMe}
                 </label>
-                <button type="button" onClick={() => void forgot()} className="font-extrabold text-[#188875] hover:underline focus:outline-none focus:ring-2 focus:ring-[#188875]/20">Lupa password?</button>
+                <button type="button" onClick={() => void forgot()} className="font-extrabold text-[#188875] hover:underline focus:outline-none focus:ring-2 focus:ring-[#188875]/20">{t.authForgotPassword}</button>
               </div>
             )}
 
@@ -386,17 +393,17 @@ export function AuthGate({
             {notice && <div role="status" className="rounded-[13px] border border-[#d0eadf] bg-[#f0faf5] p-3 text-[11px] leading-5 text-[#187461]">{notice}</div>}
 
             <button type="submit" disabled={!!busy} className="group mt-0.5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[14px] bg-[#103f38] px-4 text-[13px] font-extrabold text-white shadow-[0_10px_26px_rgba(16,63,56,.17)] transition hover:-translate-y-px hover:bg-[#15594f] focus:outline-none focus:ring-4 focus:ring-[#188875]/20 disabled:cursor-wait disabled:opacity-60">
-              {busy === 'email' ? 'Memproses...' : mode === 'login' ? t.loginCta : t.signupCta}
+              {busy === 'email' ? t.authProcessing : mode === 'login' ? t.authLoginCta : t.authSignupCta}
               <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
             </button>
           </form>
 
           <p className="mt-4 text-center text-[10px] leading-4.5 text-[#8ba29c]">
-            Dengan melanjutkan, kamu menyetujui <a href="/legal/terms" className="font-extrabold text-[#188875] hover:underline">Ketentuan</a> dan <a href="/legal/privacy" className="font-extrabold text-[#188875] hover:underline">Kebijakan Privasi</a> SUKI Apps.
+            {t.authTermsPrefix} <a href="/legal/terms" className="font-extrabold text-[#188875] hover:underline">{t.authTermsLink}</a> {t.authAnd} <a href="/legal/privacy" className="font-extrabold text-[#188875] hover:underline">{t.authPrivacyLink}</a> SUKI Apps.
           </p>
           <div className="mt-4 flex items-center justify-center gap-4 border-t border-[#edf2f0] pt-3.5 text-[10px] font-semibold text-[#8ba29c]">
             <span className="flex items-center gap-1"><ShieldCheck size={13} className="text-[#188875]" /> SSL Secure</span>
-            <span className="flex items-center gap-1"><LockKeyhole size={12} className="text-[#188875]" /> Data terlindungi</span>
+            <span className="flex items-center gap-1"><LockKeyhole size={12} className="text-[#188875]" /> {t.authDataProtected}</span>
           </div>
         </section>
       </div>

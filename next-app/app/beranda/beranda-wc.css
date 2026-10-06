@@ -1,0 +1,45 @@
+/* ==========================================================================
+   WORLD-CLASS OVERHAUL — layer "Teluk Senja" untuk /beranda
+   Tidak mengubah logika feed; hanya permukaan.
+   ========================================================================== */
+@import '../wc-overhaul.css';
+
+/* Latar halaman: sentuhan aurora sangat halus */
+.beranda-v4-page {
+  background:
+    radial-gradient(800px 380px at 85% 0%, rgba(14, 98, 88, 0.07), transparent 60%),
+    radial-gradient(600px 320px at 5% 12%, rgba(212, 175, 55, 0.06), transparent 60%);
+}
+.dark .beranda-v4-page {
+  background:
+    radial-gradient(900px 420px at 85% 0%, rgba(20, 101, 91, 0.22), transparent 62%),
+    radial-gradient(640px 340px at 5% 12%, rgba(212, 175, 55, 0.05), transparent 60%);
+}
+
+/* Komposer: pemicu kaca */
+.skc-trigger {
+  background: var(--wc-glass-bg) !important;
+  border: 1px solid var(--wc-glass-line) !important;
+  backdrop-filter: blur(var(--wc-glass-blur));
+  -webkit-backdrop-filter: blur(var(--wc-glass-blur));
+  box-shadow: var(--wc-glass-shadow) !important;
+  border-radius: var(--sk-r-xl) !important;
+  transition: transform var(--sk-d-base) var(--sk-ease), box-shadow var(--sk-d-base) var(--sk-ease);
+}
+.skc-trigger:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--wc-shadow-lift) !important;
+}
+
+/* Kartu postingan: hover halus (tetap bezel-less ala Threads) */
+.beranda-v4-main > ul > li {
+  border-radius: var(--sk-r-lg);
+  transition: background var(--sk-d-base) var(--sk-ease);
+}
+.beranda-v4-main > ul > li:hover {
+  background: var(--wc-glass-bg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skc-trigger:hover, .beranda-v4-main > ul > li:hover { transform: none; }
+}

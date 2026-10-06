@@ -30,10 +30,10 @@
   border-radius: 8px;
 }
 
-/* ---- Sticky chip nav (di bawah header global: 56px desktop, 112px mobile) ---- */
+/* ---- Sticky chip nav (di bawah header global: 64px desktop, 112px mobile) ---- */
 .refer-nav {
   position: sticky;
-  top: 56px;
+  top: 64px;
   z-index: 20;
   display: flex;
   gap: 8px;

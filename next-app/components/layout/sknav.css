@@ -1,0 +1,940 @@
+/* ==========================================================================
+   SUKI modern navbar — namespace sknav-*
+   Menggantikan model lama ala-Facebook (skfb-*).
+
+   Desktop >=1101px : bar kaca 64px — logo + pill pencarian | navigasi
+                       berlabel (ikon + teks) | aksi (Ekosistem, Buat,
+                       avatar + dropdown).
+   Tablet 781-1100px: versi padat — pencarian jadi ikon expandable,
+                       label nav disembunyikan (ikon + tooltip).
+   Mobile <=780px   : dua baris (baris 1: hamburger + logo | aksi;
+                       baris 2: tab ikon). Desain lama dipertahankan
+                       apa adanya — hanya namespace yang diganti.
+
+   Token warna: --sk-* (design-system/tokens.css). Dark mode mengikuti
+   class .dark / html[data-theme='dark'] pada <html> (keduanya selalu
+   dipasang bersamaan oleh lib/preferences.tsx).
+   ========================================================================== */
+
+/* ---------- Kerangka header ---------- */
+.sknav-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: color-mix(in srgb, var(--sk-surface, #ffffff) 88%, transparent);
+  -webkit-backdrop-filter: blur(18px) saturate(1.25);
+  backdrop-filter: blur(18px) saturate(1.25);
+  border-bottom: 1px solid var(--sk-line, #e7e5e4);
+  box-shadow:
+    0 1px 2px rgb(15 41 34 / 0.04),
+    0 10px 28px rgb(15 41 34 / 0.06);
+}
+
+/* Baris mobile disembunyikan di desktop/tablet */
+.sknav-mbar,
+.sknav-mtabs { display: none; }
+
+/* ---------- Bar utama desktop/tablet: 64px ---------- */
+.sknav-bar {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  height: 64px;
+  padding: 0 20px;
+}
+
+.sknav-left {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+/* ---------- Pill pencarian ---------- */
+.sknav-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 44px;
+  flex: 0 1 264px;
+  min-width: 0;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: var(--sk-surface-2, #f5eedb);
+  color: var(--sk-muted, #66736f);
+  transition:
+    border-color var(--sk-d-fast, 120ms) var(--sk-ease, ease),
+    background-color var(--sk-d-fast, 120ms) var(--sk-ease, ease),
+    box-shadow var(--sk-d-fast, 120ms) var(--sk-ease, ease);
+}
+.sknav-search:focus-within {
+  background: var(--sk-surface, #ffffff);
+  border-color: var(--sk-teal, #0e6258);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--sk-teal, #0e6258) 18%, transparent);
+  color: var(--sk-teal, #0e6258);
+}
+.sknav-search svg { flex: none; }
+.sknav-search input {
+  border: 0;
+  outline: 0;
+  background: transparent;
+  width: 100%;
+  min-width: 0;
+  font-size: 14px;
+  color: var(--sk-ink, #1c1917);
+}
+.sknav-search input::placeholder { color: var(--sk-muted, #66736f); }
+
+/* Toggle pencarian: hanya tablet (dan mobile).
+   Spesifisitas 0-2-0 agar mengalahkan .sknav-icon-btn (0-1-0). */
+.sknav-header .sknav-search-toggle { display: none; }
+
+/* Hamburger: hanya mobile */
+.sknav-header .sknav-hamburger { display: none; }
+
+/* ---------- Navigasi tengah: ikon + label teks ---------- */
+.sknav-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+  height: 64px;
+  /* Sengaja overflow:visible (bukan auto): dropdown notifikasi yang absolute
+     di dalam nav tidak boleh terpotong oleh clipping scroll container. */
+  overflow: visible;
+}
+
+.sknav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 1 auto;
+  min-width: 0;
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 12px;
+  color: var(--sk-muted, #66736f);
+  text-decoration: none;
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition:
+    background-color var(--sk-d-fast, 120ms) var(--sk-ease, ease),
+    color var(--sk-d-fast, 120ms) var(--sk-ease, ease);
+}
+.sknav-link-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sknav-link svg { width: 20px; height: 20px; flex: none; }
+.sknav-link:hover {
+  background: var(--sk-surface-2, #f5eedb);
+  color: var(--sk-ink, #1c1917);
+}
+.sknav-link[aria-current="page"] {
+  background: var(--sk-teal-soft, #e6f2ef);
+  color: var(--sk-teal, #0e6258);
+  font-weight: 700;
+}
+.sknav-link[aria-current="page"]:hover { background: var(--sk-teal-soft, #e6f2ef); }
+
+/* ---------- Notifikasi sebagai item nav berlabel ---------- */
+.sknav-nav .notification-center { display: flex; flex: 0 1 auto; min-width: 0; }
+.sknav-nav .notification-trigger {
+  width: auto;
+  min-width: 0;
+  height: 44px;
+  padding: 0 14px;
+  gap: 8px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  color: var(--sk-muted, #66736f);
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color var(--sk-d-fast, 120ms) var(--sk-ease, ease),
+    color var(--sk-d-fast, 120ms) var(--sk-ease, ease);
+}
+.sknav-nav .notification-trigger:hover {
+  background: var(--sk-surface-2, #f5eedb);
+  color: var(--sk-ink, #1c1917);
+}
+.sknav-nav .notification-trigger.is-open {
+  background: var(--sk-teal-soft, #e6f2ef);
+  color: var(--sk-teal, #0e6258);
+}
+.sknav-nav .notification-trigger svg { width: 20px; height: 20px; flex: none; }
+/* Panel dropdown notifikasi: di bawah bar 64px */
+.sknav-nav .notification-panel { top: calc(100% + 12px); right: 0; }
+
+/* Label pemicu: hanya tampil di nav tengah desktop */
+.notification-trigger-label { display: none; }
+.sknav-nav .notification-trigger-label {
+  display: inline;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- Aksi kanan ---------- */
+.sknav-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.sknav-icon-btn {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border: 0;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--sk-surface-2, #f5eedb);
+  color: var(--sk-ink, #1c1917);
+  cursor: pointer;
+  transition:
+    background-color var(--sk-d-fast, 120ms) var(--sk-ease, ease),
+    transform var(--sk-d-fast, 120ms) var(--sk-ease, ease);
+}
+.sknav-icon-btn:hover { background: var(--sk-line, #e7e5e4); }
+.sknav-icon-btn:active { transform: scale(0.94); }
+.sknav-icon-btn svg { width: 20px; height: 20px; }
+
+/* Pemicu launcher Ekosistem: ikon di area aksi */
+.sknav-hub-trigger[aria-expanded="true"],
+.sknav-hub-trigger[aria-current="page"] {
+  background: var(--sk-teal-soft, #e6f2ef);
+  color: var(--sk-teal, #0e6258);
+}
+
+/* Tombol "Buat": primer teal, pill berlabel */
+.create-fab-label { display: none; }
+.sknav-actions .create-fab {
+  height: 44px;
+  width: auto;
+  min-width: 0;
+  padding: 0 18px 0 14px;
+  border: 0;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--sk-teal, #0e6258);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgb(14 98 88 / 0.28);
+  transition:
+    transform var(--sk-d-fast, 120ms) var(--sk-ease, ease),
+    box-shadow var(--sk-d-fast, 120ms) var(--sk-ease, ease),
+    background-color var(--sk-d-fast, 120ms) var(--sk-ease, ease);
+}
+.sknav-actions .create-fab:hover {
+  background: var(--suki-theme-primary-hover, #075b50);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgb(14 98 88 / 0.34);
+}
+.sknav-actions .create-fab:active { transform: translateY(0) scale(0.98); }
+.sknav-actions .create-fab-surface {
+  width: auto;
+  height: auto;
+  display: inline-flex;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+}
+.sknav-actions .create-fab:hover .create-fab-surface { transform: none; box-shadow: none; }
+.sknav-actions .create-fab-icon { width: 18px; height: 18px; }
+.sknav-actions .create-fab-label { display: inline; white-space: nowrap; }
+
+/* Avatar + dropdown profil */
+.sknav-actions .profile-hub-anchor { position: relative; display: flex; }
+.sknav-actions .profile-hub-trigger {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.sknav-actions .profile-hub-trigger .avatar { width: 40px; height: 40px; }
+.sknav-actions .profile-hub-trigger .profile-name { display: none; }
+.sknav-actions .profile-hub-trigger:hover .avatar {
+  box-shadow: 0 0 0 2px var(--sk-teal, #0e6258);
+}
+
+/* Badge angka notifikasi */
+.sknav-header .notification-trigger > i {
+  position: absolute;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--sk-danger, #b3261e);
+  color: #ffffff;
+  border: 2px solid var(--sk-surface, #ffffff);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  font-style: normal;
+  line-height: 1;
+}
+.sknav-nav .notification-trigger > i { top: 5px; left: 27px; }
+
+/* ---------- Guest: Masuk / Daftar ---------- */
+.sknav-guest { display: flex; align-items: center; gap: 10px; }
+.sknav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  padding: 0 20px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    transform var(--sk-d-fast, 120ms) var(--sk-ease, ease),
+    background-color var(--sk-d-fast, 120ms) var(--sk-ease, ease),
+    box-shadow var(--sk-d-fast, 120ms) var(--sk-ease, ease);
+}
+.sknav-btn-ghost {
+  border: 1px solid var(--sk-line-strong, #d6d3d1);
+  background: transparent;
+  color: var(--sk-ink, #1c1917);
+}
+.sknav-btn-ghost:hover { background: var(--sk-surface-2, #f5eedb); }
+.sknav-btn-primary {
+  border: 0;
+  background: var(--sk-teal, #0e6258);
+  color: #ffffff;
+  box-shadow: 0 6px 16px rgb(14 98 88 / 0.28);
+}
+.sknav-btn-primary:hover {
+  background: var(--suki-theme-primary-hover, #075b50);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgb(14 98 88 / 0.34);
+}
+.sknav-btn:active { transform: scale(0.98); }
+
+/* ---------- Search expandable (tablet) ---------- */
+.sknav-search-expand {
+  position: absolute;
+  z-index: 5;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 48px;
+  width: min(340px, 60vw);
+  padding: 0 8px 0 16px;
+  border-radius: 999px;
+  background: var(--sk-surface, #ffffff);
+  border: 1px solid var(--sk-line, #e7e5e4);
+  box-shadow: 0 12px 32px rgb(15 41 34 / 0.14);
+  color: var(--sk-muted, #66736f);
+}
+.sknav-search-expand-form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+.sknav-search-expand-form svg { flex: none; }
+.sknav-search-expand input {
+  border: 0;
+  outline: 0;
+  background: transparent;
+  width: 100%;
+  min-width: 0;
+  font-size: 14px;
+  color: var(--sk-ink, #1c1917);
+}
+.sknav-search-expand input::placeholder { color: var(--sk-muted, #66736f); }
+.sknav-search-close {
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--sk-muted, #66736f);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.sknav-search-close:hover { background: var(--sk-surface-2, #f5eedb); }
+
+/* ---------- Focus visible (keyboard) ---------- */
+.sknav-link:focus-visible,
+.sknav-icon-btn:focus-visible,
+.sknav-hamburger:focus-visible,
+.sknav-mtab:focus-visible,
+.sknav-btn:focus-visible,
+.sknav-nav .notification-trigger:focus-visible,
+.sknav-actions .create-fab:focus-visible,
+.sknav-actions .profile-hub-trigger:focus-visible,
+.sknav-hub-trigger:focus-visible,
+.sknav-hub-tile:focus-visible,
+.sknav-hub-close:focus-visible,
+.sknav-hub-foot:focus-visible {
+  outline: 2px solid var(--sk-focus, #0e6258);
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
+   TABLET 781-1100px: versi padat
+   ========================================================================== */
+@media (min-width: 781px) and (max-width: 1100px) {
+  .sknav-bar { padding: 0 14px; gap: 10px; }
+  .sknav-search { display: none; }
+  .sknav-header .sknav-search-toggle { display: inline-flex; }
+  /* Nav menjadi ikon saja + tooltip */
+  .sknav-link { padding: 0 12px; }
+  .sknav-link-label { display: none; }
+  .sknav-nav .notification-trigger { padding: 0 12px; }
+  .sknav-nav .notification-trigger-label { display: none; }
+  .sknav-nav .notification-trigger > i { top: 5px; left: 24px; }
+  /* Tombol Buat menjadi ikon saja */
+  .sknav-actions .create-fab { padding: 0 13px; }
+  .sknav-actions .create-fab-label { display: none; }
+  .sknav-guest .sknav-btn { padding: 0 14px; }
+}
+
+/* Desktop sempit 1101-1280px: pencarian jadi ikon expandable (seperti tablet)
+   agar label navigasi tetap utuh dan tidak terpotong. */
+@media (min-width: 1101px) and (max-width: 1280px) {
+  .sknav-search { display: none; }
+  .sknav-header .sknav-search-toggle { display: inline-flex; }
+  .sknav-link { padding: 0 12px; font-size: 13px; }
+  .sknav-nav .notification-trigger { padding: 0 12px; font-size: 13px; }
+}
+
+/* ==========================================================================
+   MOBILE <=780px: dua baris — desain lama dipertahankan apa adanya.
+   Baris 1: hamburger + logo | Buat, Cari, Pesan.
+   Baris 2: tab ikon (Beranda, Jelajah, Marketplace, Ekosistem,
+            Notifikasi, Profil). QuickNavBar lama disembunyikan.
+   ========================================================================== */
+@media (max-width: 780px) {
+  .sknav-bar { display: none; }
+
+  .sknav-mbar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+    height: 56px;
+    padding: 0 8px 0 2px;
+  }
+  .sknav-mbar-left {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+  }
+  .sknav-mbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .sknav-header .sknav-hamburger {
+    display: inline-flex;
+    width: 44px;
+    height: 44px;
+    flex: none;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--sk-ink, #1c1917);
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .sknav-hamburger:hover { background: var(--sk-surface-2, #f5eedb); }
+  .sknav-hamburger svg { width: 24px; height: 24px; }
+
+  /* Aksi baris 1 mobile: tombol lingkaran */
+  .sknav-mbar-actions .create-fab {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: var(--sk-surface-2, #f5eedb);
+    color: var(--sk-ink, #1c1917);
+    box-shadow: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .sknav-mbar-actions .create-fab:hover {
+    background: var(--sk-line, #e7e5e4);
+    transform: none;
+    box-shadow: none;
+  }
+  .sknav-mbar-actions .create-fab:active { transform: scale(0.96); }
+  .sknav-mbar-actions .create-fab-surface {
+    width: auto;
+    height: auto;
+    display: inline-flex;
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .sknav-mbar-actions .create-fab:hover .create-fab-surface { transform: none; box-shadow: none; }
+  .sknav-mbar-actions .create-fab-icon { width: 20px; height: 20px; }
+  .sknav-mbar-actions .create-fab-label { display: none; }
+  .sknav-mbar-actions .sknav-search-toggle { display: inline-flex; }
+
+  /* Ikon aksi mobile dibuat minimalis: ghost button ramping 38px,
+     ikon 18px, tanpa lingkaran penuh — hemat ruang, terlihat profesional. */
+  .sknav-mbar-actions { gap: 2px; }
+  .sknav-mbar-actions .sknav-icon-btn {
+    width: 38px;
+    height: 38px;
+    background: transparent;
+  }
+  .sknav-mbar-actions .sknav-icon-btn:hover { background: var(--sk-surface-2, #f5eedb); }
+  .sknav-mbar-actions .sknav-icon-btn svg { width: 18px; height: 18px; }
+  .sknav-mbar-actions .create-fab {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    background: transparent;
+    color: var(--sk-teal, #0e6258);
+  }
+  .sknav-mbar-actions .create-fab:hover { background: var(--sk-surface-2, #f5eedb); }
+  .sknav-mbar-actions .create-fab-icon { width: 18px; height: 18px; }
+
+  .sknav-search-expand {
+    top: 58px;
+    left: 8px;
+    right: 8px;
+    transform: none;
+    width: auto;
+  }
+
+  .sknav-mtabs {
+    display: flex;
+    height: 56px;
+    border-top: 1px solid var(--sk-line, #e7e5e4);
+  }
+  .sknav-mtab {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 44px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--sk-muted, #66736f);
+    text-decoration: none;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    transition: color var(--sk-d-fast, 120ms) var(--sk-ease, ease);
+  }
+  .sknav-mtab svg { width: 24px; height: 24px; }
+  .sknav-mtab[aria-current="page"] { color: var(--sk-teal, #0e6258); }
+  .sknav-mtab[aria-current="page"]::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 18%;
+    right: 18%;
+    height: 3px;
+    border-radius: 0 0 3px 3px;
+    background: var(--sk-teal, #0e6258);
+  }
+  /* Lonceng notifikasi sebagai tab */
+  .sknav-mtab .notification-center {
+    position: relative;
+    display: flex;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+  }
+  .sknav-mtab .notification-trigger {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    color: inherit;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    cursor: pointer;
+  }
+  .sknav-mtab .notification-trigger svg { width: 24px; height: 24px; }
+  .sknav-mtab .notification-trigger > i { top: 6px; left: calc(50% + 2px); }
+  .sknav-mtab .notification-trigger-label { display: none; }
+  /* Avatar profil sebagai tab */
+  .sknav-mtab-avatar,
+  .sknav-mtab-avatar-fallback {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+  }
+  .sknav-mtab-avatar-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--sk-surface-2, #f5eedb);
+    color: var(--sk-ink, #1c1917);
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .sknav-mtab[aria-current="page"] .sknav-mtab-avatar,
+  .sknav-mtab[aria-current="page"] .sknav-mtab-avatar-fallback {
+    outline: 2px solid var(--sk-teal, #0e6258);
+    outline-offset: 2px;
+  }
+  .sknav-mtab.sknav-hub-trigger[aria-expanded="true"] { color: var(--sk-teal, #0e6258); }
+
+  /* QuickNavBar (bottom bar lama) disembunyikan: tab sudah di header */
+  .quick-nav { display: none !important; }
+}
+
+/* Layar sangat kecil: wordmark disembunyikan, mark logo saja */
+@media (max-width: 400px) {
+  .sknav-mbar-left .brand-wordmark { display: none; }
+}
+
+/* Kurangi gerak */
+@media (prefers-reduced-motion: reduce) {
+  .sknav-header *,
+  .sknav-header *::before,
+  .sknav-header *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* ==========================================================================
+   EKOSISTEM SUKI — launcher hub.
+   Satu ikon membuka panel berisi seluruh layanan SUKI
+   (Jelajahi, Buat & Hasilkan, SUKI Saya). Desktop/tablet: dropdown di
+   bawah header; mobile: bottom sheet. Branding SUKI: teal + aksen emas.
+   ========================================================================== */
+
+/* Backdrop penangkap klik-luar */
+.sknav-hub-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: transparent;
+}
+
+/* Panel desktop/tablet: dropdown di bawah header */
+.sknav-hub-panel {
+  position: fixed;
+  z-index: 61;
+  top: 72px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(780px, calc(100vw - 32px));
+  max-height: calc(100vh - 96px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--sk-surface, #ffffff);
+  border: 1px solid var(--sk-line, #e7e5e4);
+  border-radius: 20px;
+  box-shadow:
+    0 24px 64px rgb(11 60 52 / 0.22),
+    0 2px 8px rgb(11 60 52 / 0.1);
+  padding: 20px 20px 16px;
+  animation: sknav-hub-pop 180ms ease-out;
+}
+@keyframes sknav-hub-pop {
+  from { opacity: 0; transform: translateX(-50%) translateY(-8px) scale(0.98); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+}
+
+.sknav-hub-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 4px 14px;
+  border-bottom: 1px solid var(--sk-line, #e7e5e4);
+  margin-bottom: 4px;
+}
+.sknav-hub-eyebrow {
+  margin: 0 0 2px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--sk-teal, #0e6258);
+}
+.sknav-hub-title {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.2;
+  font-weight: 800;
+  color: var(--sk-ink, #1c1917);
+}
+.sknav-hub-sub {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--sk-muted, #66736f);
+}
+.sknav-hub-close {
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border: 0;
+  border-radius: 50%;
+  background: var(--sk-surface-2, #f5eedb);
+  color: var(--sk-ink, #1c1917);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    background-color var(--sk-d-fast, 120ms) var(--sk-ease, ease),
+    transform var(--sk-d-fast, 120ms) var(--sk-ease, ease);
+}
+.sknav-hub-close:hover { background: var(--sk-line, #e7e5e4); }
+.sknav-hub-close:active { transform: scale(0.94); }
+
+.sknav-hub-section { --hub-accent: #0e6258; padding: 12px 4px 4px; }
+.sknav-hub-section-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 0 4px;
+}
+.sknav-hub-section-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--hub-accent);
+}
+.sknav-hub-section-hint {
+  font-size: 12px;
+  color: var(--sk-muted, #66736f);
+}
+
+.sknav-hub-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.sknav-hub-tile {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  text-decoration: none;
+  color: inherit;
+  transition:
+    background-color var(--sk-d-fast, 120ms) var(--sk-ease, ease),
+    border-color var(--sk-d-fast, 120ms) var(--sk-ease, ease),
+    transform var(--sk-d-fast, 120ms) var(--sk-ease, ease),
+    box-shadow var(--sk-d-fast, 120ms) var(--sk-ease, ease);
+}
+.sknav-hub-tile:hover {
+  background: var(--sk-surface-2, #f5eedb);
+  border-color: var(--sk-line, #e7e5e4);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgb(11 60 52 / 0.1);
+}
+.sknav-hub-tile:active { transform: translateY(0); }
+.sknav-hub-tile[aria-current="page"] {
+  border-color: var(--sk-teal, #0e6258);
+  background: var(--sk-teal-soft, #e6f2ef);
+}
+.sknav-hub-tile-icon {
+  width: 46px;
+  height: 46px;
+  flex: none;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--hub-accent), var(--hub-accent) 60%, rgb(0 0 0 / 0.18));
+  box-shadow: 0 4px 12px rgb(11 60 52 / 0.18);
+}
+.sknav-hub-tile-icon svg { width: 22px; height: 22px; }
+.sknav-hub-tile-text { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.sknav-hub-tile-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--sk-ink, #1c1917);
+  line-height: 1.25;
+}
+.sknav-hub-tile-desc {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--sk-muted, #66736f);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.sknav-hub-tile-go {
+  flex: none;
+  color: var(--sk-muted, #66736f);
+  opacity: 0;
+  transform: translate(-2px, 2px);
+  transition:
+    opacity var(--sk-d-fast, 120ms) var(--sk-ease, ease),
+    transform var(--sk-d-fast, 120ms) var(--sk-ease, ease);
+}
+.sknav-hub-tile:hover .sknav-hub-tile-go,
+.sknav-hub-tile:focus-visible .sknav-hub-tile-go { opacity: 1; transform: translate(0, 0); }
+
+.sknav-hub-badge {
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 999px;
+  color: #3d2e00;
+  background: linear-gradient(135deg, #f3d27a, #d4af37);
+  box-shadow: 0 1px 4px rgb(184 134 11 / 0.35);
+  white-space: nowrap;
+}
+
+/* Strip CTA referral di kaki panel */
+.sknav-hub-foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  text-decoration: none;
+  color: #ffffff;
+  background: linear-gradient(120deg, #0b5f54 0%, #0b7567 55%, #b8860b 130%);
+  box-shadow: 0 8px 24px rgb(11 117 103 / 0.35);
+  transition:
+    transform var(--sk-d-fast, 120ms) var(--sk-ease, ease),
+    box-shadow var(--sk-d-fast, 120ms) var(--sk-ease, ease);
+}
+.sknav-hub-foot:hover { transform: translateY(-1px); box-shadow: 0 12px 28px rgb(11 117 103 / 0.42); }
+.sknav-hub-foot-icon {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(255 255 255 / 0.18);
+}
+.sknav-hub-foot-icon svg { width: 22px; height: 22px; }
+.sknav-hub-foot-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.sknav-hub-foot-text strong { font-size: 14px; font-weight: 800; }
+.sknav-hub-foot-text span { font-size: 12px; opacity: 0.85; }
+
+/* ---------- Mobile <=780px: panel menjadi bottom sheet ---------- */
+@media (max-width: 780px) {
+  .sknav-hub-backdrop { background: rgb(5 12 10 / 0.5); }
+  .sknav-hub-panel {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    transform: none;
+    width: 100%;
+    max-height: 86vh;
+    border-radius: 22px 22px 0 0;
+    border-bottom: 0;
+    padding: 10px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+    animation: sknav-hub-sheet-up 220ms ease-out;
+  }
+  @keyframes sknav-hub-sheet-up {
+    from { opacity: 0.6; transform: translateY(48px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  /* Gagang sheet */
+  .sknav-hub-panel::before {
+    content: "";
+    display: block;
+    width: 40px;
+    height: 4px;
+    margin: 2px auto 10px;
+    border-radius: 999px;
+    background: var(--sk-line, #d8dadf);
+  }
+  .sknav-hub-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sknav-hub-tile { padding: 10px; gap: 10px; }
+  .sknav-hub-tile-icon { width: 40px; height: 40px; border-radius: 12px; }
+  .sknav-hub-tile-icon svg { width: 20px; height: 20px; }
+  .sknav-hub-tile-go { display: none; }
+  .sknav-hub-title { font-size: 19px; }
+}
+
+/* Tablet kecil: 2 kolom agar tidak sesak */
+@media (min-width: 781px) and (max-width: 900px) {
+  .sknav-hub-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* ==========================================================================
+   Offset layout mengikuti tinggi navbar 64px (model lama: 56px).
+   Ditaruh di sini (bukan globals.css) agar diff tetap kecil; spesifisitas
+   "body ." sengaja dinaikkan supaya menang atas aturan global tanpa
+   bergantung pada urutan cascade. Hanya desktop/tablet (>=781px) — mobile
+   memakai offset-nya sendiri.
+   ========================================================================== */
+@media (min-width: 781px) {
+  body .app-frame { min-height: calc(100vh - 64px); }
+  body .desktop-sidebar { top: 64px; height: calc(100vh - 64px); }
+
+  /* QuickNavBar (pill nav efek kaca) disembunyikan di desktop/tablet:
+     navigasi sudah ada di header atas + sidebar, agar tidak menumpuk. */
+  .quick-nav { display: none !important; }
+}

@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "id.web.sukiapps",
+      "sha256_cert_fingerprints": [
+        "10:28:8D:98:B5:73:66:3D:BC:25:87:68:63:DA:0E:57:3C:C8:70:43:36:27:44:46:9A:21:07:8D:21:E3:91:04"
+      ]
+    }
+  }
+]

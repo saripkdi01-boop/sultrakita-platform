@@ -102,6 +102,13 @@
   width:46px;height:46px;place-items:center;border-radius:12px;margin-left:auto;
 }
 .suki-overhaul-menu:hover{background:var(--su-mint)}
+/* Toggle tema icon-only — mobile, di kiri hamburger */
+.suki-overhaul-theme-icon{
+  display:none;border:1px solid var(--su-line);background:var(--su-card);color:var(--su-ink);
+  width:46px;height:46px;place-items:center;border-radius:12px;flex:none;cursor:pointer;
+}
+.suki-overhaul-theme-icon:hover{background:var(--su-mint)}
+.suki-overhaul-theme-icon .suki-moon{width:16px;height:16px}
 
 /* ---- Buttons (shared) ---- */
 .suki-overhaul-primary{
@@ -499,7 +506,8 @@
     border:1px solid var(--su-line);font-weight:700;color:var(--su-pine);
   }
   .suki-overhaul-header-actions{display:none}
-  .suki-overhaul-menu{display:grid}
+  .suki-overhaul-theme-icon{display:grid;margin-left:auto}
+  .suki-overhaul-menu{display:grid;margin-left:0}
   .suki-overhaul-hero{padding:72px 0 84px}
   .suki-overhaul-hero-grid{grid-template-columns:1fr;gap:36px}
   .suki-overhaul-hero-copy{max-width:720px}

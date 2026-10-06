@@ -4,13 +4,13 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { FormEvent, useState } from 'react';
 import {
-  BriefcaseBusiness,
   Clapperboard,
   Home,
   Menu,
   MessageCircle,
   Search,
   Store,
+  Users,
   X,
 } from 'lucide-react';
 import { useUIStore } from '@/store/ui';
@@ -20,9 +20,12 @@ import { EcosystemHub } from './EcosystemHub';
 import { NotificationCenter } from './NotificationCenter';
 import { ProfileHub } from '@/components/profile/ProfileHub';
 import { getProfileNickname, useSessionProfile } from '@/hooks/useSessionProfile';
-import './fbnav.css';
+import { usePreferences } from '@/lib/preferences';
+import { getCoreLabels } from '@/lib/i18n/dictionaries';
+import { getNavLabels } from '@/lib/i18n/navigation';
+import './sknav.css';
 
-type TabDef = {
+type NavLinkDef = {
   key: string;
   label: string;
   href: string;
@@ -30,16 +33,18 @@ type TabDef = {
   isActive: (pathname: string) => boolean;
 };
 
-/** Tab tengah ala facebook.com — ikon; tab Komunitas digantikan launcher Ekosistem. */
-const CENTER_TABS: TabDef[] = [
-  { key: 'home', label: 'Beranda', href: '/beranda', Icon: Home, isActive: (p) => p === '/' || p === '/beranda' },
-  { key: 'reels', label: 'Jelajah', href: '/reels', Icon: Clapperboard, isActive: (p) => p.startsWith('/reels') },
-  { key: 'marketplace', label: 'Marketplace', href: '/marketplace', Icon: Store, isActive: (p) => p.startsWith('/marketplace') || p.startsWith('/suki-marketplace') },
-  { key: 'jobs', label: 'SUKI Jobs', href: '/jobs', Icon: BriefcaseBusiness, isActive: (p) => p.startsWith('/jobs') },
+/** Navigasi tengah navbar modern — ikon + label teks (bukan ikon saja). */
+const getNavLinks = (t: Record<string, string>): NavLinkDef[] => [
+  { key: 'home', label: t.home, href: '/beranda', Icon: Home, isActive: (p) => p === '/' || p === '/beranda' },
+  { key: 'reels', label: t.explore, href: '/reels', Icon: Clapperboard, isActive: (p) => p.startsWith('/reels') },
+  { key: 'marketplace', label: t.marketplace, href: '/marketplace', Icon: Store, isActive: (p) => p.startsWith('/marketplace') || p.startsWith('/suki-marketplace') },
+  { key: 'komunitas', label: t.groups, href: '/groups', Icon: Users, isActive: (p) => p.startsWith('/groups') },
 ];
 
 function SearchForm({ autoFocus, onDone, className }: { autoFocus?: boolean; onDone?: () => void; className?: string }) {
   const router = useRouter();
+  const { language } = usePreferences();
+  const t: Record<string, string> = { ...getCoreLabels(language), ...getNavLabels(language) };
   const [query, setQuery] = useState('');
   function submit(event: FormEvent) {
     event.preventDefault();
@@ -49,14 +54,14 @@ function SearchForm({ autoFocus, onDone, className }: { autoFocus?: boolean; onD
   }
   return (
     <form role="search" onSubmit={submit} className={className}>
-      <Search size={16} aria-hidden="true" />
+      <Search size={18} aria-hidden="true" />
       <input
         autoFocus={autoFocus}
         value={query}
         onChange={(event) => setQuery(event.target.value)}
         onKeyDown={(event) => { if (event.key === 'Escape') onDone?.(); }}
-        placeholder="Cari di SUKI..."
-        aria-label="Cari di SUKI"
+        placeholder={t.searchInSuki}
+        aria-label={t.searchInSukiLabel}
         enterKeyHint="search"
       />
     </form>
@@ -65,6 +70,9 @@ function SearchForm({ autoFocus, onDone, className }: { autoFocus?: boolean; onD
 
 export function Header({ onCreate }: { onCreate?: (type?: 'post' | 'reel') => void }) {
   const { mobileOpen, toggleMobile } = useUIStore();
+  const { language } = usePreferences();
+  const t: Record<string, string> = { ...getCoreLabels(language), ...getNavLabels(language) };
+  const NAV_LINKS = getNavLinks(t);
   const pathname = usePathname();
   const [searchOpen, setSearchOpen] = useState(false);
   const { user, profile: sessionProfile } = useSessionProfile();
@@ -75,40 +83,30 @@ export function Header({ onCreate }: { onCreate?: (type?: 'post' | 'reel') => vo
   const profileActive = pathname.startsWith('/profile');
 
   return (
-    <header className="skfb-header">
-      {/* Baris 1: bar utama 56px */}
-      <div className="skfb-bar">
-        <div className="skfb-left">
-          <button
-            type="button"
-            className="skfb-hamburger"
-            onClick={toggleMobile}
-            aria-expanded={mobileOpen}
-            aria-controls="suki-sidebar-drawer"
-            aria-label={mobileOpen ? 'Tutup menu utama' : 'Buka menu utama'}
-          >
-            {mobileOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
-          </button>
+    <header className="sknav-header">
+      {/* Bar utama desktop/tablet: 64px — logo + search | nav berlabel | aksi */}
+      <div className="sknav-bar">
+        <div className="sknav-left">
           <BrandLogo />
-          <SearchForm className="skfb-search" />
+          <SearchForm className="sknav-search" />
           <button
             type="button"
-            className="skfb-icon-btn skfb-search-toggle"
+            className="sknav-icon-btn sknav-search-toggle"
             onClick={() => setSearchOpen((value) => !value)}
-            aria-label={searchOpen ? 'Tutup pencarian' : 'Cari'}
+            aria-label={searchOpen ? t.closeSearch : t.search}
             aria-expanded={searchOpen}
-            title="Cari"
+            title={t.search}
           >
             <Search aria-hidden="true" />
           </button>
           {searchOpen && (
-            <div className="skfb-search-expand">
-              <SearchForm className="skfb-search-expand-form" autoFocus onDone={() => setSearchOpen(false)} />
+            <div className="sknav-search-expand">
+              <SearchForm className="sknav-search-expand-form" autoFocus onDone={() => setSearchOpen(false)} />
               <button
                 type="button"
-                className="skfb-search-close"
+                className="sknav-search-close"
                 onClick={() => setSearchOpen(false)}
-                aria-label="Tutup pencarian"
+                aria-label={t.closeSearch}
               >
                 <X size={18} aria-hidden="true" />
               </button>
@@ -116,86 +114,123 @@ export function Header({ onCreate }: { onCreate?: (type?: 'post' | 'reel') => vo
           )}
         </div>
 
-        {/* Tab tengah (desktop + tablet).
-            Launcher Ekosistem menggantikan tab Komunitas di posisi yang sama. */}
-        <nav className="skfb-tabs" aria-label="Navigasi utama">
-          {CENTER_TABS.slice(0, 3).map((tab) => {
-            const active = tab.isActive(pathname);
+        {/* Navigasi tengah: ikon + label teks. "Notifikasi" adalah pemicu
+            dropdown NotificationCenter (satu-satunya pintu notifikasi —
+            tidak ada bell duplikat di kanan). */}
+        <nav className="sknav-nav" aria-label={t.mainNavigation}>
+          {NAV_LINKS.map((link) => {
+            const active = link.isActive(pathname);
             return (
               <Link
-                key={tab.key}
-                href={tab.href}
-                className="skfb-tab"
+                key={link.key}
+                href={link.href}
+                className="sknav-link"
                 aria-current={active ? 'page' : undefined}
-                aria-label={tab.label}
-                title={tab.label}
+                title={link.label}
               >
-                <tab.Icon aria-hidden="true" />
+                <link.Icon aria-hidden="true" />
+                <span className="sknav-link-label">{link.label}</span>
               </Link>
             );
           })}
-          <EcosystemHub variant="tab" />
-          {CENTER_TABS.slice(3).map((tab) => {
-            const active = tab.isActive(pathname);
-            return (
-              <Link
-                key={tab.key}
-                href={tab.href}
-                className="skfb-tab"
-                aria-current={active ? 'page' : undefined}
-                aria-label={tab.label}
-                title={tab.label}
-              >
-                <tab.Icon aria-hidden="true" />
-              </Link>
-            );
-          })}
+          <NotificationCenter />
         </nav>
 
         {/* Aksi kanan */}
-        <div className="skfb-actions">
-          <CreateMenu onCreateStory={onCreate} />
-          {/* Fase 0: chat dinonaktifkan — /chat menampilkan halaman "segera hadir" yang jujur.
-              Badge hanya dirender bila ada jumlah nyata; tidak ada angka palsu. */}
-          <Link href="/chat" className="skfb-icon-btn" aria-label="Pesan" title="Pesan">
-            <MessageCircle aria-hidden="true" />
-          </Link>
-          <NotificationCenter />
-          <ProfileHub />
+        <div className="sknav-actions">
+          {user ? (
+            <>
+              <EcosystemHub variant="action" />
+              <CreateMenu onCreateStory={onCreate} />
+              <ProfileHub />
+            </>
+          ) : (
+            <div className="sknav-guest">
+              <EcosystemHub variant="action" />
+              <Link href="/login" className="sknav-btn sknav-btn-ghost">{t.login}</Link>
+              <Link href="/signup" className="sknav-btn sknav-btn-primary">{t.register}</Link>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Baris 2 (mobile): tab bar icon-only ala aplikasi Facebook.
-          Launcher Ekosistem menggantikan tab Komunitas di posisi yang sama. */}
-      <nav className="skfb-mtabs" aria-label="Navigasi utama">
-        {CENTER_TABS.slice(0, 3).map((tab) => {
-          const active = tab.isActive(pathname);
+      {/* Baris 1 mobile: hamburger + logo | Buat, Cari, Pesan.
+          (Toggle tema dipindah ke drawer menu — lihat SidebarMobileDrawer.) */}
+      <div className="sknav-mbar">
+        <div className="sknav-mbar-left">
+          <button
+            type="button"
+            className="sknav-hamburger"
+            onClick={toggleMobile}
+            aria-expanded={mobileOpen}
+            aria-controls="suki-sidebar-drawer"
+            aria-label={mobileOpen ? t.closeMainMenu : t.openMainMenu}
+          >
+            {mobileOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
+          </button>
+          <BrandLogo />
+        </div>
+        <div className="sknav-mbar-actions">
+          <CreateMenu onCreateStory={onCreate} />
+          <button
+            type="button"
+            className="sknav-icon-btn sknav-search-toggle"
+            onClick={() => setSearchOpen((value) => !value)}
+            aria-label={searchOpen ? t.closeSearch : t.search}
+            aria-expanded={searchOpen}
+            title={t.search}
+          >
+            <Search aria-hidden="true" />
+          </button>
+          <Link href="/chat" className="sknav-icon-btn" aria-label={t.chat} title={t.chat}>
+            <MessageCircle aria-hidden="true" />
+          </Link>
+        </div>
+        {searchOpen && (
+          <div className="sknav-search-expand">
+            <SearchForm className="sknav-search-expand-form" autoFocus onDone={() => setSearchOpen(false)} />
+            <button
+              type="button"
+              className="sknav-search-close"
+              onClick={() => setSearchOpen(false)}
+              aria-label={t.closeSearch}
+            >
+              <X size={18} aria-hidden="true" />
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Baris 2 mobile (tidak diubah): tab ikon */}
+      <nav className="sknav-mtabs" aria-label={t.mainNavigation}>
+        {NAV_LINKS.slice(0, 3).map((link) => {
+          const active = link.isActive(pathname);
           return (
             <Link
-              key={tab.key}
-              href={tab.href}
-              className="skfb-mtab"
+              key={link.key}
+              href={link.href}
+              className="sknav-mtab"
               aria-current={active ? 'page' : undefined}
-              aria-label={tab.label}
+              aria-label={link.label}
             >
-              <tab.Icon aria-hidden="true" />
+              <link.Icon aria-hidden="true" />
             </Link>
           );
         })}
         <EcosystemHub variant="mtab" />
-        <div className="skfb-mtab" role="presentation">
+        <div className="sknav-mtab" role="presentation">
           <NotificationCenter />
         </div>
         <Link
           href={profileHref}
-          className="skfb-mtab"
+          className="sknav-mtab"
           aria-current={profileActive ? 'page' : undefined}
-          aria-label="Profil saya"
+          aria-label={t.myProfile}
         >
           {avatarUrl ? (
-            <img src={avatarUrl} alt="" className="skfb-mtab-avatar" />
+            <img src={avatarUrl} alt="" className="sknav-mtab-avatar" />
           ) : (
-            <span className="skfb-mtab-avatar-fallback" aria-hidden="true">{initials}</span>
+            <span className="sknav-mtab-avatar-fallback" aria-hidden="true">{initials}</span>
           )}
         </Link>
       </nav>

@@ -2,6 +2,8 @@
 
 import { useEffect } from 'react';
 import ErrorShell from '@/components/seo/ErrorShell';
+import { usePreferences } from '@/lib/preferences';
+import { getMiscLabels } from '@/lib/i18n/dict-misc';
 
 interface ErrorPageProps {
   error: Error & { digest?: string };
@@ -9,17 +11,18 @@ interface ErrorPageProps {
 }
 
 /**
- * Halaman error 500 per-segmen (P1-3 LAUNCH_AUDIT).
+ * Halaman error 500 per-segmen.
  * Client component dengan tombol "Coba lagi" (reset()).
  * TIDAK menampilkan stack trace / pesan error mentah ke pengguna —
  * detail hanya dicatat ke console untuk diagnostik.
  */
 export default function Error({ error, reset }: ErrorPageProps) {
+  const { language } = usePreferences();
+  const t = getMiscLabels(language);
+
   useEffect(() => {
     // Diagnostik internal saja; tidak dirender ke UI.
     console.error('[suki-apps] error boundary:', error.digest ?? '(tanpa digest)', error.message);
-    // T5(c): laporkan ke log server (fire-and-forget) agar error client
-    // tercatat di Vercel Runtime Logs via /api/log-error. Tanpa PII.
     try {
       const payload = JSON.stringify({
         digest: error.digest ?? null,
@@ -45,27 +48,21 @@ export default function Error({ error, reset }: ErrorPageProps) {
   return (
     <ErrorShell
       code="500"
-      title="Terjadi kesalahan"
-      description={
-        <>
-          Maaf, ada gangguan sesaat saat memuat halaman ini. Data Anda aman — silakan coba
-          lagi dalam beberapa saat. Jika masalah berlanjut, beri tahu tim kami.
-        </>
-      }
+      title={t.errTitle}
+      description={t.errDesc}
       onRetry={reset}
-      retryLabel="Coba lagi"
+      retryLabel={t.errRetry}
       actions={[
-        { label: 'Kembali ke Beranda', href: '/' },
-        { label: 'Hubungi Dukungan', href: '/support' },
+        { label: t.errBackHome, href: '/' },
+        { label: t.errSupport, href: '/support' },
       ]}
       footnote={
         error.digest ? (
           <>
-            Kode rujukan: <code style={{ fontFamily: 'monospace' }}>{error.digest}</code> — sertakan
-            kode ini saat menghubungi dukungan agar kami lebih cepat membantu.
+            {t.errRefCode} <code style={{ fontFamily: 'monospace' }}>{error.digest}</code> — {t.errRefHelp}
           </>
         ) : (
-          <>Sertakan waktu kejadian dan halaman yang Anda buka saat menghubungi dukungan.</>
+          <>{t.errNoDigest}</>
         )
       }
     />
