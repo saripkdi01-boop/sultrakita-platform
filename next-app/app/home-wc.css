@@ -97,3 +97,38 @@
 @media (prefers-reduced-motion: reduce) {
   .suki-overhaul-primary:hover, .dn-eco-card:hover { transform: none; }
 }
+
+/* --- Final card: selaras tema terang/gelap --- */
+.suki-overhaul-final-card {
+  background: var(--wc-glass-bg) !important;
+  border: 1px solid var(--wc-glass-line) !important;
+  backdrop-filter: blur(var(--wc-glass-blur));
+  -webkit-backdrop-filter: blur(var(--wc-glass-blur));
+  box-shadow: var(--wc-glass-shadow) !important;
+  border-radius: 28px !important;
+}
+/* Dark mode: kartu lebih solid agar teks terbaca */
+.dark .suki-overhaul-final-card,
+[data-theme="dark"] .suki-overhaul-final-card {
+  background: rgba(10, 35, 32, 0.85) !important;
+  border-color: rgba(212, 175, 55, 0.25) !important;
+}
+.dark .suki-overhaul-final-card h2,
+[data-theme="dark"] .suki-overhaul-final-card h2 {
+  color: #f5f1e8 !important;
+}
+.dark .suki-overhaul-final-card p,
+[data-theme="dark"] .suki-overhaul-final-card p {
+  color: rgba(245, 241, 232, 0.75) !important;
+}
+.dark .suki-overhaul-final-card .suki-overhaul-kicker,
+[data-theme="dark"] .suki-overhaul-final-card .suki-overhaul-kicker {
+  color: #d4af37 !important;
+}
+/* Light mode: pastikan kontras */
+.suki-overhaul-final-card h2 {
+  color: var(--sk-ink, #142824) !important;
+}
+.suki-overhaul-final-card p {
+  color: var(--sk-ink-soft, rgba(20, 40, 36, 0.72)) !important;
+}
