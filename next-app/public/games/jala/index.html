@@ -399,6 +399,8 @@ table.papan td.kanan,table.papan th.kanan{text-align:right}
 </div>
 <div class="toast" id="toast"></div>
 
+<!-- JALA 3D ringan: dimuat sebelum script utama -->
+<script src="jala-3d.js"></script>
 <script>
 'use strict';
 /* =========================================================
@@ -1368,6 +1370,10 @@ function hasilTangkapan(ikan, kg){
   const infoNaik = catatTangkapan(ikan.id, kg);
   const misiSelesai = S.misi.some(m => m.selesai && !m.diklaim);
   const adalahLegenda = ikan.rarity === 'legenda';
+  // Showcase 3D ringan saat dapat ikan (khusus langka/legenda agar tidak spam)
+  if (window.JALA3D && (adalahLegenda || ikan.rarity === 'langka')) {
+    window.JALA3D.showCatch(ikan.nama, ikan.emoji, ikan.rarity);
+  }
   $('mancing-body').innerHTML = `
     <div class="hasil-ikan kartu${adalahLegenda ? ' legenda-frame' : ''}" style="width:100%;max-width:340px">
       ${adalahLegenda ? '<div style="color:var(--gold);font-weight:800;letter-spacing:1px">👑 IKAN LEGENDA! 👑</div>' : ''}
@@ -1431,6 +1437,12 @@ $('btn-reset').addEventListener('click', () => {
   if(!muat()){ S = stateAwal(); simpan(); }
   renderPagi();
   if(!S.sdhLihatBantuan) setTimeout(tampilkanBantuan, 400);
+  // 3D ringan: underwater scene sebagai background
+  if (window.JALA3D) {
+    var app = document.querySelector('.app') || document.body;
+    app.style.position = 'relative';
+    window.JALA3D.init(app);
+  }
 })();
 </script>
 </body>
