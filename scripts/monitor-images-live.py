@@ -4,21 +4,33 @@ Monitor gambar live di sukiapps.web.id.
 
 Cek setiap gambar penting:
 1. HTTP 200
-2. Content-Type adalah image/*
-3. Body adalah binary image valid (bukan base64 text / HTML error)
-4. Ukuran wajar (>1KB)
+2. Body adalah binary image valid (bukan base64 text / HTML error)
+3. Ukuran wajar (>1KB)
 
 Kirim notifikasi via tg_notify.py jika ada masalah.
 
+CATATAN JARINGAN (2026-10-06): VM ini keluar internet lewat egress proxy
+yang butuh HTTP Basic auth. Python urllib TIDAK otomatis mengirim proxy
+auth -> selalu 403. Karena itu fetch memakai `curl` (bisa proxy auth),
+bukan urllib. Jangan ganti kembali ke urllib tanpa ProxyBasicAuthHandler.
+
+Anti false-alarm: sebelum mengirim notifikasi, pastikan monitor benar-benar
+bisa menjangkau situs. Kalau situs tidak terjangkau sama sekali (jaringan
+monitor bermasalah), lewati notifikasi dan exit 2.
+
 Jalankan manual atau via cron:
-  python3 scripts/monitor-images-live.py
+  python3 scripts/monitor-images-live.py [--no-notify]
 """
+import argparse
+import os
 import subprocess
 import sys
-import urllib.request
-import ssl
+import tempfile
 
 SITE = "https://sukiapps.web.id"
+# Host tambahan: www pernah menunjuk ke deployment lama (2026-10-06),
+# sehingga aset di www bisa basi/rusak walau apex sehat.
+SITES = ["https://sukiapps.web.id", "https://www.sukiapps.web.id"]
 
 # Gambar penting yang harus selalu tampil
 IMAGES = [
@@ -35,27 +47,59 @@ IMAGES = [
 MAGIC = [b"\xff\xd8\xff", b"\x89PNG", b"GIF8", b"<svg"]
 
 
-def check_image(path):
-    """Return (ok, pesan)."""
-    url = SITE + path
-    ctx = ssl.create_default_context()
-    ctx.check_hostname = False
-    ctx.verify_mode = ssl.CERT_NONE
-    try:
-        req = urllib.request.Request(
-            url, headers={"User-Agent": "SUKI-ImageMonitor/1.0"})
-        with urllib.request.urlopen(req, timeout=15, context=ctx) as r:
-            status = r.status
-            ctype = r.headers.get("Content-Type", "")
-            body = r.read(2048)  # cukup untuk cek magic bytes
-            total = len(body)
-    except Exception as e:
-        return False, f"{path}: fetch gagal ({str(e)[:60]})"
+def curl_fetch(url, max_bytes=65536, timeout=20):
+    """Fetch via curl (proxy-auth aware). Return (ok, status, ctype, head_bytes, err).
 
+    ok=False berarti jaringan/transport gagal (bukan HTTP error).
+    """
+    tmp = tempfile.NamedTemporaryFile(delete=False)
+    tmp.close()
+    try:
+        p = subprocess.run(
+            ["curl", "-sS", "-m", str(timeout), "-o", tmp.name,
+             "-w", "%{http_code}\n%{content_type}", url],
+            capture_output=True, text=True, timeout=timeout + 10)
+    except Exception as e:
+        return False, 0, "", b"", f"curl exception: {str(e)[:60]}"
+    finally:
+        pass
+    try:
+        with open(tmp.name, "rb") as f:
+            body = f.read(max_bytes)
+    except OSError:
+        body = b""
+    finally:
+        try:
+            os.unlink(tmp.name)
+        except OSError:
+            pass
+    if p.returncode != 0:
+        return False, 0, "", b"", f"curl exit {p.returncode}: {p.stderr.strip()[:80]}"
+    lines = p.stdout.strip().split("\n")
+    try:
+        status = int(lines[0].strip())
+    except (IndexError, ValueError):
+        return False, 0, "", b"", "respons curl tak terduga"
+    ctype = lines[1].strip() if len(lines) > 1 else ""
+    return True, status, ctype, body, ""
+
+
+def site_reachable(site):
+    """True jika monitor bisa menjangkau situs (respons HTTP apa pun)."""
+    ok, status, _, _, _ = curl_fetch(site + "/", timeout=15)
+    return ok  # HTTP 4xx/5xx pun berarti jaringan monitor OK
+
+
+def check_image(site, path):
+    """Return (ok, pesan)."""
+    url = site + path
+    ok, status, ctype, body, err = curl_fetch(url, max_bytes=4096)
+    if not ok:
+        return False, f"{path}: fetch gagal ({err})"
     if status != 200:
         return False, f"{path}: HTTP {status}"
 
-    # Cek apakah body adalah base64 text (masalah kemarin)
+    # Cek apakah body adalah base64 text (masalah 2026-10-06)
     try:
         text = body[:8].decode("ascii")
         if text.startswith(("/9j/", "iVBOR", "R0lGOD", "UklGR")):
@@ -86,23 +130,52 @@ def notify(msg):
 
 
 def main():
-    print(f"Monitoring {len(IMAGES)} gambar di {SITE}...\n")
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--no-notify", action="store_true",
+                    help="jangan kirim notifikasi Telegram (untuk verifikasi manual)")
+    args = ap.parse_args()
+
+    total = len(SITES) * len(IMAGES)
+    print(f"Monitoring {len(IMAGES)} gambar di {len(SITES)} host...\n")
     failures = []
-    for path in IMAGES:
-        ok, msg = check_image(path)
-        print(("✅ " if ok else "❌ ") + msg)
-        if not ok:
-            failures.append(msg)
+    transport_failed = 0
+    checks = 0
+    for site in SITES:
+        reachable = site_reachable(site)
+        for path in IMAGES:
+            checks += 1
+            if not reachable:
+                msg = f"{site}{path}: host tak terjangkau (jaringan monitor?)"
+                print("SKIP " + msg)
+                transport_failed += 1
+                continue
+            ok, msg = check_image(site, path)
+            print(("OK   " if ok else "FAIL ") + f"{site} :: " + msg)
+            if not ok:
+                failures.append(f"{site} :: {msg}")
+                if "fetch gagal" in msg:
+                    transport_failed += 1
 
-    print(f"\n--- {len(IMAGES) - len(failures)}/{len(IMAGES)} OK ---")
+    real_failures = [f for f in failures if "fetch gagal" not in f]
+    bad = len(real_failures) + transport_failed
+    print(f"\n--- {checks - bad}/{checks} OK "
+          f"({len(real_failures)} rusak, {transport_failed} transport) ---")
 
-    if failures:
-        alert = ("🖼️ *Image Monitor*: masalah gambar terdeteksi!\n\n" +
-                 "\n".join(failures))
+    if not real_failures:
+        if transport_failed:
+            print("Hanya kegagalan transport/jaringan monitor — "
+                  "notifikasi dilewati agar tidak false alarm.")
+            return 2
+        return 0
+
+    alert = ("Image Monitor: masalah gambar terdeteksi\n\n" +
+             "\n".join(real_failures))
+    if args.no_notify:
+        print("\n(--no-notify: notifikasi Telegram dilewati)")
+    else:
         notify(alert)
         print("\nNotifikasi terkirim via Telegram.")
-        return 1
-    return 0
+    return 1
 
 
 if __name__ == "__main__":
