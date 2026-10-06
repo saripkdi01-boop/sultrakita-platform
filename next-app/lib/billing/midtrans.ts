@@ -147,3 +147,84 @@ export function mapTransactionStatus(n: MidtransNotification): MidtransOutcome {
   if (s === 'pending') return 'pending';
   return 'failed'; // deny | cancel | expire | lainnya
 }
+
+// ---------------------------------------------------------------------------
+// QRIS via Midtrans Core API (untuk tampilan QR langsung di Telegram)
+// ---------------------------------------------------------------------------
+
+function coreApiUrl(cfg: MidtransConfig): string {
+  return cfg.isProduction
+    ? 'https://api.midtrans.com'
+    : 'https://api.sandbox.midtrans.com';
+}
+
+export interface QrisChargeInput {
+  orderId: string;
+  amount: number; // IDR, integer
+  productName: string;
+}
+
+export interface QrisChargeResult {
+  transactionId: string;
+  qrUrl: string; // URL gambar QR dari Midtrans
+  qrString: string; // string QR mentah (fallback render lokal)
+  expiryTime: string;
+}
+
+/**
+ * Membuat QRIS charge via Midtrans Core API. Mengembalikan URL QR code
+ * yang bisa langsung ditampilkan di Telegram. TIDAK memindahkan uang —
+ * pembayaran terjadi saat pelanggan scan & bayar via e-wallet/mobile banking.
+ */
+export async function createQrisCharge(
+  cfg: MidtransConfig,
+  input: QrisChargeInput,
+): Promise<QrisChargeResult> {
+  const res = await fetch(coreApiUrl(cfg) + '/v2/charge', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      Authorization: authHeader(cfg),
+    },
+    body: JSON.stringify({
+      payment_type: 'qris',
+      transaction_details: {
+        order_id: input.orderId,
+        gross_amount: Math.round(input.amount),
+      },
+      item_details: [
+        {
+          id: input.orderId,
+          price: Math.round(input.amount),
+          quantity: 1,
+          name: input.productName.slice(0, 50),
+        },
+      ],
+    }),
+  });
+  const data = (await res.json().catch(() => ({}))) as {
+    status_code?: string;
+    status_message?: string;
+    transaction_id?: string;
+    qr_string?: string;
+    expiry_time?: string;
+    actions?: Array<{ name?: string; url?: string }>;
+  };
+  if (!res.ok || data.status_code !== '201') {
+    throw new Error(
+      `Midtrans QRIS gagal (${res.status}): ${(data.status_message || 'unknown').slice(0, 200)}`,
+    );
+  }
+  const qrUrl =
+    (data.actions || []).find((a) => a.name === 'generate-qr-code')?.url || '';
+  if (!qrUrl && !data.qr_string) {
+    throw new Error('Respons Midtrans QRIS tidak lengkap (QR hilang).');
+  }
+  return {
+    transactionId: data.transaction_id || '',
+    qrUrl,
+    qrString: data.qr_string || '',
+    expiryTime: data.expiry_time || '',
+  };
+}

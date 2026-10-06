@@ -17,3 +17,23 @@ alter table billing_orders
 
 comment on column billing_orders.provider_ref is 'Referensi provider pembayaran (mis. Midtrans transaction_id).';
 comment on column billing_orders.paid_at is 'Waktu pembayaran dikonfirmasi provider.';
+
+-- ---------------------------------------------------------------------------
+-- 3. Dukungan order via bot Telegram (tanpa akun web):
+--    - payment_method: mis. 'qris', 'snap'
+--    - customer_ref: identitas pelanggan eksternal (mis. 'tg:username')
+--    - user_id boleh null untuk order Telegram
+-- ---------------------------------------------------------------------------
+alter table billing_orders
+  add column if not exists payment_method text,
+  add column if not exists customer_ref text;
+
+alter table billing_orders
+  alter column user_id drop not null;
+
+-- plan_id boleh null untuk produk Telegram yang tidak terikat billing_plans.
+alter table billing_orders
+  alter column plan_id drop not null;
+
+comment on column billing_orders.payment_method is 'Metode pembayaran (mis. qris via Midtrans Core API).';
+comment on column billing_orders.customer_ref is 'Identitas pelanggan non-web, mis. tg:username.';
