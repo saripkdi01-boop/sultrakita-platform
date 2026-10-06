@@ -60,7 +60,20 @@ jobs:
         run: npm ci
       - name: Dependency audit (high and above)
         working-directory: next-app
-        run: npm audit --audit-level=high
+        run: |
+          npm audit --audit-level=high --json > /tmp/audit.json 2>&1 || true
+          cat /tmp/audit.json | python3 -c "
+          import json,sys
+          try:
+              d = json.load(sys.stdin)
+              vulns = d.get('vulnerabilities', {})
+              for k,v in vulns.items():
+                  sev = v.get('severity', '')
+                  if sev in ('high', 'critical'):
+                      print(f\"VULN: {k} [{sev}] via {v.get('via', [{}])[0].get('title', '?')[:60]}\")
+          except: print('Audit output parse failed')
+          "
+          npm audit --audit-level=high
       # Security regression menargetkan route next-app/ yang LIVE di Vercel
       # (bukan server Express legacy). GAGAL LOUD bila DB test tak tersedia —
       # tidak ada SKIP diam-diam. Butuh secrets SUPABASE_TEST_URL /
