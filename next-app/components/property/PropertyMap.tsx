@@ -6,7 +6,7 @@
 
 import { useEffect, useRef } from 'react';
 import type { MapView, MapBounds } from '@/lib/geo';
-import { shortPriceIdr, isValidCoord } from '@/lib/geo';
+import { shortPriceIdr, isValidCoord, cartoTileUrl, CARTO_ATTRIBUTION } from '@/lib/geo';
 import { usePreferences } from '@/lib/preferences';
 import { tpj } from '@/lib/i18n/dict-propertijobs';
 
@@ -82,9 +82,10 @@ export default function PropertyMap({ pins, initialView, hoveredId, onViewportCh
       });
       mapRef.current = map;
 
-      // Tile CARTO Voyager — netral, ramah untuk tampilan properti; atribusi wajib OSM + CARTO.
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      // Tile CARTO Voyager via helper terpusat — API key diambil dari
+      // NEXT_PUBLIC_CARTO_API_KEY bila ada (hilangkan watermark "API KEY REQUIRED").
+      L.tileLayer(cartoTileUrl(), {
+        attribution: CARTO_ATTRIBUTION,
         maxZoom: 19,
       }).addTo(map);
 

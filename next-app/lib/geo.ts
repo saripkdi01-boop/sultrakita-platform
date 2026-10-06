@@ -7,6 +7,25 @@ export type MapBounds = { minLat: number; minLng: number; maxLat: number; maxLng
 // Tampilan awal: Kota Kendari, Sulawesi Tenggara.
 export const SULTRA_DEFAULT_VIEW: MapView = { lat: -3.99, lng: 122.52, zoom: 11 };
 
+/**
+ * URL tile basemap CARTO Voyager untuk Leaflet — satu-satunya titik konfigurasi tile.
+ * CARTO mewajibkan API key sejak akhir 2026: tanpa key, tile dikembalikan dengan
+ * watermark "API KEY REQUIRED" ter-bake di gambarnya.
+ * Key gratis: https://carto.com/basemaps/apikey (1 jt request/bln untuk komersial).
+ * Key bersifat publik by design (proteksi via domain allowlist saat request key),
+ * jadi diekspos via NEXT_PUBLIC_CARTO_API_KEY. Tanpa key (dev lokal), URL dikembalikan
+ * apa adanya — watermark muncul tapi peta tetap berfungsi.
+ */
+export function cartoTileUrl(): string {
+  const key = process.env.NEXT_PUBLIC_CARTO_API_KEY;
+  const base = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+  return key ? `${base}?key=${encodeURIComponent(key)}` : base;
+}
+
+/** Atribusi wajib untuk tile CARTO (OSM + CARTO harus selalu tampil). */
+export const CARTO_ATTRIBUTION =
+  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
+
 export function isValidCoord(lat: unknown, lng: unknown): lat is number {
   return typeof lat === 'number' && typeof lng === 'number'
     && Number.isFinite(lat) && Number.isFinite(lng)
