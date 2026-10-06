@@ -190,6 +190,20 @@ table.papan td.kanan,table.papan th.kanan{text-align:right}
 .dbtn.benar-flash{border-color:var(--ok);box-shadow:0 0 12px rgba(52,211,153,.7)}
 .timer{font-size:26px;font-weight:800;color:var(--warn)}
 
+/* ---- upgrade v0.2: drag reel, banner event, senar ---- */
+.drag-row{display:flex;gap:8px;justify-content:center;align-items:center}
+.drag-btn{border-radius:12px;border:2px solid var(--card-border);background:rgba(255,255,255,.06);
+  color:#fff;font-size:12px;font-weight:700;padding:8px 12px;cursor:pointer}
+.drag-btn.aktif{background:linear-gradient(135deg,var(--sk-teal-500),var(--sk-teal-700));border-color:var(--sk-teal-200)}
+.event-banner{min-height:34px;font-size:14px;font-weight:800;text-align:center;color:var(--warn);
+  animation:denyut .5s ease-in-out infinite}
+@keyframes denyut{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.senar-wrap{width:100%;max-width:340px}
+#senar{width:100%;height:64px;display:block}
+.slowmo-badge{font-size:13px;font-weight:800;color:var(--gold);text-align:center;
+  animation:denyut .4s ease-in-out infinite}
+.tell{font-size:14px;font-weight:700;color:var(--sk-teal-200);text-align:center;max-width:320px}
+
 /* kartu hasil */
 .hasil-ikan{text-align:center}
 .hasil-ikan .emoji{font-size:72px}
@@ -370,8 +384,10 @@ table.papan td.kanan,table.papan th.kanan{text-align:right}
   <div class="mancing-head">
     <div style="font-weight:800" id="mancing-spot-nama">🎣 Teluk Kendari</div>
     <div style="font-size:12px;color:var(--ink-dim)" id="mancing-fase-label">Bersiap…</div>
+    <div style="font-size:11px;color:var(--ink-dim)" id="mancing-info"></div>
   </div>
   <div class="mancing-body" id="mancing-body"><!-- diisi JS per fase --></div>
+  <canvas id="fx" style="position:absolute;inset:0;pointer-events:none;z-index:5"></canvas>
   <div style="padding:14px">
     <button class="btn ghost kecil" id="btn-batal-mancing">✖️ Batalkan (kembali)</button>
   </div>
@@ -403,17 +419,19 @@ function bulatkan500(n){ return Math.round(n / 500) * 500; }
 
 // ---------- data ikan asli Sultra ----------
 const IKAN = [
-  {id:'layang',   nama:'Layang',            emoji:'🐟', minKg:0.2, maxKg:0.8,  harga:20000,  rarity:'umum',   spots:['teluk','bokori'],            info:'Ikan kecil bergerombol, favorit pancing ringan.'},
-  {id:'baronang', nama:'Baronang',           emoji:'🐠', minKg:0.3, maxKg:1.2,  harga:35000,  rarity:'umum',   spots:['teluk','bokori'],            info:'Lincah di karang dangkal Teluk Kendari.'},
-  {id:'cakalang', nama:'Cakalang',            emoji:'🐟', minKg:1,   maxKg:5,    harga:25000,  rarity:'umum',   spots:['teluk','bokori'],            info:'Andalan nelayan Sultra, berenang cepat.'},
-  {id:'kakap',    nama:'Kakap Merah',         emoji:'🐡', minKg:1,   maxKg:6,    harga:55000,  rarity:'sedang', spots:['teluk','bokori','wakatobi'], info:'Daging tebal, harga bagus di pelelangan.'},
-  {id:'kerapu',   nama:'Kerapu',              emoji:'🐠', minKg:1,   maxKg:8,    harga:60000,  rarity:'sedang', spots:['teluk','bokori','wakatobi'], info:'Bersembunyi di karang, perlawanannya kuat.'},
-  {id:'tenggiri', nama:'Tenggiri',            emoji:'🐟', minKg:1,   maxKg:7,    harga:50000,  rarity:'sedang', spots:['teluk','bokori','wakatobi'], info:'Giginya tajam, tarikannya menghentak.'},
-  {id:'kuwe',     nama:'Kuwe',                emoji:'🐬', minKg:2,   maxKg:15,   harga:40000,  rarity:'sedang', spots:['bokori','wakatobi'],         info:'Giant trevally — petarung sejati laut dalam.'},
-  {id:'tuna',     nama:'Tuna Sirip Kuning',   emoji:'🍣', minKg:5,   maxKg:30,   harga:45000,  rarity:'langka', spots:['bokori','wakatobi'],         info:'Primadona ekspor, hanya di perairan dalam.'},
-  {id:'lobster',  nama:'Lobster',             emoji:'🦞', minKg:0.3, maxKg:1.5,  harga:250000, rarity:'langka', spots:['bokori','wakatobi'],         info:'Kecil tapi termahal di papan lelang.'},
+  {id:'layang',   nama:'Layang',            emoji:'🐟', minKg:0.2, maxKg:0.8,  harga:20000,  rarity:'umum',   spots:['teluk','bokori'], gaya:'gerombol', staminaMult:0.8, umpanFavorit:[], nokturnal:false, tell:'Riak kecil bergerombol di permukaan — Layang sedang makan!', lokal:'Layang / Decapterus', habitat:'Perairan dangkal & teluk', musim:'Sepanjang tahun', terverifikasi:false, info:'Ikan kecil bergerombol, favorit pancing ringan.'},
+  {id:'baronang', nama:'Baronang',           emoji:'🐠', minKg:0.3, maxKg:1.2,  harga:35000,  rarity:'umum',   spots:['teluk','bokori'], gaya:'gerombol', staminaMult:0.9, umpanFavorit:[], nokturnal:false, tell:'Pelampung bergoyang cepat berulang — gerombolan Baronang!', lokal:'Baronang / Siganus', habitat:'Karang dangkal Teluk Kendari', musim:'Sepanjang tahun', terverifikasi:false, info:'Lincah di karang dangkal Teluk Kendari.'},
+  {id:'cakalang', nama:'Cakalang',           emoji:'🐟', minKg:1,   maxKg:5,    harga:25000,  rarity:'umum',   spots:['teluk','bokori'], gaya:'seimbang', staminaMult:1.0, umpanFavorit:[], nokturnal:false, tell:'Pelampung ditarik mantap ke bawah — Cakalang menyambar!', lokal:'Cakalang / Katsuwonus pelamis', habitat:'Laut lepas', musim:'Musim timur (Apr–Sep)', terverifikasi:false, info:'Andalan nelayan Sultra, berenang cepat.'},
+  {id:'kakap',    nama:'Kakap Merah',         emoji:'🐡', minKg:1,   maxKg:6,    harga:55000,  rarity:'sedang', spots:['teluk','bokori','wakatobi'], gaya:'seimbang', staminaMult:1.1, umpanFavorit:[2,3], nokturnal:false, tell:'Sentakan berat dan dalam — Kakap Merah melawan!', lokal:'Kakap Merah / Lutjanus', habitat:'Karang dalam & gosong', musim:'Sepanjang tahun', terverifikasi:false, info:'Daging tebal, harga bagus di pelelangan.'},
+  {id:'kerapu',   nama:'Kerapu',              emoji:'🐠', minKg:1,   maxKg:8,    harga:60000,  rarity:'sedang', spots:['teluk','bokori','wakatobi'], gaya:'karang', staminaMult:1.25, umpanFavorit:[2,3,4], nokturnal:true, tell:'Pelampung bergoyang halus di dekat karang — Kerapu mengintai…', lokal:'Kerapu / Epinephelus', habitat:'Celah karang & struktur', musim:'Aktif malam hari', terverifikasi:false, info:'Bersembunyi di karang, perlawanannya kuat. Suka umpan udang/cumi.'},
+  {id:'tenggiri', nama:'Tenggiri',            emoji:'🐟', minKg:1,   maxKg:7,    harga:50000,  rarity:'sedang', spots:['teluk','bokori','wakatobi'], gaya:'lari', staminaMult:1.15, umpanFavorit:[3,4], nokturnal:false, tell:'Pelampung MELUNCUR kencang! Tenggiri menyambar dan kabur!', lokal:'Tenggiri / Scomberomorus', habitat:'Perairan terbuka', musim:'Musim peralihan', terverifikasi:false, info:'Giginya tajam, tarikannya menghentak.'},
+  {id:'kuwe',     nama:'Kuwe',                emoji:'🐬', minKg:2,   maxKg:15,   harga:40000,  rarity:'sedang', spots:['bokori','wakatobi'], gaya:'lari', staminaMult:1.35, umpanFavorit:[3,4], nokturnal:false, tell:'Hentakan BRUTAL! Kuwe — petarung sejati — menarik tali!', lokal:'Kuwe / Giant Trevally (Caranx)', habitat:'Karang & drop-off', musim:'Sepanjang tahun', terverifikasi:false, info:'Giant trevally — petarung sejati laut dalam.'},
+  {id:'tuna',     nama:'Tuna Sirip Kuning',   emoji:'🍣', minKg:5,   maxKg:30,   harga:45000,  rarity:'langka', spots:['bokori','wakatobi'], gaya:'lari', staminaMult:1.5, umpanFavorit:[3,4], nokturnal:false, tell:'Pelampung HILANG ditarik jauh! Tuna besar sedang lari!', lokal:'Tuna Sirip Kuning / Thunnus albacares', habitat:'Laut dalam', musim:'Musim timur', terverifikasi:false, info:'Primadona ekspor, hanya di perairan dalam. Suka umpan cumi.'},
+  {id:'lobster',  nama:'Lobster',             emoji:'🦞', minKg:0.3, maxKg:1.5,  harga:250000, rarity:'langka', spots:['bokori','wakatobi'], gaya:'dasar', staminaMult:1.0, umpanFavorit:[2], nokturnal:true, tell:'Getaran pelan di dasar… Lobster nokturnal keluar sarang.', lokal:'Lobster / Panulirus', habitat:'Dasar karang', musim:'Aktif malam hari', terverifikasi:false, info:'Kecil tapi termahal di papan lelang. Aktif malam hari.'},
 ];
 const LEGENDA = {id:'legenda', nama:'Tuna Raksasa Teluk Kendari', emoji:'👑', minKg:80, maxKg:150, harga:60000, rarity:'legenda', spots:['teluk'],
+  gaya:'lari', staminaMult:2.0, umpanFavorit:[4], nokturnal:false, tell:'Air berputar… sesuatu yang BESAR mendekat. 👑',
+  lokal:'Tuna Raksasa (legenda lokal)', habitat:'Teluk Kendari', musim:'Konon saat laut tenang', terverifikasi:false,
   info:'Konon hanya menampakkan diri saat laut tenang, pada nelayan berpengalaman.'};
 const SEMUA_IKAN = [...IKAN, LEGENDA];
 function cariIkan(id){ return SEMUA_IKAN.find(f => f.id === id); }
@@ -461,15 +479,31 @@ function acakCuaca(){
   const gelombang = Math.round((0.3 + Math.pow(Math.random(), 3) * 2.7) * 10) / 10;
   const angin = Math.round(3 + Math.pow(Math.random(), 2.2) * 22);
   const arah = pilihAcak(ARAH_ANGIN);
+  const hujan = Math.random() < 0.25; // 25% hari hujan — ikan lebih agresif!
   let status;
   if (gelombang < 1.0 && angin < 12) status = 'aman';
   else if (gelombang < 2.0 && angin < 18) status = 'waspada';
   else status = 'bahaya';
-  return {gelombang, angin, arah, status};
+  return {gelombang, angin, arah, status, hujan};
 }
-function acakHarga(){
+// SEBAB_HARGA: penjelasan tiap fluktuasi harga (bukan acak buta) — diisi acakHarga().
+let SEBAB_HARGA = {};
+function acakHarga(cuaca){
   const h = {};
-  SEMUA_IKAN.forEach(f => { h[f.id] = bulatkan500(f.harga * acak(0.85, 1.25)); });
+  const sebab = {};
+  SEMUA_IKAN.forEach(f => {
+    const faktor = acak(0.85, 1.25);
+    h[f.id] = bulatkan500(f.harga * faktor);
+    // --- penyebab yang dijelaskan (M6) ---
+    let s;
+    if(cuaca && cuaca.hujan && faktor > 1.05) s = '🌧️ Hujan: pasokan turun, harga naik';
+    else if(cuaca && cuaca.hujan && faktor < 0.95) s = '🌧️ Hujan tapi nelayan tetap melaut';
+    else if(faktor > 1.12) s = pilihAcak(['🍽️ Permintaan warung makan naik','📦 Stok pelelangan menipis','🚚 Permintaan luar daerah naik']);
+    else if(faktor < 0.93) s = pilihAcak(['🎣 Tangkapan melimpah hari ini','📦 Stok pelelangan penuh']);
+    else s = '➖ Harga stabil';
+    sebab[f.id] = s;
+  });
+  SEBAB_HARGA = sebab;
   return h;
 }
 function acakMisi(){
@@ -482,13 +516,15 @@ const KUNCI_SAVE = 'jala_save_v1';
 let S = null;
 
 function stateAwal(){
+  const cuaca = acakCuaca();
   return {
     day:1, money:100000, xp:0, level:1,
     perahu:1, joran:1, umpan:1,
+    waktu:'pagi', // siklus: pagi -> siang -> sore -> malam (maju tiap melaut)
     inventory:[],          // [{ikanId, kg}]
     catalog:{},            // {ikanId:{ekor, maxKg}}
     rekorKg:0, rekorNama:'',
-    cuaca:acakCuaca(), harga:acakHarga(), misi:acakMisi(),
+    cuaca, harga:acakHarga(cuaca), sebabHarga:SEBAB_HARGA, misi:acakMisi(),
     sdhLihatBantuan:false
   };
 }
@@ -522,6 +558,15 @@ function syaratLegendaTerpenuhi(spotId){
   return spotId === 'teluk' && S.cuaca.status === 'aman' && S.perahu >= 2;
 }
 
+// Bobot kemunculan ikan: rarity + umpan favorit spesies + nokturnal vs waktu (M1/M3)
+function bobotIkan(f){
+  const bobotRarity = {umum: Math.max(30, 62 - (S.umpan - 1) * 6), sedang: 28, langka: peluangIkanBesar()};
+  let w = bobotRarity[f.rarity] || 10;
+  if(f.umpanFavorit && f.umpanFavorit.length && !f.umpanFavorit.includes(S.umpan)) w *= 0.35;
+  if(S.waktu === 'malam'){ w *= f.nokturnal ? 1.9 : 0.7; }
+  else if(f.nokturnal){ w *= 0.6; }
+  return w;
+}
 function pilihIkan(spotId){
   // 1) cek ikan legenda dulu (peluang kecil, syarat ketat)
   if(syaratLegendaTerpenuhi(spotId)){
@@ -530,11 +575,9 @@ function pilihIkan(spotId){
   }
   // 2) pilih dari ikan biasa berdasar rarity (berbobot, dipengaruhi umpan)
   const kandidat = IKAN.filter(f => f.spots.includes(spotId));
-  const pBesar = peluangIkanBesar();
-  const bobot = {umum: Math.max(30, 62 - (S.umpan - 1) * 6), sedang: 28, langka: pBesar};
-  const total = kandidat.reduce((a,f) => a + (bobot[f.rarity] || 10), 0);
+  const total = kandidat.reduce((a,f) => a + bobotIkan(f), 0);
   let r = Math.random() * total;
-  for(const f of kandidat){ r -= (bobot[f.rarity] || 10); if(r <= 0) return f; }
+  for(const f of kandidat){ r -= bobotIkan(f); if(r <= 0) return f; }
   return kandidat[kandidat.length - 1];
 }
 
@@ -638,9 +681,20 @@ function beliUpgrade(jalur){
 
 function hariBerikutnya(){
   S.day++;
+  S.waktu = 'pagi';
   S.cuaca = acakCuaca();
-  S.harga = acakHarga();
+  S.harga = acakHarga(S.cuaca);
+  S.sebabHarga = SEBAB_HARGA;
   S.misi = acakMisi();
+  simpan();
+}
+
+// ---------- waktu: maju tiap kali melaut (M3) ----------
+const URUT_WAKTU = ['pagi','siang','sore','malam'];
+const LABEL_WAKTU = {pagi:'🌅 Pagi', siang:'☀️ Siang', sore:'🌇 Sore', malam:'🌙 Malam'};
+function majuWaktu(){
+  const i = URUT_WAKTU.indexOf(S.waktu);
+  S.waktu = URUT_WAKTU[(i + 1) % URUT_WAKTU.length];
   simpan();
 }
 
@@ -700,20 +754,24 @@ function renderPagi(){
   const c = S.cuaca, st = STATUS_CUACA[c.status];
   $('cuaca-ikon').textContent = st.ikon;
   const pill = $('cuaca-status');
-  pill.textContent = (c.status === 'aman' ? '✅ ' : c.status === 'waspada' ? '⚠️ ' : '🛑 ') + st.label;
+  pill.textContent = (c.status === 'aman' ? '✅ ' : c.status === 'waspada' ? '⚠️ ' : '🛑 ') + st.label + (c.hujan ? ' 🌧️' : '');
   pill.className = 'status-pill ' + c.status;
   $('cuaca-gelombang').textContent = c.gelombang + ' m';
-  $('cuaca-angin').textContent = c.angin + ' knot';
+  $('cuaca-angin').textContent = c.angin + ' knot' + (c.hujan ? ' 🌧️' : '');
   $('cuaca-arah').textContent = c.arah;
-  // papan harga
+  // papan harga — M6: tiap baris membawa PENYEBAB perubahan (bukan acak buta)
   const tb = $('papan-harga');
   tb.innerHTML = '';
+  const penggerak = [];
   SEMUA_IKAN.forEach(f => {
     const hrg = S.harga[f.id];
     const tren = hrg >= f.harga ? '▲' : '▼';
     const cls = hrg >= f.harga ? 'tren-naik' : 'tren-turun';
+    const sebab = (S.sebabHarga && S.sebabHarga[f.id]) || '';
+    if(sebab && sebab !== '➖ Harga stabil') penggerak.push(`${f.emoji} ${f.nama}: ${sebab}`);
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${f.emoji} ${f.nama}</td><td class="kanan">${rp(hrg)}</td><td class="kanan ${cls}">${tren}</td>`;
+    tr.title = sebab;
+    tr.innerHTML = `<td>${f.emoji} ${f.nama}<br><small style="color:var(--ink-dim);font-size:10px">${sebab}</small></td><td class="kanan">${rp(hrg)}</td><td class="kanan ${cls}">${tren}</td>`;
     tb.appendChild(tr);
   });
   // misi
@@ -871,7 +929,9 @@ function renderKatalog(){
     div.innerHTML = c
       ? `<div class="em">${f.emoji}</div><b>${f.nama}</b><small>${c.ekor} ekor · maks ${c.maxKg} kg</small>`
       : `<div class="em">❓</div><b>???</b><small>${f.spots.map(s => SPOTS.find(x => x.id === s).nama).join(', ')}</small>`;
-    if(c) div.title = f.info;
+    // M5: tap ikan yang sudah tertangkap → galeri edukasi
+    if(c) div.addEventListener('click', () => tampilkanGaleri(f, c));
+    else div.title = 'Belum tertangkap';
     grid.appendChild(div);
   });
   const leg = S.catalog['legenda'];
@@ -880,7 +940,29 @@ function renderKatalog(){
     : `👑 <b style="color:var(--gold)">${LEGENDA.nama}</b><br>${LEGENDA.info}<br><small style="color:var(--ink-dim)">Syarat muncul: Teluk Kendari + cuaca aman + perahu minimal Perahu Motor. Peluang kecil tiap lemparan — murni keberuntungan bertemu persiapan.</small>`;
 }
 
-/* ================= MINIGAME MANCING (100% skill-based) ================= */
+/* ---- M5: galeri edukasi spesies Sultra ---- */
+function tampilkanGaleri(f, c){
+  const gayaLabel = {lari:'🏃 Pelari — sering kabur jauh saat fight', karang:'🪨 Sembunyi di karang — butuh umpan tepat',
+    gerombol:'🐟 Bergerombol', seimbang:'⚖️ Seimbang', dasar:'🦞 Lambat & berat di dasar'}[f.gaya] || '';
+  const umpanTxt = f.umpanFavorit && f.umpanFavorit.length
+    ? 'Umpan favorit: ' + f.umpanFavorit.map(i => UMPAN[i-1].nama).join(', ')
+    : 'Mau semua umpan';
+  tampilkanModal(`
+    <div style="text-align:center"><div style="font-size:56px">${f.emoji}</div>
+    <h3 style="margin:6px 0 2px">${f.nama}</h3>
+    <div style="font-size:12px;color:var(--ink-dim)">${f.lokal || ''}</div></div>
+    <div style="font-size:13px;margin-top:10px;line-height:1.7">
+      <div>📍 <b>Habitat:</b> ${f.habitat || '-'}</div>
+      <div>📅 <b>Musim:</b> ${f.musim || '-'}</div>
+      <div>🎣 <b>Perilaku:</b> ${gayaLabel}</div>
+      <div>🍤 <b>${umpanTxt}</b>${f.nokturnal ? ' · 🌙 aktif malam hari' : ''}</div>
+      <div style="margin-top:8px">${f.info}</div>
+      <div style="margin-top:8px;color:var(--gold)">🏆 Tertangkap: ${c.ekor} ekor · terbesar ${c.maxKg} kg</div>
+      ${f.terverifikasi ? '' : '<div style="margin-top:6px;font-size:11px;color:var(--ink-dim)">ⓘ Info dari pengetahuan umum, <b>belum terverifikasi</b> nelayan Sultra.</div>'}
+    </div>
+    <div class="row2" style="margin-top:12px"><button class="btn gold" id="m-tutup">Tutup</button></div>`);
+  $('m-tutup').addEventListener('click', tutupModal);
+}
 let MANCING = null;   // sesi mancing aktif
 let loopId = null;    // requestAnimationFrame aktif
 let timeoutId = null; // timeout fase tunggu
@@ -889,13 +971,76 @@ function stopLoop(){
   if(timeoutId){ clearTimeout(timeoutId); timeoutId = null; }
 }
 
+/* ---- M4: partikel cipratan (ringan, tanpa dependensi) ---- */
+const FX = {parts:[], raf:null};
+function fxCipratan(xRel, yRel, n, warna){
+  const c = $('fx');
+  if(!c || !c.getContext) return;
+  const r = $('layar-mancing').getBoundingClientRect();
+  c.width = Math.max(1, Math.floor(r.width));
+  c.height = Math.max(1, Math.floor(r.height));
+  for(let i = 0; i < n; i++){
+    FX.parts.push({
+      x: xRel * c.width, y: yRel * c.height,
+      vx: acak(-90, 90), vy: acak(-170, -30),
+      r: acak(2, 5), hidup: acak(0.5, 1.0), warna: warna || '#7dd3c8'
+    });
+  }
+  if(!FX.raf) FX.raf = requestAnimationFrame(fxPutar);
+}
+function fxPutar(){
+  const c = $('fx');
+  if(!c) { FX.raf = null; return; }
+  const ctx = c.getContext('2d');
+  const dt = 1 / 60;
+  ctx.clearRect(0, 0, c.width, c.height);
+  FX.parts = FX.parts.filter(p => {
+    p.hidup -= dt;
+    if(p.hidup <= 0) return false;
+    p.vy += 340 * dt; p.x += p.vx * dt; p.y += p.vy * dt;
+    ctx.globalAlpha = Math.max(0, Math.min(1, p.hidup * 1.6));
+    ctx.fillStyle = p.warna;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 7); ctx.fill();
+    return true;
+  });
+  ctx.globalAlpha = 1;
+  FX.raf = FX.parts.length ? requestAnimationFrame(fxPutar) : null;
+}
+
+/* ---- M4: senar melengkung sesuai tegangan ---- */
+function gambarSenar(tegangan, goyang){
+  const cv = $('senar');
+  if(!cv || !cv.getContext) return;
+  const w = cv.clientWidth || 320, h = 64;
+  if(cv.width !== w) cv.width = w;
+  cv.height = h;
+  const ctx = cv.getContext('2d');
+  ctx.clearRect(0, 0, w, h);
+  const t = goyang || 0;
+  const kendur = 1 - tegangan / 100;
+  const cx = w * 0.5 + Math.sin(t * 3) * 8 * kendur;
+  const cy = h * (0.2 + kendur * 0.6);
+  ctx.strokeStyle = tegangan > 75 ? '#ff6b6b' : '#7dd3c8';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(16, 12);
+  ctx.quadraticCurveTo(cx, cy, w - 34, h - 14 + Math.sin(t * 5) * 5 * kendur);
+  ctx.stroke();
+  ctx.font = '20px serif';
+  ctx.fillText('🎣', 2, 26);
+  ctx.fillText('🐟', w - 46, h - 10 + Math.sin(t * 5) * 5 * kendur);
+}
+
 function mulaiMancing(spotId){
   const spot = SPOTS.find(s => s.id === spotId);
   const kunci = spotTerkunci(spot);
   if(kunci.terkunci){ toast(kunci.alasan); return; }
   stopLoop();
+  majuWaktu(); // M3: tiap melaut waktu maju (pagi->siang->sore->malam)
   MANCING = {spot};
   $('mancing-spot-nama').textContent = spot.emoji + ' ' + spot.nama;
+  const c = S.cuaca;
+  $('mancing-info').textContent = `${LABEL_WAKTU[S.waktu]} · ${c.hujan ? '🌧️ Hujan' : '🌤️ Cerah'} · 🌊 ${c.gelombang}m · 💨 ${c.angin}kn`;
   $('layar-mancing').classList.add('aktif');
   faseLempar();
 }
@@ -927,17 +1072,19 @@ function faseLempar(){
       <div class="meter-label"><span>Lemah</span><span>Kuat</span></div>
     </div>
     <button class="btn btn-lempar" id="btn-tahan">TAHAN<br>👆</button>
-    <div style="font-size:12px;color:var(--ink-dim);text-align:center">Tengah zona <span style="color:var(--gold)">emas</span> = lemparan SEMPURNA<br>(peluang ikan besar naik!)</div>`;
+    <div style="font-size:12px;color:var(--ink-dim);text-align:center">Tengah zona <span style="color:var(--gold)">emas</span> = lemparan SEMPURNA<br>(peluang ikan besar naik!)</div>
+    ${S.cuaca.angin >= 14 ? `<div style="font-size:12px;color:var(--warn);text-align:center">🧭 Angin ${S.cuaca.angin} knot menggeser jarum — antisipasi!</div>` : ''}`;
 
   let pos = 0, arah = 1, menahan = false;
   const kecepatan = 115; // % per detik
+  const driftAngin = (S.cuaca.angin - 10) * 0.12; // M3: angin menggeser jarum (%/detik)
   let terakhir = performance.now();
   const jarum = $('jarum'), btn = $('btn-tahan');
 
   function putar(w){
     const dt = Math.min(0.05, (w - terakhir) / 1000);
     terakhir = w;
-    pos += arah * kecepatan * dt;
+    pos += (arah * kecepatan + driftAngin) * dt; // M3: arus angin ikut menggeser
     if(pos >= 100){ pos = 100; arah = -1; }
     if(pos <= 0){ pos = 0; arah = 1; }
     jarum.style.left = `calc(${pos}% - 2px)`;
@@ -961,7 +1108,8 @@ function faseLempar(){
       setTimeout(faseLempar, 350);
     } else {
       toast(kualitas === 'sempurna' ? '🌟 SEMPURNA!' : '👍 Bagus!');
-      faseTunggu(kualitas);
+      const ikan = pilihIkan(MANCING.spot.id); // M1: pilih dulu agar "tell" sesuai spesies
+      faseTunggu(kualitas, ikan);
     }
   }
   btn.addEventListener('pointerdown', e => { e.preventDefault(); menahan = true; btn.classList.add('menahan'); });
@@ -971,16 +1119,20 @@ function faseLempar(){
   btn.addEventListener('contextmenu', e => e.preventDefault());
 }
 
-/* ---- Fase tunggu: antisipasi sambaran ---- */
-function faseTunggu(kualitas){
+/* ---- Fase tunggu: antisipasi sambaran + "tell" spesies (M1) ---- */
+function faseTunggu(kualitas, ikan){
   stopLoop();
   $('mancing-fase-label').textContent = 'Menunggu sambaran…';
+  const hujan = S.cuaca.hujan;
   $('mancing-body').innerHTML = `
     <div class="laut">🎣</div>
     <div style="font-size:17px;font-weight:700">Menunggu sambaran…</div>
+    <div class="tell">${ikan.tell}</div>
+    ${hujan ? '<div style="font-size:12px;color:var(--sk-teal-200)">🌧️ Hujan — ikan lebih agresif, sambaran lebih cepat!</div>' : ''}
     <div style="font-size:13px;color:var(--ink-dim)">Sabar, Nelayan. Ikan sedang mengintai umpanmu.</div>`;
-  // jeda acak = momen antisipasi yang bikin deg-degan
-  timeoutId = setTimeout(() => faseTarik(kualitas), acak(1200, 3000));
+  // M3: hujan = ikan agresif = jeda lebih pendek. Tetap acak agar tidak bisa dihafal.
+  const jeda = hujan ? acak(700, 1600) : acak(1200, 3000);
+  timeoutId = setTimeout(() => faseTarik(kualitas, ikan), jeda);
 }
 
 /* ---- Tahap 2: TARIK — ikuti panah, jaga tegangan tali ---- */
@@ -990,56 +1142,84 @@ const ARAH_PANAH = [
   {k:'kiri',   s:'⬅️'},
   {k:'kanan',  s:'➡️'},
 ];
-function faseTarik(kualitas){
+/* ---- Tahap 2: TARIK — fisika fight: drag reel + pola spesies (M2) + juice (M4) ---- */
+// Drag reel: makin kencang = ikan cepat lelah tapi tali mudah putus. Murni keputusan pemain.
+const DRAG = [
+  {nama:'Kendur',  drain:0.75, risiko:0.6, info:'Aman, tapi ikan lama lelah'},
+  {nama:'Sedang',  drain:1.0,  risiko:1.0, info:'Seimbang'},
+  {nama:'Kencang', drain:1.4,  risiko:1.5,  info:'Cepat lelahkan, tali mudah putus'},
+];
+function faseTarik(kualitas, ikan){
   stopLoop();
-  $('mancing-fase-label').textContent = 'Tahap 2 — Tarik! IKAN MENYAMBAR! 🐟';
+  $('mancing-fase-label').textContent = 'Tahap 2 — Tarik! IKAN MENYAMBAR! \uD83D\uDC1F';
+  if(navigator.vibrate){ try{ navigator.vibrate(70); }catch(e){} } // M4: getar saat strike
+  fxCipratan(0.5, 0.45, 26, '#7dd3c8'); // M4: cipratan saat strike
   const spot = MANCING.spot;
-  const ikan = pilihIkan(spot.id);
   const kg = beratIkan(ikan, kualitas);
   const joran = JORAN[S.joran - 1];
 
-  // statistik ikan: makin besar & spot makin sulit = makin liar
-  const tenagaMax = Math.min(150, 30 + spot.kesulitan * 18 + Math.min(kg, 25) * 2.5);
+  // statistik ikan: gaya spesies memengaruhi stamina (M1) — makin besar & spot sulit = makin liar
+  const tenagaMax = Math.min(170, (30 + spot.kesulitan * 18 + Math.min(kg, 25) * 2.5) * (ikan.staminaMult || 1));
   let tenaga = tenagaMax, tali = 20, sisaWaktu = 45;
-  const intervalPanah = Math.max(0.7, 1.6 - spot.kesulitan * 0.25 - Math.min(kg / 20, 1) * 0.4);
+  const intervalDasar = Math.max(0.7, 1.6 - spot.kesulitan * 0.25 - Math.min(kg / 20, 1) * 0.4);
+  let intervalPanah = intervalDasar;
   let target = pilihAcak(ARAH_PANAH);
   let arahAktif = null; // arah yang sedang ditahan pemain
+  let drag = 1; // mulai "Sedang"
+  let slowmo = kualitas === 'sempurna' ? 0.6 : 0; // M4: 0,6 dtk slow-mo = hadiah hook-set sempurna
+  let eventT = acak(3.5, 6); // hitung mundur ke event pola spesies berikutnya
+  let event = null;          // {tipe, t} — event yang sedang berjalan
 
-  const hintUkuran = kg < 2 ? 'kecil' : kg < 10 ? 'sedang' : 'BESAR! 😱';
+  const hintUkuran = kg < 2 ? 'kecil' : kg < 10 ? 'sedang' : 'BESAR! \uD83D\uDE31';
   const body = $('mancing-body');
   body.innerHTML = `
     <div style="text-align:center">
-      <div style="font-size:15px;font-weight:800">❓ Ikan misterius <span style="color:var(--gold)">(${hintUkuran})</span></div>
+      <div style="font-size:15px;font-weight:800">\u2753 Ikan misterius <span style="color:var(--gold)">(${hintUkuran})</span></div>
       <div style="font-size:12px;color:var(--ink-dim)">Tahan tombol PANAH sesuai arah yang muncul!</div>
+      ${slowmo > 0 ? '<div class="slowmo-badge">\u2B50 SEMPURNA! Slow-motion 0,6 detik!</div>' : ''}
     </div>
+    <div class="event-banner" id="event-banner"></div>
+    <div class="senar-wrap"><canvas id="senar"></canvas></div>
     <div class="panah-besar" id="panah">${target.s}</div>
     <div class="bar-luar">
-      <div class="lbl"><span>💪 Tenaga ikan</span><span id="tenaga-txt"></span></div>
+      <div class="lbl"><span>\uD83D\uDCAA Tenaga ikan</span><span id="tenaga-txt"></span></div>
       <div class="bar" id="bar-tenaga"><i style="width:100%"></i></div>
     </div>
     <div class="bar-luar">
-      <div class="lbl"><span>🪢 Tegangan tali</span><span style="color:var(--danger)">putus = lepas!</span></div>
+      <div class="lbl"><span>\uD83E\uDEA2 Tegangan tali</span><span style="color:var(--danger)">putus = lepas!</span></div>
       <div class="bar" id="bar-tali"><i style="width:20%"></i></div>
     </div>
-    <div class="dpad" id="dpad">
-      <div></div><button class="dbtn" data-arah="atas">⬆️</button><div></div>
-      <button class="dbtn" data-arah="kiri">⬅️</button><div></div><button class="dbtn" data-arah="kanan">➡️</button>
-      <div></div><button class="dbtn" data-arah="bawah">⬇️</button><div></div>
+    <div class="drag-row" id="drag-row">
+      <span style="font-size:12px;color:var(--ink-dim)">\uD83C\uDFAA Drag:</span>
+      ${DRAG.map((d, i) => `<button class="drag-btn${i === drag ? ' aktif' : ''}" data-drag="${i}" title="${d.info}">${d.nama}</button>`).join('')}
     </div>
-    <div class="timer" id="timer-fight">⏱️ 45</div>`;
+    <div class="dpad" id="dpad">
+      <div></div><button class="dbtn" data-arah="atas">\u2B06\uFE0F</button><div></div>
+      <button class="dbtn" data-arah="kiri">\u2B05\uFE0F</button><div></div><button class="dbtn" data-arah="kanan">\u27A1\uFE0F</button>
+      <div></div><button class="dbtn" data-arah="bawah">\u2B07\uFE0F</button><div></div>
+    </div>
+    <div class="timer" id="timer-fight">\u23F1\uFE0F 45</div>`;
 
   const elPanah = $('panah'), elTenaga = document.querySelector('#bar-tenaga i'),
         elTali = document.querySelector('#bar-tali i'),
-        elTimer = $('timer-fight'), elTenagaTxt = $('tenaga-txt');
+        elTimer = $('timer-fight'), elTenagaTxt = $('tenaga-txt'),
+        elBanner = $('event-banner');
+  document.querySelectorAll('#drag-row .drag-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      drag = parseInt(b.dataset.drag, 10);
+      document.querySelectorAll('#drag-row .drag-btn').forEach(x => x.classList.toggle('aktif', x === b));
+      toast('\uD83C\uDFAA Drag: ' + DRAG[drag].nama + ' — ' + DRAG[drag].info);
+    });
+  });
   const tombol = {};
   document.querySelectorAll('#dpad .dbtn').forEach(b => {
     tombol[b.dataset.arah] = b;
     const mulai = e => { e.preventDefault(); arahAktif = b.dataset.arah; tandaiAktif(); };
-    const selesai = e => { if(arahAktif === b.dataset.arah){ arahAktif = null; tandaiAktif(); } };
+    const selesaiT = e => { if(arahAktif === b.dataset.arah){ arahAktif = null; tandaiAktif(); } };
     b.addEventListener('pointerdown', mulai);
-    b.addEventListener('pointerup', selesai);
-    b.addEventListener('pointercancel', selesai);
-    b.addEventListener('pointerleave', selesai);
+    b.addEventListener('pointerup', selesaiT);
+    b.addEventListener('pointercancel', selesaiT);
+    b.addEventListener('pointerleave', selesaiT);
     b.addEventListener('contextmenu', e => e.preventDefault());
   });
   // dukungan keyboard (desktop)
@@ -1068,32 +1248,83 @@ function faseTarik(kualitas){
     tandaiAktif();
   }
 
-  let terakhir = performance.now(), akumPanah = 0;
+  // M2: pola fight khas tiap spesies — semua bisa diantisipasi pemain (skill, bukan RNG buta)
+  function picuEvent(){
+    const gaya = ikan.gaya || 'seimbang';
+    if(gaya === 'lari'){
+      event = {tipe:'lari', t:1.6};
+      elBanner.textContent = `\u26A1 ${ikan.nama} LARI JAUH! Kendurkan drag!`;
+    } else if(gaya === 'karang'){
+      event = {tipe:'karang', t:2.6};
+      elBanner.textContent = `\uD83E\uDEA8 ${ikan.nama} MENYELAM ke karang! LEPASKAN tombol!`;
+    } else if(gaya === 'gerombol'){
+      event = {tipe:'gerombol', t:3.0};
+      elBanner.textContent = '\uD83D\uDC1F Gerombolannya panik! Panah makin cepat!';
+      intervalPanah = intervalDasar * 0.55;
+    } else if(gaya === 'dasar'){
+      event = {tipe:'berat', t:2.0};
+      elBanner.textContent = `\uD98F ${ikan.nama} menempel di dasar — tahan terus!`;
+    } else {
+      event = {tipe:'hentak', t:1.4};
+      elBanner.textContent = `\uD83D\uDCA5 ${ikan.nama} menghentak!`;
+    }
+  }
+
+  let terakhir = performance.now(), akumPanah = 0, waktuLalu = 0;
   tandaiAktif();
   function putar(w){
-    const dt = Math.min(0.05, (w - terakhir) / 1000);
+    const dtNyata = Math.min(0.05, (w - terakhir) / 1000);
     terakhir = w;
-    sisaWaktu -= dt;
+    let dt = dtNyata;
+    if(slowmo > 0){ slowmo -= dtNyata; dt = dtNyata * 0.35; } // M4: dunia melambat
+    waktuLalu += dt;
+    sisaWaktu -= dtNyata; // timer tetap normal (adil)
     akumPanah += dt;
     if(akumPanah >= intervalPanah){ akumPanah = 0; gantiPanah(); }
 
+    if(!event){
+      eventT -= dt;
+      if(eventT <= 0){ picuEvent(); eventT = acak(4, 7.5); }
+    } else {
+      event.t -= dt;
+      const dg = DRAG[drag];
+      if(event.tipe === 'lari'){
+        tali += (drag === 0 ? 9 : 26 * dg.risiko) * dt; // kendur = selamat dari larian
+      } else if(event.tipe === 'karang'){
+        if(arahAktif){ tali += 34 * dg.risiko * dt; }   // menarik saat di karang = bahaya
+        else { tenaga -= joran.drain * 0.8 * dt; }       // diam = ikan lelah sendiri
+      } else {
+        tali += 8 * dg.risiko * dt;
+      }
+      if(event.t <= 0){
+        if(event.tipe === 'karang' && tali > 72){ selesai('sangkut'); return; }
+        if(event.tipe === 'karang'){ tenaga -= 14; toast('\uD83E\uDEA8 Lolos dari karang!'); }
+        if(event.tipe === 'gerombol'){ intervalPanah = intervalDasar; }
+        event = null;
+        elBanner.textContent = '';
+      }
+    }
+
+    const dg = DRAG[drag];
     if(arahAktif === target.k){
-      tenaga -= joran.drain * dt;   // tarikan benar: ikan lelah
+      tenaga -= joran.drain * dg.drain * dt;   // tarikan benar: ikan lelah (drag memengaruhi)
       tali -= 18 * dt;
     } else if(arahAktif){
-      tali += 30 * dt;              // arah salah: tali menegang!
+      tali += 30 * dg.risiko * dt;              // arah salah: tali menegang!
       tenaga += 2.5 * dt;           // ikan pulih sedikit
     } else {
       tali -= 10 * dt;
       tenaga += 2.5 * dt;
     }
+    if(S.cuaca.hujan) tali += Math.sin(waktuLalu * 2.2) * 6 * dt; // M3: ombak mengayun tali
     tali = Math.max(0, Math.min(100, tali));
     tenaga = Math.max(0, Math.min(tenagaMax, tenaga));
 
     elTenaga.style.width = (tenaga / tenagaMax * 100) + '%';
     elTali.style.width = tali + '%';
     elTenagaTxt.textContent = Math.ceil(tenaga) + '';
-    elTimer.textContent = '⏱️ ' + Math.ceil(sisaWaktu);
+    elTimer.textContent = '\u23F1\uFE0F ' + Math.ceil(sisaWaktu);
+    gambarSenar(tali, waktuLalu); // M4: senar melengkung
 
     if(tali >= 100){ selesai('putus'); return; }
     if(tenaga <= 0){ selesai('dapat'); return; }
@@ -1104,17 +1335,25 @@ function faseTarik(kualitas){
     stopLoop();
     document.removeEventListener('keydown', keyDown);
     document.removeEventListener('keyup', keyUp);
-    if(hasil === 'dapat') hasilTangkapan(ikan, kg);
-    else {
-      const pesan = hasil === 'putus' ? '🪢 Tali PUTUS! Ikan kabur…' : '💨 Terlalu lama… ikan lepas!';
+    if(hasil === 'dapat'){
+      fxCipratan(0.5, 0.3, 34, '#ffd166'); // M4: cipratan emas saat dapat!
+      hasilTangkapan(ikan, kg);
+    } else {
+      const pesan = hasil === 'putus' ? '\uD83E\uDEA2 Tali PUTUS! Ikan kabur…'
+        : hasil === 'sangkut' ? '\uD83E\uDEA8 Tali TERSANGKUT karang! Ikan lepas…'
+        : '\uD83D\uDCA8 Terlalu lama… ikan lepas!';
+      const sebab = hasil === 'putus' ? 'Tegangan menyentuh 100% — kendurkan drag atau ikuti panah dengan tepat.'
+        : hasil === 'sangkut' ? 'Kamu menarik saat ikan di karang — lain kali LEPASKAN tombol saat banner karang muncul.'
+        : 'Kalah cepat dari ikan — upgrade joran agar tarikan lebih kuat.';
       $('mancing-fase-label').textContent = 'Ikan lepas';
       body.innerHTML = `
-        <div class="laut">🌊</div>
+        <div class="laut">\uD83C\uDF0A</div>
         <div style="font-size:18px;font-weight:800;text-align:center">${pesan}</div>
+        <div style="font-size:13px;color:var(--ink-dim);text-align:center;max-width:320px">${sebab}</div>
         <div style="font-size:13px;color:var(--ink-dim);text-align:center">Itu murni soal skill — coba lagi, Nelayan!</div>
         <div class="row2" style="width:100%;max-width:340px">
-          <button class="btn gold" id="btn-coba-lagi">🎣 Coba Lagi</button>
-          <button class="btn ghost" id="btn-pulang">🏠 Pulang</button>
+          <button class="btn gold" id="btn-coba-lagi">\uD83C\uDFA3 Coba Lagi</button>
+          <button class="btn ghost" id="btn-pulang">\uD83C\uDFE0 Pulang</button>
         </div>`;
       $('btn-coba-lagi').addEventListener('click', faseLempar);
       $('btn-pulang').addEventListener('click', () => { tutupMancing(); pindahLayar('layar-pelelangan'); });
@@ -1122,7 +1361,6 @@ function faseTarik(kualitas){
   }
   loopId = requestAnimationFrame(putar);
 }
-
 /* ---- hasil tangkapan ---- */
 function hasilTangkapan(ikan, kg){
   $('mancing-fase-label').textContent = 'Tangkapan!';
@@ -1156,8 +1394,12 @@ function tampilkanBantuan(){
     <ul>
       <li>☀️ <b>Pagi:</b> cek <b>cuaca</b> & <b>harga pasar</b> (transparan, berubah tiap hari).</li>
       <li>🗺️ <b>Peta:</b> pilih spot. Spot jauh butuh perahu besar & cuaca aman.</li>
-      <li>🎣 <b>Lempar:</b> TAHAN tombol, LEPASKAN saat jarum di zona hijau. Tengah emas = SEMPURNA.</li>
-      <li>🪢 <b>Tarik:</b> TAHAN tombol panah sesuai arah yang muncul. Arah salah = tali menegang = bisa PUTUS!</li>
+      <li>🎣 <b>Lempar:</b> TAHAN tombol, LEPASKAN saat jarum di zona hijau. Tengah emas = SEMPURNA (ikan besar + slow-motion saat fight!). Waspadai 🧭 angin yang menggeser jarum.</li>
+      <li>👀 <b>Perhatikan "tell":</b> tiap spesies memberi tanda berbeda sebelum menyambar — Tuna meluncur jauh, Kerapu bergoyang halus di karang.</li>
+      <li>🪢 <b>Tarik:</b> TAHAN tombol panah sesuai arah yang muncul. Arah salah = tali menegang = bisa PUTUS! Atur 🎛️ <b>drag reel</b>: Kencang = ikan cepat lelah tapi tali mudah putus; Kendur = aman.</li>
+      <li>⚡ <b>Pola spesies:</b> Tuna/Kuwe bisa LARI JAUH (kendurkan drag!), Kerapu MENYELAM ke karang (LEPASKAN tombol atau tali tersangkut!).</li>
+      <li>🌧️🌙 <b>Alam berpengaruh:</b> hujan = ikan agresif; malam = spesies nokturnal (Lobster, Kerapu) bermunculan. Waktu maju tiap kali melaut.</li>
+      <li>📖 <b>Galeri:</b> tap ikan di katalog untuk info habitat, musim & umpan favoritnya.</li>
       <li>⚖️ <b>Lelang:</b> jual ikan (harga papan × berat).</li>
       <li>🛠️ <b>Toko:</b> upgrade perahu, joran, umpan pakai uang hasil melaut.</li>
       <li>🎯 Selesaikan <b>misi harian</b> & lengkapi <b>katalog ikan</b>. Cari <b>ikan legenda</b>! 👑</li>
