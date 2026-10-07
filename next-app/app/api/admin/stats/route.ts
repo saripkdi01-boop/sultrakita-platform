@@ -6,6 +6,7 @@
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,6 +30,9 @@ function authorized(request: NextRequest): boolean {
 }
 
 export async function GET(request: NextRequest) {
+  const limited = await checkRateLimit(request, 'api');
+  if (limited) return limited;
+
   if (!authorized(request)) {
     return NextResponse.json({ ok: false, error: 'Akses ditolak.' },
       { status: 401 });

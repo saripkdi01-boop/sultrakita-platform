@@ -17,6 +17,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createClient } from '@supabase/supabase-js';
+import { writeAuditLog, clientIp } from '@/lib/admin/audit-log';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,9 +46,12 @@ function authorized(request: NextRequest): boolean {
   return !!secret && request.headers.get('x-bot-secret') === secret;
 }
 
-// Field yang boleh diubah per tabel (whitelist)
+// Field yang boleh diubah per tabel (whitelist).
+// KEAMANAN (P1 audit 8 Okt 2026): `role` SENGAJA TIDAK ADA di sini.
+// Perubahan role user hanya via dashboard admin (auth terpisah),
+// bukan via bot dengan satu secret — cegah eskalasi privilege.
 const ALLOWED_FIELDS: Record<string, string[]> = {
-  profiles: ['display_name', 'username', 'role', 'is_banned'],
+  profiles: ['display_name', 'username', 'is_banned'],
   listings: ['title', 'price', 'status', 'description', 'is_featured'],
   businesses: ['name', 'category', 'status', 'description', 'is_verified'],
   jala_players: ['coins', 'username'],
@@ -54,6 +59,10 @@ const ALLOWED_FIELDS: Record<string, string[]> = {
 };
 
 export async function POST(request: NextRequest) {
+  // Rate limit dulu (sebelum auth) agar brute-force secret terhambat.
+  const limited = await checkRateLimit(request, 'api');
+  if (limited) return limited;
+
   if (!authorized(request)) {
     return NextResponse.json({ ok: false, error: 'Akses ditolak.' },
       { status: 401 });
@@ -88,6 +97,8 @@ export async function POST(request: NextRequest) {
       { status: 503 });
   }
 
+  const ip = clientIp(request.headers);
+
   try {
     if (op === 'delete') {
       const { error } = await admin.from(table).delete().eq('id', id);
@@ -107,9 +118,28 @@ export async function POST(request: NextRequest) {
       const { error } = await admin.from(table).update(clean).eq('id', id);
       if (error) throw error;
     }
+    // Audit log append-only (best-effort, ditulis dari route sendiri)
+    await writeAuditLog(admin, {
+      route: '/api/admin/write',
+      action: op,
+      targetTable: table,
+      targetId: id,
+      detail: op === 'update' ? { fields: Object.keys(fields || {}) } : null,
+      ip,
+      ok: true,
+    });
     return NextResponse.json({ ok: true, data: { table, id, op } });
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Gagal memproses.';
+    await writeAuditLog(admin, {
+      route: '/api/admin/write',
+      action: op,
+      targetTable: table,
+      targetId: id,
+      ip,
+      ok: false,
+      error: msg,
+    });
     return NextResponse.json({ ok: false, error: msg.slice(0, 200) },
       { status: 500 });
   }
