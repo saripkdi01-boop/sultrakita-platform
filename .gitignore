@@ -11,3 +11,5 @@ STEP46-*.md
 public/payment.html
 public/payment.css
 public/payment.js
+---
+__pycache__/

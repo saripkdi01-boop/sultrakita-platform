@@ -79,7 +79,7 @@ export default function KendariHero() {
         <WcReveal delay={3}>
           <div className="kh-ctas">
             <Link href="/beranda" className="kh-btn kh-btn-gold">
-              {t.heroCtaExplore} <ArrowRight size={17} aria-hidden="true" />
+              {t.openSuki} <ArrowRight size={17} aria-hidden="true" />
             </Link>
             <Link href="/marketplace" className="kh-btn kh-btn-ghost">
               {t.heroCtaMarketplace}
