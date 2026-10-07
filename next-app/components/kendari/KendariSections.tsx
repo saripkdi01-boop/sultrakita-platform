@@ -255,24 +255,28 @@ const getPenggunaPertamaCards = () => [
     vertikal: 'UMKM',
     slot: '100 slot',
     teks: 'Website + katalog produk untuk kuliner, fashion, jasa, dan UMKM Sultra.',
+    startParam: 'pp_umkm',
   },
   {
     ikon: BriefcaseBusiness,
     vertikal: 'Lowongan',
     slot: '10 slot',
     teks: 'Halaman profil & lowongan untuk pemberi kerja yang rekrut via SUKI Jobs.',
+    startParam: 'pp_lowongan',
   },
   {
     ikon: Building2,
     vertikal: 'Properti',
     slot: '10 slot',
     teks: 'Showcase unit untuk agen & developer properti di SUKI Properti.',
+    startParam: 'pp_properti',
   },
   {
     ikon: Users,
     vertikal: 'Komunitas',
     slot: '10 slot',
     teks: 'Website komunitas: profil, agenda kegiatan, dan galeri dokumentasi.',
+    startParam: 'pp_komunitas',
   },
 ];
 
@@ -327,7 +331,7 @@ export function KendariPenggunaPertama() {
                   <p>{c.teks}</p>
                   <a
                     className="kh-pp-cta"
-                    href={TELEGRAM_BOT_URL}
+                    href={`${TELEGRAM_BOT_URL}?start=${c.startParam}`}
                     target="_blank"
                     rel="noopener noreferrer"
                   >

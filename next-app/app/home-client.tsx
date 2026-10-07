@@ -174,7 +174,7 @@ export default function HomeClient() {
           <nav id="suki-primary-navigation" aria-label={t.navMain}>
             <a href="#ekosistem" onClick={closeMenu}>{t.ecosystem}</a>
             <a href="#menghubungkan" onClick={closeMenu}>{t.navConnecting}</a>
-            <a href="#komunitas" onClick={closeMenu}>{t.groups}</a>
+            <Link href="/groups" onClick={closeMenu}>{t.groups}</Link>
             <a href="#tentang" onClick={closeMenu}>{t.navAbout}</a>
             <Link href="/Business" onClick={closeMenu}>{t.navForBusiness}</Link>
             <span className="suki-overhaul-menu-extra">
@@ -328,7 +328,7 @@ export default function HomeClient() {
             <h2 id="business-title">{t.bizTitleA}<br /><em>{t.bizTitleB}</em></h2>
             <p>{t.bizDesc}</p>
           </div>
-          <Link href="/Business" className="suki-overhaul-light-button">{t.heroCtaBusiness} <ArrowRight size={17} aria-hidden="true" /></Link>
+          <Link href="/Business" className="suki-overhaul-light-button">{t.navForBusiness} <ArrowRight size={17} aria-hidden="true" /></Link>
         </div>
       </section>
 
@@ -340,7 +340,7 @@ export default function HomeClient() {
               <h2 id="final-title">{t.finalTitle}</h2>
               <p>{t.finalDesc}</p>
             </div>
-            <Link href="/beranda" className="suki-overhaul-primary">{t.openSukiApps} <ArrowRight size={17} aria-hidden="true" /></Link>
+            <Link href="/beranda" className="suki-overhaul-primary">{t.openSuki} <ArrowRight size={17} aria-hidden="true" /></Link>
           </div>
         </div>
       </section>
