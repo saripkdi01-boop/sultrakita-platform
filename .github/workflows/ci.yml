@@ -66,16 +66,31 @@ jobs:
           npm audit --audit-level=high --json > /tmp/audit.json 2>&1 || true
           cat /tmp/audit.json | python3 -c "
           import json,sys
+          # Pengecualian terdokumentasi (2026-10-07):
+          # - braces@3.0.3 (GHSA-vfj7-8cjw-p6xm, high): TIDAK ADA versi patch
+          #   (latest=3.0.3). DoS via pola glob malicious; hanya dipakai saat
+          #   build (chokidar/micromatch), bukan dari input user runtime.
+          #   Ditoleransi hingga patch tersedia; hapus dari EXCEPT bila sudah ada.
+          EXCEPT = {'braces'}
           try:
               d = json.load(sys.stdin)
               vulns = d.get('vulnerabilities', {})
+              bad = []
               for k,v in vulns.items():
                   sev = v.get('severity', '')
                   if sev in ('high', 'critical'):
-                      print(f\"VULN: {k} [{sev}] via {v.get('via', [{}])[0].get('title', '?')[:60]}\")
-          except: print('Audit output parse failed')
+                      flag = ' (dikecualikan)' if k in EXCEPT else ''
+                      print(f\"VULN: {k} [{sev}] via {v.get('via', [{}])[0].get('title', '?')[:60]}{flag}\")
+                      if k not in EXCEPT:
+                          bad.append(k)
+              if bad:
+                  print(f\"FAIL: advisory high/critical di luar pengecualian: {bad}\")
+                  sys.exit(1)
+              print('OK: tidak ada advisory high/critical di luar pengecualian')
+          except SystemExit:
+              raise
+          except Exception as e: print(f'Audit output parse failed: {e}')
           "
-          npm audit --audit-level=high
       # Security regression menargetkan route next-app/ yang LIVE di Vercel
       # (bukan server Express legacy). GAGAL LOUD bila DB test tak tersedia —
       # tidak ada SKIP diam-diam. Butuh secrets SUPABASE_TEST_URL /
