@@ -3,16 +3,19 @@
 import Link from 'next/link';
 import { usePreferences } from '@/lib/preferences';
 import { getCoreLabels } from '@/lib/i18n/dictionaries';
-import { Globe, ShieldCheck, Users } from 'lucide-react';
+import { ArrowRight, BriefcaseBusiness, Building2, Globe, ShieldCheck, Store, Users } from 'lucide-react';
 import WcReveal from '@/components/ui/WcReveal';
 import {
   SukiIconBisnis,
+  SukiIconGames,
   SukiIconJobs,
-  SukiIconKampung,
   SukiIconKomunitas,
   SukiIconMarketplace,
   SukiIconProperti,
 } from '@/components/layout/SukiIcons';
+
+/** Tautan bot Telegram resmi SUKI untuk pendaftaran program. */
+const TELEGRAM_BOT_URL = 'https://t.me/sukiapps_bot';
 import ImageSlot from './ImageSlot';
 
 /* ------------------------------------------------------------------ */
@@ -57,7 +60,7 @@ const getModules = (t: Record<string, string>) => [
   { Icon: SukiIconProperti, title: t.property, desc: t.modulePropertyDesc, href: '/properti' },
   { Icon: SukiIconJobs, title: t.footerJobs, desc: t.moduleJobsDesc, href: '/jobs' },
   { Icon: SukiIconKomunitas, title: t.groups, desc: t.moduleCommunityDesc, href: '/groups' },
-  { Icon: SukiIconKampung, title: 'Kampung', desc: t.moduleKampungDesc, href: '/kampung' },
+  { Icon: SukiIconGames, title: 'SUKI Games', desc: 'Mainkan game lokal Sultra — JALA & SUKI Kampung. Gratis, langsung main di browser.', href: '/games' },
   { Icon: SukiIconBisnis, title: t.business, desc: t.moduleBusinessDesc, href: '/Business' },
 ];
 
@@ -236,6 +239,119 @@ export function KendariKomunitas() {
             </WcReveal>
           ))}
         </div>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Pengguna Pertama — promo website gratis per vertikal (Fase 1).      */
+/* Slot = alokasi program dari Sarip; TANPA angka pendaftar karangan.  */
+/* Pendaftaran via bot Telegram resmi @sukiapps_bot.                   */
+/* ------------------------------------------------------------------ */
+const getPenggunaPertamaCards = () => [
+  {
+    ikon: Store,
+    vertikal: 'UMKM',
+    slot: '100 slot',
+    teks: 'Website + katalog produk untuk kuliner, fashion, jasa, dan UMKM Sultra.',
+  },
+  {
+    ikon: BriefcaseBusiness,
+    vertikal: 'Lowongan',
+    slot: '10 slot',
+    teks: 'Halaman profil & lowongan untuk pemberi kerja yang rekrut via SUKI Jobs.',
+  },
+  {
+    ikon: Building2,
+    vertikal: 'Properti',
+    slot: '10 slot',
+    teks: 'Showcase unit untuk agen & developer properti di SUKI Properti.',
+  },
+  {
+    ikon: Users,
+    vertikal: 'Komunitas',
+    slot: '10 slot',
+    teks: 'Website komunitas: profil, agenda kegiatan, dan galeri dokumentasi.',
+  },
+];
+
+const PP_LANGKAH = [
+  {
+    judul: 'Chat bot Telegram',
+    teks: 'Buka @sukiapps_bot dan pilih vertikal yang sesuai kebutuhanmu.',
+  },
+  {
+    judul: 'Kirim data usahamu',
+    teks: 'Nama usaha, foto produk atau lokasi, dan kontak — tim SUKI bantu susun.',
+  },
+  {
+    judul: 'Website tayang',
+    teks: 'Website gratis dibuatkan dan dipromosikan lewat ekosistem SUKI.',
+  },
+];
+
+export function KendariPenggunaPertama() {
+  const cards = getPenggunaPertamaCards();
+  return (
+    <section className="kh-section kh-pp" id="pengguna-pertama" aria-labelledby="kh-pp-title">
+      <div className="kh-wrap">
+        <WcReveal>
+          <div className="kh-label">Program Pengguna Pertama</div>
+        </WcReveal>
+        <WcReveal delay={1}>
+          <h2 className="kh-h2" id="kh-pp-title">
+            Website gratis untuk
+            <br />
+            <span className="kh-gold">pendaftar awal</span>
+          </h2>
+        </WcReveal>
+        <WcReveal delay={2}>
+          <p className="kh-desc">
+            SUKI Web Studio membuatkan website gratis bagi pendaftar awal di empat
+            vertikal — plus katalog marketing intensif untuk produkmu. Kuota per
+            vertikal terbatas.
+          </p>
+        </WcReveal>
+        <div className="kh-pp-grid">
+          {cards.map((c, i) => {
+            const Ikon = c.ikon;
+            return (
+              <WcReveal key={c.vertikal} delay={(i % 3) as 0 | 1 | 2}>
+                <article className="kh-pp-card">
+                  <span className="kh-pp-slot">{c.slot}</span>
+                  <span className="kh-pp-icon" aria-hidden="true">
+                    <Ikon size={22} />
+                  </span>
+                  <h3>{c.vertikal}</h3>
+                  <p>{c.teks}</p>
+                  <a
+                    className="kh-pp-cta"
+                    href={TELEGRAM_BOT_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Daftar via Telegram
+                    <ArrowRight size={15} aria-hidden="true" />
+                  </a>
+                </article>
+              </WcReveal>
+            );
+          })}
+        </div>
+        <ol className="kh-pp-steps">
+          {PP_LANGKAH.map((l, i) => (
+            <li key={l.judul}>
+              <span className="kh-pp-step-num" aria-hidden="true">
+                {i + 1}
+              </span>
+              <div>
+                <h4>{l.judul}</h4>
+                <p>{l.teks}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
       </div>
     </section>
   );

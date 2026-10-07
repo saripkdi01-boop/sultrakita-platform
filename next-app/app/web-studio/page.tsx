@@ -22,6 +22,7 @@ import {
   Check,
   ChevronDown,
   Clock3,
+  Gift,
   Globe,
   LayoutDashboard,
   Lock,
@@ -32,6 +33,7 @@ import {
   ShieldCheck,
   Sparkles,
   Store,
+  Tag,
   Wallet,
   Wrench,
 } from 'lucide-react';
@@ -131,6 +133,57 @@ const PAKETS: Paket[] = [
     ],
     waktu: 'Periode bulanan',
     ikon: Wrench,
+  },
+];
+
+/** Tautan bot Telegram resmi SUKI untuk pendaftaran tier promo. */
+const TELEGRAM_BOT_URL = 'https://t.me/sukiapps_bot';
+
+/**
+ * Tier promo — harga spesial dari Sarip, ditampilkan apa adanya.
+ * TANPA fitur karangan: detail layanan & pendaftaran via Telegram @sukiapps_bot.
+ */
+const PROMO_TIERS = [
+  {
+    id: 'promo-gratis',
+    nama: 'Pengguna Pertama',
+    harga: 'Gratis',
+    badge: 'Promo',
+    tagline: 'Pembuatan website gratis untuk pendaftar awal program Pengguna Pertama.',
+    fitur: [
+      'Kuota: UMKM 100 slot · Lowongan 10 · Properti 10 · Komunitas 10',
+      'Katalog marketing intensif untuk produkmu',
+      'Pendaftaran & info via Telegram @sukiapps_bot',
+    ],
+    cta: 'Daftar via Telegram',
+    ikon: Gift,
+    unggulan: true,
+  },
+  {
+    id: 'promo-15rb',
+    nama: 'Hemat',
+    harga: 'Rp 15.000',
+    tagline: 'Tier hemat SUKI Web Studio — harga spesial dari Sarip.',
+    fitur: [
+      'Harga apa adanya, tanpa biaya tersembunyi',
+      'Detail layanan & cara daftar via Telegram @sukiapps_bot',
+    ],
+    cta: 'Tanya via Telegram',
+    ikon: Tag,
+    unggulan: false,
+  },
+  {
+    id: 'promo-29rb',
+    nama: 'Hemat Plus',
+    harga: 'Rp 29.000',
+    tagline: 'Tier hemat SUKI Web Studio — harga spesial dari Sarip.',
+    fitur: [
+      'Harga apa adanya, tanpa biaya tersembunyi',
+      'Detail layanan & cara daftar via Telegram @sukiapps_bot',
+    ],
+    cta: 'Tanya via Telegram',
+    ikon: Sparkles,
+    unggulan: false,
   },
 ];
 
@@ -364,6 +417,61 @@ export default function WebStudioPage() {
                 );
               })}
             </ul>
+          </div>
+        </section>
+
+        {/* TIER PROMO — harga spesial dari Sarip */}
+        <section className="sws-seksi sws-seksi-alternatif" aria-labelledby="sws-promo-judul">
+          <div className="sws-wrap">
+            <p className="sws-seksi-kicker">Promo spesial</p>
+            <h2 id="sws-promo-judul">Mulai dari yang paling ringan</h2>
+            <p className="sws-lead">
+              Tier hemat SUKI Web Studio — harga apa adanya dari Sarip.
+              Detail & pendaftaran via Telegram.
+            </p>
+            <div className="sws-grid">
+              {PROMO_TIERS.map((tier) => {
+                const Ikon = tier.ikon;
+                return (
+                  <article
+                    key={tier.id}
+                    className={`sws-kartu${tier.unggulan ? ' sws-kartu-unggulan' : ''}`}
+                    aria-label={`Tier ${tier.nama}`}
+                  >
+                    {tier.badge ? <span className="sws-badge">{tier.badge}</span> : null}
+                    <div className="sws-kartu-top">
+                      <div className="sws-kartu-ikon" aria-hidden>
+                        <Ikon size={22} />
+                      </div>
+                      <div>
+                        <h3>{tier.nama}</h3>
+                        <p className="sws-tagline">{tier.tagline}</p>
+                      </div>
+                    </div>
+                    <p className="sws-harga">
+                      <strong>{tier.harga}</strong>
+                    </p>
+                    <ul className="sws-fitur">
+                      {tier.fitur.map((f) => (
+                        <li key={f}>
+                          <Check size={15} aria-hidden />
+                          <span>{f}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <a
+                      className={`sws-btn ${tier.unggulan ? 'sws-btn-primary' : 'sws-btn-paket'}`}
+                      style={{ marginTop: 'auto' }}
+                      href={TELEGRAM_BOT_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {tier.cta}
+                    </a>
+                  </article>
+                );
+              })}
+            </div>
           </div>
         </section>
 
