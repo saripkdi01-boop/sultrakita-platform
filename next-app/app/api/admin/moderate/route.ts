@@ -11,6 +11,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createClient } from '@supabase/supabase-js';
+import { writeAuditLog, clientIp } from '@/lib/admin/audit-log';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,6 +37,9 @@ function authorized(request: NextRequest): boolean {
 }
 
 export async function POST(request: NextRequest) {
+  const limited = await checkRateLimit(request, 'api');
+  if (limited) return limited;
+
   if (!authorized(request)) {
     return NextResponse.json({ ok: false, error: 'Akses ditolak.' },
       { status: 401 });
@@ -62,6 +67,8 @@ export async function POST(request: NextRequest) {
       { status: 503 });
   }
 
+  const ip = clientIp(request.headers);
+
   try {
     if (action === 'delete') {
       const { error } = await admin.from(table).delete().eq('id', id);
@@ -71,9 +78,26 @@ export async function POST(request: NextRequest) {
       const { error } = await admin.from(table).update({ status }).eq('id', id);
       if (error) throw error;
     }
+    await writeAuditLog(admin, {
+      route: '/api/admin/moderate',
+      action,
+      targetTable: table,
+      targetId: id,
+      ip,
+      ok: true,
+    });
     return NextResponse.json({ ok: true, data: { table, id, action } });
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Gagal memproses.';
+    await writeAuditLog(admin, {
+      route: '/api/admin/moderate',
+      action,
+      targetTable: table,
+      targetId: id,
+      ip,
+      ok: false,
+      error: msg,
+    });
     return NextResponse.json({ ok: false, error: msg.slice(0, 200) },
       { status: 500 });
   }
