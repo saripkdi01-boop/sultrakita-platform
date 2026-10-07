@@ -228,7 +228,9 @@ export default function HomeClient() {
       </div>
 
       <div className="suki-overhaul-container" style={{ marginTop: '1.5rem' }}>
-        <SukiTrafficWidget />
+        {/* Tanggal launch resmi: 15 Okt 2026 09:00 WITA (dari Sarip, 7 Okt).
+            Ubah di sini jika tanggal berubah — jangan karang tanggal lain. */}
+        <SukiTrafficWidget launchDateIso="2026-10-15T09:00:00+08:00" />
       </div>
 
       <div className="wc-tenun-strip" aria-hidden="true" />
