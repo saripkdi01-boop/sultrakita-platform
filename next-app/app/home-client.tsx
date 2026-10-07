@@ -30,6 +30,8 @@ import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 import KendariHero from '@/components/kendari/KendariHero';
 import SukiAboutCard from '@/components/kendari/SukiAboutCard';
 import '@/components/kendari/suki-about-card.css';
+import SukiTrafficWidget from '@/components/kendari/SukiTrafficWidget';
+import '@/components/kendari/suki-traffic-widget.css';
 import {
   KendariBahteramas,
   KendariEcosystem,
@@ -223,6 +225,10 @@ export default function HomeClient() {
 
       <div id="main-content">
         <KendariHero />
+      </div>
+
+      <div className="suki-overhaul-container" style={{ marginTop: '1.5rem' }}>
+        <SukiTrafficWidget />
       </div>
 
       <div className="wc-tenun-strip" aria-hidden="true" />
