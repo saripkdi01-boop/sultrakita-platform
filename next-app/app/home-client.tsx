@@ -34,6 +34,7 @@ import {
   KendariBahteramas,
   KendariEcosystem,
   KendariKomunitas,
+  KendariPenggunaPertama,
   KendariValue,
 } from '@/components/kendari/KendariSections';
 
@@ -300,6 +301,8 @@ export default function HomeClient() {
       <KendariBahteramas />
 
       <KendariKomunitas />
+
+      <KendariPenggunaPertama />
 
       <motion.section className="suki-overhaul-about" id="tentang" aria-labelledby="about-title" {...revealProps}>
         <div className="suki-overhaul-container suki-overhaul-about-grid">

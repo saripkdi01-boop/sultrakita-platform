@@ -7,7 +7,7 @@ import { usePathname } from 'next/navigation';
 export function BrandLogo() {
   const pathname = usePathname();
   const isSuits = pathname.startsWith('/properti') || pathname.startsWith('/dashboard/properties') || pathname.startsWith('/dashboard/inquiries') || pathname.startsWith('/admin/property-verification');
-  const brandName = isSuits ? 'SUKI Suits' : 'SUKI Apps';
+  const brandName = isSuits ? 'SUKI Properti' : 'SUKI Apps';
   return (
     <Link className="brand-lockup" href={isSuits ? '/properti' : '/'} aria-label={`${brandName} — by SULTRAKITA`}>
       <span className="brand-symbol" aria-hidden="true">

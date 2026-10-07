@@ -54,7 +54,8 @@ import {
    - "SUKI Suits" -> "SUKI Properti": /properti adalah direktori real estate
      (tabel properties + inquiry hidup), bukan "suits".
    - "SUKI Events" -> /groups adalah label salah (itu Grup/Komunitas);
-     diganti "SUKI Kampung" (/kampung live, mode demo jujur).
+     kini "SUKI Games" (/games = hub game; berisi JALA + game "SUKI Kampung"
+     di /kampung, mode demo jujur).
    ========================================================================== */
 
 export type MenuIconProps = { size?: number | string; className?: string };
