@@ -56,6 +56,12 @@ export const AUDIT_ACTIONS = {
   BUSINESS_REJECT: 'business.reject',
   BUSINESS_FEATURE: 'business.feature',
   BUSINESS_VERIFY: 'business.verify',
+  // Integrasi perbankan (KPR / e-KYC) — aksi sensitif, wajib audit.
+  BANKING_KPR_SUBMIT: 'banking.kpr.submit',
+  BANKING_KPR_STATUS: 'banking.kpr.status',
+  BANKING_KPR_CANCEL: 'banking.kpr.cancel',
+  BANKING_IDENTITY_VERIFY: 'banking.identity.verify',
+  BANKING_WEBHOOK: 'banking.webhook.received',
 } as const;
 
 /** Singleton client service-role untuk penulisan audit (dibuat sekali per proses). */
