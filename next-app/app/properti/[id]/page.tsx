@@ -1,10 +1,10 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, Bath, Bed, Building2, CheckCircle2, Eye, Heart, MapPin, Maximize, MessageCircle, ShieldCheck } from 'lucide-react';
+import { Bath, Bed, Building2, CheckCircle2, Eye, Heart, MapPin, Maximize, MessageCircle, ShieldCheck } from 'lucide-react';
 import type { Metadata } from 'next';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { getPublicPropertyById } from '@/lib/actions/property-public';
-import { getProperties } from '@/lib/actions/property';
+import { getSimilarProperties } from '@/lib/actions/property';
 import { getNearbyProperties } from '@/lib/actions/property-geo';
 import { PropertyInquiryForm } from '@/components/property/PropertyInquiryForm';
 import PropertyMiniMapLazy from '@/components/property/PropertyMiniMapLazy';
@@ -14,6 +14,10 @@ import MortgageCalculator from '@/components/property/MortgageCalculator';
 import { pricePerSqm } from '@/lib/property-format';
 import { AdSlot } from '@/components/ads/AdSlot';
 import { ReportPropertyButton } from '@/components/property/ReportPropertyButton';
+import PropertyBreadcrumbs from '@/components/property/PropertyBreadcrumbs';
+import PropertyShareButtons from '@/components/property/PropertyShareButtons';
+import PropertyPriceHistory from '@/components/property/PropertyPriceHistory';
+import { PropertyViewTracker } from '@/components/property/PropertyRecentlyViewed';
 import { siteUrl, sukiWaLink } from '@/lib/whatsapp';
 
 function rupiah(value: number) { return `Rp ${new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(value)}`; }
@@ -36,32 +40,17 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   return { title, description, openGraph: { title, description, type: 'website', ...(image ? { images: [{ url: image, alt: property.title }] } : {}) } };
 }
 
-// Properti serupa ala portal properti (pola Zillow "Nearby homes" / 99.co rekomendasi):
-// kategori sama, lalu skor: kecamatan sama +2, harga dalam ±35% +2,
-// kabupaten sama +1, ada foto +0.5. Tanpa fetch tambahan di luar yang sudah ada.
-async function getSimilarProperties(property: any) {
-  try {
-    const result = await getProperties({ category: property.category });
-    if (!result.ok || !Array.isArray(result.data)) return [];
-    const price = Number(property.price) || 0;
-    return result.data
-      .filter((item: any) => String(item.id) !== String(property.id))
-      .map((item: any) => {
-        let score = 0;
-        if (item.district && property.district && item.district === property.district) score += 2;
-        const itemPrice = Number(item.price) || 0;
-        if (price > 0 && itemPrice > 0 && Math.abs(itemPrice - price) / price <= 0.35) score += 2;
-        if (item.regency_name && property.regency_name && item.regency_name === property.regency_name) score += 1;
-        if (Array.isArray(item.images) && item.images.length > 0) score += 0.5;
-        return { item, score };
-      })
-      .filter(entry => entry.score > 0)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 4)
-      .map(entry => entry.item);
-  } catch {
-    return [];
-  }
+// Properti serupa: query teroptimasi di server action (filter kategori + harga
+// ±35% di SQL, limit 50, skor di JS) — bukan fetch seluruh tabel.
+async function getSimilar(property: any) {
+  const result = await getSimilarProperties({
+    id: String(property.id),
+    category: property.category,
+    price: Number(property.price) || 0,
+    district: property.district,
+    regencyName: property.regency_name,
+  }).catch(() => ({ ok: false as const, data: [] as any[] }));
+  return result.ok ? result.data : [];
 }
 
 const centroids: Record<string, { lat: number; lng: number }> = { 'Kendari Barat': { lat: -3.968, lng: 122.507 }, Baruga: { lat: -4.004, lng: 122.526 }, Kadia: { lat: -3.982, lng: 122.514 }, Poasia: { lat: -4.015, lng: 122.548 }, Kambu: { lat: -4.010, lng: 122.528 }, Mandonga: { lat: -3.965, lng: 122.519 }, Wolio: { lat: -5.463, lng: 122.601 }, Betoambari: { lat: -5.491, lng: 122.596 }, Murhum: { lat: -5.470, lng: 122.600 } };
@@ -97,17 +86,23 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
   const badges = [property.is_lelang && `Lelang${property.lelang_type ? `: ${label(property.lelang_type)}` : ''}`, property.takeover_status && `Takeover ${label(property.takeover_status)}`, property.can_kpr && 'Bisa KPR', property.certificate_type && `Sertifikat ${property.certificate_type}`].filter(Boolean) as string[];
   const perSqm = pricePerSqm(Number(property.price), property.land_area_sqm, property.building_area_sqm, property.price_type);
   const perSqmArea = property.land_area_sqm ? `LT ${property.land_area_sqm} m²` : property.building_area_sqm ? `LB ${property.building_area_sqm} m²` : '';
-  const similar = await getSimilarProperties(property);
+  const similar = await getSimilar(property);
   // Chat WhatsApp: inquiry diteruskan ke WA Business resmi SUKI (bukan nomor
   // pribadi seller — privasi seller terjaga). Tombol hanya muncul bila
   // NEXT_PUBLIC_SUKI_WA_NUMBER dikonfigurasi.
   const waHref = sukiWaLink(
     `Halo SUKI, saya tertarik dengan properti "${property.title}" (${rupiah(Number(property.price))}) di SUKI: ${siteUrl()}/properti/${property.id}`
   );
+  const categoryLabel = label(property.category) || 'Properti';
   return (
     <AppLayout>
       <main className="platform-shell mx-auto max-w-6xl px-4 py-6 md:px-8">
-        <Link href="/properti" className="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-sultra-teal hover:text-sultra-forest"><ArrowLeft size={16} /> Kembali ke properti</Link>
+        <PropertyViewTracker property={{ id: String(property.id), title: property.title, price: Number(property.price) || 0, priceType: property.price_type, district: property.district, images }} />
+        <PropertyBreadcrumbs items={[
+          { label: 'Properti', href: '/properti' },
+          { label: categoryLabel, href: `/properti?category=${encodeURIComponent(property.category || '')}` },
+          { label: property.title },
+        ]} />
         <div className="grid gap-6 lg:grid-cols-[1.15fr_.85fr]">
           <section>
             <div className="relative">
@@ -148,6 +143,9 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
               <PropertyInquiryForm propertyId={id} />
               <ReportPropertyButton propertyId={String(id)} />
             </div>
+            <div className="mt-4">
+              <PropertyShareButtons title={property.title} path={`/properti/${property.id}`} />
+            </div>
             {/* T-ADS: slot sidebar detail properti (300×250) */}
             <div className="mt-6"><AdSlot placementId="properti-detail-sidebar" /></div>
           </section>
@@ -157,6 +155,8 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
           <p className="mt-3 whitespace-pre-line text-sm leading-7 text-slate-600 dark:text-slate-300">{property.description || 'Deskripsi properti belum tersedia.'}</p>
         </section>
         <MortgageCalculator price={Number(property.price)} canKpr={property.can_kpr} priceType={property.price_type} />
+        {/* Riwayat harga — hanya tampil bila data nyata ada (anti-fabrikasi) */}
+        <PropertyPriceHistory propertyId={String(property.id)} />
         {/* Fase 3: properti di dekat lokasi (query geo; hanya bila listing punya koordinat) */}
         {nearby.ok && nearby.data.length > 0 && (
           <section className="mt-6" aria-labelledby="nearby-properties-title">
