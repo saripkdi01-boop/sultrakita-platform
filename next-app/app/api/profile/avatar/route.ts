@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { PutObjectCommand } from '@aws-sdk/client-s3';
 import sharp from 'sharp';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
@@ -8,6 +8,7 @@ import { checkRateLimit } from '@/lib/rate-limit';
 import { apiError } from '@/lib/api-error';
 import { csrfProtected } from '@/lib/security/csrf';
 import { parseOr400 } from '@/lib/security/validation';
+import { createR2Client, getR2PublicUrl } from '@/lib/r2';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -68,15 +69,6 @@ async function findFocus(buffer: Buffer) {
   throw new Error(`Gemini HTTP ${lastStatus}`);
 }
 
-function getR2Config() {
-  const endpoint = process.env.R2_ENDPOINT || process.env.R2_S3_ENDPOINT || (process.env.R2_ACCOUNT_ID ? `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com` : '');
-  const bucket = process.env.R2_BUCKET || process.env.R2_BUCKET_NAME || '';
-  const secret = process.env.R2_SECRET_ACCESS_KEY || process.env.R2_SCREET_ACCESS_KEY || '';
-  const publicBase = (process.env.R2_PUBLIC_BASE_URL || '').replace(/\/$/, '');
-  if (!endpoint || !bucket || !process.env.R2_ACCESS_KEY_ID || !secret || !publicBase) return null;
-  return { endpoint, bucket, secret, publicBase };
-}
-
 async function processAvatar(input: Buffer) {
   const source = sharp(input, { animated: false });
   const metadata = await source.metadata();
@@ -107,14 +99,15 @@ async function postHandler(request: NextRequest) {
     const file = uploadParsed.data.file;
     const input = Buffer.from(await file.arrayBuffer());
     const { output, focusSource } = await processAvatar(input);
-    const config = getR2Config();
-    if (!config) return jsonError(request, 'Storage avatar belum terhubung. Pastikan R2_ENDPOINT/R2_BUCKET/R2_ACCESS_KEY_ID/R2_SECRET_ACCESS_KEY/R2_PUBLIC_BASE_URL tersedia di environment Production.', 503);
-    const configuredRegion = String(process.env.R2_REGION || 'auto').trim();
-    const region = /^[a-z0-9-]+$/i.test(configuredRegion) ? configuredRegion : 'auto';
-    const client = new S3Client({ region, endpoint: config.endpoint, forcePathStyle: true, credentials: { accessKeyId: process.env.R2_ACCESS_KEY_ID!, secretAccessKey: config.secret } });
+    let r2: ReturnType<typeof createR2Client>;
+    try {
+      r2 = createR2Client();
+    } catch {
+      return jsonError(request, 'Storage avatar belum terhubung. Pastikan R2_ENDPOINT/R2_BUCKET/R2_ACCESS_KEY_ID/R2_SECRET_ACCESS_KEY/R2_PUBLIC_BASE_URL tersedia di environment Production.', 503);
+    }
     const objectPath = `avatars/${user.id}/${randomUUID()}.jpg`;
-    await client.send(new PutObjectCommand({ Bucket: config.bucket, Key: objectPath, Body: output, ContentType: 'image/jpeg', CacheControl: 'public, max-age=31536000, immutable' }));
-    const avatarUrl = `${config.publicBase}/${objectPath}`;
+    await r2.client.send(new PutObjectCommand({ Bucket: r2.config.bucket, Key: objectPath, Body: output, ContentType: 'image/jpeg', CacheControl: 'public, max-age=31536000, immutable' }));
+    const avatarUrl = getR2PublicUrl(objectPath);
     const { error } = await supabase.from('profiles').update({ avatar_url: avatarUrl }).eq('id', user.id);
     if (error) return jsonError(request, 'Foto tersimpan tetapi profil gagal diperbarui.', 500);
     return NextResponse.json({ ok: true, data: { avatar_url: avatarUrl, width: 512, height: 512, focus_source: focusSource } });
