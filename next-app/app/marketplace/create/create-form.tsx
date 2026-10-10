@@ -70,6 +70,8 @@ type UploadOk = {
   key: string;
   publicUrl: string;
   contentType: string;
+  uploadUrl: string;
+  uploadFields: Record<string, string>;
 };
 
 function newId(): string {
@@ -255,12 +257,13 @@ export default function CreateListingForm() {
         size: file.size,
       })) as UploadOk | { ok: false; error: string };
       if (!prep.ok) throw new Error(prep.error || 'Layanan unggah belum tersedia.');
-      // 2. Browser mengunggah langsung ke Supabase Storage (folder milik user).
-      if (!supabase) throw new Error('Klien Supabase belum tersedia. Muat ulang halaman.');
-      const { error: upError } = await supabase.storage
-        .from('listing-photos')
-        .upload(prep.key, file, { contentType: prep.contentType || file.type, upsert: false });
-      if (upError) throw new Error('Unggah foto gagal. Periksa koneksi lalu coba lagi.');
+      // 2. Browser mengunggah langsung ke R2 via presigned POST.
+      const formData = new FormData();
+      for (const [k, v] of Object.entries(prep.uploadFields)) formData.append(k, v);
+      formData.append('Content-Type', prep.contentType || file.type);
+      formData.append('file', file);
+      const upRes = await fetch(prep.uploadUrl, { method: 'POST', body: formData });
+      if (!upRes.ok) throw new Error('Unggah foto gagal. Periksa koneksi lalu coba lagi.');
       setPhotos((prev) =>
         prev.map((p) => (p.id === itemId ? { ...p, status: 'done' as const, url: prep.publicUrl, key: prep.key } : p)),
       );
