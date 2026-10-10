@@ -215,6 +215,7 @@ export function CreatePostModal({ open, initialType = 'post', onClose, onCreated
         form.append('file', file);
         const response = await fetch(result.url, { method: 'POST', body: form });
         if (!response.ok) throw new Error(fmtLabel(b.brUploadFailed, { name: file.name, status: response.status }));
+        if (!result.publicUrl) throw new Error(fmtLabel(b.brUploadFailed, { name: file.name, status: 'no-url' }));
         uploaded.push({ url: result.publicUrl, name: file.name, type: file.type, preview: URL.createObjectURL(file) });
       }
       setMedia((current) => [...current, ...uploaded]);
