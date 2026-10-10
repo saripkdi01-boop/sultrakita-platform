@@ -1,10 +1,11 @@
 'use server';
 
-import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { requireServerUser } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { requireRole } from '@/lib/dal';
+import { createR2Client } from '@/lib/r2';
 
 export async function createPropertyDocumentDownload(propertyId: string, objectKey: string) {
   const { supabase, user } = await requireServerUser();
@@ -16,11 +17,8 @@ export async function createPropertyDocumentDownload(propertyId: string, objectK
   const allowedKeys = Array.isArray(property?.verification_documents) ? property.verification_documents : [];
   if (!property || (!isAdmin && !isOwner) || !allowedKeys.includes(objectKey)) throw new Error('Akses dokumen ditolak.');
   if (!objectKey.startsWith(`properties/${property.seller_id}/document/`)) throw new Error('Object key dokumen tidak valid.');
-  const endpoint = process.env.R2_ENDPOINT;
-  const bucket = process.env.R2_BUCKET;
-  if (!endpoint || !bucket || !process.env.R2_ACCESS_KEY_ID || !process.env.R2_SECRET_ACCESS_KEY) throw new Error('Storage download belum dikonfigurasi.');
-  const client = new S3Client({ region: 'auto', endpoint, credentials: { accessKeyId: process.env.R2_ACCESS_KEY_ID, secretAccessKey: process.env.R2_SECRET_ACCESS_KEY } });
-  const url = await getSignedUrl(client, new GetObjectCommand({ Bucket: bucket, Key: objectKey }), { expiresIn: 300 });
+  const { client, config } = createR2Client();
+  const url = await getSignedUrl(client, new GetObjectCommand({ Bucket: config.bucket, Key: objectKey }), { expiresIn: 300 });
   return { ok: true as const, url, expiresIn: 300 };
 }
 
