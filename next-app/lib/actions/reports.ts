@@ -87,6 +87,11 @@ export async function reportListing(
     const supabase = await getServerSupabase();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user?.id) return { ok: false, message: 'Silakan masuk terlebih dahulu untuk melaporkan.' };
+    // Anti-spam: cooldown 5 menit per user untuk laporan (tanpa Redis).
+    const { data: recent } = await supabase.from('marketplace_reports').select('created_at').eq('reporter_id', user.id).order('created_at', { ascending: false }).limit(1).maybeSingle();
+    if (recent?.created_at && Date.now() - new Date(recent.created_at).getTime() < 5 * 60_000) {
+      return { ok: false, message: 'Laporan Anda baru saja dicatat. Tunggu beberapa menit sebelum melaporkan lagi.' };
+    }
     const ok = await insertModerationQueue({
       reporterId: user.id,
       reasonLabel: REPORT_REASON_LABELS[reason],
@@ -114,6 +119,11 @@ export async function reportProperty(
     const supabase = await getServerSupabase();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user?.id) return { ok: false, message: 'Silakan masuk terlebih dahulu untuk melaporkan.' };
+    // Anti-spam: cooldown 5 menit per user untuk laporan properti (tanpa Redis).
+    const { data: recent } = await supabase.from('marketplace_reports').select('created_at').eq('reporter_id', user.id).order('created_at', { ascending: false }).limit(1).maybeSingle();
+    if (recent?.created_at && Date.now() - new Date(recent.created_at).getTime() < 5 * 60_000) {
+      return { ok: false, message: 'Laporan Anda baru saja dicatat. Tunggu beberapa menit sebelum melaporkan lagi.' };
+    }
     const ok = await insertModerationQueue({
       reporterId: user.id,
       reasonLabel: REPORT_REASON_LABELS[reason],
