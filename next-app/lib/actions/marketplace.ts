@@ -72,12 +72,12 @@ export async function getWishlistIds() {
 
 // ---- Galeri multi-foto: upload langsung ke Supabase Storage ----
 //
-// Menggantikan R2 (bucket expired 2026-10-04) dengan Supabase Storage bucket
-// `listing-photos` (public read). Alur: server memvalidasi + menyiapkan object
-// key (folder pertama = UID user, sesuai policy storage), browser mengunggah
-// bytes-nya langsung via supabase-js (tanpa melewatkan file lewat server).
+// R2 adalah backend tunggal untuk semua upload media listing (migrasi dari
+// Supabase Storage bucket `listing-photos` pada 2026-10-10).
+// Alur: server memvalidasi + membuat presigned POST, browser mengunggah
+// bytes-nya langsung ke R2 (tanpa melewatkan file lewat server).
 
-const LISTING_PHOTOS_BUCKET = 'listing-photos';
+import { createR2PresignedUpload } from '@/lib/r2';
 
 const mediaUploadSchema = z.object({
   fileName: z.string().trim().min(1).max(160),
@@ -90,25 +90,37 @@ export type ListingMediaUploadOk = {
   key: string;
   publicUrl: string;
   contentType: string;
+  /** URL presigned POST untuk upload langsung dari browser */
+  uploadUrl: string;
+  /** Field form yang wajib disertakan saat POST */
+  uploadFields: Record<string, string>;
 };
 
 /**
- * Siapkan upload foto: validasi di server, kembalikan object key + URL publik.
- * Browser kemudian mengunggah file-nya sendiri ke Supabase Storage.
+ * Siapkan upload foto: validasi di server, kembalikan presigned POST R2 + URL publik.
+ * Browser kemudian mengunggah file-nya sendiri langsung ke R2.
  */
 export async function createListingMediaUpload(input: { fileName: string; contentType: string; size: number }): Promise<ListingMediaUploadOk | { ok: false; error: string }> {
   try {
     const { user } = await requireServerUser();
     const parsed = mediaUploadSchema.safeParse(input);
     if (!parsed.success) return { ok: false as const, error: parsed.error.issues[0]?.message || 'File tidak valid.' };
-    const base = (process.env.NEXT_PUBLIC_SUPABASE_URL || '').replace(/\/$/, '');
-    if (!base) return { ok: false as const, error: 'Konfigurasi Supabase belum lengkap.' };
-    const { randomUUID } = await import('crypto');
-    const safeName = parsed.data.fileName.toLowerCase().replace(/[^a-z0-9._-]/g, '-').slice(-120);
-    // Folder pertama HARUS uid user — diwajibkan policy storage "owner insert".
-    const key = `${user.id}/marketplace/${new Date().toISOString().slice(0, 10)}/${randomUUID()}-${safeName}`;
-    const publicUrl = `${base}/storage/v1/object/public/${LISTING_PHOTOS_BUCKET}/${key}`;
-    return { ok: true as const, key, publicUrl, contentType: parsed.data.contentType };
+    const presigned = await createR2PresignedUpload({
+      prefix: `marketplace/${user.id}`,
+      fileName: parsed.data.fileName,
+      contentType: parsed.data.contentType,
+      maxBytes: 20 * 1024 * 1024,
+      allowedTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
+      needsPublicUrl: true,
+    });
+    return {
+      ok: true as const,
+      key: presigned.key,
+      publicUrl: presigned.publicUrl!,
+      contentType: parsed.data.contentType,
+      uploadUrl: presigned.url,
+      uploadFields: presigned.fields,
+    };
   } catch (error) { return { ok: false as const, error: friendly(error) }; }
 }
 
