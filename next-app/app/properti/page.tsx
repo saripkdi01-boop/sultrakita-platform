@@ -21,6 +21,6 @@ export const metadata: Metadata = {
 };
 
 export default async function PropertiPage() {
-  const result = await getProperties();
-  return <PropertiPageClient initialProperties={result.ok ? result.data : []} />;
+  const result = await getProperties({ pageSize: 24 });
+  return <PropertiPageClient initialProperties={result.ok ? result.data : []} initialHasMore={result.ok ? result.hasMore : false} />;
 }
