@@ -86,3 +86,5 @@ Untuk setiap bank yang ingin diintegrasikan, minta ke PIC bank:
 - DILARANG menyimpan NIK plain, foto KTP, atau token bank tanpa enkripsi.
 - Migrasi DB banking butuh approval suki (file migrasi sudah disiapkan,
   belum dijalankan).
+
+<!-- rebuild trigger 2026-10-11 -->
