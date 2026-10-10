@@ -14,6 +14,8 @@ import { searchPropertiesInBounds, searchPropertiesInRadius } from '@/lib/action
 import { parseMapView, isValidCoord, type MapView, type MapBounds } from '@/lib/geo';
 import type { PropertyPin, RadiusCircle } from '@/components/property/PropertyMap';
 import PropertySavedSearchButton, { type PropertySearchSnapshot } from '@/components/property/PropertySavedSearchButton';
+import PropertySearchAutocomplete from '@/components/property/PropertySearchAutocomplete';
+import { PropertyRecentlyViewedStrip } from '@/components/property/PropertyRecentlyViewed';
 import { EcosystemProperti } from '@/components/illustrations';
 import { usePreferences } from '@/lib/preferences';
 import { tpj } from '@/lib/i18n/dict-propertijobs';
@@ -49,7 +51,7 @@ type CategoryKey =
 
 // Fase 1.1: initialProperties di-render di server (SEO + LCP). Client melewati load pertama
 // bila data awal sudah tersedia.
-export default function PropertiPage({ initialProperties = [] }: { initialProperties?: any[] }) {
+export default function PropertiPage({ initialProperties = [], initialHasMore = false }: { initialProperties?: any[]; initialHasMore?: boolean }) {
   const { language } = usePreferences();
   const p = (key: string, vars?: Record<string, string | number>) => tpj(language, key, vars ?? {});
   const categories = useMemo(() => propertyCategories(language), [language]);
@@ -64,6 +66,11 @@ export default function PropertiPage({ initialProperties = [] }: { initialProper
   const [loadError, setLoadError] = useState('');
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState<'newest' | 'price-low' | 'price-high'>('newest');
+  // Paginasi server-side: ganti limit-60-tanpa-halaman dengan halaman + "muat lebih banyak".
+  const PAGE_SIZE = 24;
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(initialHasMore);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   // Fase 3: state map-first.
   const [hoveredId, setHoveredId] = useState<string | null>(null);
@@ -85,18 +92,35 @@ export default function PropertiPage({ initialProperties = [] }: { initialProper
   const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const viewportTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  async function load(overrides?: { district?: string; minPrice?: string; maxPrice?: string }) {
-    setLoading(true);
-    setLoadError('');
+  function buildFilters(overrides?: { district?: string; minPrice?: string; maxPrice?: string }) {
     const nextDistrict = overrides?.district ?? district;
     const nextMin = overrides?.minPrice ?? minPrice;
     const nextMax = overrides?.maxPrice ?? maxPrice;
-    const result = await getProperties({ category, district: advancedFilters.district || nextDistrict || undefined, regency: advancedFilters.regency || undefined, subdistrict: advancedFilters.subdistrict || undefined, minPrice: advancedFilters.minPrice ?? (nextMin ? Number(nextMin) : undefined), maxPrice: advancedFilters.maxPrice ?? (nextMax ? Number(nextMax) : undefined), certificateTypes: advancedFilters.certificateTypes, canKpr: advancedFilters.canKpr, isLelang: advancedFilters.isLelang, takeover: advancedFilters.takeover });
-    if (result.ok) setProperties(result.data);
-    else { setProperties([]); setLoadError(p('pjLoadError')); }
+    return { category, district: advancedFilters.district || nextDistrict || undefined, regency: advancedFilters.regency || undefined, subdistrict: advancedFilters.subdistrict || undefined, minPrice: advancedFilters.minPrice ?? (nextMin ? Number(nextMin) : undefined), maxPrice: advancedFilters.maxPrice ?? (nextMax ? Number(nextMax) : undefined), certificateTypes: advancedFilters.certificateTypes, canKpr: advancedFilters.canKpr, isLelang: advancedFilters.isLelang, takeover: advancedFilters.takeover };
+  }
+
+  async function load(overrides?: { district?: string; minPrice?: string; maxPrice?: string }) {
+    setLoading(true);
+    setLoadError('');
+    const result = await getProperties({ ...buildFilters(overrides), page: 1, pageSize: PAGE_SIZE });
+    if (result.ok) { setProperties(result.data); setHasMore(result.hasMore ?? false); setPage(1); }
+    else { setProperties([]); setHasMore(false); setLoadError(p('pjLoadError')); }
     const saved = await getUserFavoriteProperties();
     if (saved.ok) setFavorites(saved.data);
     setLoading(false);
+  }
+
+  async function loadMore() {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    const nextPage = page + 1;
+    const result = await getProperties({ ...buildFilters(), page: nextPage, pageSize: PAGE_SIZE });
+    if (result.ok) {
+      setProperties(current => [...current, ...result.data.filter((row: any) => !current.some((c: any) => String(c.id) === String(row.id)))]);
+      setPage(nextPage);
+      setHasMore(result.hasMore ?? false);
+    }
+    setLoadingMore(false);
   }
 
   useEffect(() => { const initialCategory = new URLSearchParams(window.location.search).get('category'); if (initialCategory && categories.some(item => item.key === initialCategory)) setCategory(initialCategory as CategoryKey); }, []);
@@ -108,7 +132,15 @@ export default function PropertiPage({ initialProperties = [] }: { initialProper
   }, [properties, query, sort]);
   const counts = useMemo(() => categories.map(item => ({ ...item, count: item.key ? properties.filter(property => property.category === item.key).length : properties.length })), [properties, categories]);
   const hasSearch = Boolean(query || district || minPrice || maxPrice || category || advancedFilters.regency || advancedFilters.district || advancedFilters.subdistrict);
-  async function favorite(id: string) { const result = await togglePropertyFavorite(id); if (result.ok) setFavorites(current => result.isFavorite ? [...current, id] : current.filter(item => item !== id)); }
+  async function favorite(id: string) {
+    const result = await togglePropertyFavorite(id);
+    if (result.ok) {
+      setFavorites(current => result.isFavorite ? [...current, id] : current.filter(item => item !== id));
+    } else if (/login/i.test(result.error || '')) {
+      // Guest: arahkan login dengan redirect kembali ke halaman properti.
+      window.location.href = `/login?redirect=${encodeURIComponent('/properti')}`;
+    }
+  }
   function resetSearch() { setQuery(''); setDistrict(''); setMinPrice(''); setMaxPrice(''); setCategory(undefined); setAdvancedFilters({ certificateTypes: [], canKpr: false, isLelang: false, takeover: false }); }
   function submitSearch(event: React.FormEvent<HTMLFormElement>) { event.preventDefault(); void load(); }
 
@@ -243,7 +275,7 @@ export default function PropertiPage({ initialProperties = [] }: { initialProper
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_88%_0%,rgba(20,184,166,.12),transparent_32%),linear-gradient(115deg,rgba(15,118,110,.06),transparent_55%)]" />
       <div className="relative px-4 py-4 sm:px-6 sm:py-5">
         <div className="flex flex-col gap-2.5 lg:flex-row lg:items-end lg:justify-between"><div><span className="inline-flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[.18em] text-sultra-teal"><Building2 size={15}/> SUKI PROPERTI</span><h1 className="mt-2 text-xl font-black tracking-tight text-slate-950 sm:text-2xl dark:text-white">{p('pjPropHeroTitle')}</h1><p className="mt-0.5 max-w-xl text-xs sm:text-sm text-slate-500 dark:text-slate-400">{p('pjPropHeroDesc')}</p></div><div className="hidden items-center gap-2 text-[11px] font-semibold text-slate-500 sm:flex dark:text-slate-400"><Sparkles size={15} className="text-amber-500"/> {p('pjPropHeroNote')}</div></div>
-        <form onSubmit={submitSearch} className="mt-3 grid grid-cols-[minmax(0,1fr)_auto] gap-1.5 rounded-xl border border-slate-200 bg-slate-50 p-1.5 sm:flex sm:gap-2 shadow-inner sm:flex-row dark:border-slate-700 dark:bg-slate-800/80"><label className="col-span-2 flex min-h-11 flex-1 items-center gap-2 rounded-lg bg-white px-3 sm:col-span-1 sm:gap-3 sm:rounded-xl sm:px-4 dark:bg-slate-900"><Search size={19} className="shrink-0 text-slate-400"/><input value={query} onChange={event => setQuery(event.target.value)} className="min-w-0 flex-1 bg-transparent text-[13px] font-medium text-slate-900 outline-none placeholder:text-slate-400 dark:text-white" placeholder={p('pjPropSearchPh')} aria-label={p('pjPropSearchAria')} /></label><div className="col-span-1 grid grid-cols-2 gap-1.5 sm:flex sm:gap-2"><input type="number" value={minPrice} onChange={event => setMinPrice(event.target.value)} className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-800 outline-none focus:border-sultra-teal sm:w-28 dark:border-slate-700 dark:bg-slate-900 dark:text-white" placeholder={p('pjMinPricePh')} aria-label={p('pjMinPrice')}/><input type="number" value={maxPrice} onChange={event => setMaxPrice(event.target.value)} className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-800 outline-none focus:border-sultra-teal sm:w-28 dark:border-slate-700 dark:bg-slate-900 dark:text-white" placeholder={p('pjMaxPricePh')} aria-label={p('pjMaxPrice')}/></div><button type="submit" className="inline-flex h-11 items-center justify-center gap-1.5 rounded-lg bg-sultra-forest px-3 text-xs sm:rounded-xl sm:px-5 sm:text-sm font-extrabold text-white transition hover:bg-sultra-teal"><Search size={16}/> {p('pjSearchProperty')}</button></form>
+        <form onSubmit={submitSearch} className="mt-3 grid grid-cols-[minmax(0,1fr)_auto] gap-1.5 rounded-xl border border-slate-200 bg-slate-50 p-1.5 sm:flex sm:gap-2 shadow-inner sm:flex-row dark:border-slate-700 dark:bg-slate-800/80"><PropertySearchAutocomplete value={query} onChange={setQuery} onSubmit={() => void load()} placeholder={p('pjPropSearchPh')} ariaLabel={p('pjPropSearchAria')} className="col-span-2 sm:col-span-1" /><div className="col-span-1 grid grid-cols-2 gap-1.5 sm:flex sm:gap-2"><input type="number" value={minPrice} onChange={event => setMinPrice(event.target.value)} className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-800 outline-none focus:border-sultra-teal sm:w-28 dark:border-slate-700 dark:bg-slate-900 dark:text-white" placeholder={p('pjMinPricePh')} aria-label={p('pjMinPrice')}/><input type="number" value={maxPrice} onChange={event => setMaxPrice(event.target.value)} className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-800 outline-none focus:border-sultra-teal sm:w-28 dark:border-slate-700 dark:bg-slate-900 dark:text-white" placeholder={p('pjMaxPricePh')} aria-label={p('pjMaxPrice')}/></div><button type="submit" className="inline-flex h-11 items-center justify-center gap-1.5 rounded-lg bg-sultra-forest px-3 text-xs sm:rounded-xl sm:px-5 sm:text-sm font-extrabold text-white transition hover:bg-sultra-teal"><Search size={16}/> {p('pjSearchProperty')}</button></form>
       </div>
     </section>
 
@@ -260,6 +292,19 @@ export default function PropertiPage({ initialProperties = [] }: { initialProper
       <div className="mt-4 lg:grid lg:grid-cols-[57%_43%] lg:items-start lg:gap-5">
       <div className={`min-w-0 ${mobileView === 'map' ? 'hidden lg:block' : ''}`} aria-live="polite">
       {loading ? <div className="mt-4 grid grid-cols-2 gap-3 xl:grid-cols-3">{Array.from({ length: 8 }).map((_, index) => <div key={index} className="wc-skeleton h-80 rounded-3xl"/>)}</div> : loadError ? <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 p-6 text-center text-sm text-rose-800"><p className="font-bold">{loadError}</p><button type="button" onClick={() => void load()} className="mt-3 rounded-xl bg-rose-700 px-4 py-2 text-xs font-bold text-white">{p('pjTryAgain')}</button></div> : visibleProperties.length === 0 ? <div className="mt-4 rounded-3xl border border-dashed border-slate-300 bg-white p-12 text-center dark:border-slate-700 dark:bg-slate-900"><span className="dn-empty-art" aria-hidden="true"><EcosystemProperti /></span><Building2 className="mx-auto text-sultra-teal" size={36}/><h3 className="mt-3 font-bold text-slate-900 dark:text-white">{p('pjNoMatch')}</h3><p className="mt-1 text-sm text-slate-500">{p('pjNoMatchHint')}</p><button type="button" onClick={resetSearch} className="mt-4 rounded-xl bg-sultra-forest px-4 py-2 text-sm font-bold text-white">{p('pjClearFilters')}</button></div> : <div className="mt-4 grid grid-cols-2 gap-3 xl:grid-cols-3">{visibleProperties.map(property => <div key={property.id} ref={element => { cardRefs.current[property.id] = element; }} onMouseEnter={() => setHoveredId(property.id)} onMouseLeave={() => setHoveredId(current => (current === property.id ? null : current))} className={`rounded-3xl transition ${hoveredId === property.id ? 'ring-2 ring-sultra-teal ring-offset-2 dark:ring-offset-slate-950' : ''}`}><PropertyCard property={property} isFavorite={favorites.includes(property.id)} onFavoriteToggle={() => void favorite(property.id)}/></div>)}</div>}
+      {hasMore && !loading && !loadError && (
+        <div className="mt-6 text-center">
+          <button
+            type="button"
+            onClick={() => void loadMore()}
+            disabled={loadingMore}
+            className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-sultra-teal bg-white px-6 py-2.5 text-sm font-extrabold text-sultra-teal transition hover:bg-sultra-mint/50 disabled:opacity-50 dark:bg-slate-900"
+          >
+            {loadingMore ? p('pjLoading') : p('pjLoadMore')}
+          </button>
+        </div>
+      )}
+      <PropertyRecentlyViewedStrip />
       </div>
       {/* Fase 3: peta sticky 43% di desktop, tab Peta di mobile */}
       <div className={`mt-4 lg:mt-0 ${mobileView === 'map' ? '' : 'hidden lg:block'}`}>
