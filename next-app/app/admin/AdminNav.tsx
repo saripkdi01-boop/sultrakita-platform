@@ -13,7 +13,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, UsersRound, KeyRound, ShieldCheck, Activity, Bug, Database, ScrollText,
   CreditCard, Megaphone, Settings2, BellRing, LifeBuoy, Images, House,
-  Building2, Gift, Rocket, Tag,
+  Building2, Gift, Rocket, Tag, BookOpen,
 } from 'lucide-react';
 
 const SECTIONS = [
