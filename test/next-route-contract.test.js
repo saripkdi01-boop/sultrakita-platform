@@ -10,6 +10,7 @@ const listingsRoute = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'ap
 const postsAction = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'lib', 'actions', 'posts.ts'), 'utf8');
 const composer = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'components', 'beranda', 'CreatePostModal.tsx'), 'utf8');
 const uploadAction = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'actions', 'upload.ts'), 'utf8');
+const r2lib = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'lib', 'r2.ts'), 'utf8');
 const groupsPage = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'app', 'groups', 'page.tsx'), 'utf8');
 const groupsAction = fs.readFileSync(path.join(__dirname, '..', 'next-app', 'lib', 'actions', 'groups.ts'), 'utf8');
 const groupsMigration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20260912060000_suki_communities.sql'), 'utf8');
@@ -89,8 +90,11 @@ test('Create Post media upload is authenticated and bounded', () => {
   assert.match(uploadAction, /requireServerUser/);
   assert.match(uploadAction, /MAX_IMAGE_BYTES/);
   assert.match(uploadAction, /MAX_VIDEO_BYTES/);
-  assert.match(uploadAction, /content-length-range/);
-  assert.match(uploadAction, /eq', '\$Content-Type'/);
+  // R2: batas ukuran divalidasi server-side di action…
+  assert.match(uploadAction, /size > maxBytes/);
+  // …dan ditegakkan di presigned POST (lib/r2.ts)
+  assert.match(r2lib, /content-length-range/);
+  assert.match(r2lib, /\['eq', '\$Content-Type'/);
   assert.doesNotMatch(uploadAction, /NEXT_PUBLIC_R2_ACCESS/);
 });
 
