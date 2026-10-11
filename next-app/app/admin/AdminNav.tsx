@@ -36,6 +36,7 @@ const SECTIONS = [
   { href: '/admin/affiliate-rewards', label: 'Afiliasi', icon: Gift },
   { href: '/admin/settings', label: 'Pengaturan', icon: Settings2 },
   { href: '/admin/launch', label: 'Launch', icon: Rocket },
+  { href: '/admin/pengetahuan', label: 'Pengetahuan', icon: BookOpen },
 ] as const;
 
 export function AdminNav() {
