@@ -57,18 +57,25 @@ export default async function AdminPengetahuanPage({
   let rows: KnowledgeRow[] = [];
   let error: string | null = null;
 
-  if (query_text.length >= 3) {
-    try {
-      const supabase = await getServerSupabase();
+  try {
+    const supabase = await getServerSupabase();
+    if (query_text.length >= 3) {
       const { data, error: rpcError } = await supabase.rpc('search_knowledge', {
         q: query_text,
         batas: 20,
       });
       if (rpcError) error = rpcError.message;
       else rows = (data ?? []) as KnowledgeRow[];
-    } catch (e) {
-      error = e instanceof Error ? e.message : 'Gagal mencari.';
+    } else {
+      // Tanpa kata kunci: tampilkan semua dokumen terbaru
+      const { data, error: rpcError } = await supabase.rpc('list_knowledge', {
+        batas: 20,
+      });
+      if (rpcError) error = rpcError.message;
+      else rows = (data ?? []) as KnowledgeRow[];
     }
+  } catch (e) {
+    error = e instanceof Error ? e.message : 'Gagal memuat.';
   }
 
   const filtered =
