@@ -1,0 +1,1025 @@
+/* SUKI Web Studio — "Prestige" overhaul.
+   Animasi penuh yang berkelas: entrance hero berurutan, scroll-reveal,
+   kartu "Paling diminati" sebagai bintang (border emas conic berputar +
+   glow + badge shine + posisi utama), kilau tombol, FAQ & form halus.
+   Hormati prefers-reduced-motion. Mobile-first. */
+
+@property --sws-a {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+/* ============ KEYFRAMES ============ */
+@keyframes sws-hero-in {
+  from { opacity: 0; transform: translateY(28px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes sws-orb-float {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(24px, -30px, 0) scale(1.12); }
+}
+
+@keyframes sws-putar {
+  to { --sws-a: 360deg; }
+}
+
+@keyframes sws-glow-pulse {
+  0%, 100% { box-shadow: 0 24px 60px rgba(212, 160, 23, 0.22), var(--theme-shadow-md); }
+  50% { box-shadow: 0 24px 70px rgba(212, 160, 23, 0.38), var(--theme-shadow-md); }
+}
+
+@keyframes sws-shine {
+  from { transform: translateX(-120%) skewX(-18deg); }
+  to { transform: translateX(240%) skewX(-18deg); }
+}
+
+@keyframes sws-sticky-in {
+  from { opacity: 0; transform: translateY(110%); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes sws-faq-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============ HERO: orbs + entrance berurutan ============ */
+.sws-hero {
+  isolation: isolate;
+}
+
+.sws-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+  animation: sws-orb-float 11s ease-in-out infinite;
+}
+
+.sws-orb-1 {
+  width: 420px;
+  height: 420px;
+  top: -140px;
+  right: -110px;
+  background: radial-gradient(circle, rgba(255, 215, 102, 0.34), transparent 65%);
+}
+
+.sws-orb-2 {
+  width: 360px;
+  height: 360px;
+  bottom: -160px;
+  left: -100px;
+  background: radial-gradient(circle, rgba(97, 209, 192, 0.3), transparent 65%);
+  animation-delay: -5.5s;
+  animation-duration: 13s;
+}
+
+.sws-hero .sws-wrap {
+  position: relative;
+  z-index: 1;
+}
+
+/* Entrance hero: kicker -> h1 -> sub -> CTA -> jaminan (stagger). */
+.sws-hero .sws-kicker {
+  animation: sws-hero-in 0.7s cubic-bezier(0.22, 0.68, 0.36, 1) 0.05s both;
+}
+
+.sws-hero h1 {
+  animation: sws-hero-in 0.8s cubic-bezier(0.22, 0.68, 0.36, 1) 0.16s both;
+}
+
+.sws-hero .sws-sub {
+  animation: sws-hero-in 0.8s cubic-bezier(0.22, 0.68, 0.36, 1) 0.28s both;
+}
+
+.sws-hero .sws-cta-row {
+  animation: sws-hero-in 0.8s cubic-bezier(0.22, 0.68, 0.36, 1) 0.4s both;
+}
+
+.sws-hero .sws-jaminan {
+  animation: sws-hero-in 0.8s cubic-bezier(0.22, 0.68, 0.36, 1) 0.52s both;
+}
+
+.sws-hero .sws-jaminan li {
+  animation: sws-hero-in 0.6s cubic-bezier(0.22, 0.68, 0.36, 1) both;
+}
+
+.sws-hero .sws-jaminan li:nth-child(1) { animation-delay: 0.6s; }
+.sws-hero .sws-jaminan li:nth-child(2) { animation-delay: 0.68s; }
+.sws-hero .sws-jaminan li:nth-child(3) { animation-delay: 0.76s; }
+.sws-hero .sws-jaminan li:nth-child(4) { animation-delay: 0.84s; }
+
+/* ============ SCROLL REVEAL ============ */
+.sws-reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition:
+    opacity 0.75s ease,
+    transform 0.75s cubic-bezier(0.22, 0.68, 0.36, 1);
+  transition-delay: var(--sws-d, 0s);
+  will-change: opacity, transform;
+}
+
+.sws-reveal.is-inview {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ============ KARTU "PALING DIMINATI" — bintang utama ============ */
+
+/* Posisi utama: pertama di mobile, tengah-atas di desktop. */
+@media (max-width: 1079px) {
+  #sws-paket .sws-kartu-unggulan {
+    order: -1;
+  }
+}
+
+@media (min-width: 1080px) {
+  #sws-paket .sws-grid > :nth-child(1) { order: 1; }
+  #sws-paket .sws-kartu-unggulan { order: 2; }
+  #sws-paket .sws-grid > :nth-child(2) { order: 3; }
+  #sws-paket .sws-grid > :nth-child(4) { order: 4; }
+  #sws-paket .sws-grid > :nth-child(5) { order: 5; }
+
+  /* Sedikit lebih besar dari kartu lain — tanpa mengganggu layout. */
+  #sws-paket .sws-kartu-unggulan {
+    scale: 1.045;
+    z-index: 2;
+  }
+}
+
+.sws-kartu-unggulan {
+  /* Fallback: border emas statis untuk browser lama. */
+  border: 2px solid #d4a017;
+  animation: sws-glow-pulse 3.6s ease-in-out infinite;
+  overflow: visible;
+}
+
+@supports (background: conic-gradient(from 0deg, red, blue)) {
+  .sws-kartu-unggulan {
+    border-color: transparent;
+    background:
+      linear-gradient(var(--theme-surface), var(--theme-surface)) padding-box,
+      conic-gradient(from var(--sws-a),
+        #ffe9a8 0deg, #d4a017 70deg, #fff7dd 140deg,
+        #b8860b 210deg, #ffd766 280deg, #ffe9a8 360deg) border-box;
+    animation:
+      sws-putar 7s linear infinite,
+      sws-glow-pulse 3.6s ease-in-out infinite;
+  }
+}
+
+.sws-kartu-unggulan:hover {
+  border-color: transparent;
+  transform: translateY(-5px);
+}
+
+/* Ikon kartu unggulan: lingkaran emas. */
+.sws-kartu-unggulan .sws-kartu-ikon {
+  background: linear-gradient(135deg, #ffd766, #e0a92e);
+  color: #123331;
+  box-shadow: 0 8px 20px rgba(212, 160, 23, 0.35);
+}
+
+/* Harga kartu unggulan: emas, lebih besar. */
+.sws-kartu-unggulan .sws-harga strong {
+  font-size: 2.3rem;
+  background: linear-gradient(120deg, #b8860b, #d4a017 45%, #8a6508);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: #b8860b;
+}
+
+/* Badge "Paling diminati": emas mengkilap + kilau menyapu. */
+.sws-kartu-unggulan .sws-badge {
+  background: linear-gradient(120deg, #ffdf80, #ffd766 40%, #f0b429 75%, #ffdf80);
+  background-size: 220% 100%;
+  color: #123331;
+  font-size: 0.82rem;
+  padding: 8px 20px;
+  box-shadow: 0 10px 24px rgba(212, 160, 23, 0.45);
+  overflow: hidden;
+  animation: sws-badge-sheen 4.5s ease-in-out infinite;
+}
+
+@keyframes sws-badge-sheen {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.sws-kartu-unggulan .sws-badge::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 45%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.75), transparent);
+  animation: sws-shine 3.2s ease-in-out infinite;
+}
+
+/* Tombol kartu unggulan: emas. */
+.sws-kartu-unggulan .sws-btn-primary {
+  background: linear-gradient(135deg, #ffd766, #f0b429);
+  color: #123331 !important;
+  box-shadow: 0 12px 28px rgba(212, 160, 23, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.sws-kartu-unggulan .sws-btn-primary:hover {
+  background: linear-gradient(135deg, #ffdd85, #f5bc3d);
+  color: #123331 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 16px 34px rgba(212, 160, 23, 0.5);
+}
+
+/* ============ KILAU TOMBOL (shine sweep) ============ */
+.sws-btn-emas,
+.sws-kartu-unggulan .sws-btn-primary,
+.sws-btn-submit {
+  position: relative;
+  overflow: hidden;
+}
+
+.sws-btn-emas::after,
+.sws-kartu-unggulan .sws-btn-primary::after,
+.sws-btn-submit::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  transform: translateX(-130%) skewX(-18deg);
+  pointer-events: none;
+}
+
+.sws-btn-emas:hover::after,
+.sws-kartu-unggulan .sws-btn-primary:hover::after,
+.sws-btn-submit:hover::after {
+  animation: sws-shine 0.9s ease;
+}
+
+/* ============ KARTU BIASA: hover lebih hidup ============ */
+.sws-kartu {
+  transition:
+    transform 0.22s cubic-bezier(0.22, 0.68, 0.36, 1),
+    box-shadow 0.22s ease,
+    border-color 0.22s ease;
+}
+
+.sws-kartu:not(.sws-kartu-unggulan):hover {
+  transform: translateY(-6px);
+}
+
+/* ============ LANGKAH: garis penghubung animasi ============ */
+@media (min-width: 1080px) {
+  .sws-langkah-item:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    top: 52px;
+    right: -18px;
+    width: 20px;
+    height: 2px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--theme-primary), transparent);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.7s ease 0.35s;
+  }
+
+  .sws-langkah.is-inview .sws-langkah-item:not(:last-child)::after {
+    transform: scaleX(1);
+  }
+}
+
+.sws-langkah-item {
+  transition:
+    transform 0.22s cubic-bezier(0.22, 0.68, 0.36, 1),
+    box-shadow 0.22s ease;
+}
+
+.sws-langkah-item:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--theme-shadow-md);
+}
+
+/* ============ FAQ: buka-tutup halus ============ */
+.sws-faq-item[open] > p {
+  animation: sws-faq-in 0.35s ease;
+}
+
+.sws-faq-item {
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.sws-faq-item:hover {
+  transform: translateX(3px);
+}
+
+/* ============ FORM: fokus berpendar ============ */
+.sws-field input,
+.sws-field select,
+.sws-field textarea {
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.sws-field input:focus,
+.sws-field select:focus,
+.sws-field textarea:focus {
+  border-color: var(--theme-primary);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--theme-primary) 18%, transparent);
+  transform: translateY(-1px);
+}
+
+/* ============ STICKY BAR: meluncur masuk ============ */
+@media (max-width: 720px) {
+  .sws-stickybar {
+    animation: sws-sticky-in 0.7s cubic-bezier(0.22, 0.68, 0.36, 1) 1.4s both;
+  }
+}
+
+/* ============ RIBBON: ikon berdenyut halus ============ */
+.sws-ribbon-list svg {
+  animation: sws-ribbon-pulse 2.8s ease-in-out infinite;
+}
+
+@keyframes sws-ribbon-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.18); opacity: 0.85; }
+}
+
+/* ============ KENAPA: ikon melayang saat hover ============ */
+.sws-kenapa .sws-kartu-ikon {
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.25s ease;
+}
+
+.sws-kenapa:hover .sws-kartu-ikon {
+  transform: translateY(-4px) rotate(-6deg) scale(1.06);
+}
+
+/* ============ CTA BANNER: tombol berdenyut lembut ============ */
+.sws-cta-banner .sws-btn-emas {
+  animation: sws-cta-breathe 3.2s ease-in-out infinite;
+}
+
+@keyframes sws-cta-breathe {
+  0%, 100% { box-shadow: 0 10px 26px rgba(0, 0, 0, 0.28); }
+  50% { box-shadow: 0 10px 34px rgba(255, 215, 102, 0.45); }
+}
+
+/* ============ REDUCED MOTION: matikan semua ============ */
+@media (prefers-reduced-motion: reduce) {
+  .sws-orb,
+  .sws-stickybar,
+  .sws-cta-banner .sws-btn-emas,
+  .sws-kartu-unggulan,
+  .sws-kartu-unggulan .sws-badge,
+  .sws-kartu-unggulan .sws-badge::after,
+  .sws-ribbon-list svg,
+  .sws-hero .sws-kicker,
+  .sws-hero h1,
+  .sws-hero .sws-sub,
+  .sws-hero .sws-cta-row,
+  .sws-hero .sws-jaminan,
+  .sws-hero .sws-jaminan li {
+    animation: none !important;
+  }
+
+  .sws-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .sws-kartu-unggulan {
+    border: 2px solid #d4a017;
+    background: var(--theme-surface);
+  }
+}
+
+/* ============ UPGRADE vs-HOSTINGER (13 Okt 2026): hero 2 kolom + mockup,
+   showcase ilustrasi, tabel banding. Hormati prefers-reduced-motion. ============ */
+
+@keyframes sws-mock-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* ---- util sr-only ---- */
+.sws-sr {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* ---- HERO: grid 2 kolom di desktop ---- */
+@media (min-width: 1080px) {
+  .sws-hero-grid {
+    display: grid;
+    grid-template-columns: 1.02fr 0.98fr;
+    gap: 56px;
+    align-items: center;
+  }
+}
+
+.sws-hero-visual {
+  position: relative;
+  z-index: 1;
+  animation: sws-hero-in 0.8s cubic-bezier(0.22, 0.68, 0.36, 1) 0.64s both;
+}
+
+@media (max-width: 1079px) {
+  .sws-hero-visual {
+    max-width: 400px;
+    margin: 40px auto 0;
+  }
+}
+
+/* ---- Mockup browser CSS-only (tanpa gambar, murah di HP) ---- */
+.sws-mock {
+  position: relative;
+  background: var(--theme-surface);
+  border: 1px solid var(--theme-border);
+  border-radius: 18px;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.35);
+  animation: sws-mock-float 7s ease-in-out infinite;
+}
+
+.sws-mock-bar,
+.sws-sc-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--theme-border);
+}
+
+.sws-mock-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex: none;
+}
+.sws-mock-dot:nth-of-type(1) { background: #f87171; }
+.sws-mock-dot:nth-of-type(2) { background: #fbbf24; }
+.sws-mock-dot:nth-of-type(3) { background: #34d399; }
+
+.sws-mock-url {
+  margin-left: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--theme-text-muted);
+  background: color-mix(in srgb, var(--theme-primary) 10%, transparent);
+  border: 1px solid var(--theme-border);
+  padding: 4px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sws-mock-body { padding: 18px; display: grid; gap: 12px; }
+
+.sws-mock-hero {
+  height: 104px;
+  border-radius: 12px;
+  background:
+    radial-gradient(120px 60px at 85% 20%, rgba(255, 255, 255, 0.35), transparent 60%),
+    linear-gradient(120deg, #ffd766 0%, #f0b429 42%, #0f766e 100%);
+}
+
+.sws-mock-lines i {
+  display: block;
+  height: 10px;
+  border-radius: 6px;
+  background: var(--theme-border);
+  margin-bottom: 8px;
+}
+.sws-mock-lines i:nth-child(1) { width: 84%; }
+.sws-mock-lines i:nth-child(2) { width: 62%; }
+.sws-mock-lines i:nth-child(3) { width: 46%; margin-bottom: 0; }
+
+.sws-mock-btn {
+  width: 118px;
+  height: 30px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ffd766, #f0b429);
+  box-shadow: 0 8px 18px rgba(212, 160, 23, 0.35);
+}
+
+.sws-mock-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.sws-mock-row i {
+  height: 58px;
+  border-radius: 10px;
+  background: linear-gradient(160deg,
+    color-mix(in srgb, var(--theme-primary) 14%, var(--theme-surface)),
+    var(--theme-border));
+  border: 1px solid var(--theme-border);
+}
+
+/* Chip melayang ala Wix */
+.sws-mock-chip {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 800;
+  padding: 8px 13px;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #123331;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(212, 160, 23, 0.35);
+  animation: sws-mock-float 5.5s ease-in-out infinite;
+  white-space: nowrap;
+}
+.sws-mock-chip-1 { top: 30%; right: -12px; }
+.sws-mock-chip-2 { bottom: 16%; left: -14px; animation-delay: -2.7s; }
+@media (max-width: 420px) {
+  .sws-mock-chip-1 { right: -4px; }
+  .sws-mock-chip-2 { left: -4px; }
+}
+
+/* ============ MP-KONSEP (13 Okt 2026): "Konsep desain baru" marketplace —
+   visi upgrade kelas global di dalam mockup hero & kartu showcase.
+   Tipografi kuat, spacing lega, kartu produk modern, micro-interaction
+   hover lift. HTML/CSS murni, tanpa gambar eksternal. ============ */
+.sws-mp { display: grid; gap: 10px; transform-style: preserve-3d; }
+
+.sws-mp-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transform: translateZ(22px);
+}
+.sws-mp-logo {
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 900;
+  color: #3a2b00;
+  background: linear-gradient(135deg, #ffd766, #f0b429);
+  box-shadow: 0 4px 10px rgba(212, 160, 23, 0.35);
+  flex: none;
+}
+.sws-mp-search {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--theme-text-muted);
+  background: color-mix(in srgb, var(--theme-primary) 7%, transparent);
+  border: 1px solid var(--theme-border);
+  border-radius: 999px;
+  padding: 6px 11px;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.sws-mp-top > svg { color: var(--theme-text-muted); flex: none; }
+
+.sws-mp-chips {
+  display: flex;
+  gap: 6px;
+  overflow: hidden;
+  transform: translateZ(40px);
+}
+.sws-mp-chips span {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--theme-border);
+  color: var(--theme-text-muted);
+  background: transparent;
+  white-space: nowrap;
+  flex: none;
+}
+.sws-mp-chips .sws-mp-chip-on {
+  background: #1c1917;
+  border-color: #1c1917;
+  color: #fff;
+}
+
+.sws-mp-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 9px;
+  transform: translateZ(30px);
+}
+.sws-mp-grid-2 { grid-template-columns: repeat(2, 1fr); }
+
+.sws-mp-card {
+  background: #ffffff;
+  border: 1px solid rgba(28, 25, 23, 0.08);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(28, 25, 23, 0.06);
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+@media (hover: hover) {
+  .sws-mp-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 24px rgba(28, 25, 23, 0.14);
+  }
+}
+.sws-mp-media {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  display: grid;
+  place-items: center;
+  color: rgba(255, 255, 255, 0.95);
+}
+.sws-mp-g1 { background: linear-gradient(140deg, #f59e0b, #b45309); }
+.sws-mp-g2 { background: linear-gradient(140deg, #0d9488, #115e59); }
+.sws-mp-g3 { background: linear-gradient(140deg, #65a30d, #3f6212); }
+.sws-mp-g4 { background: linear-gradient(140deg, #0ea5e9, #1e3a8a); }
+.sws-mp-g5 { background: linear-gradient(140deg, #8b5cf6, #5b21b6); }
+.sws-mp-g6 { background: linear-gradient(140deg, #ec4899, #9d174d); }
+.sws-mp-badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  background: rgba(255, 255, 255, 0.96);
+  color: #3a2b00;
+  border-radius: 6px;
+  padding: 3px 7px;
+}
+.sws-mp-info { padding: 7px 8px 8px; display: grid; gap: 3px; }
+.sws-mp-harga {
+  margin: 0;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #1c1917;
+}
+.sws-mp-nama {
+  margin: 0;
+  font-size: 9px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: #44403c;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sws-mp-meta {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 8.5px;
+  font-weight: 600;
+  color: #78716c;
+}
+.sws-mp-meta svg { flex: none; color: #b45309; }
+.sws-mp-meta svg:first-child { color: #78716c; }
+
+.sws-mp-nav {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-top: 1px solid var(--theme-border);
+  padding-top: 9px;
+}
+.sws-mp-nav span {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--theme-text-muted);
+}
+.sws-mp-nav .on { color: #b45309; }
+
+/* Miniatur di kartu showcase: padding lebih lega */
+.sws-sc-mp { padding: 16px; display: grid; }
+.sws-sc-mp .sws-mp-grid { transform: none; }
+
+/* ---- SHOWCASE: kartu ilustrasi gaya desain ---- */
+.sws-showcase-grid {
+  display: grid;
+  gap: 20px;
+}
+@media (min-width: 900px) {
+  .sws-showcase-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+.sws-sc-card {
+  background: var(--theme-surface);
+  border: 1px solid var(--theme-border);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: var(--theme-shadow-sm);
+  transition: transform 0.22s cubic-bezier(0.22, 0.68, 0.36, 1), box-shadow 0.22s ease;
+}
+.sws-sc-card:hover { transform: translateY(-6px); box-shadow: var(--theme-shadow-md); }
+
+.sws-sc-view {
+  position: relative;
+  padding: 18px;
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  min-height: 250px;
+  background:
+    radial-gradient(220px 120px at 50% 0%, rgba(255, 255, 255, 0.06), transparent 60%),
+    var(--theme-bg);
+  border-bottom: 1px solid var(--theme-border);
+}
+
+.sws-sc-tag {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ffd766;
+  background: rgba(4, 29, 27, 0.72);
+  border: 1px solid rgba(255, 215, 102, 0.45);
+  padding: 5px 10px;
+  border-radius: 999px;
+}
+
+.sws-sc-hero { height: 92px; border-radius: 12px; }
+.sws-sc-emas .sws-sc-hero { background: linear-gradient(120deg, #ffe9a8, #f0b429 60%, #b8860b); }
+.sws-sc-teal .sws-sc-hero { background: linear-gradient(120deg, #99f6e4, #2dd4bf 55%, #0f766e); }
+.sws-sc-gelap .sws-sc-hero { background: linear-gradient(120deg, #134e4a, #07332f 60%, #041d1b); }
+
+.sws-sc-body { padding: 18px 20px 22px; }
+.sws-sc-kategori {
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--theme-primary);
+  margin: 0 0 6px;
+}
+.sws-sc-body h3 { font-size: 1.15rem; margin: 0 0 8px; color: var(--theme-text-strong); }
+.sws-sc-body p { font-size: 0.92rem; line-height: 1.65; color: var(--theme-text-muted); margin: 0; }
+
+.sws-sc-note {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 26px 0 0;
+  padding: 16px 18px;
+  border: 1.5px dashed var(--theme-border);
+  border-radius: 14px;
+  font-size: 0.9rem;
+  color: var(--theme-text-muted);
+  background: color-mix(in srgb, var(--theme-primary) 5%, transparent);
+}
+.sws-sc-note svg { flex: none; margin-top: 2px; color: var(--theme-primary); }
+
+/* ---- TABEL BANDING ---- */
+.sws-banding-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--theme-border);
+  border-radius: 18px;
+  background: var(--theme-surface);
+  box-shadow: var(--theme-shadow-sm);
+  -webkit-overflow-scrolling: touch;
+}
+.sws-banding {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: collapse;
+  font-size: 0.93rem;
+}
+.sws-banding th,
+.sws-banding td {
+  padding: 14px 16px;
+  text-align: center;
+  border-bottom: 1px solid var(--theme-border);
+  vertical-align: middle;
+}
+.sws-banding thead th {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--theme-text-strong);
+  background: color-mix(in srgb, var(--theme-primary) 6%, var(--theme-surface));
+}
+.sws-banding tbody th {
+  text-align: left;
+  font-weight: 600;
+  color: var(--theme-text);
+  font-size: 0.9rem;
+}
+.sws-banding tbody tr:last-child th,
+.sws-banding tbody tr:last-child td { border-bottom: none; }
+.sws-banding-col-suki {
+  background: linear-gradient(180deg,
+    color-mix(in srgb, #ffd766 14%, transparent),
+    color-mix(in srgb, #ffd766 6%, transparent)) !important;
+}
+.sws-banding thead .sws-banding-col-suki { color: #8a6508; }
+.sws-nilai {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+}
+.sws-nilai-ya { color: #0f766e; background: rgba(45, 212, 191, 0.14); }
+.sws-nilai-sebagian { color: #b8860b; background: rgba(212, 160, 23, 0.14); }
+.sws-nilai-tidak { color: var(--theme-text-muted); background: color-mix(in srgb, var(--theme-text-muted) 10%, transparent); }
+.sws-banding-catatan {
+  margin: 16px 0 0;
+  font-size: 0.85rem;
+  color: var(--theme-text-muted);
+  line-height: 1.7;
+}
+
+/* ---- STICKYBAR: naik di atas widget chat global (perbaikan parsial QA) ---- */
+@media (max-width: 720px) {
+  .sws-stickybar { z-index: 70; }
+}
+
+/* ---- REDUCED MOTION: matikan animasi baru ---- */
+@media (prefers-reduced-motion: reduce) {
+  .sws-mock,
+  .sws-mock-chip,
+  .sws-hero-visual {
+    animation: none !important;
+  }
+  .sws-sc-card:hover { transform: none; }
+}
+
+/* ============ 3D-MOTION (13 Okt 2026): hero 3D scene, tilt kartu interaktif,
+   scroll-reveal berdimensi, parallax orbs multi-kedalaman.
+   HANYA transform / opacity / translate (GPU, tanpa layout thrash).
+   Hormati prefers-reduced-motion (mati total). Touch: tilt hanya pointer
+   halus; idle animation tetap jalan sebagai fallback. ============ */
+
+/* ---- HERO: panggung 3D ---- */
+.sws-hero-visual {
+  perspective: 1400px;
+}
+
+.sws-3d-stage {
+  --sws-rx: 6deg;
+  --sws-ry: -12deg;
+  transform: rotateX(var(--sws-rx)) rotateY(var(--sws-ry));
+  transform-style: preserve-3d;
+  transition: transform 0.18s ease-out;
+  will-change: transform;
+}
+
+.sws-mock,
+.sws-mock-body,
+.sws-mock-bar {
+  transform-style: preserve-3d;
+}
+
+/* Lapisan kedalaman di dalam mockup browser */
+.sws-mock-hero { transform: translateZ(34px); }
+.sws-mock-btn { transform: translateZ(52px); }
+.sws-mock-url { transform: translateZ(26px); }
+
+/* Chip melayang di kedalaman berbeda (menggantikan float 2D lama) */
+@keyframes sws-chip-z1 {
+  0%, 100% { transform: translateZ(80px) translateY(0); }
+  50% { transform: translateZ(80px) translateY(-9px); }
+}
+@keyframes sws-chip-z2 {
+  0%, 100% { transform: translateZ(46px) translateY(0); }
+  50% { transform: translateZ(46px) translateY(-9px); }
+}
+.sws-mock-chip-1 { animation: sws-chip-z1 5.5s ease-in-out infinite; }
+.sws-mock-chip-2 { animation: sws-chip-z2 5.5s ease-in-out infinite; animation-delay: -2.7s; }
+
+/* ---- SCROLL REVEAL berdimensi: rotateX, bukan sekadar fade ---- */
+.sws-reveal {
+  transform: perspective(900px) rotateX(7deg) translateY(34px);
+}
+.sws-reveal.is-inview {
+  transform: perspective(900px) rotateX(0deg) translateY(0);
+}
+
+/* ---- KARTU PAKET: tilt 3D mengikuti pointer + kilau ---- */
+.sws-kartu {
+  --sws-tx: 0deg;
+  --sws-ty: 0deg;
+  transform-style: preserve-3d;
+}
+.sws-kartu .sws-kartu-top { transform-style: preserve-3d; }
+.sws-kartu .sws-kartu-ikon { transform: translateZ(26px); }
+
+.sws-kartu.sws-reveal.is-inview {
+  transform: perspective(1000px) rotateX(var(--sws-tx)) rotateY(var(--sws-ty));
+}
+.sws-kartu:not(.sws-kartu-unggulan).sws-reveal.is-inview:hover {
+  transform: perspective(1000px) rotateX(var(--sws-tx)) rotateY(var(--sws-ty)) translateY(-6px);
+}
+.sws-kartu-unggulan.sws-reveal.is-inview:hover,
+#sws-paket .sws-kartu-unggulan.sws-reveal.is-inview:hover {
+  transform: perspective(1000px) rotateX(var(--sws-tx)) rotateY(var(--sws-ty)) translateY(-5px);
+}
+
+/* Kilau menyapu saat hover — kartu biasa saja (unggulan sudah punya shine) */
+.sws-kartu:not(.sws-kartu-unggulan) { overflow: hidden; }
+.sws-kartu:not(.sws-kartu-unggulan)::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(105deg, transparent 42%, rgba(255, 255, 255, 0.16) 50%, transparent 58%);
+  transform: translateX(-130%);
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* Kartu unggulan: float halus via properti `translate` (tak bentrok tilt) */
+@keyframes sws-unggulan-float {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -6px; }
+}
+.sws-kartu-unggulan {
+  animation: sws-glow-pulse 3.6s ease-in-out infinite, sws-unggulan-float 6.5s ease-in-out infinite;
+}
+@supports (background: conic-gradient(from 0deg, red, blue)) {
+  .sws-kartu-unggulan {
+    animation:
+      sws-putar 7s linear infinite,
+      sws-glow-pulse 3.6s ease-in-out infinite,
+      sws-unggulan-float 6.5s ease-in-out infinite;
+  }
+}
+
+/* ---- SHOWCASE: tilt 3D + kilau ---- */
+.sws-sc-card {
+  --sws-tx: 0deg;
+  --sws-ty: 0deg;
+  position: relative;
+  transform-style: preserve-3d;
+}
+.sws-sc-card.sws-reveal.is-inview {
+  transform: perspective(1000px) rotateX(var(--sws-tx)) rotateY(var(--sws-ty));
+}
+.sws-sc-card.sws-reveal.is-inview:hover {
+  transform: perspective(1000px) rotateX(var(--sws-tx)) rotateY(var(--sws-ty)) translateY(-6px);
+}
+.sws-sc-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(105deg, transparent 42%, rgba(255, 255, 255, 0.14) 50%, transparent 58%);
+  transform: translateX(-130%);
+  pointer-events: none;
+  z-index: 3;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .sws-kartu:not(.sws-kartu-unggulan):hover::before,
+  .sws-sc-card:hover::before {
+    animation: sws-card-sheen 0.9s ease;
+  }
+}
+@keyframes sws-card-sheen {
+  to { transform: translateX(130%); }
+}
+
+/* ---- ORBS: parallax multi-kedalaman saat scroll.
+   Memakai properti `translate` agar tak bentrok dengan animasi float
+   yang memakai `transform`. Kecepatan beda per layer = efek kedalaman. ---- */
+.sws-orb-1 { translate: 0 calc(var(--sws-scroll, 0px) * 0.10); }
+.sws-orb-2 { translate: 0 calc(var(--sws-scroll, 0px) * 0.045); }
+
+/* ---- REDUCED MOTION: matikan total ---- */
+@media (prefers-reduced-motion: reduce) {
+  .sws-3d-stage { transform: none !important; transition: none !important; }
+  .sws-orb-1, .sws-orb-2 { translate: 0 0 !important; }
+  .sws-mock-hero, .sws-mock-btn, .sws-mock-url,
+  .sws-mp-top, .sws-mp-chips, .sws-mp-grid,
+  .sws-kartu .sws-kartu-ikon { transform: none !important; }
+  .sws-mp-card { transition: none !important; }
+  .sws-kartu:not(.sws-kartu-unggulan)::before,
+  .sws-sc-card::before { display: none !important; }
+}
