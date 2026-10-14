@@ -11,6 +11,7 @@ const MAX_CHARS_PER_MESSAGE = 8000;
 const DAILY_LIMIT = 200;
 
 const GOOGLE_CERTS_URL = 'https://www.googleapis.com/oauth2/v3/certs';
+// Audience ID token = GOOGLE_WEB_CLIENT_ID (env Vercel, production).
 
 type ChatMessage = { role: 'user' | 'assistant' | 'system'; content: string };
 
@@ -69,6 +70,8 @@ async function verifyGoogleIdToken(idToken: string): Promise<string | null> {
     if (payload.iss !== 'https://accounts.google.com' && payload.iss !== 'accounts.google.com') return null;
     if (!payload.exp || payload.exp * 1000 < Date.now()) return null;
     if (!payload.email) return null;
+    // Fase 6: wajibkan email_verified — token tanpa email terverifikasi ditolak.
+    if (payload.email_verified !== true) return null;
 
     const keys = await getGoogleCerts();
     const key = keys.find((k) => k.kid === header.kid);
