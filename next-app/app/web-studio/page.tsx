@@ -11,37 +11,52 @@
  * pesan terformat dibuka ke WhatsApp resmi SUKI via sukiWaLink() (wa.me).
  * Tidak ada data yang disimpan — ini disengaja sampai ada keputusan
  * untuk membangun alur order server-side. Tidak ada testimoni, diskon,
- * atau statistik klien yang dikarang di halaman ini. Portofolio hanya
- * berisi klien nyata, dan status pengerjaannya ditulis apa adanya.
+ * atau statistik klien yang dikarang di halaman ini.
  */
 
-import { useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import Link from 'next/link';
 import {
-  ArrowRight,
-  BadgeCheck,
+  Bell,
+  Bike,
+  Briefcase,
+  Building2,
   Check,
   ChevronDown,
   Clock3,
+  Coffee,
+  Footprints,
   Gift,
   Globe,
   Home,
   LayoutDashboard,
   Lock,
+  MapPin,
   MessagesSquare,
+  Minus,
   PenTool,
   Rocket,
+  Search,
   Server,
   ShieldCheck,
+  Shirt,
+  ShoppingBag,
+  Smartphone,
   Sparkles,
+  Star,
   Store,
   Tag,
+  User,
   Wallet,
   Wrench,
+  X,
+  ArrowRight,
+  BadgeCheck,
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { sukiWaLink } from '@/lib/whatsapp';
 import './web-studio.css';
+import './web-studio-prestige.css';
 
 type Paket = {
   id: string;
@@ -244,21 +259,93 @@ const KEUNGGULAN = [
   },
 ];
 
-const PORTOFOLIO = [
+/**
+ * Contoh gaya desain. Kartu pertama adalah KONSEP DESAIN BARU marketplace
+ * SUKI (visi upgrade kelas global, konten ilustrasi representatif)
+ * — bukan tampilan aplikasi saat ini; dua lainnya ilustrasi konseptual.
+ * Tidak ada screenshot website orang lain atau testimoni karangan.
+ */
+const SHOWCASE = [
   {
-    ikon: Home,
-    proyek: 'Website Personal Agen Properti',
-    klien: 'Senten Febrari Kadir Massa',
-    peran: 'Agen Properti — Kendari, Sulawesi Tenggara',
-    deskripsi:
-      'Katalog perumahan (Bumi Samarkand, Villa Madinah Land), simulasi KPR interaktif, dan database Supabase — seluruh tombol mengarah ke WhatsApp agen.',
-    status: 'Dalam pengerjaan',
-    tags: ['Katalog properti', 'Simulasi KPR', 'Database'],
+    id: 'sc-toko',
+    judul: 'Toko Online',
+    kategori: 'Gaya untuk UMKM kuliner & retail',
+    label: 'Konsep desain baru — Marketplace',
+    tag: 'Konsep desain baru',
+    mini: 'marketplace' as const,
+    tema: 'sws-sc-emas',
+    deskripsi: 'Visi upgrade marketplace SUKI: kartu modern, harga tegas, rating, dan navigasi premium — konten ilustrasi representatif.',
+  },
+  {
+    id: 'sc-company',
+    judul: 'Company Profile',
+    kategori: 'Gaya untuk jasa & kontraktor',
+    label: 'Ilustrasi — Company Profile',
+    tag: 'Ilustrasi',
+    mini: null,
+    tema: 'sws-sc-teal',
+    deskripsi: 'Profil, layanan, galeri hasil kerja, dan tombol kontak yang jelas.',
+  },
+  {
+    id: 'sc-landing',
+    judul: 'Landing Page',
+    kategori: 'Gaya untuk properti & event',
+    label: 'Ilustrasi — Landing Page',
+    tag: 'Ilustrasi',
+    mini: null,
+    tema: 'sws-sc-gelap',
+    deskripsi: 'Satu halaman yang fokus: menampilkan penawaran dan mengumpulkan leads.',
   },
 ];
 
-const FAQS = [
+// PORTOFOLIO KLIEN NYATA — tambah entri baru di sini setiap project selesai.
+// Aturan: tanpa logo/testimoni karangan; status jujur ("Dalam pengerjaan" / "Live").
+const PORTOFOLIO = [
   {
+    id: 'klien-01-senten',
+    nama: 'Senten Febrari Kadir Massa',
+    usaha: 'Agen Properti',
+    lokasi: 'Kendari, Sulawesi Tenggara',
+    jenis: 'Website Personal Agen Properti',
+    status: 'Dalam pengerjaan',
+    deskripsi:
+      'Personal branding + katalog perumahan (Bumi Samarkand, Villa Madinah Land), simulasi KPR interaktif, dan tombol WhatsApp click-to-chat.',
+    tags: ['Katalog properti', 'Simulasi KPR', 'Database'],
+    tema: 'sws-sc-emas',
+  },
+];
+
+/**
+ * Miniatur "konsep desain baru" marketplace SUKI untuk mockup hero &
+ * kartu showcase — wadah desain naik kelas global (tipografi kuat,
+ * spacing lega, kartu modern). Isi: 6 PRODUK ILUSTRASI representatif
+ * khas marketplace Indonesia (nama, harga, rating, kota wajar —
+ * dibuat sendiri; BUKAN data listing Suki yang masih kosong, BUKAN
+ * scrape dari marketplace lain). Visual produk = gradien/ikon CSS.
+ */
+const MP_MINI_KATEGORI = ['Semua', 'Elektronik', 'Fashion', 'Kendaraan', 'Kuliner', 'Properti'];
+const MP_MINI_PRODUK = [
+  { nama: 'Sepatu Sneakers Pria Premium', harga: 'Rp349.000', kota: 'Makassar', rating: '4.9', ikon: Footprints, g: 'g1', badge: 'Terlaris' },
+  { nama: 'Kopi Robusta Lampung 500gr', harga: 'Rp85.000', kota: 'Kendari', rating: '4.8', ikon: Coffee, g: 'g2' },
+  { nama: 'Motor Bekas Honda Vario 2022', harga: 'Rp18,5 jt', kota: 'Kendari', rating: '4.7', ikon: Bike, g: 'g3' },
+  { nama: 'Tas Selempang Kulit Asli', harga: 'Rp275.000', kota: 'Makassar', rating: '4.8', ikon: Briefcase, g: 'g4' },
+  { nama: 'Kemeja Batik Sultra', harga: 'Rp189.000', kota: 'Kendari', rating: '4.9', ikon: Shirt, g: 'g5', badge: 'Baru' },
+  { nama: 'iPhone 12 Bekas Mulus', harga: 'Rp6,75 jt', kota: 'Kendari', rating: '4.6', ikon: Smartphone, g: 'g6' },
+];
+
+/** Tabel banding — klaim jujur dan dapat dipertahankan. */
+const BANDING_KOLOM = ['SUKI Web Studio', 'Bikin Sendiri', 'Builder Luar Negeri'];const BANDING_BARIS: { label: string; nilai: ('ya' | 'sebagian' | 'tidak')[] }[] = [
+  { label: 'Didampingi dari konsultasi sampai go-live', nilai: ['ya', 'tidak', 'sebagian'] },
+  { label: 'Bahasa Indonesia & support lokal via WhatsApp', nilai: ['ya', 'tidak', 'tidak'] },
+  { label: 'Harga rupiah, sekali bayar, tanpa biaya tersembunyi', nilai: ['ya', 'sebagian', 'tidak'] },
+  { label: 'Revisi desain 2× sudah termasuk', nilai: ['ya', 'tidak', 'tidak'] },
+  { label: 'Garansi perbaikan bug 30 hari', nilai: ['ya', 'tidak', 'tidak'] },
+  { label: 'Tanpa perlu bisa coding / utak-atik teknis', nilai: ['ya', 'tidak', 'sebagian'] },
+];
+const BANDING_CATATAN =
+  '“Sebagian” artinya tersedia tapi terbatas — misalnya builder luar negeri umumnya berbahasa Inggris dan berlangganan bulanan dalam USD, sedangkan bikin sendiri gratis tapi menuntut waktu dan kemauan belajar.';
+
+const FAQS = [  {
     q: 'Bagaimana sistem pembayarannya?',
     a: 'DP 50% di awal sebagai tanda jadi, pelunasan setelah website selesai dan sebelum go-live. Harga belum termasuk PPN 11% untuk kebutuhan faktur perusahaan.',
   },
@@ -302,6 +389,68 @@ function formatOrder(nama: string, wa: string, usaha: string, paket: Paket, kebu
   return baris.join('\n');
 }
 
+/**
+ * Miniatur "Konsep desain baru" marketplace SUKI — visi upgrade kelas
+ * global. Versi penuh (hero): topbar + search + chip kategori + grid
+ * produk + bottom nav. Versi ringkas (kartu showcase): grid 2×2 saja.
+ */
+function MpKonsep({ ringkas = false }: { ringkas?: boolean }) {
+  const produk = ringkas ? MP_MINI_PRODUK.slice(0, 4) : MP_MINI_PRODUK;
+  return (
+    <div className="sws-mp" aria-label="Konsep desain baru marketplace SUKI">
+      {!ringkas && (
+        <div className="sws-mp-top">
+          <span className="sws-mp-logo" aria-hidden>S</span>
+          <span className="sws-mp-search">
+            <Search size={10} aria-hidden />
+            Cari produk, jasa, properti…
+          </span>
+          <Bell size={13} aria-hidden />
+          <ShoppingBag size={13} aria-hidden />
+        </div>
+      )}
+      {!ringkas && (
+        <div className="sws-mp-chips" aria-hidden>
+          {MP_MINI_KATEGORI.map((k, i) => (
+            <span key={k} className={i === 0 ? 'sws-mp-chip-on' : ''}>{k}</span>
+          ))}
+        </div>
+      )}
+      <div className={`sws-mp-grid${ringkas ? ' sws-mp-grid-2' : ''}`}>
+        {produk.map((p) => {
+          const Ikon = p.ikon;
+          return (
+            <div key={p.nama} className="sws-mp-card">
+              <div className={`sws-mp-media sws-mp-${p.g}`} aria-hidden>
+                <Ikon size={22} strokeWidth={1.8} />
+                {p.badge ? <span className="sws-mp-badge">{p.badge}</span> : null}
+              </div>
+              <div className="sws-mp-info">
+                <p className="sws-mp-harga">{p.harga}</p>
+                <p className="sws-mp-nama">{p.nama}</p>
+                <p className="sws-mp-meta">
+                  <MapPin size={9} aria-hidden />
+                  {p.kota}
+                  <Star size={9} aria-hidden />
+                  {p.rating}
+                </p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      {!ringkas && (
+        <nav className="sws-mp-nav" aria-hidden>
+          <span><Home size={13} />Beranda</span>
+          <span className="on"><Store size={13} />Market</span>
+          <span><Building2 size={13} />Properti</span>
+          <span><User size={13} />Akun</span>
+        </nav>
+      )}
+    </div>
+  );
+}
+
 export default function WebStudioPage() {
   const formRef = useRef<HTMLFormElement>(null);
   const namaId = useId();
@@ -318,6 +467,121 @@ export default function WebStudioPage() {
   const [error, setError] = useState<string | null>(null);
 
   const waKonsultasi = sukiWaLink(KONSULTASI_TEXT);
+
+  /* Scroll-reveal: tambah .is-inview saat elemen masuk viewport. */
+  useEffect(() => {
+    const els = Array.from(
+      document.querySelectorAll('.sws-reveal')
+    );
+    if (!('IntersectionObserver' in window)) {
+      els.forEach((el) => el.classList.add('is-inview'));
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((en) => {
+          if (en.isIntersecting) {
+            en.target.classList.add('is-inview');
+            io.unobserve(en.target);
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: '0px 0px -8% 0px' }
+    );
+    els.forEach((el) => io.observe(el));
+    /* Pengaman: tampilkan semua setelah 4 dtk bila observer tak menyala. */
+    const t = window.setTimeout(() => {
+      els.forEach((el) => el.classList.add('is-inview'));
+    }, 4000);
+    return () => {
+      io.disconnect();
+      window.clearTimeout(t);
+    };
+  }, []);
+
+  /* 3D-MOTION: parallax hero mengikuti pointer, tilt kartu mengikuti pointer,
+     parallax orbs multi-kedalaman saat scroll.
+     Satu listener pointermove + satu scroll, masing-masing rAF-throttled dan
+     passive. Mati total bila prefers-reduced-motion; tilt hanya untuk
+     pointer halus (hover). Di touch device, idle animation CSS tetap jalan. */
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    const stage = document.querySelector<HTMLElement>('.sws-3d-stage');
+    const hero = document.querySelector<HTMLElement>('.sws-hero');
+    if (!stage || !hero) return;
+
+    let raf = 0;
+    let px = 0;
+    let py = 0;
+    let pTarget: EventTarget | null = null;
+    let activeCard: HTMLElement | null = null;
+
+    const resetCard = (el: HTMLElement) => {
+      el.style.removeProperty('--sws-tx');
+      el.style.removeProperty('--sws-ty');
+    };
+
+    const tick = () => {
+      raf = 0;
+      /* Hero: putar panggung 3D mengikuti posisi pointer di dalam hero. */
+      const hr = hero.getBoundingClientRect();
+      if (px >= hr.left && px <= hr.right && py >= hr.top && py <= hr.bottom) {
+        const nx = (px - hr.left) / hr.width - 0.5;
+        const ny = (py - hr.top) / hr.height - 0.5;
+        stage.style.setProperty('--sws-rx', `${(6 - ny * 10).toFixed(2)}deg`);
+        stage.style.setProperty('--sws-ry', `${(-12 + nx * 16).toFixed(2)}deg`);
+      } else {
+        stage.style.setProperty('--sws-rx', '6deg');
+        stage.style.setProperty('--sws-ry', '-12deg');
+      }
+      /* Kartu: tilt mengikuti pointer (delegasi — satu listener untuk semua). */
+      const el = (pTarget as HTMLElement | null)?.closest?.(
+        '.sws-kartu, .sws-sc-card'
+      ) as HTMLElement | null;
+      if (el !== activeCard) {
+        if (activeCard) resetCard(activeCard);
+        activeCard = el;
+      }
+      if (activeCard) {
+        const r = activeCard.getBoundingClientRect();
+        const nx = (px - r.left) / r.width - 0.5;
+        const ny = (py - r.top) / r.height - 0.5;
+        activeCard.style.setProperty('--sws-tx', `${(-ny * 9).toFixed(2)}deg`);
+        activeCard.style.setProperty('--sws-ty', `${(nx * 11).toFixed(2)}deg`);
+      }
+    };
+
+    const onMove = (e: PointerEvent) => {
+      px = e.clientX;
+      py = e.clientY;
+      pTarget = e.target;
+      if (!raf) raf = requestAnimationFrame(tick);
+    };
+
+    /* Orbs: parallax multi-kedalaman — kecepatan beda per layer via CSS. */
+    let sRaf = 0;
+    const applyScroll = () => {
+      sRaf = 0;
+      if (hero.getBoundingClientRect().bottom > 0) {
+        hero.style.setProperty('--sws-scroll', `${Math.round(window.scrollY)}px`);
+      }
+    };
+    const onScroll = () => {
+      if (!sRaf) sRaf = requestAnimationFrame(applyScroll);
+    };
+
+    if (fine) window.addEventListener('pointermove', onMove, { passive: true });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    applyScroll();
+
+    return () => {
+      if (fine) window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('scroll', onScroll);
+      if (raf) cancelAnimationFrame(raf);
+      if (sRaf) cancelAnimationFrame(sRaf);
+    };
+  }, []);
 
   const scrollKe = (el: HTMLElement | null) => {
     if (!el) return;
@@ -360,8 +624,11 @@ export default function WebStudioPage() {
       <main className="sws">
         {/* HERO */}
         <section className="sws-hero" aria-labelledby="sws-judul">
-          <div className="sws-wrap">
-            <p className="sws-kicker">Jasa Pembuatan Website Profesional</p>
+          <div className="sws-orb sws-orb-1" aria-hidden="true" />
+          <div className="sws-orb sws-orb-2" aria-hidden="true" />
+          <div className="sws-wrap sws-hero-grid">
+            <div className="sws-hero-teks">
+            <p className="sws-kicker">Jasa Pembuatan Website · Kendari — Sulawesi Tenggara</p>
             <h1 id="sws-judul">
               Website yang menjual,
               <br />
@@ -414,11 +681,35 @@ export default function WebStudioPage() {
                 <span>Domain &amp; hosting 1 tahun termasuk</span>
               </li>
             </ul>
+            </div>
+            <div className="sws-hero-visual" aria-hidden="true">
+              <div className="sws-3d-stage">
+              <div className="sws-mock">
+                <div className="sws-mock-bar">
+                  <span className="sws-mock-dot" />
+                  <span className="sws-mock-dot" />
+                  <span className="sws-mock-dot" />
+                  <span className="sws-mock-url">Konsep desain baru — Marketplace</span>
+                </div>
+                <div className="sws-mock-body">
+                  <MpKonsep />
+                </div>
+                <span className="sws-mock-chip sws-mock-chip-1">
+                  <Check size={13} aria-hidden />
+                  QRIS
+                </span>
+                <span className="sws-mock-chip sws-mock-chip-2">
+                  <MessagesSquare size={13} aria-hidden />
+                  Pesanan masuk WA
+                </span>
+              </div>
+              </div>
+            </div>
           </div>
         </section>
 
         {/* SUDAH TERMASUK DI SEMUA PAKET */}
-        <section className="sws-ribbon" aria-label="Sudah termasuk di semua paket">
+        <section className="sws-ribbon sws-reveal" aria-label="Sudah termasuk di semua paket">
           <div className="sws-wrap">
             <p className="sws-ribbon-judul">Sudah termasuk di <strong>semua paket</strong></p>
             <ul className="sws-ribbon-list">
@@ -438,19 +729,20 @@ export default function WebStudioPage() {
         {/* TIER PROMO — harga spesial dari Sarip */}
         <section className="sws-seksi sws-seksi-alternatif" aria-labelledby="sws-promo-judul">
           <div className="sws-wrap">
-            <p className="sws-seksi-kicker">Promo spesial</p>
-            <h2 id="sws-promo-judul">Mulai dari yang paling ringan</h2>
-            <p className="sws-lead">
+            <p className="sws-seksi-kicker sws-reveal">Promo spesial</p>
+            <h2 id="sws-promo-judul" className="sws-reveal">Mulai dari yang paling ringan</h2>
+            <p className="sws-lead sws-reveal">
               Tier hemat SUKI Web Studio — harga apa adanya dari Sarip.
               Detail & pendaftaran via Telegram.
             </p>
             <div className="sws-grid">
-              {PROMO_TIERS.map((tier) => {
+              {PROMO_TIERS.map((tier, i) => {
                 const Ikon = tier.ikon;
                 return (
                   <article
                     key={tier.id}
-                    className={`sws-kartu${tier.unggulan ? ' sws-kartu-unggulan' : ''}`}
+                    className={`sws-kartu sws-reveal${tier.unggulan ? ' sws-kartu-unggulan' : ''}`}
+                    style={{ '--sws-d': `${i * 90}ms` } as any}
                     aria-label={`Tier ${tier.nama}`}
                   >
                     {tier.badge ? <span className="sws-badge">{tier.badge}</span> : null}
@@ -493,20 +785,21 @@ export default function WebStudioPage() {
         {/* PRICELIST */}
         <section className="sws-seksi" id="sws-paket" aria-labelledby="sws-paket-judul">
           <div className="sws-wrap">
-            <p className="sws-seksi-kicker">Harga transparan</p>
-            <h2 id="sws-paket-judul">Pilih paket yang pas untuk bisnismu</h2>
-            <p className="sws-lead">
+            <p className="sws-seksi-kicker sws-reveal">Harga transparan</p>
+            <h2 id="sws-paket-judul" className="sws-reveal">Pilih paket yang pas untuk bisnismu</h2>
+            <p className="sws-lead sws-reveal">
               Semua harga dalam rupiah dan sekali bayar — kecuali Care Plan yang
               bersifat bulanan. Tanpa biaya tersembunyi.
             </p>
             <div className="sws-grid">
-              {PAKETS.map((p) => {
+              {PAKETS.map((p, idx) => {
                 const Ikon = p.ikon;
                 const unggulan = Boolean(p.badge);
                 return (
                   <article
                     key={p.id}
-                    className={`sws-kartu${unggulan ? ' sws-kartu-unggulan' : ''}`}
+                    className={`sws-kartu sws-reveal${unggulan ? ' sws-kartu-unggulan' : ''}`}
+                    style={{ '--sws-d': `${idx * 90}ms` } as any}
                     aria-label={`Paket ${p.nama}`}
                   >
                     {p.badge ? <span className="sws-badge">{p.badge}</span> : null}
@@ -559,35 +852,120 @@ export default function WebStudioPage() {
           </div>
         </section>
 
-        {/* PORTOFOLIO */}
+        {/* CONTOH GAYA DESAIN — ilustrasi jujur, bukan portofolio klien */}
+        <section className="sws-seksi sws-seksi-alternatif" aria-labelledby="sws-gaya-judul">
+          <div className="sws-wrap">
+            <p className="sws-seksi-kicker sws-reveal">Contoh hasil</p>
+            <h2 id="sws-gaya-judul" className="sws-reveal">Gaya desain yang bisa kamu dapatkan</h2>
+            <p className="sws-lead sws-reveal">
+              Setiap website kami rancang mengikuti identitas brand-mu. Kartu pertama
+              adalah konsep desain baru marketplace SUKI — visi upgrade kelas global
+              dengan konten ilustrasi; sisanya ilustrasi gaya, bukan screenshot
+              website orang lain.
+            </p>
+            <div className="sws-showcase-grid">
+              {SHOWCASE.map((s, i) => (
+                <article
+                  key={s.id}
+                  className={`sws-sc-card sws-reveal ${s.tema}`}
+                  style={{ '--sws-d': `${i * 90}ms` } as any}
+                  aria-label={s.judul}
+                >
+                  <div className="sws-sc-bar" aria-hidden="true">
+                    <span className="sws-mock-dot" />
+                    <span className="sws-mock-dot" />
+                    <span className="sws-mock-dot" />
+                    <span className="sws-mock-url">{s.label}</span>
+                  </div>
+                  <div className="sws-sc-view" aria-hidden="true">
+                    <span className="sws-sc-tag">{s.tag}</span>
+                    {s.mini === 'marketplace' ? (
+                      <div className="sws-sc-mp">
+                        <MpKonsep ringkas />
+                      </div>
+                    ) : (
+                      <>
+                        <div className="sws-sc-hero" />
+                        <div className="sws-mock-lines">
+                          <i />
+                          <i />
+                        </div>
+                        <div className="sws-mock-btn" />
+                        <div className="sws-mock-row">
+                          <i />
+                          <i />
+                          <i />
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  <div className="sws-sc-body">
+                    <p className="sws-sc-kategori">{s.kategori}</p>
+                    <h3>{s.judul}</h3>
+                    <p>{s.deskripsi}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+            <p className="sws-sc-note sws-reveal">
+              <BadgeCheck size={16} aria-hidden />
+              <span>
+                Project klien nyata pertama kami sudah berjalan — lihat di seksi
+                portofolio tepat di bawah. Tanpa logo atau testimoni karangan.
+              </span>
+            </p>
+          </div>
+        </section>
+
+        {/* PORTOFOLIO — klien nyata SUKI Web Studio */}
         <section className="sws-seksi" id="sws-portofolio" aria-labelledby="sws-portofolio-judul">
           <div className="sws-wrap">
-            <p className="sws-seksi-kicker">Portofolio</p>
-            <h2 id="sws-portofolio-judul">Klien yang mempercayakan websitenya kepada kami</h2>
-            <div className="sws-grid sws-grid-portofolio">
-              {PORTOFOLIO.map((p) => {
-                const Ikon = p.ikon;
-                return (
-                  <article key={p.klien} className="sws-portofolio">
-                    <div className="sws-portofolio-head">
-                      <div className="sws-kartu-ikon" aria-hidden>
-                        <Ikon size={22} />
-                      </div>
-                      <span className="sws-portofolio-status">{p.status}</span>
+            <p className="sws-seksi-kicker sws-reveal">Portofolio</p>
+            <h2 id="sws-portofolio-judul" className="sws-reveal">Klien yang mempercayakan websitenya</h2>
+            <p className="sws-lead sws-reveal">
+              Setiap entri di bawah adalah project nyata yang sedang atau sudah kami
+              kerjakan — bukan mockup, bukan karangan.
+            </p>
+            <div className="sws-showcase-grid">
+              {PORTOFOLIO.map((p, i) => (
+                <article
+                  key={p.id}
+                  className={`sws-sc-card sws-reveal ${p.tema}`}
+                  style={{ '--sws-d': `${i * 90}ms` } as any}
+                  aria-label={p.nama}
+                >
+                  <div className="sws-sc-bar" aria-hidden="true">
+                    <span className="sws-mock-dot" />
+                    <span className="sws-mock-dot" />
+                    <span className="sws-mock-dot" />
+                    <span className="sws-mock-url">{p.jenis}</span>
+                  </div>
+                  <div className="sws-sc-view sws-pf-view">
+                    <span className="sws-sc-tag">Klien 01</span>
+                    <div className="sws-pf-avatar" aria-hidden="true">
+                      <User size={34} />
                     </div>
-                    <h3>{p.proyek}</h3>
-                    <p className="sws-portofolio-klien">
-                      {p.klien} — {p.peran}
+                    <span className="sws-pf-status">
+                      <Clock3 size={13} aria-hidden />
+                      {p.status}
+                    </span>
+                  </div>
+                  <div className="sws-sc-body">
+                    <p className="sws-sc-kategori">{p.usaha}</p>
+                    <h3>{p.nama}</h3>
+                    <p className="sws-pf-lokasi">
+                      <MapPin size={13} aria-hidden />
+                      {p.lokasi}
                     </p>
                     <p>{p.deskripsi}</p>
-                    <ul className="sws-portofolio-tags" aria-label="Fitur utama">
+                    <div className="sws-pf-tags">
                       {p.tags.map((t) => (
-                        <li key={t}>{t}</li>
+                        <span key={t} className="sws-pf-tag">{t}</span>
                       ))}
-                    </ul>
-                  </article>
-                );
-              })}
+                    </div>
+                  </div>
+                </article>
+              ))}
             </div>
           </div>
         </section>
@@ -595,13 +973,13 @@ export default function WebStudioPage() {
         {/* CARA MEMESAN */}
         <section className="sws-seksi sws-seksi-alternatif" id="sws-cara" aria-labelledby="sws-cara-judul">
           <div className="sws-wrap">
-            <p className="sws-seksi-kicker">Mudah &amp; transparan</p>
-            <h2 id="sws-cara-judul">Dari chat sampai go-live dalam 4 langkah</h2>
-            <ol className="sws-langkah">
+            <p className="sws-seksi-kicker sws-reveal">Mudah &amp; transparan</p>
+            <h2 id="sws-cara-judul" className="sws-reveal">Dari chat sampai go-live dalam 4 langkah</h2>
+            <ol className="sws-langkah sws-reveal">
               {LANGKAH.map((l, i) => {
                 const Ikon = l.ikon;
                 return (
-                  <li key={l.judul} className="sws-langkah-item">
+                  <li key={l.judul} className="sws-langkah-item sws-reveal" style={{ '--sws-d': `${i * 100}ms` } as any}>
                     <div className="sws-langkah-nomor" aria-hidden>
                       <span>{i + 1}</span>
                     </div>
@@ -622,13 +1000,13 @@ export default function WebStudioPage() {
         {/* KENAPA SUKI */}
         <section className="sws-seksi" aria-labelledby="sws-kenapa-judul">
           <div className="sws-wrap">
-            <p className="sws-seksi-kicker">Kenapa kami</p>
-            <h2 id="sws-kenapa-judul">Kenapa SUKI Web Studio?</h2>
+            <p className="sws-seksi-kicker sws-reveal">Kenapa kami</p>
+            <h2 id="sws-kenapa-judul" className="sws-reveal">Kenapa SUKI Web Studio?</h2>
             <div className="sws-grid sws-grid-kenapa">
-              {KEUNGGULAN.map((k) => {
+              {KEUNGGULAN.map((k, ki) => {
                 const Ikon = k.ikon;
                 return (
-                  <article key={k.judul} className="sws-kenapa">
+                  <article key={k.judul} className="sws-kenapa sws-reveal" style={{ '--sws-d': `${ki * 90}ms` } as any}>
                     <div className="sws-kartu-ikon" aria-hidden>
                       <Ikon size={22} />
                     </div>
@@ -641,16 +1019,58 @@ export default function WebStudioPage() {
           </div>
         </section>
 
+        {/* BANDINGKAN — SUKI vs alternatif, klaim jujur */}
+        <section className="sws-seksi sws-seksi-alternatif" aria-labelledby="sws-banding-judul">
+          <div className="sws-wrap">
+            <p className="sws-seksi-kicker sws-reveal">Bandingkan</p>
+            <h2 id="sws-banding-judul" className="sws-reveal">Kenapa tidak bikin sendiri saja?</h2>
+            <p className="sws-lead sws-reveal">
+              Pertanyaan yang wajar. Ini perbandingan jujurnya.
+            </p>
+            <div className="sws-banding-scroll sws-reveal">
+              <table className="sws-banding">
+                <thead>
+                  <tr>
+                    <th scope="col"><span className="sws-sr">Kriteria</span></th>
+                    {BANDING_KOLOM.map((k, i) => (
+                      <th key={k} scope="col" className={i === 0 ? 'sws-banding-col-suki' : ''}>{k}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {BANDING_BARIS.map((b) => (
+                    <tr key={b.label}>
+                      <th scope="row">{b.label}</th>
+                      {b.nilai.map((n, i) => (
+                        <td key={i} className={i === 0 ? 'sws-banding-col-suki' : ''}>
+                          {n === 'ya' ? (
+                            <span className="sws-nilai sws-nilai-ya" role="img" aria-label="Ya"><Check size={18} aria-hidden /></span>
+                          ) : n === 'sebagian' ? (
+                            <span className="sws-nilai sws-nilai-sebagian" role="img" aria-label="Sebagian"><Minus size={18} aria-hidden /></span>
+                          ) : (
+                            <span className="sws-nilai sws-nilai-tidak" role="img" aria-label="Tidak"><X size={18} aria-hidden /></span>
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="sws-banding-catatan sws-reveal">{BANDING_CATATAN}</p>
+          </div>
+        </section>
+
         {/* FORM PEMESANAN */}
         <section className="sws-seksi sws-seksi-alternatif" aria-labelledby="sws-form-judul">
           <div className="sws-wrap">
-            <p className="sws-seksi-kicker">Langkah terakhir</p>
-            <h2 id="sws-form-judul">Siap mulai? Isi formulir pemesanan</h2>
-            <p className="sws-lead">
+            <p className="sws-seksi-kicker sws-reveal">Langkah terakhir</p>
+            <h2 id="sws-form-judul" className="sws-reveal">Siap mulai? Isi formulir pemesanan</h2>
+            <p className="sws-lead sws-reveal">
               Isi data di bawah — pesananmu langsung diteruskan ke WhatsApp resmi
               SUKI Web Studio dengan pesan yang sudah terisi otomatis.
             </p>
-            <form ref={formRef} className="sws-form" onSubmit={kirimKeWA} noValidate>
+            <form ref={formRef} className="sws-form sws-reveal" onSubmit={kirimKeWA} noValidate>
               <div className="sws-field">
                 <label htmlFor={namaId}>Nama kamu <span aria-hidden>*</span></label>
                 <input
@@ -733,9 +1153,9 @@ export default function WebStudioPage() {
 
         {/* CTA BANNER */}
         <section className="sws-cta-banner" aria-labelledby="sws-cta-judul">
-          <div className="sws-wrap sws-cta-banner-dalam">
+          <div className="sws-wrap sws-cta-banner-dalam sws-reveal">
             <div>
-              <h2 id="sws-cta-judul">Masih ragu paket mana yang cocok?</h2>
+              <h2 id="sws-cta-judul" className="sws-reveal">Masih ragu paket mana yang cocok?</h2>
               <p>
                 Ngobrol dulu, gratis. Ceritakan bisnismu — kami bantu petakan
                 kebutuhan dan rekomendasikan paket yang paling pas, tanpa komitmen.
@@ -758,11 +1178,11 @@ export default function WebStudioPage() {
         {/* FAQ */}
         <section className="sws-seksi" aria-labelledby="sws-faq-judul">
           <div className="sws-wrap sws-wrap-sempit">
-            <p className="sws-seksi-kicker">Sering ditanyakan</p>
-            <h2 id="sws-faq-judul">Pertanyaan yang sering ditanyakan</h2>
+            <p className="sws-seksi-kicker sws-reveal">Sering ditanyakan</p>
+            <h2 id="sws-faq-judul" className="sws-reveal">Pertanyaan yang sering ditanyakan</h2>
             <div className="sws-faq">
-              {FAQS.map((f) => (
-                <details key={f.q} className="sws-faq-item">
+              {FAQS.map((f, fi) => (
+                <details key={f.q} className="sws-faq-item sws-reveal" style={{ '--sws-d': `${fi * 70}ms` } as any}>
                   <summary>
                     <span>{f.q}</span>
                     <ChevronDown size={18} aria-hidden className="sws-faq-chevron" />
