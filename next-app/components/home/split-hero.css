@@ -20,14 +20,14 @@
   --sh-shadow: 0 24px 60px -18px rgba(15, 61, 39, 0.18);
   max-width: 1240px;
   margin: 0 auto;
-  padding: 88px 16px 0;
+  padding: 64px 16px 0;
 }
 
 .sh-split {
   display: grid;
   grid-template-columns: 1.02fr 0.98fr;
-  min-height: 640px;
-  border-radius: 34px;
+  min-height: 600px;
+  border-radius: 28px;
   overflow: hidden;
   position: relative;
   background: var(--sh-hijau-deep);
@@ -54,7 +54,7 @@
 /* ---- PANEL KIRI ---- */
 .sh-left {
   color: #fff;
-  padding: 46px 44px 38px;
+  padding: 34px 36px 28px;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -68,8 +68,9 @@
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(640px 340px at 18% -4%, rgba(228, 112, 47, 0.2), transparent 62%),
-    radial-gradient(520px 300px at 105% 108%, rgba(240, 185, 62, 0.13), transparent 60%);
+    radial-gradient(640px 340px at 18% -4%, rgba(228, 112, 47, 0.24), transparent 62%),
+    radial-gradient(520px 300px at 105% 108%, rgba(240, 185, 62, 0.16), transparent 60%),
+    radial-gradient(420px 200px at 50% 0%, rgba(255, 254, 248, 0.06), transparent 70%);
   pointer-events: none;
 }
 @keyframes sh-slide-l {
@@ -91,6 +92,7 @@
   text-transform: uppercase;
   border: 1px solid rgba(255, 255, 255, 0.22);
   background: rgba(255, 255, 255, 0.05);
+  color: #fff;
   padding: 7px 12px;
   border-radius: 999px;
   width: fit-content;
@@ -113,13 +115,16 @@
 .sh-h1 {
   font-family: "Archivo", "Plus Jakarta Sans", system-ui, sans-serif;
   font-size: clamp(54px, 6.4vw, 92px);
-  margin: 24px 0 0;
+  margin: 16px 0 0;
   font-weight: 900;
   line-height: 0.95;
   letter-spacing: -0.03em;
   text-transform: uppercase;
   position: relative;
   z-index: 2;
+  /* Warna eksplisit: rule h1 global situs menimpa warisan .sh-left */
+  color: var(--sh-putih);
+  text-shadow: 0 2px 26px rgba(0, 0, 0, 0.28);
 }
 .sh-thin { display: block; font-weight: 800; opacity: 0.94; }
 .sh-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
@@ -155,22 +160,22 @@
 }
 
 .sh-sub {
-  margin: 20px 0 0;
-  font-size: 16.5px;
-  line-height: 1.55;
-  color: rgba(255, 255, 255, 0.8);
+  margin: 14px 0 0;
+  font-size: 16px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.88);
   max-width: 470px;
   position: relative;
   z-index: 2;
 }
 .sh-sub b { color: #fff; }
-.sh-ctas { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 28px; position: relative; z-index: 2; }
+.sh-ctas { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; position: relative; z-index: 2; }
 .sh-btn-primary {
   position: relative;
   overflow: hidden;
   background: linear-gradient(135deg, var(--sh-orange-lembut), var(--sh-orange));
   color: #fff;
-  padding: 17px 24px;
+  padding: 15px 22px;
   border-radius: 999px;
   font-weight: 800;
   font-size: 15.5px;
@@ -198,10 +203,10 @@
   85%, 100% { left: 130%; }
 }
 .sh-btn-ghost {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.08);
   color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  padding: 17px 21px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  padding: 15px 20px;
   border-radius: 999px;
   font-weight: 700;
   font-size: 15px;
@@ -210,13 +215,13 @@
   font-family: inherit;
   cursor: pointer;
 }
-.sh-btn-ghost:hover { background: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.55); }
-.sh-cta-note { margin: 12px 0 0; font-size: 12.5px; color: rgba(255, 255, 255, 0.55); font-weight: 600; position: relative; z-index: 2; }
-.sh-trust { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 16px; font-size: 12.5px; color: rgba(255, 255, 255, 0.68); font-weight: 600; position: relative; z-index: 2; }
+.sh-btn-ghost:hover { background: rgba(255, 255, 255, 0.14); border-color: rgba(255, 255, 255, 0.65); }
+.sh-cta-note { margin: 8px 0 0; font-size: 12.5px; color: rgba(255, 255, 255, 0.6); font-weight: 600; position: relative; z-index: 2; }
+.sh-trust { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 12px; font-size: 12.5px; color: rgba(255, 255, 255, 0.72); font-weight: 600; position: relative; z-index: 2; }
 .sh-trust span { display: inline-flex; align-items: center; gap: 5px; }
 .sh-trust svg { color: var(--sh-kuning); }
 
-.sh-palet { display: flex; align-items: center; gap: 8px; margin-top: 14px; position: relative; z-index: 2; }
+.sh-palet { display: flex; align-items: center; gap: 8px; margin-top: 10px; position: relative; z-index: 2; }
 .sh-palet i { width: 16px; height: 16px; border-radius: 50%; display: block; border: 2px solid rgba(255, 255, 255, 0.35); }
 .sh-p-kuning { background: var(--sh-kuning); }
 .sh-p-hijau { background: var(--sh-hijau-terang); }
@@ -224,7 +229,7 @@
 .sh-p-orange { background: var(--sh-orange); }
 .sh-palet span { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700; color: rgba(255, 255, 255, 0.6); }
 
-.sh-progress { margin-top: 30px; position: relative; z-index: 2; }
+.sh-progress { margin-top: 22px; position: relative; z-index: 2; }
 .sh-progress-label { display: flex; justify-content: space-between; gap: 12px; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.72; font-weight: 700; }
 .sh-bar { height: 5px; background: rgba(255, 255, 255, 0.14); border-radius: 999px; margin-top: 9px; overflow: hidden; }
 .sh-bar-fill {
@@ -387,13 +392,13 @@
 
 /* ---- RESPONSIVE ---- */
 @media (max-width: 860px) {
-  .sh-split { grid-template-columns: 1fr; min-height: auto; border-radius: 26px; }
-  .sh-left { padding: 28px 22px 24px; }
-  .sh-h1 { font-size: clamp(46px, 13.5vw, 62px); margin-top: 18px; }
-  .sh-sub { font-size: 15px; margin-top: 14px; }
-  .sh-ctas { margin-top: 20px; }
-  .sh-trust { margin-top: 16px; }
-  .sh-progress { margin-top: 20px; }
+  .sh-split { grid-template-columns: 1fr; min-height: auto; border-radius: 22px; }
+  .sh-left { padding: 22px 18px 18px; }
+  .sh-h1 { font-size: clamp(40px, 11vw, 54px); margin-top: 12px; }
+  .sh-sub { font-size: 14.5px; margin-top: 10px; }
+  .sh-ctas { margin-top: 14px; }
+  .sh-trust { margin-top: 12px; }
+  .sh-progress { margin-top: 14px; }
   .sh-right { min-height: 420px; }
   .sh-sticky-cta { display: flex; }
 }
