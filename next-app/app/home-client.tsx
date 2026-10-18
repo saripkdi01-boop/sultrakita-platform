@@ -27,7 +27,7 @@ import { sukiMotion } from '@/lib/motion-tokens';
 import { usePreferences } from '@/lib/preferences';
 import { getCoreLabels } from '@/lib/i18n/dictionaries';
 import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
-import KendariHero from '@/components/kendari/KendariHero';
+import SplitHero from '@/components/home/SplitHero';
 import SukiAboutCard from '@/components/kendari/SukiAboutCard';
 import '@/components/kendari/suki-about-card.css';
 import {
@@ -222,7 +222,7 @@ export default function HomeClient() {
       </header>
 
       <div id="main-content">
-        <KendariHero />
+        <SplitHero />
       </div>
 
       <div className="wc-tenun-strip" aria-hidden="true" />
