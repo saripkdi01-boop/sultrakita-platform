@@ -183,9 +183,9 @@ export function KendariBahteramas() {
 /* Komunitas — foto warga + aksen Tugu MTQ (slot, fallback bila kosong).*/
 /* ------------------------------------------------------------------ */
 const getKomCards = (t: Record<string, string>) => [
-  { src: '/images/komunitas-1.jpg', alt: t.kom1Alt, tag: t.kom1Tag, title: t.kom1Title, desc: t.kom1Desc },
-  { src: '/images/komunitas-2.jpg', alt: t.kom2Alt, tag: t.kom2Tag, title: t.kom2Title, desc: t.kom2Desc },
-  { src: '/images/komunitas-3.jpg', alt: t.kom3Alt, tag: t.kom3Tag, title: t.kom3Title, desc: t.kom3Desc },
+  { src: '/images/komunitas-2.jpg', alt: t.kom1Alt, tag: t.kom1Tag, title: t.kom1Title, desc: t.kom1Desc },
+  { src: '/images/komunitas-3.jpg', alt: t.kom2Alt, tag: t.kom2Tag, title: t.kom2Title, desc: t.kom2Desc },
+  { src: '/images/komunitas-1.jpg', alt: t.kom3Alt, tag: t.kom3Tag, title: t.kom3Title, desc: t.kom3Desc },
 ];
 
 export function KendariKomunitas() {
