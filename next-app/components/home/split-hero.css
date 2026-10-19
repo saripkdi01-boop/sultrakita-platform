@@ -1,6 +1,8 @@
 /* SplitHero — hero split-animation homepage SUKI Apps.
    Token warna: kuning madu / hijau hutan / putih hangat / orange hangat.
-   Versi gelap mengikuti [data-theme="dark"] milik situs (bukan prefers-color-scheme). */
+   Versi gelap mengikuti [data-theme="dark"] milik situs (bukan prefers-color-scheme).
+   SKALA SPACING (konsisten, rapat tapi rapi): 6 / 8 / 12 / 16 / 24.
+   Header situs sticky (in-flow) → padding-top hero kecil saja. */
 
 .sh-hero {
   --sh-putih: #fffef8;
@@ -20,13 +22,13 @@
   --sh-shadow: 0 24px 60px -18px rgba(15, 61, 39, 0.18);
   max-width: 1240px;
   margin: 0 auto;
-  padding: 64px 16px 0;
+  padding: 20px 16px 0;
 }
 
 .sh-split {
   display: grid;
   grid-template-columns: 1.02fr 0.98fr;
-  min-height: 600px;
+  min-height: 560px;
   border-radius: 28px;
   overflow: hidden;
   position: relative;
@@ -51,14 +53,15 @@
   );
 }
 
-/* ---- PANEL KIRI ---- */
+/* ---- PANEL KIRI ----
+   Alur vertikal: badge 12 → h1 12 → sub 16 → cta 6 → note 12 → trust 8 → palet 16 → progress.
+   Tanpa space-between: jarak selalu sama di semua viewport. */
 .sh-left {
   color: #fff;
-  padding: 34px 36px 28px;
+  padding: 28px 32px 24px;
   position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   background: linear-gradient(155deg, #17452c 0%, var(--sh-hijau-deep) 55%, #0b2e1d 100%);
   animation: sh-slide-l 1s cubic-bezier(0.22, 1, 0.36, 1) both;
   overflow: hidden;
@@ -115,7 +118,7 @@
 .sh-h1 {
   font-family: "Archivo", "Plus Jakarta Sans", system-ui, sans-serif;
   font-size: clamp(54px, 6.4vw, 92px);
-  margin: 16px 0 0;
+  margin: 12px 0 0;
   font-weight: 900;
   line-height: 0.95;
   letter-spacing: -0.03em;
@@ -160,7 +163,7 @@
 }
 
 .sh-sub {
-  margin: 14px 0 0;
+  margin: 12px 0 0;
   font-size: 16px;
   line-height: 1.5;
   color: rgba(255, 255, 255, 0.88);
@@ -169,7 +172,7 @@
   z-index: 2;
 }
 .sh-sub b { color: #fff; }
-.sh-ctas { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; position: relative; z-index: 2; }
+.sh-ctas { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; position: relative; z-index: 2; }
 .sh-btn-primary {
   position: relative;
   overflow: hidden;
@@ -216,12 +219,12 @@
   cursor: pointer;
 }
 .sh-btn-ghost:hover { background: rgba(255, 255, 255, 0.14); border-color: rgba(255, 255, 255, 0.65); }
-.sh-cta-note { margin: 8px 0 0; font-size: 12.5px; color: rgba(255, 255, 255, 0.6); font-weight: 600; position: relative; z-index: 2; }
+.sh-cta-note { margin: 6px 0 0; font-size: 12.5px; color: rgba(255, 255, 255, 0.6); font-weight: 600; position: relative; z-index: 2; }
 .sh-trust { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 12px; font-size: 12.5px; color: rgba(255, 255, 255, 0.72); font-weight: 600; position: relative; z-index: 2; }
 .sh-trust span { display: inline-flex; align-items: center; gap: 5px; }
 .sh-trust svg { color: var(--sh-kuning); }
 
-.sh-palet { display: flex; align-items: center; gap: 8px; margin-top: 10px; position: relative; z-index: 2; }
+.sh-palet { display: flex; align-items: center; gap: 8px; margin-top: 8px; position: relative; z-index: 2; }
 .sh-palet i { width: 16px; height: 16px; border-radius: 50%; display: block; border: 2px solid rgba(255, 255, 255, 0.35); }
 .sh-p-kuning { background: var(--sh-kuning); }
 .sh-p-hijau { background: var(--sh-hijau-terang); }
@@ -229,9 +232,9 @@
 .sh-p-orange { background: var(--sh-orange); }
 .sh-palet span { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700; color: rgba(255, 255, 255, 0.6); }
 
-.sh-progress { margin-top: 22px; position: relative; z-index: 2; }
+.sh-progress { margin-top: 16px; position: relative; z-index: 2; }
 .sh-progress-label { display: flex; justify-content: space-between; gap: 12px; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.72; font-weight: 700; }
-.sh-bar { height: 5px; background: rgba(255, 255, 255, 0.14); border-radius: 999px; margin-top: 9px; overflow: hidden; }
+.sh-bar { height: 5px; background: rgba(255, 255, 255, 0.14); border-radius: 999px; margin-top: 8px; overflow: hidden; }
 .sh-bar-fill {
   display: block;
   height: 100%;
@@ -251,12 +254,12 @@
   background: var(--sh-right-bg);
   animation: sh-slide-r 1s 0.08s cubic-bezier(0.22, 1, 0.36, 1) both;
   overflow: hidden;
-  min-height: 540px;
+  min-height: 520px;
 }
-.sh-tabs { position: absolute; top: 16px; left: 16px; right: 16px; z-index: 5; display: flex; gap: 8px; flex-wrap: wrap; }
+.sh-tabs { position: absolute; top: 12px; left: 12px; right: 12px; z-index: 5; display: flex; gap: 8px; flex-wrap: wrap; }
 .sh-tab {
   border: none;
-  padding: 10px 15px;
+  padding: 9px 14px;
   border-radius: 999px;
   font-weight: 800;
   font-size: 13px;
@@ -284,8 +287,8 @@
 
 .sh-notif {
   position: absolute;
-  top: 74px;
-  right: 16px;
+  top: 64px;
+  right: 12px;
   z-index: 4;
   background: var(--sh-hijau-deep);
   color: #fff;
@@ -302,8 +305,8 @@
 .sh-notif-dot { color: var(--sh-hijau-terang); }
 .sh-badge-vertical {
   position: absolute;
-  right: 16px;
-  bottom: 122px;
+  right: 12px;
+  bottom: 116px;
   z-index: 3;
   background: var(--sh-kuning);
   color: #111;
@@ -323,15 +326,15 @@
 
 .sh-float-card {
   position: absolute;
-  left: 16px;
-  right: 16px;
-  bottom: 16px;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
   z-index: 4;
   background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(10px);
   color: #111;
   border-radius: 20px;
-  padding: 17px;
+  padding: 15px;
   display: flex;
   gap: 14px;
   align-items: center;
@@ -393,13 +396,13 @@
 /* ---- RESPONSIVE ---- */
 @media (max-width: 860px) {
   .sh-split { grid-template-columns: 1fr; min-height: auto; border-radius: 22px; }
-  .sh-left { padding: 22px 18px 18px; }
-  .sh-h1 { font-size: clamp(40px, 11vw, 54px); margin-top: 12px; }
-  .sh-sub { font-size: 14.5px; margin-top: 10px; }
-  .sh-ctas { margin-top: 14px; }
-  .sh-trust { margin-top: 12px; }
-  .sh-progress { margin-top: 14px; }
-  .sh-right { min-height: 420px; }
+  .sh-left { padding: 20px 16px 16px; }
+  .sh-h1 { font-size: clamp(40px, 11vw, 54px); margin-top: 10px; }
+  .sh-sub { font-size: 14.5px; margin-top: 8px; }
+  .sh-ctas { margin-top: 12px; }
+  .sh-trust { margin-top: 10px; }
+  .sh-progress { margin-top: 12px; }
+  .sh-right { min-height: 380px; }
   .sh-sticky-cta { display: flex; }
 }
 
