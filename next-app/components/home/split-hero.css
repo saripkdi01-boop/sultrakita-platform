@@ -54,7 +54,7 @@
 }
 
 /* ---- PANEL KIRI ----
-   Alur vertikal: badge 12 → h1 12 → sub 16 → cta 6 → note 12 → trust 8 → palet 16 → progress.
+   Alur vertikal: badge 12 → h1 12 → sub 16 → cta 6 → note 12 → trust 16 → progress(bar).
    Tanpa space-between: jarak selalu sama di semua viewport. */
 .sh-left {
   color: #fff;
@@ -224,16 +224,7 @@
 .sh-trust span { display: inline-flex; align-items: center; gap: 5px; }
 .sh-trust svg { color: var(--sh-kuning); }
 
-.sh-palet { display: flex; align-items: center; gap: 8px; margin-top: 8px; position: relative; z-index: 2; }
-.sh-palet i { width: 16px; height: 16px; border-radius: 50%; display: block; border: 2px solid rgba(255, 255, 255, 0.35); }
-.sh-p-kuning { background: var(--sh-kuning); }
-.sh-p-hijau { background: var(--sh-hijau-terang); }
-.sh-p-putih { background: #ffffff; }
-.sh-p-orange { background: var(--sh-orange); }
-.sh-palet span { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700; color: rgba(255, 255, 255, 0.6); }
-
 .sh-progress { margin-top: 16px; position: relative; z-index: 2; }
-.sh-progress-label { display: flex; justify-content: space-between; gap: 12px; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.72; font-weight: 700; }
 .sh-bar { height: 5px; background: rgba(255, 255, 255, 0.14); border-radius: 999px; margin-top: 8px; overflow: hidden; }
 .sh-bar-fill {
   display: block;
@@ -407,8 +398,6 @@
 .sh-hero .sh-btn-ghost { color: #ffffff !important; }
 .sh-hero .sh-cta-note { color: rgba(255, 255, 255, 0.6) !important; }
 .sh-hero .sh-trust { color: rgba(255, 255, 255, 0.72) !important; }
-.sh-hero .sh-palet span { color: rgba(255, 255, 255, 0.6) !important; }
-.sh-hero .sh-progress-label { color: rgba(255, 255, 255, 0.72) !important; }
 
 /* ---- RESPONSIVE ---- */
 @media (max-width: 860px) {
