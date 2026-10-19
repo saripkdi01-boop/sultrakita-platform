@@ -1,0 +1,224 @@
+/* PortfolioSection — portofolio Web Studio di homepage.
+   Menampilkan website klien real & live. */
+
+/* ---- PERISAI WARNA (pelajaran: rule global situs agresif) ---- */
+.pf-section .pf-title,
+.pf-section .pf-name { color: #0f3d27 !important; }
+.pf-section .pf-sub,
+.pf-section .pf-desc { color: #5f6f63 !important; }
+.pf-section .pf-role { color: #1b6b43 !important; }
+.pf-section .pf-kicker { color: #1b6b43 !important; }
+
+.pf-section {
+  padding: 76px 16px;
+  background: #fffef8;
+}
+.pf-inner {
+  max-width: 1060px;
+  margin: 0 auto;
+}
+.pf-kicker {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  background: rgba(27, 107, 67, 0.08);
+  border: 1px solid rgba(27, 107, 67, 0.2);
+  padding: 8px 14px;
+  border-radius: 999px;
+  margin: 0 0 16px;
+}
+.pf-title {
+  margin: 0;
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.pf-sub {
+  margin: 12px 0 0;
+  font-size: 16px;
+  line-height: 1.55;
+  max-width: 640px;
+}
+
+.pf-card {
+  margin-top: 32px;
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  background: #ffffff;
+  border: 1px solid #e7e0cc;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 24px 60px -24px rgba(15, 61, 39, 0.18);
+}
+.pf-shot {
+  position: relative;
+  display: block;
+  min-height: 340px;
+  background: #0f3d27;
+  overflow: hidden;
+}
+.pf-shot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.pf-card:hover .pf-shot img {
+  transform: scale(1.025);
+}
+.pf-shot-cta {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(15, 61, 39, 0.93);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 13.5px;
+  padding: 12px 18px;
+  border-radius: 999px;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+}
+.pf-body {
+  padding: 32px 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.pf-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #b25a1a;
+  background: #fdeedf;
+  border: 1px solid rgba(228, 112, 47, 0.3);
+  padding: 7px 12px;
+  border-radius: 999px;
+}
+.pf-name {
+  margin: 14px 0 0;
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+.pf-role {
+  margin: 6px 0 0;
+  font-size: 13.5px;
+  font-weight: 700;
+}
+.pf-desc {
+  margin: 12px 0 0;
+  font-size: 15px;
+  line-height: 1.6;
+}
+.pf-feats {
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.pf-feats li {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #0f3d27;
+  background: rgba(240, 185, 62, 0.16);
+  border: 1px solid rgba(240, 185, 62, 0.45);
+  padding: 7px 12px;
+  border-radius: 999px;
+}
+
+.pf-cta {
+  margin-top: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  background: linear-gradient(135deg, #0f3d27 0%, #1b6b43 100%);
+  border-radius: 20px;
+  padding: 26px 30px;
+  box-shadow: 0 20px 44px -18px rgba(15, 61, 39, 0.4);
+}
+.pf-cta p {
+  margin: 0;
+  color: #fffef8;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+.pf-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #f08d4d, #e4702f);
+  color: #ffffff !important;
+  font-weight: 800;
+  font-size: 15px;
+  padding: 14px 22px;
+  border-radius: 999px;
+  box-shadow: 0 12px 28px rgba(228, 112, 47, 0.35);
+  transition: transform 0.2s;
+  text-decoration: none;
+}
+.pf-cta-btn:hover {
+  transform: translateY(-2px);
+}
+
+/* ---- RESPONSIVE ---- */
+@media (max-width: 860px) {
+  .pf-section {
+    padding: 56px 16px;
+  }
+  .pf-card {
+    grid-template-columns: 1fr;
+  }
+  .pf-shot {
+    min-height: 230px;
+  }
+  .pf-body {
+    padding: 24px 20px;
+  }
+  .pf-cta {
+    padding: 22px 20px;
+  }
+  .pf-cta p {
+    font-size: 16px;
+  }
+}
+
+/* ---- DARK MODE situs ---- */
+html[data-theme="dark"] .pf-section {
+  background: #101613;
+}
+html[data-theme="dark"] .pf-section .pf-title,
+html[data-theme="dark"] .pf-section .pf-name {
+  color: #f2f0e4 !important;
+}
+html[data-theme="dark"] .pf-section .pf-sub,
+html[data-theme="dark"] .pf-section .pf-desc {
+  color: #a3afa2 !important;
+}
+html[data-theme="dark"] .pf-card {
+  background: #151d17;
+  border-color: #263128;
+}
+html[data-theme="dark"] .pf-feats li {
+  color: #f0b93e;
+  background: rgba(240, 185, 62, 0.1);
+}
