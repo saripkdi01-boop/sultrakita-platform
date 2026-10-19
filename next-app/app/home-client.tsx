@@ -28,6 +28,7 @@ import { usePreferences } from '@/lib/preferences';
 import { getCoreLabels } from '@/lib/i18n/dictionaries';
 import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 import SplitHero from '@/components/home/SplitHero';
+import PortfolioSection from '@/components/home/PortfolioSection';
 import SukiAboutCard from '@/components/kendari/SukiAboutCard';
 import '@/components/kendari/suki-about-card.css';
 import {
@@ -224,6 +225,8 @@ export default function HomeClient() {
       <div id="main-content">
         <SplitHero />
       </div>
+
+      <PortfolioSection />
 
       <div className="wc-tenun-strip" aria-hidden="true" />
 
