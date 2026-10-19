@@ -185,25 +185,14 @@ export default function SplitHero() {
               </div>
               <p className="sh-cta-note">{tx('shCtaNote')}</p>
               <div className="sh-trust">
-                {[tx('shTrust1'), tx('shTrust2'), tx('shTrust3')].map((s) => (
+                {[tx('shTrust1'), tx('shTrust2')].map((s) => (
                   <span key={s}>
                     <Check size={13} aria-hidden="true" /> {s}
                   </span>
                 ))}
               </div>
-              <div className="sh-palet" aria-hidden="true">
-                <i className="sh-p-kuning" />
-                <i className="sh-p-hijau" />
-                <i className="sh-p-putih" />
-                <i className="sh-p-orange" />
-                <span>{tx('shPalette')}</span>
-              </div>
             </div>
             <div className="sh-progress">
-              <div className="sh-progress-label">
-                <span>{tx(tab.labelKey)}</span>
-                <span>{tx('shAuto')}</span>
-              </div>
               <div className="sh-bar">
                 <i key={idx} className="sh-bar-fill" />
               </div>
