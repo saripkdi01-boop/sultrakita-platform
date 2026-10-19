@@ -1,1 +1,371 @@
-J3VzZSBjbGllbnQnOwoKaW1wb3J0ICcuL2hvbWUtd2MuY3NzJzsKaW1wb3J0ICcuL2tlbmRhcmktaG9tZS5jc3MnOwppbXBvcnQgSW1hZ2UgZnJvbSAnbmV4dC9pbWFnZSc7CmltcG9ydCBMaW5rIGZyb20gJ25leHQvbGluayc7CmltcG9ydCB7IEFuaW1hdGVQcmVzZW5jZSwgbW90aW9uLCB1c2VSZWR1Y2VkTW90aW9uIH0gZnJvbSAnZnJhbWVyLW1vdGlvbic7CmltcG9ydCB7CiAgQXJyb3dSaWdodCwKICBCcmllZmNhc2VCdXNpbmVzcywKICBCdWlsZGluZzIsCiAgQ2hlY2ssCiAgQ2hldnJvblJpZ2h0LAogIENvbXBhc3MsCiAgTWVudSwKICBTZWFyY2gsCiAgU2hvcHBpbmdCYWcsCiAgU3BhcmtsZXMsCiAgU3RvcmUsCiAgU3VuLAogIFVzZXJzLAogIFgsCn0gZnJvbSAnbHVjaWRlLXJlYWN0JzsKaW1wb3J0IHsgdXNlRWZmZWN0LCB1c2VNZW1vLCB1c2VSZWYsIHVzZVN0YXRlIH0gZnJvbSAncmVhY3QnOwppbXBvcnQgdHlwZSB7IEZvcm1FdmVudCB9IGZyb20gJ3JlYWN0JzsKaW1wb3J0IHsgc3VraU1vdGlvbiB9IGZyb20gJ0AvbGliL21vdGlvbi10b2tlbnMnOwppbXBvcnQgeyB1c2VQcmVmZXJlbmNlcyB9IGZyb20gJ0AvbGliL3ByZWZlcmVuY2VzJzsKaW1wb3J0IHsgZ2V0Q29yZUxhYmVscyB9IGZyb20gJ0AvbGliL2kxOG4vZGljdGlvbmFyaWVzJzsKaW1wb3J0IHsgTGFuZ3VhZ2VTd2l0Y2hlciB9IGZyb20gJ0AvY29tcG9uZW50cy9pMThuL0xhbmd1YWdlU3dpdGNoZXInOwppbXBvcnQgU3BsaXRIZXJvIGZyb20gJ0AvY29tcG9uZW50cy9ob21lL1NwbGl0SGVybyc7CmltcG9ydCBQb3J0Zm9saW9TZWN0aW9uIGZyb20gJ0AvY29tcG9uZW50cy9ob21lL1BvcnRmb2xpb1NlY3Rpb24nOwppbXBvcnQgU3VraUFib3V0Q2FyZCBmcm9tICdAL2NvbXBvbmVudHMva2VuZGFyaS9TdWtpQWJvdXRDYXJkJzsKaW1wb3J0ICdAL2NvbXBvbmVudHMva2VuZGFyaS9zdWtpLWFib3V0LWNhcmQuY3NzJzsKaW1wb3J0IHsKICBLZW5kYXJpQmFodGVyYW1hcywKICBLZW5kYXJpRWNvc3lzdGVtLAogIEtlbmRhcmlLb211bml0YXMsCiAgS2VuZGFyaVBlbmdndW5hUGVydGFtYSwKICBLZW5kYXJpVmFsdWUsCn0gZnJvbSAnQC9jb21wb25lbnRzL2tlbmRhcmkvS2VuZGFyaVNlY3Rpb25zJzsKCmV4cG9ydCBkZWZhdWx0IGZ1bmN0aW9uIEhvbWVDbGllbnQoKSB7CiAgY29uc3QgcmVkdWNlTW90aW9uID0gdXNlUmVkdWNlZE1vdGlvbigpOwogIGNvbnN0IFttZW51T3Blbiwgc2V0TWVudU9wZW5dID0gdXNlU3RhdGUoZmFsc2UpOwogIGNvbnN0IFtzZWFyY2hPcGVuLCBzZXRTZWFyY2hPcGVuXSA9IHVzZVN0YXRlKGZhbHNlKTsKICBjb25zdCBbcXVlcnksIHNldFF1ZXJ5XSA9IHVzZVN0YXRlKCcnKTsKICBjb25zdCBbdGhlbWUsIHNldFRoZW1lXSA9IHVzZVN0YXRlPCdsaWdodCcgfCAnZGFyayc+KCdsaWdodCcpOwogIGNvbnN0IHsgbGFuZ3VhZ2UgfSA9IHVzZVByZWZlcmVuY2VzKCk7CiAgY29uc3QgdDogUmVjb3JkPHN0cmluZywgc3RyaW5nPiA9IGdldENvcmVMYWJlbHMobGFuZ3VhZ2UpOwoKICBjb25zdCBlY29zeXN0ZW1MaW5rcyA9IFsKICAgIHsgbGFiZWw6IHQubWFya2V0cGxhY2UsIGhyZWY6ICcvbWFya2V0cGxhY2UnIH0sCiAgICB7IGxhYmVsOiB0LnByb3BlcnR5LCBocmVmOiAnL3Byb3BlcnRpJyB9LAogICAgeyBsYWJlbDogdC5lY29MaW5rT3Bwb3J0dW5pdHksIGhyZWY6ICcvam9icycgfSwKICAgIHsgbGFiZWw6IHQuZ3JvdXBzLCBocmVmOiAnL2dyb3VwcycgfSwKICBdOwoKICBjb25zdCBxdWlja0xpbmtzID0gWwogICAgeyBpY29uOiBTaG9wcGluZ0JhZywgbGFiZWw6IHQucXVpY2tTaG9wTG9jYWwsIGhyZWY6ICcvbWFya2V0cGxhY2UnIH0sCiAgICB7IGljb246IEJ1aWxkaW5nMiwgbGFiZWw6IHQucXVpY2tGaW5kUHJvcGVydHksIGhyZWY6ICcvcHJvcGVydGknIH0sCiAgICB7IGljb246IEJyaWVmY2FzZUJ1c2luZXNzLCBsYWJlbDogdC5xdWlja0ZpbmRKb2IsIGhyZWY6ICcvam9icycgfSwKICAgIHsgaWNvbjogVXNlcnMsIGxhYmVsOiB0LnF1aWNrSm9pbkNvbW11bml0eSwgaHJlZjogJy9ncm91cHMnIH0sCiAgICB7IGljb246IFN0b3JlLCBsYWJlbDogdC5uYXZGb3JCdXNpbmVzcywgaHJlZjogJy9CdXNpbmVzcycgfSwKICBdOwogIGNvbnN0IG1lbnVCdXR0b25SZWYgPSB1c2VSZWY8SFRNTEJ1dHRvbkVsZW1lbnQ+KG51bGwpOwogIGNvbnN0IHNlYXJjaElucHV0UmVmID0gdXNlUmVmPEhUTUxJbnB1dEVsZW1lbnQ+KG51bGwpOwogIGNvbnN0IHNlYXJjaFNoZWxsUmVmID0gdXNlUmVmPEhUTUxEaXZFbGVtZW50PihudWxsKTsKCiAgdXNlRWZmZWN0KCgpID0+IHsKICAgIGNvbnN0IGN1cnJlbnQgPSBkb2N1bWVudC5kb2N1bWVudEVsZW1lbnQuZGF0YXNldC50aGVtZTsKICAgIGlmIChjdXJyZW50ID09PSAnZGFyaycgfHwgY3VycmVudCA9PT0gJ2xpZ2h0JykgewogICAgICBzZXRUaGVtZShjdXJyZW50KTsKICAgICAgLy8gU2lua3JvbmthbiBjbGFzcyAuZGFyayBzYWF0IGxvYWQKICAgICAgZG9jdW1lbnQuZG9jdW1lbnRFbGVtZW50LmNsYXNzTGlzdC50b2dnbGUoJ2RhcmsnLCBjdXJyZW50ID09PSAnZGFyaycpOwogICAgfSBlbHNlIHsKICAgICAgLy8gQ2VrIGxvY2FsU3RvcmFnZSBqaWthIGRhdGEtdGhlbWUgYmVsdW0gZGlzZXQKICAgICAgY29uc3Qgc3RvcmVkID0gd2luZG93LmxvY2FsU3RvcmFnZS5nZXRJdGVtKCdzdWx0cmFraXRhLXRoZW1lJyk7CiAgICAgIGlmIChzdG9yZWQgPT09ICdkYXJrJykgewogICAgICAgIGRvY3VtZW50LmRvY3VtZW50RWxlbWVudC5kYXRhc2V0LnRoZW1lID0gJ2RhcmsnOwogICAgICAgIGRvY3VtZW50LmRvY3VtZW50RWxlbWVudC5jbGFzc0xpc3QuYWRkKCdkYXJrJyk7CiAgICAgICAgc2V0VGhlbWUoJ2RhcmsnKTsKICAgICAgfQogICAgfQogIH0sIFtdKTsKCiAgLy8gS2V5Ym9hcmQ6IOKMmEsgLyBDdHJsK0sgbWVtYnVrYeKAk21lbnV0dXAgKHRvZ2dsZSkgcGVuY2FyaWFuLCBFc2NhcGUgbWVudXR1cCBtZW51ICYgcGVuY2FyaWFuLgogIHVzZUVmZmVjdCgoKSA9PiB7CiAgICBmdW5jdGlvbiBvbktleURvd24oZXZlbnQ6IEtleWJvYXJkRXZlbnQpIHsKICAgICAgY29uc3QgbW9kID0gZXZlbnQubWV0YUtleSB8fCBldmVudC5jdHJsS2V5OwogICAgICBpZiAobW9kICYmIGV2ZW50LmtleS50b0xvd2VyQ2FzZSgpID09PSAnaycpIHsKICAgICAgICAvLyBHdWFyZDogamFuZ2FuIHJlYnV0IOKMmEsvQ3RybCtLIHNhYXQgZm9rdXMgc2VkYW5nIGRpIGRhbGFtIGtvbG9tIHBlbmNhcmlhbi4KICAgICAgICBjb25zdCBpblNlYXJjaElucHV0ID0gc2VhcmNoU2hlbGxSZWYuY3VycmVudD8uY29udGFpbnMoZG9jdW1lbnQuYWN0aXZlRWxlbWVudCkgPz8gZmFsc2U7CiAgICAgICAgaWYgKHNlYXJjaE9wZW4gJiYgaW5TZWFyY2hJbnB1dCkgcmV0dXJuOwogICAgICAgIGV2ZW50LnByZXZlbnREZWZhdWx0KCk7CiAgICAgICAgc2V0U2VhcmNoT3BlbigodmFsdWUpID0+ICF2YWx1ZSk7CiAgICAgICAgcmV0dXJuOwogICAgICB9CiAgICAgIGlmIChldmVudC5rZXkgPT09ICdFc2NhcGUnKSB7CiAgICAgICAgaWYgKHNlYXJjaE9wZW4pIHsKICAgICAgICAgIHNldFNlYXJjaE9wZW4oZmFsc2UpOwogICAgICAgIH0gZWxzZSBpZiAobWVudU9wZW4pIHsKICAgICAgICAgIHNldE1lbnVPcGVuKGZhbHNlKTsKICAgICAgICAgIG1lbnVCdXR0b25SZWYuY3VycmVudD8uZm9jdXMoKTsKICAgICAgICB9CiAgICAgIH0KICAgIH0KICAgIHdpbmRvdy5hZGRFdmVudExpc3RlbmVyKCdrZXlkb3duJywgb25LZXlEb3duKTsKICAgIHJldHVybiAoKSA9PiB3aW5kb3cucmVtb3ZlRXZlbnRMaXN0ZW5lcigna2V5ZG93bicsIG9uS2V5RG93bik7CiAgfSwgW3NlYXJjaE9wZW4sIG1lbnVPcGVuXSk7CgogIC8vIFNhYXQgcGVuY2FyaWFuIGRpYnVrYSwgZ3VsaXIgc2hlbGwga2UgYXJlYSBwYW5kYW5nIChmb3JtIGFkYSBkaSBiYXdhaCBmb2xkKQogIC8vIGxhbHUgZm9rdXNrYW4gaW5wdXQuIEhvcm1hdGkgcHJlZmVyZW5zaSByZWR1Y2UtbW90aW9uLgogIHVzZUVmZmVjdCgoKSA9PiB7CiAgICBpZiAoIXNlYXJjaE9wZW4pIHJldHVybjsKICAgIHNlYXJjaFNoZWxsUmVmLmN1cnJlbnQ/LnNjcm9sbEludG9WaWV3KHsgYmxvY2s6ICduZWFyZXN0JywgYmVoYXZpb3I6IHJlZHVjZU1vdGlvbiA/ICdhdXRvJyA6ICdzbW9vdGgnIH0pOwogICAgc2VhcmNoSW5wdXRSZWYuY3VycmVudD8uZm9jdXMoeyBwcmV2ZW50U2Nyb2xsOiB0cnVlIH0pOwogIH0sIFtzZWFyY2hPcGVuLCByZWR1Y2VNb3Rpb25dKTsKCiAgLy8gS3VuY2kgc2Nyb2xsIGJvZHkgc2FhdCBtZW51IG1vYmlsZSB0ZXJidWthIGFnYXIgaGFsYW1hbiBiZWxha2FuZyB0aWRhayBpa3V0IGJlcmdlc2VyLgogIHVzZUVmZmVjdCgoKSA9PiB7CiAgICBpZiAoIW1lbnVPcGVuKSByZXR1cm47CiAgICBjb25zdCBwcmV2aW91cyA9IGRvY3VtZW50LmJvZHkuc3R5bGUub3ZlcmZsb3c7CiAgICBkb2N1bWVudC5ib2R5LnN0eWxlLm92ZXJmbG93ID0gJ2hpZGRlbic7CiAgICByZXR1cm4gKCkgPT4geyBkb2N1bWVudC5ib2R5LnN0eWxlLm92ZXJmbG93ID0gcHJldmlvdXM7IH07CiAgfSwgW21lbnVPcGVuXSk7CgogIGNvbnN0IHJldmVhbFByb3BzID0gdXNlTWVtbygKICAgICgpID0+IChyZWR1Y2VNb3Rpb24KICAgICAgPyB7IGluaXRpYWw6IGZhbHNlIGFzIGNvbnN0LCB3aGlsZUluVmlldzogeyBvcGFjaXR5OiAxIH0sIHZpZXdwb3J0OiB7IG9uY2U6IHRydWUgfSB9CiAgICAgIDogewogICAgICAgICAgaW5pdGlhbDogeyBvcGFjaXR5OiAwLCB5OiAyNCB9LAogICAgICAgICAgd2hpbGVJblZpZXc6IHsgb3BhY2l0eTogMSwgeTogMCB9LAogICAgICAgICAgdmlld3BvcnQ6IHsgb25jZTogdHJ1ZSwgYW1vdW50OiAwLjE4IH0sCiAgICAgICAgICB0cmFuc2l0aW9uOiB7IGR1cmF0aW9uOiBzdWtpTW90aW9uLmR1cmF0aW9uLmVtcGhhc2l6ZWQsIGVhc2U6IHN1a2lNb3Rpb24uZWFzZS5vdXQgfSwKICAgICAgICB9KSwKICAgIFtyZWR1Y2VNb3Rpb25dLAogICk7CgogIGZ1bmN0aW9uIHRvZ2dsZVRoZW1lKCkgewogICAgY29uc3QgbmV4dCA9IHRoZW1lID09PSAnZGFyaycgPyAnbGlnaHQnIDogJ2RhcmsnOwogICAgZG9jdW1lbnQuZG9jdW1lbnRFbGVtZW50LmRhdGFzZXQudGhlbWUgPSBuZXh0OwogICAgZG9jdW1lbnQuZG9jdW1lbnRFbGVtZW50LnN0eWxlLmNvbG9yU2NoZW1lID0gbmV4dDsKICAgIC8vIFNpbmtyb25rYW4gY2xhc3MgLmRhcmsgdW50dWsgQ1NTIGdsb2JhbCAoZ2xvYmFscy5jc3MgcGFrYWkgaHRtbC5kYXJrKQogICAgZG9jdW1lbnQuZG9jdW1lbnRFbGVtZW50LmNsYXNzTGlzdC50b2dnbGUoJ2RhcmsnLCBuZXh0ID09PSAnZGFyaycpOwogICAgd2luZG93LmxvY2FsU3RvcmFnZS5zZXRJdGVtKCdzdWx0cmFraXRhLXRoZW1lJywgbmV4dCk7CiAgICBzZXRUaGVtZShuZXh0KTsKICB9CgogIGZ1bmN0aW9uIHN1Ym1pdFNlYXJjaChldmVudDogRm9ybUV2ZW50PEhUTUxGb3JtRWxlbWVudD4pIHsKICAgIGV2ZW50LnByZXZlbnREZWZhdWx0KCk7CiAgICBjb25zdCB2YWx1ZSA9IHF1ZXJ5LnRyaW0oKTsKICAgIC8vIE1hcmtldHBsYWNlIGFkYWxhaCBzYXR1LXNhdHVueWEgcnVhbmcgeWFuZyBiZW5hci1iZW5hciBtZW1wcm9zZXMgcXVlcnkgcGVuY2FyaWFuIChwYXJhbSBgcWApLgogICAgd2luZG93LmxvY2F0aW9uLmhyZWYgPSB2YWx1ZSA/IGAvbWFya2V0cGxhY2U/cT0ke2VuY29kZVVSSUNvbXBvbmVudCh2YWx1ZSl9YCA6ICcvbWFya2V0cGxhY2UnOwogIH0KCiAgZnVuY3Rpb24gY2xvc2VNZW51KCkgeyBzZXRNZW51T3BlbihmYWxzZSk7IH0KCiAgcmV0dXJuICgKICAgIDxtYWluIGNsYXNzTmFtZT0ic3VraS1vdmVyaGF1bC1ob21lIGRuLWhvbWUiPgogICAgICA8YSBjbGFzc05hbWU9InNraXAtbGluayIgaHJlZj0iI21haW4tY29udGVudCI+e3Quc2tpcFRvQ29udGVudH08L2E+CgogICAgICA8aGVhZGVyIGNsYXNzTmFtZT17YHN1a2ktb3ZlcmhhdWwtaGVhZGVyICR7bWVudU9wZW4gPyAnaXMtb3BlbicgOiAnJ31gfT4KICAgICAgICA8ZGl2IGNsYXNzTmFtZT0ic3VraS1vdmVyaGF1bC1jb250YWluZXIgc3VraS1vdmVyaGF1bC1oZWFkZXItaW5uZXIiPgogICAgICAgICAgPExpbmsgaHJlZj0iLyIgY2xhc3NOYW1lPSJzdWtpLW92ZXJoYXVsLWJyYW5kIiBhcmlhLWxhYmVsPXt0LmJyYW5kSG9tZX0gb25DbGljaz17Y2xvc2VNZW51fT4KICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPSJzdWtpLW92ZXJoYXVsLWJyYW5kLW1hcmsiPjxJbWFnZSBzcmM9Ii9icmFuZC9zdWtpLWxvZ28tbWFyay5zdmciIGFsdD0iIiB3aWR0aD17MjN9IGhlaWdodD17MjN9IC8+PC9zcGFuPgogICAgICAgICAgICA8c3Bhbj48c3Ryb25nPlNVS0kgQXBwczwvc3Ryb25nPjxzbWFsbD5ieSBTVUxUUkFLSVRBPC9zbWFsbD48L3NwYW4+CiAgICAgICAgICA8L0xpbms+CiAgICAgICAgICA8bmF2IGlkPSJzdWtpLXByaW1hcnktbmF2aWdhdGlvbiIgYXJpYS1sYWJlbD17dC5uYXZNYWlufT4KICAgICAgICAgICAgPGEgaHJlZj0iI2Vrb3Npc3RlbSIgb25DbGljaz17Y2xvc2VNZW51fT57dC5lY29zeXN0ZW19PC9hPgogICAgICAgICAgICA8YSBocmVmPSIjbWVuZ2h1YnVuZ2thbiIgb25DbGljaz17Y2xvc2VNZW51fT57dC5uYXZDb25uZWN0aW5nfTwvYT4KICAgICAgICAgICAgPGEgaHJlZj0iI2tvbXVuaXRhcyIgb25DbGljaz17Y2xvc2VNZW51fT57dC5ncm91cHN9PC9hPgogICAgICAgICAgICA8YSBocmVmPSIjdGVudGFuZyIgb25DbGljaz17Y2xvc2VNZW51fT57dC5uYXZBYm91dH08L2E+CiAgICAgICAgICAgIDxMaW5rIGhyZWY9Ii9CdXNpbmVzcyIgb25DbGljaz17Y2xvc2VNZW51fT57dC5uYXZGb3JCdXNpbmVzc308L0xpbms+CiAgICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT0ic3VraS1vdmVyaGF1bC1tZW51LWV4dHJhIj4KICAgICAgICAgICAgICA8TGluayBocmVmPSIvbG9naW4iIG9uQ2xpY2s9e2Nsb3NlTWVudX0+e3QubG9naW59PC9MaW5rPgogICAgICAgICAgICAgIDxMaW5rIGhyZWY9Ii9iZXJhbmRhIiBjbGFzc05hbWU9InN1a2ktb3ZlcmhhdWwtcHJpbWFyeSIgb25DbGljaz17Y2xvc2VNZW51fT57dC5vcGVuU3VraX0gPEFycm93UmlnaHQgc2l6ZT17MTV9IGFyaWEtaGlkZGVuPSJ0cnVlIiAvPjwvTGluaz4KICAgICAgICAgICAgPC9zcGFuPgogICAgICAgICAgPC9uYXY+CiAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT0ic3VraS1vdmVyaGF1bC1oZWFkZXItYWN0aW9ucyI+CiAgICAgICAgICAgIDxMYW5ndWFnZVN3aXRjaGVyIHZhcmlhbnQ9ImRyb3Bkb3duIiBzaG93TGFiZWw9e2ZhbHNlfSAvPgogICAgICAgICAgICA8YnV0dG9uCiAgICAgICAgICAgICAgY2xhc3NOYW1lPSJzdWtpLW92ZXJoYXVsLXRoZW1lIgogICAgICAgICAgICAgIHR5cGU9ImJ1dHRvbiIKICAgICAgICAgICAgICBvbkNsaWNrPXt0b2dnbGVUaGVtZX0KICAgICAgICAgICAgICBhcmlhLWxhYmVsPXt0aGVtZSA9PT0gJ2RhcmsnID8gdC5lbmFibGVMaWdodE1vZGUgOiB0LmVuYWJsZURhcmtNb2RlfQogICAgICAgICAgICAgIGFyaWEtcHJlc3NlZD17dGhlbWUgPT09ICdkYXJrJ30KICAgICAgICAgICAgPgogICAgICAgICAgICAgIHt0aGVtZSA9PT0gJ2RhcmsnID8gPFN1biBzaXplPXsxNn0gYXJpYS1oaWRkZW49InRydWUiIC8+IDogPHNwYW4gY2xhc3NOYW1lPSJzdWtpLW1vb24iIGFyaWEtaGlkZGVuPSJ0cnVlIiAvPn0KICAgICAgICAgICAgICA8c3Bhbj57dGhlbWUgPT09ICdkYXJrJyA/IHQubGlnaHRNb2RlIDogdC5kYXJrTW9kZX08L3NwYW4+CiAgICAgICAgICAgIDwvYnV0dG9uPgogICAgICAgICAgICA8TGluayBocmVmPSIvbG9naW4iIGNsYXNzTmFtZT0ic3VraS1vdmVyaGF1bC1sb2dpbiI+e3QubG9naW59PC9MaW5rPgogICAgICAgICAgICA8TGluayBocmVmPSIvYmVyYW5kYSIgY2xhc3NOYW1lPSJzdWtpLW92ZXJoYXVsLWhlYWRlci1jdGEiPnt0Lm9wZW5TdWtpfSA8QXJyb3dSaWdodCBzaXplPXsxNX0gYXJpYS1oaWRkZW49InRydWUiIC8+PC9MaW5rPgogICAgICAgICAgPC9kaXY+CiAgICAgICAgICA8YnV0dG9uCiAgICAgICAgICAgIGNsYXNzTmFtZT0ic3VraS1vdmVyaGF1bC10aGVtZS1pY29uIgogICAgICAgICAgICB0eXBlPSJidXR0b24iCiAgICAgICAgICAgIG9uQ2xpY2s9e3RvZ2dsZVRoZW1lfQogICAgICAgICAgICBhcmlhLWxhYmVsPXtgQWt0aWZrYW4gbW9kZSAke3RoZW1lID09PSAnZGFyaycgPyAndGVyYW5nJyA6ICdnZWxhcCd9YH0KICAgICAgICAgICAgYXJpYS1wcmVzc2VkPXt0aGVtZSA9PT0gJ2RhcmsnfQogICAgICAgICAgICB0aXRsZT17dGhlbWUgPT09ICdkYXJrJyA/ICdNb2RlIHRlcmFuZycgOiAnTW9kZSBnZWxhcCd9CiAgICAgICAgICA+CiAgICAgICAgICAgIHt0aGVtZSA9PT0gJ2RhcmsnID8gPFN1biBzaXplPXsxOH0gYXJpYS1oaWRkZW49InRydWUiIC8+IDogPHNwYW4gY2xhc3NOYW1lPSJzdWtpLW1vb24iIGFyaWEtaGlkZGVuPSJ0cnVlIiAvPn0KICAgICAgICAgIDwvYnV0dG9uPgogICAgICAgICAgPGJ1dHRvbgogICAgICAgICAgICByZWY9e21lbnVCdXR0b25SZWZ9CiAgICAgICAgICAgIGNsYXNzTmFtZT0ic3VraS1vdmVyaGF1bC1tZW51IgogICAgICAgICAgICB0eXBlPSJidXR0b24iCiAgICAgICAgICAgIGFyaWEtY29udHJvbHM9InN1a2ktcHJpbWFyeS1uYXZpZ2F0aW9uIgogICAgICAgICAgICBhcmlhLWxhYmVsPXttZW51T3BlbiA/IHQuY2xvc2VNZW51IDogdC5vcGVuTWVudX0KICAgICAgICAgICAgYXJpYS1leHBhbmRlZD17bWVudU9wZW59CiAgICAgICAgICAgIG9uQ2xpY2s9eygpID0+IHNldE1lbnVPcGVuKCh2YWx1ZSkgPT4gIXZhbHVlKX0KICAgICAgICAgID4KICAgICAgICAgICAge21lbnVPcGVuID8gPFggc2l6ZT17MjJ9IGFyaWEtaGlkZGVuPSJ0cnVlIiAvPiA6IDxNZW51IHNpemU9ezIyfSBhcmlhLWhpZGRlbj0idHJ1ZSIgLz59CiAgICAgICAgICA8L2J1dHRvbj4KICAgICAgICA8L2Rpdj4KICAgICAgPC9oZWFkZXI+CgogICAgICA8ZGl2IGlkPSJtYWluLWNvbnRlbnQiPgogICAgICAgIDxTcGxpdEhlcm8gLz4KICAgICAgPC9kaXY+CgogICAgICA8UG9ydGZvbGlvU2VjdGlvbiAvPgoKICAgICAgPGRpdiBjbGFzc05hbWU9IndjLXRlbnVuLXN0cmlwIiBhcmlhLWhpZGRlbj0idHJ1ZSIgLz4KCiAgICAgIDxLZW5kYXJpVmFsdWUgLz4KCiAgICAgIDxzZWN0aW9uIGNsYXNzTmFtZT0ic3VraS1vdmVyaGF1bC1zZWFyY2gtYmFuZCIgYXJpYS1sYWJlbD17dC5zZWFyY2hTZWN0aW9ufT4KICAgICAgICA8ZGl2IGNsYXNzTmFtZT0ic3VraS1vdmVyaGF1bC1jb250YWluZXIiPgogICAgICAgICAgPGRpdiByZWY9e3NlYXJjaFNoZWxsUmVmfSBjbGFzc05hbWU9e2BzdWtpLW92ZXJoYXVsLXNlYXJjaC1zaGVsbCAke3NlYXJjaE9wZW4gPyAnaXMtb3BlbicgOiAnJ31gfT4KICAgICAgICAgICAgPGJ1dHRvbgogICAgICAgICAgICAgIHR5cGU9ImJ1dHRvbiIKICAgICAgICAgICAgICBjbGFzc05hbWU9InN1a2ktb3ZlcmhhdWwtc2VhcmNoLXRyaWdnZXIiCiAgICAgICAgICAgICAgb25DbGljaz17KCkgPT4gc2V0U2VhcmNoT3BlbigodmFsdWUpID0+ICF2YWx1ZSl9CiAgICAgICAgICAgICAgYXJpYS1jb250cm9scz0ic3VraS1zZWFyY2gtZm9ybSIKICAgICAgICAgICAgICBhcmlhLWV4cGFuZGVkPXtzZWFyY2hPcGVufQogICAgICAgICAgICA+CiAgICAgICAgICAgICAgPFNlYXJjaCBzaXplPXsxOH0gYXJpYS1oaWRkZW49InRydWUiIC8+CiAgICAgICAgICAgICAgPHNwYW4+e3NlYXJjaE9wZW4gPyB0LnNlYXJjaE1hcmtldHBsYWNlQ3RhIDogdC5zZWFyY2hQcm9tcHR9PC9zcGFuPgogICAgICAgICAgICAgIDxrYmQgYXJpYS1oaWRkZW49InRydWUiPuKMmCBLPC9rYmQ+CiAgICAgICAgICAgIDwvYnV0dG9uPgogICAgICAgICAgICA8QW5pbWF0ZVByZXNlbmNlPgogICAgICAgICAgICAgIHtzZWFyY2hPcGVuICYmICgKICAgICAgICAgICAgICAgIDxtb3Rpb24uZm9ybQogICAgICAgICAgICAgICAgICBpZD0ic3VraS1zZWFyY2gtZm9ybSIKICAgICAgICAgICAgICAgICAgY2xhc3NOYW1lPSJzdWtpLW92ZXJoYXVsLXNlYXJjaC1leHBhbmRlZCIKICAgICAgICAgICAgICAgICAgaW5pdGlhbD17cmVkdWNlTW90aW9uID8gZmFsc2UgOiB7IG9wYWNpdHk6IDAsIGhlaWdodDogMCB9fQogICAgICAgICAgICAgICAgICBhbmltYXRlPXt7IG9wYWNpdHk6IDEsIGhlaWdodDogJ2F1dG8nIH19CiAgICAgICAgICAgICAgICAgIGV4aXQ9e3JlZHVjZU1vdGlvbiA/IHsgb3BhY2l0eTogMCB9IDogeyBvcGFjaXR5OiAwLCBoZWlnaHQ6IDAgfX0KICAgICAgICAgICAgICAgICAgdHJhbnNpdGlvbj17c3VraU1vdGlvbi5zcHJpbmcucGFuZWx9CiAgICAgICAgICAgICAgICAgIG9uU3VibWl0PXtzdWJtaXRTZWFyY2h9CiAgICAgICAgICAgICAgICAgIHJvbGU9InNlYXJjaCIKICAgICAgICAgICAgICAgID4KICAgICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9InN1a2ktb3ZlcmhhdWwtc2VhcmNoLWZpZWxkIj4KICAgICAgICAgICAgICAgICAgICA8U2VhcmNoIHNpemU9ezE3fSBhcmlhLWhpZGRlbj0idHJ1ZSIgLz4KICAgICAgICAgICAgICAgICAgICA8aW5wdXQKICAgICAgICAgICAgICAgICAgICAgIHJlZj17c2VhcmNoSW5wdXRSZWZ9CiAgICAgICAgICAgICAgICAgICAgICB2YWx1ZT17cXVlcnl9CiAgICAgICAgICAgICAgICAgICAgICBvbkNoYW5nZT17KGV2ZW50KSA9PiBzZXRRdWVyeShldmVudC50YXJnZXQudmFsdWUpfQogICAgICAgICAgICAgICAgICAgICAgcGxhY2Vob2xkZXI9e3Quc2VhcmNoUGxhY2Vob2xkZXJIb21lfQogICAgICAgICAgICAgICAgICAgICAgYXJpYS1sYWJlbD17dC5zZWFyY2hNYXJrZXRwbGFjZUN0YX0KICAgICAgICAgICAgICAgICAgICAgIHR5cGU9InNlYXJjaCIKICAgICAgICAgICAgICAgICAgICAvPgogICAgICAgICAgICAgICAgICA8L2Rpdj4KICAgICAgICAgICAgICAgICAgPGJ1dHRvbiB0eXBlPSJzdWJtaXQiPnt0LnNlYXJjaH0gPEFycm93UmlnaHQgc2l6ZT17MTV9IGFyaWEtaGlkZGVuPSJ0cnVlIiAvPjwvYnV0dG9uPgogICAgICAgICAgICAgICAgICA8YnV0dG9uIHR5cGU9ImJ1dHRvbiIgY2xhc3NOYW1lPSJzdWtpLXNlYXJjaC1jbG9zZSIgb25DbGljaz17KCkgPT4gc2V0U2VhcmNoT3BlbihmYWxzZSl9IGFyaWEtbGFiZWw9e3QuY2xvc2VTZWFyY2h9PgogICAgICAgICAgICAgICAgICAgIDxYIHNpemU9ezE2fSBhcmlhLWhpZGRlbj0idHJ1ZSIgLz4KICAgICAgICAgICAgICAgICAgPC9idXR0b24+CiAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPSJzdWtpLW92ZXJoYXVsLXNlYXJjaC1zdWdnZXN0aW9ucyI+CiAgICAgICAgICAgICAgICAgICAgPHNwYW4gaWQ9InN1a2ktc2VhcmNoLXN1Z2dlc3Rpb25zLWxhYmVsIj57dC5leHBsb3JlU3BhY2VzfTwvc3Bhbj4KICAgICAgICAgICAgICAgICAgICA8ZGl2IHJvbGU9Imdyb3VwIiBhcmlhLWxhYmVsbGVkYnk9InN1a2ktc2VhcmNoLXN1Z2dlc3Rpb25zLWxhYmVsIj4KICAgICAgICAgICAgICAgICAgICAgIHtlY29zeXN0ZW1MaW5rcy5tYXAoKGl0ZW0pID0+ICgKICAgICAgICAgICAgICAgICAgICAgICAgPExpbmsga2V5PXtpdGVtLmxhYmVsfSBocmVmPXtpdGVtLmhyZWZ9PntpdGVtLmxhYmVsfTwvTGluaz4KICAgICAgICAgICAgICAgICAgICAgICkpfQogICAgICAgICAgICAgICAgICAgIDwvZGl2PgogICAgICAgICAgICAgICAgICA8L2Rpdj4KICAgICAgICAgICAgICAgIDwvbW90aW9uLmZvcm0+CiAgICAgICAgICAgICAgKX0KICAgICAgICAgICAgPC9BbmltYXRlUHJlc2VuY2U+CiAgICAgICAgICA8L2Rpdj4KICAgICAgICAgIDxuYXYgY2xhc3NOYW1lPSJzdWtpLW92ZXJoYXVsLXF1aWNrLWxpbmtzIiBhcmlhLWxhYmVsPXt0LnN0YXJ0SGVyZX0+CiAgICAgICAgICAgIDxzcGFuPnt0LnN0YXJ0SGVyZX08L3NwYW4+CiAgICAgICAgICAgIHtxdWlja0xpbmtzLm1hcCgoaXRlbSkgPT4gewogICAgICAgICAgICAgIGNvbnN0IEljb24gPSBpdGVtLmljb247CiAgICAgICAgICAgICAgcmV0dXJuICgKICAgICAgICAgICAgICAgIDxMaW5rIGtleT17aXRlbS5sYWJlbH0gaHJlZj17aXRlbS5ocmVmfT4KICAgICAgICAgICAgICAgICAgPEljb24gc2l6ZT17MTV9IGFyaWEtaGlkZGVuPSJ0cnVlIiAvPntpdGVtLmxhYmVsfTxDaGV2cm9uUmlnaHQgc2l6ZT17MTN9IGFyaWEtaGlkZGVuPSJ0cnVlIiAvPgogICAgICAgICAgICAgICAgPC9MaW5rPgogICAgICAgICAgICAgICk7CiAgICAgICAgICAgIH0pfQogICAgICAgICAgPC9uYXY+CiAgICAgICAgPC9kaXY+CiAgICAgIDwvc2VjdGlvbj4KCiAgICAgIDxLZW5kYXJpRWNvc3lzdGVtIC8+CgogICAgICA8S2VuZGFyaUJhaHRlcmFtYXMgLz4KCiAgICAgIDxLZW5kYXJpS29tdW5pdGFzIC8+CgogICAgICA8S2VuZGFyaVBlbmdndW5hUGVydGFtYSAvPgoKICAgICAgPG1vdGlvbi5zZWN0aW9uIGNsYXNzTmFtZT0ic3VraS1vdmVyaGF1bC1hYm91dCIgaWQ9InRlbnRhbmciIGFyaWEtbGFiZWxsZWRieT0iYWJvdXQtdGl0bGUiIHsuLi5yZXZlYWxQcm9wc30+CiAgICAgICAgPGRpdiBjbGFzc05hbWU9InN1a2ktb3ZlcmhhdWwtY29udGFpbmVyIHN1a2ktb3ZlcmhhdWwtYWJvdXQtZ3JpZCI+CiAgICAgICAgICA8ZGl2PgogICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9InN1a2ktb3ZlcmhhdWwta2lja2VyIj57dC5hYm91dEtpY2tlcn08L3NwYW4+CiAgICAgICAgICAgIDxoMiBpZD0iYWJvdXQtdGl0bGUiPnt0LmFib3V0VGl0bGVBfSA8ZW0+e3QuYWJvdXRUaXRsZUJ9PC9lbT48L2gyPgogICAgICAgICAgICA8cD57dC5hYm91dERlc2N9PC9wPgogICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT0ic3VraS1vdmVyaGF1bC1wb2ludHMiPgogICAgICAgICAgICAgIDxzcGFuPjxDaGVjayBzaXplPXsxNH0gYXJpYS1oaWRkZW49InRydWUiIC8+IHt0LmFib3V0UG9pbnQxfTwvc3Bhbj4KICAgICAgICAgICAgICA8c3Bhbj48Q2hlY2sgc2l6ZT17MTR9IGFyaWEtaGlkZGVuPSJ0cnVlIiAvPiB7dC5hYm91dFBvaW50Mn08L3NwYW4+CiAgICAgICAgICAgICAgPHNwYW4+PENoZWNrIHNpemU9ezE0fSBhcmlhLWhpZGRlbj0idHJ1ZSIgLz4ge3QuYWJvdXRQb2ludDN9PC9zcGFuPgogICAgICAgICAgICA8L2Rpdj4KICAgICAgICAgICAgPExpbmsgaHJlZj0iL2hlbHAtY2VudGVyIiBjbGFzc05hbWU9InN1a2ktb3ZlcmhhdWwtdGV4dC1saW5rIj57dC5hYm91dExpbmt9IDxBcnJvd1JpZ2h0IHNpemU9ezE1fSBhcmlhLWhpZGRlbj0idHJ1ZSIgLz48L0xpbms+CiAgICAgICAgICA8L2Rpdj4KICAgICAgICAgIDxTdWtpQWJvdXRDYXJkIC8+CiAgICAgICAgPC9kaXY+CiAgICAgIDwvbW90aW9uLnNlY3Rpb24+CgogICAgICA8c2VjdGlvbiBjbGFzc05hbWU9InN1a2ktb3ZlcmhhdWwtYnVzaW5lc3MiIGFyaWEtbGFiZWxsZWRieT0iYnVzaW5lc3MtdGl0bGUiPgogICAgICAgIDxkaXYgY2xhc3NOYW1lPSJzdWtpLW92ZXJoYXVsLWNvbnRhaW5lciBzdWtpLW92ZXJoYXVsLWJ1c2luZXNzLWlubmVyIj4KICAgICAgICAgIDxkaXY+CiAgICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT0ic3VraS1vdmVyaGF1bC1raWNrZXIiPnt0LmJpektpY2tlcn08L3NwYW4+CiAgICAgICAgICAgIDxoMiBpZD0iYnVzaW5lc3MtdGl0bGUiPnt0LmJpelRpdGxlQX08YnIgLz48ZW0+e3QuYml6VGl0bGVCfTwvZW0+PC9oMj4KICAgICAgICAgICAgPHA+e3QuYml6RGVzY308L3A+CiAgICAgICAgICA8L2Rpdj4KICAgICAgICAgIDxMaW5rIGhyZWY9Ii9CdXNpbmVzcyIgY2xhc3NOYW1lPSJzdWtpLW92ZXJoYXVsLWxpZ2h0LWJ1dHRvbiI+e3QuaGVyb0N0YUJ1c2luZXNzfSA8QXJyb3dSaWdodCBzaXplPXsxN30gYXJpYS1oaWRkZW49InRydWUiIC8+PC9MaW5rPgogICAgICAgIDwvZGl2PgogICAgICA8L3NlY3Rpb24+CgogICAgICA8c2VjdGlvbiBjbGFzc05hbWU9InN1a2ktb3ZlcmhhdWwtZmluYWwiIGFyaWEtbGFiZWxsZWRieT0iZmluYWwtdGl0bGUiPgogICAgICAgIDxkaXYgY2xhc3NOYW1lPSJzdWtpLW92ZXJoYXVsLWNvbnRhaW5lciI+CiAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT0ic3VraS1vdmVyaGF1bC1maW5hbC1jYXJkIj4KICAgICAgICAgICAgPGRpdj4KICAgICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9InN1a2ktb3ZlcmhhdWwta2lja2VyIj57dC5maW5hbEtpY2tlcn08L3NwYW4+CiAgICAgICAgICAgICAgPGgyIGlkPSJmaW5hbC10aXRsZSI+e3QuZmluYWxUaXRsZX08L2gyPgogICAgICAgICAgICAgIDxwPnt0LmZpbmFsRGVzY308L3A+CiAgICAgICAgICAgIDwvZGl2PgogICAgICAgICAgICA8TGluayBocmVmPSIvYmVyYW5kYSIgY2xhc3NOYW1lPSJzdWtpLW92ZXJoYXVsLXByaW1hcnkiPnt0Lm9wZW5TdWtpQXBwc30gPEFycm93UmlnaHQgc2l6ZT17MTd9IGFyaWEtaGlkZGVuPSJ0cnVlIiAvPjwvTGluaz4KICAgICAgICAgIDwvZGl2PgogICAgICAgIDwvZGl2PgogICAgICA8L3NlY3Rpb24+CgogICAgICA8ZGl2IGNsYXNzTmFtZT0id2MtdGVudW4tc3RyaXAiIGFyaWEtaGlkZGVuPSJ0cnVlIiAvPgoKICAgICAgPGZvb3RlciBjbGFzc05hbWU9InN1a2ktb3ZlcmhhdWwtZm9vdGVyIj4KICAgICAgICA8ZGl2IGNsYXNzTmFtZT0ic3VraS1vdmVyaGF1bC1jb250YWluZXIiPgogICAgICAgICAgPGRpdiBjbGFzc05hbWU9InN1a2ktb3ZlcmhhdWwtZm9vdGVyLW1haW4iPgogICAgICAgICAgICA8ZGl2PgogICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPSJzdWtpLW92ZXJoYXVsLWJyYW5kIj4KICAgICAgICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT0ic3VraS1vdmVyaGF1bC1icmFuZC1tYXJrIj48SW1hZ2Ugc3JjPSIvYnJhbmQvc3VraS1sb2dvLW1hcmsuc3ZnIiBhbHQ9IiIgd2lkdGg9ezIzfSBoZWlnaHQ9ezIzfSAvPjwvc3Bhbj4KICAgICAgICAgICAgICAgIDxzcGFuPjxzdHJvbmc+U1VLSSBBcHBzPC9zdHJvbmc+PHNtYWxsPmJ5IFNVTFRSQUtJVEE8L3NtYWxsPjwvc3Bhbj4KICAgICAgICAgICAgICA8L2Rpdj4KICAgICAgICAgICAgICA8cD57dC5oZXJvU3VidGl0bGV9PC9wPgogICAgICAgICAgICA8L2Rpdj4KICAgICAgICAgICAgPG5hdiBjbGFzc05hbWU9InN1a2ktb3ZlcmhhdWwtZm9vdGVyLWxpbmtzIiBhcmlhLWxhYmVsPXt0LmZvb3RlckV4cGxvcmV9PgogICAgICAgICAgICAgIDxkaXY+PGI+e3QuZm9vdGVyRXhwbG9yZX08L2I+PExpbmsgaHJlZj0iL2JlcmFuZGEiPnt0LmhvbWV9PC9MaW5rPjxMaW5rIGhyZWY9Ii9tYXJrZXRwbGFjZSI+e3QubWFya2V0cGxhY2V9PC9MaW5rPjxMaW5rIGhyZWY9Ii9wcm9wZXJ0aSI+e3QucHJvcGVydHl9PC9MaW5rPjxMaW5rIGhyZWY9Ii9qb2JzIj57dC5mb290ZXJKb2JzfTwvTGluaz48L2Rpdj4KICAgICAgICAgICAgICA8ZGl2PjxiPnt0LmZvb3RlckNvbm5lY3R9PC9iPjxMaW5rIGhyZWY9Ii9ncm91cHMiPnt0Lmdyb3Vwc308L0xpbms+PExpbmsgaHJlZj0iL0J1c2luZXNzIj57dC5uYXZGb3JCdXNpbmVzc308L0xpbms+PExpbmsgaHJlZj0iL2hlbHAtY2VudGVyIj57dC5mb290ZXJHdWlkZX08L0xpbms+PC9kaXY+CiAgICAgICAgICAgICAgPGRpdj48Yj57dC5mb290ZXJIZWxwfTwvYj48TGluayBocmVmPSIvYmFudHVhbi9mYXEiPnt0LmZvb3RlckZhcX08L0xpbms+PExpbmsgaHJlZj0iL2tvbnRhayI+e3QuY29udGFjdH08L0xpbms+PExpbmsgaHJlZj0iL3N1cHBvcnQiPnt0LmZvb3RlclJlcG9ydH08L0xpbms+PC9kaXY+CiAgICAgICAgICAgICAgPGRpdj48Yj57dC5mb290ZXJMZWdhbH08L2I+PExpbmsgaHJlZj0iL2xlZ2FsL2tlYmlqYWthbi1wcml2YXNpIj57dC5mb290ZXJQcml2YWN5fTwvTGluaz48TGluayBocmVmPSIvbGVnYWwvc3lhcmF0LWtldGVudHVhbiI+e3QudGVybXN9PC9MaW5rPjxMaW5rIGhyZWY9Ii9zZWN1cml0eS1jZW50ZXIiPnt0LmZvb3RlclNlY3VyaXR5fTwvTGluaz48L2Rpdj4KICAgICAgICAgICAgPC9uYXY+CiAgICAgICAgICA8L2Rpdj4KICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPSJzdWtpLW92ZXJoYXVsLWZvb3Rlci1ib3R0b20iPgogICAgICAgICAgICA8c3Bhbj57dC5mb290ZXJDb3B5fTwvc3Bhbj4KICAgICAgICAgICAgPHNwYW4+PENvbXBhc3Mgc2l6ZT17MTJ9IGFyaWEtaGlkZGVuPSJ0cnVlIiAvPiB7dC5mb290ZXJUYWdsaW5lfTwvc3Bhbj4KICAgICAgICAgIDwvZGl2PgogICAgICAgIDwvZGl2PgogICAgICA8L2Zvb3Rlcj4KICAgIDwvbWFpbj4KICApOwp9Cg==
+'use client';
+
+import './home-wc.css';
+import './kendari-home.css';
+import Image from 'next/image';
+import Link from 'next/link';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import {
+  ArrowRight,
+  BriefcaseBusiness,
+  Building2,
+  Check,
+  ChevronRight,
+  Compass,
+  Menu,
+  Search,
+  ShoppingBag,
+  Sparkles,
+  Store,
+  Sun,
+  Users,
+  X,
+} from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type { FormEvent } from 'react';
+import { sukiMotion } from '@/lib/motion-tokens';
+import { usePreferences } from '@/lib/preferences';
+import { getCoreLabels } from '@/lib/i18n/dictionaries';
+import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
+import SplitHero from '@/components/home/SplitHero';
+import PortfolioSection from '@/components/home/PortfolioSection';
+import SukiAboutCard from '@/components/kendari/SukiAboutCard';
+import '@/components/kendari/suki-about-card.css';
+import {
+  KendariBahteramas,
+  KendariEcosystem,
+  KendariKomunitas,
+  KendariPenggunaPertama,
+  KendariValue,
+} from '@/components/kendari/KendariSections';
+
+export default function HomeClient() {
+  const reduceMotion = useReducedMotion();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const { language } = usePreferences();
+  const t: Record<string, string> = getCoreLabels(language);
+
+  const ecosystemLinks = [
+    { label: t.marketplace, href: '/marketplace' },
+    { label: t.property, href: '/properti' },
+    { label: t.ecoLinkOpportunity, href: '/jobs' },
+    { label: t.groups, href: '/groups' },
+  ];
+
+  const quickLinks = [
+    { icon: ShoppingBag, label: t.quickShopLocal, href: '/marketplace' },
+    { icon: Building2, label: t.quickFindProperty, href: '/properti' },
+    { icon: BriefcaseBusiness, label: t.quickFindJob, href: '/jobs' },
+    { icon: Users, label: t.quickJoinCommunity, href: '/groups' },
+    { icon: Store, label: t.navForBusiness, href: '/Business' },
+  ];
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchShellRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const current = document.documentElement.dataset.theme;
+    if (current === 'dark' || current === 'light') {
+      setTheme(current);
+      // Sinkronkan class .dark saat load
+      document.documentElement.classList.toggle('dark', current === 'dark');
+    } else {
+      // Cek localStorage jika data-theme belum diset
+      const stored = window.localStorage.getItem('sultrakita-theme');
+      if (stored === 'dark') {
+        document.documentElement.dataset.theme = 'dark';
+        document.documentElement.classList.add('dark');
+        setTheme('dark');
+      }
+    }
+  }, []);
+
+  // Keyboard: ⌘K / Ctrl+K membuka–menutup (toggle) pencarian, Escape menutup menu & pencarian.
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      const mod = event.metaKey || event.ctrlKey;
+      if (mod && event.key.toLowerCase() === 'k') {
+        // Guard: jangan rebut ⌘K/Ctrl+K saat fokus sedang di dalam kolom pencarian.
+        const inSearchInput = searchShellRef.current?.contains(document.activeElement) ?? false;
+        if (searchOpen && inSearchInput) return;
+        event.preventDefault();
+        setSearchOpen((value) => !value);
+        return;
+      }
+      if (event.key === 'Escape') {
+        if (searchOpen) {
+          setSearchOpen(false);
+        } else if (menuOpen) {
+          setMenuOpen(false);
+          menuButtonRef.current?.focus();
+        }
+      }
+    }
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [searchOpen, menuOpen]);
+
+  // Saat pencarian dibuka, gulir shell ke area pandang (form ada di bawah fold)
+  // lalu fokuskan input. Hormati preferensi reduce-motion.
+  useEffect(() => {
+    if (!searchOpen) return;
+    searchShellRef.current?.scrollIntoView({ block: 'nearest', behavior: reduceMotion ? 'auto' : 'smooth' });
+    searchInputRef.current?.focus({ preventScroll: true });
+  }, [searchOpen, reduceMotion]);
+
+  // Kunci scroll body saat menu mobile terbuka agar halaman belakang tidak ikut bergeser.
+  useEffect(() => {
+    if (!menuOpen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = previous; };
+  }, [menuOpen]);
+
+  const revealProps = useMemo(
+    () => (reduceMotion
+      ? { initial: false as const, whileInView: { opacity: 1 }, viewport: { once: true } }
+      : {
+          initial: { opacity: 0, y: 24 },
+          whileInView: { opacity: 1, y: 0 },
+          viewport: { once: true, amount: 0.18 },
+          transition: { duration: sukiMotion.duration.emphasized, ease: sukiMotion.ease.out },
+        }),
+    [reduceMotion],
+  );
+
+  function toggleTheme() {
+    const next = theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next;
+    document.documentElement.style.colorScheme = next;
+    // Sinkronkan class .dark untuk CSS global (globals.css pakai html.dark)
+    document.documentElement.classList.toggle('dark', next === 'dark');
+    window.localStorage.setItem('sultrakita-theme', next);
+    setTheme(next);
+  }
+
+  function submitSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const value = query.trim();
+    // Marketplace adalah satu-satunya ruang yang benar-benar memproses query pencarian (param `q`).
+    window.location.href = value ? `/marketplace?q=${encodeURIComponent(value)}` : '/marketplace';
+  }
+
+  function closeMenu() { setMenuOpen(false); }
+
+  return (
+    <main className="suki-overhaul-home dn-home">
+      <a className="skip-link" href="#main-content">{t.skipToContent}</a>
+
+      <header className={`suki-overhaul-header ${menuOpen ? 'is-open' : ''}`}>
+        <div className="suki-overhaul-container suki-overhaul-header-inner">
+          <Link href="/" className="suki-overhaul-brand" aria-label={t.brandHome} onClick={closeMenu}>
+            <span className="suki-overhaul-brand-mark"><Image src="/brand/suki-logo-mark.svg" alt="" width={23} height={23} /></span>
+            <span><strong>SUKI Apps</strong><small>by SULTRAKITA</small></span>
+          </Link>
+          <nav id="suki-primary-navigation" aria-label={t.navMain}>
+            <a href="#ekosistem" onClick={closeMenu}>{t.ecosystem}</a>
+            <a href="#menghubungkan" onClick={closeMenu}>{t.navConnecting}</a>
+            <a href="#komunitas" onClick={closeMenu}>{t.groups}</a>
+            <a href="#tentang" onClick={closeMenu}>{t.navAbout}</a>
+            <Link href="/Business" onClick={closeMenu}>{t.navForBusiness}</Link>
+            <span className="suki-overhaul-menu-extra">
+              <Link href="/login" onClick={closeMenu}>{t.login}</Link>
+              <Link href="/beranda" className="suki-overhaul-primary" onClick={closeMenu}>{t.openSuki} <ArrowRight size={15} aria-hidden="true" /></Link>
+            </span>
+          </nav>
+          <div className="suki-overhaul-header-actions">
+            <LanguageSwitcher variant="dropdown" showLabel={false} />
+            <button
+              className="suki-overhaul-theme"
+              type="button"
+              onClick={toggleTheme}
+              aria-label={theme === 'dark' ? t.enableLightMode : t.enableDarkMode}
+              aria-pressed={theme === 'dark'}
+            >
+              {theme === 'dark' ? <Sun size={16} aria-hidden="true" /> : <span className="suki-moon" aria-hidden="true" />}
+              <span>{theme === 'dark' ? t.lightMode : t.darkMode}</span>
+            </button>
+            <Link href="/login" className="suki-overhaul-login">{t.login}</Link>
+            <Link href="/beranda" className="suki-overhaul-header-cta">{t.openSuki} <ArrowRight size={15} aria-hidden="true" /></Link>
+          </div>
+          <button
+            className="suki-overhaul-theme-icon"
+            type="button"
+            onClick={toggleTheme}
+            aria-label={`Aktifkan mode ${theme === 'dark' ? 'terang' : 'gelap'}`}
+            aria-pressed={theme === 'dark'}
+            title={theme === 'dark' ? 'Mode terang' : 'Mode gelap'}
+          >
+            {theme === 'dark' ? <Sun size={18} aria-hidden="true" /> : <span className="suki-moon" aria-hidden="true" />}
+          </button>
+          <button
+            ref={menuButtonRef}
+            className="suki-overhaul-menu"
+            type="button"
+            aria-controls="suki-primary-navigation"
+            aria-label={menuOpen ? t.closeMenu : t.openMenu}
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen((value) => !value)}
+          >
+            {menuOpen ? <X size={22} aria-hidden="true" /> : <Menu size={22} aria-hidden="true" />}
+          </button>
+        </div>
+      </header>
+
+      <div id="main-content">
+        <SplitHero />
+      </div>
+
+      <PortfolioSection />
+
+      <div className="wc-tenun-strip" aria-hidden="true" />
+
+      <KendariValue />
+
+      <section className="suki-overhaul-search-band" aria-label={t.searchSection}>
+        <div className="suki-overhaul-container">
+          <div ref={searchShellRef} className={`suki-overhaul-search-shell ${searchOpen ? 'is-open' : ''}`}>
+            <button
+              type="button"
+              className="suki-overhaul-search-trigger"
+              onClick={() => setSearchOpen((value) => !value)}
+              aria-controls="suki-search-form"
+              aria-expanded={searchOpen}
+            >
+              <Search size={18} aria-hidden="true" />
+              <span>{searchOpen ? t.searchMarketplaceCta : t.searchPrompt}</span>
+              <kbd aria-hidden="true">⌘ K</kbd>
+            </button>
+            <AnimatePresence>
+              {searchOpen && (
+                <motion.form
+                  id="suki-search-form"
+                  className="suki-overhaul-search-expanded"
+                  initial={reduceMotion ? false : { opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={reduceMotion ? { opacity: 0 } : { opacity: 0, height: 0 }}
+                  transition={sukiMotion.spring.panel}
+                  onSubmit={submitSearch}
+                  role="search"
+                >
+                  <div className="suki-overhaul-search-field">
+                    <Search size={17} aria-hidden="true" />
+                    <input
+                      ref={searchInputRef}
+                      value={query}
+                      onChange={(event) => setQuery(event.target.value)}
+                      placeholder={t.searchPlaceholderHome}
+                      aria-label={t.searchMarketplaceCta}
+                      type="search"
+                    />
+                  </div>
+                  <button type="submit">{t.search} <ArrowRight size={15} aria-hidden="true" /></button>
+                  <button type="button" className="suki-search-close" onClick={() => setSearchOpen(false)} aria-label={t.closeSearch}>
+                    <X size={16} aria-hidden="true" />
+                  </button>
+                  <div className="suki-overhaul-search-suggestions">
+                    <span id="suki-search-suggestions-label">{t.exploreSpaces}</span>
+                    <div role="group" aria-labelledby="suki-search-suggestions-label">
+                      {ecosystemLinks.map((item) => (
+                        <Link key={item.label} href={item.href}>{item.label}</Link>
+                      ))}
+                    </div>
+                  </div>
+                </motion.form>
+              )}
+            </AnimatePresence>
+          </div>
+          <nav className="suki-overhaul-quick-links" aria-label={t.startHere}>
+            <span>{t.startHere}</span>
+            {quickLinks.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link key={item.label} href={item.href}>
+                  <Icon size={15} aria-hidden="true" />{item.label}<ChevronRight size={13} aria-hidden="true" />
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+      </section>
+
+      <KendariEcosystem />
+
+      <KendariBahteramas />
+
+      <KendariKomunitas />
+
+      <KendariPenggunaPertama />
+
+      <motion.section className="suki-overhaul-about" id="tentang" aria-labelledby="about-title" {...revealProps}>
+        <div className="suki-overhaul-container suki-overhaul-about-grid">
+          <div>
+            <span className="suki-overhaul-kicker">{t.aboutKicker}</span>
+            <h2 id="about-title">{t.aboutTitleA} <em>{t.aboutTitleB}</em></h2>
+            <p>{t.aboutDesc}</p>
+            <div className="suki-overhaul-points">
+              <span><Check size={14} aria-hidden="true" /> {t.aboutPoint1}</span>
+              <span><Check size={14} aria-hidden="true" /> {t.aboutPoint2}</span>
+              <span><Check size={14} aria-hidden="true" /> {t.aboutPoint3}</span>
+            </div>
+            <Link href="/help-center" className="suki-overhaul-text-link">{t.aboutLink} <ArrowRight size={15} aria-hidden="true" /></Link>
+          </div>
+          <SukiAboutCard />
+        </div>
+      </motion.section>
+
+      <section className="suki-overhaul-business" aria-labelledby="business-title">
+        <div className="suki-overhaul-container suki-overhaul-business-inner">
+          <div>
+            <span className="suki-overhaul-kicker">{t.bizKicker}</span>
+            <h2 id="business-title">{t.bizTitleA}<br /><em>{t.bizTitleB}</em></h2>
+            <p>{t.bizDesc}</p>
+          </div>
+          <Link href="/Business" className="suki-overhaul-light-button">{t.heroCtaBusiness} <ArrowRight size={17} aria-hidden="true" /></Link>
+        </div>
+      </section>
+
+      <section className="suki-overhaul-final" aria-labelledby="final-title">
+        <div className="suki-overhaul-container">
+          <div className="suki-overhaul-final-card">
+            <div>
+              <span className="suki-overhaul-kicker">{t.finalKicker}</span>
+              <h2 id="final-title">{t.finalTitle}</h2>
+              <p>{t.finalDesc}</p>
+            </div>
+            <Link href="/beranda" className="suki-overhaul-primary">{t.openSukiApps} <ArrowRight size={17} aria-hidden="true" /></Link>
+          </div>
+        </div>
+      </section>
+
+      <div className="wc-tenun-strip" aria-hidden="true" />
+
+      <footer className="suki-overhaul-footer">
+        <div className="suki-overhaul-container">
+          <div className="suki-overhaul-footer-main">
+            <div>
+              <div className="suki-overhaul-brand">
+                <span className="suki-overhaul-brand-mark"><Image src="/brand/suki-logo-mark.svg" alt="" width={23} height={23} /></span>
+                <span><strong>SUKI Apps</strong><small>by SULTRAKITA</small></span>
+              </div>
+              <p>{t.heroSubtitle}</p>
+            </div>
+            <nav className="suki-overhaul-footer-links" aria-label={t.footerExplore}>
+              <div><b>{t.footerExplore}</b><Link href="/beranda">{t.home}</Link><Link href="/marketplace">{t.marketplace}</Link><Link href="/properti">{t.property}</Link><Link href="/jobs">{t.footerJobs}</Link></div>
+              <div><b>{t.footerConnect}</b><Link href="/groups">{t.groups}</Link><Link href="/Business">{t.navForBusiness}</Link><Link href="/help-center">{t.footerGuide}</Link></div>
+              <div><b>{t.footerHelp}</b><Link href="/bantuan/faq">{t.footerFaq}</Link><Link href="/kontak">{t.contact}</Link><Link href="/support">{t.footerReport}</Link></div>
+              <div><b>{t.footerLegal}</b><Link href="/legal/kebijakan-privasi">{t.footerPrivacy}</Link><Link href="/legal/syarat-ketentuan">{t.terms}</Link><Link href="/security-center">{t.footerSecurity}</Link></div>
+            </nav>
+          </div>
+          <div className="suki-overhaul-footer-bottom">
+            <span>{t.footerCopy}</span>
+            <span><Compass size={12} aria-hidden="true" /> {t.footerTagline}</span>
+          </div>
+        </div>
+      </footer>
+    </main>
+  );
+}
