@@ -393,6 +393,23 @@
 }
 .sh-sticky-close { background: transparent; border: none; color: rgba(255, 255, 255, 0.6); padding: 6px; line-height: 1; cursor: pointer; display: grid; place-items: center; }
 
+/* ---- PERISAI WARNA ----
+   Situs memiliki rule global (h1/button/p, sebagian !important) yang dapat
+   menimpa warna teks komponen. Blok ini mengunci warna teks hero. */
+.sh-hero .sh-h1,
+.sh-hero .sh-thin,
+.sh-hero .sh-row { color: var(--sh-putih) !important; }
+.sh-hero .sh-rotator { color: var(--sh-kuning) !important; }
+.sh-hero .sh-live { color: #ffffff !important; }
+.sh-hero .sh-sub { color: rgba(255, 255, 255, 0.88) !important; }
+.sh-hero .sh-sub b { color: #ffffff !important; }
+.sh-hero .sh-btn-primary { color: #ffffff !important; }
+.sh-hero .sh-btn-ghost { color: #ffffff !important; }
+.sh-hero .sh-cta-note { color: rgba(255, 255, 255, 0.6) !important; }
+.sh-hero .sh-trust { color: rgba(255, 255, 255, 0.72) !important; }
+.sh-hero .sh-palet span { color: rgba(255, 255, 255, 0.6) !important; }
+.sh-hero .sh-progress-label { color: rgba(255, 255, 255, 0.72) !important; }
+
 /* ---- RESPONSIVE ---- */
 @media (max-width: 860px) {
   .sh-split { grid-template-columns: 1fr; min-height: auto; border-radius: 22px; }
