@@ -78,21 +78,52 @@ export default async function MarketplacePage({ searchParams }: { searchParams: 
 
   // Fase 2.7: JSON-LD ItemList > Product — HANYA dengan harga asli (integer IDR).
   // Tanpa harga 0 dan tanpa klaim ketersediaan palsu.
+  // Fix Search Console (20 Okt 2026): "image" adalah field KRITIS Listingan
+  // penjual — listing tanpa foto asli dikeluarkan dari JSON-LD (halaman tetap
+  // menampilkannya seperti biasa). Field tambahan hanya dari data nyata:
+  // description listing, itemCondition dari kondisi barang, availability dari
+  // stock_quantity bila terbaca (listing di query ini berstatus published/
+  // active = sedang ditawarkan, jadi InStock). brand/GTIN,
+  // hasMerchantReturnPolicy, shippingDetails, aggregateRating & review
+  // SENGAJA tidak diisi — platform C2C tidak punya datanya (transaksi
+  // langsung penjual-pembeli); mengarangnya melanggar pedoman Google.
+  const jsonLdEntries = (result.ok && 'items' in result ? result.items : [])
+    .map((item) => ({
+      item,
+      price: Math.trunc(Number(item.price) || 0),
+      image: item.images?.[0] || item.thumbnail_url || undefined,
+    }))
+    .filter((entry) => entry.image && entry.price > 0)
+    .slice(0, 20);
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
-    itemListElement: (result.ok && 'items' in result ? result.items : []).slice(0, 20).map((item, index) => {
-      const price = Math.trunc(Number(item.price) || 0);
-      const image = item.images?.[0] || item.thumbnail_url || undefined;
+    itemListElement: jsonLdEntries.map(({ item, price, image }, index) => {
+      const url = `${siteUrl}/marketplace?listing=${encodeURIComponent(String(item.id))}`;
+      const description = typeof item.description === 'string' ? item.description.trim() : '';
+      const condition = typeof item.condition === 'string' ? item.condition : '';
+      const stock = typeof item.stock_quantity === 'number' ? item.stock_quantity : null;
       return {
         '@type': 'ListItem',
         position: index + 1,
         item: {
           '@type': 'Product',
           name: item.title,
-          ...(image ? { image } : {}),
-          url: `${siteUrl}/marketplace?listing=${encodeURIComponent(String(item.id))}`,
-          ...(price > 0 ? { offers: { '@type': 'Offer', price, priceCurrency: 'IDR' } } : {}),
+          image,
+          ...(description ? { description: description.slice(0, 500) } : {}),
+          url,
+          offers: {
+            '@type': 'Offer',
+            price,
+            priceCurrency: 'IDR',
+            url,
+            availability: stock !== null && stock <= 0 ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock',
+            ...(condition === 'new'
+              ? { itemCondition: 'https://schema.org/NewCondition' }
+              : condition
+                ? { itemCondition: 'https://schema.org/UsedCondition' }
+                : {}),
+          },
         },
       };
     }),
@@ -105,3 +136,4 @@ export default async function MarketplacePage({ searchParams }: { searchParams: 
     </AppLayout>
   );
 }
+
