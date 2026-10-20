@@ -161,6 +161,13 @@ details p{color:var(--muted);font-size:.94rem;padding:0 4px 20px;max-width:70ch}
 .contact h2{margin-bottom:16px}
 .contact p{color:var(--muted);max-width:56ch;margin:0 auto 34px}
 .contact .row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.contact-channels{max-width:580px;margin:0 auto 30px;text-align:left}
+.channel{display:flex;align-items:center;gap:16px;padding:14px 18px;border:1px solid var(--line);border-radius:6px;
+  background:var(--panel);margin-bottom:10px;transition:border-color .25s,transform .25s}
+a.channel:hover{border-color:var(--gold);transform:translateX(4px)}
+.ch-label{font-family:var(--mono);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);width:84px;flex-shrink:0}
+.ch-value{flex:1;font-size:.95rem;color:var(--ink)}
+.ch-go{font-family:var(--mono);font-size:.76rem;color:var(--teal);flex-shrink:0}
 footer{border-top:1px solid var(--line-soft);padding:36px 0;color:var(--faint);font-family:var(--mono);font-size:.74rem;letter-spacing:.04em}
 footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 /* ---------- light theme ---------- */
@@ -392,9 +399,20 @@ html[data-theme="light"] .spec-head{color:var(--gold)}
       <p class="eyebrow" style="justify-content:center">Free blueprint · No commitment</p>
       <h2 id="h-contact">Tell us what you're building.</h2>
       <p>Send one paragraph about your project. Within 24 hours you'll get back a one-page blueprint with timeline and fixed price — free, whether you hire us or not.</p>
+      <div class="contact-channels">
+        <a class="channel" href="https://wa.me/6285849495407" target="_blank" rel="noopener">
+          <span class="ch-label">WhatsApp</span><span class="ch-value">+62 858-4949-5407</span><span class="ch-go">Chat →</span>
+        </a>
+        <div class="channel">
+          <span class="ch-label">Telegram</span><span class="ch-value">+62 812-3201-4872</span><span class="ch-go">via app</span>
+        </div>
+        <a class="channel" href="mailto:sukidev01@gmail.com?subject=Project%20Blueprint%20Request%20—%20SUKI%20Studio">
+          <span class="ch-label">Email</span><span class="ch-value">sukidev01@gmail.com</span><span class="ch-go">Write →</span>
+        </a>
+      </div>
       <div class="row">
-        <a class="btn solid" href="mailto:sultrakitaplatform@gmail.com?subject=Project%20Blueprint%20Request%20—%20SUKI%20Studio">Email us your project</a>
-        <a class="btn" href="https://sukiapps.web.id" target="_blank" rel="noopener">sukiapps.web.id</a>
+        <a class="btn solid" href="https://wa.me/6285849495407?text=Hi%20SUKI%20Studio%2C%20I%27d%20like%20a%20free%20project%20blueprint." target="_blank" rel="noopener">Chat on WhatsApp</a>
+        <a class="btn" href="mailto:sukidev01@gmail.com?subject=Project%20Blueprint%20Request%20—%20SUKI%20Studio">Email us your project</a>
       </div>
     </div>
   </div>
