@@ -163,6 +163,27 @@ details p{color:var(--muted);font-size:.94rem;padding:0 4px 20px;max-width:70ch}
 .contact .row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
 footer{border-top:1px solid var(--line-soft);padding:36px 0;color:var(--faint);font-family:var(--mono);font-size:.74rem;letter-spacing:.04em}
 footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+/* ---------- light theme ---------- */
+html[data-theme="light"]{
+  --bg:#f6f4ea; --panel:#fffdf6; --panel2:#efe9d8;
+  --ink:#15211a; --muted:#4f5f53; --faint:#8b978c;
+  --gold:#8f660e; --gold-soft:rgba(143,102,14,.1);
+  --teal:#0c7a4b; --line:rgba(143,102,14,.3); --line-soft:rgba(21,33,26,.09);
+}
+html[data-theme="light"] .btn:hover{background:var(--gold);border-color:var(--gold);color:#f6f4ea}
+html[data-theme="light"] .btn.solid{background:var(--gold);border-color:var(--gold);color:#f6f4ea}
+html[data-theme="light"] .btn.solid:hover{background:#75500a}
+html[data-theme="light"] .brand svg text{fill:#8f660e}
+html[data-theme="light"] .tier.hot::before{background:var(--gold);color:#f6f4ea}
+html[data-theme="light"] .contact{background:linear-gradient(160deg,#fffdf6,#efe9d8)}
+html[data-theme="light"] .contact::before{background:radial-gradient(ellipse,rgba(143,102,14,.14),transparent 70%)}
+html[data-theme="light"] .spec-head{color:var(--gold)}
+/* theme toggle */
+.nav-actions{display:inline-flex;align-items:center;gap:12px}
+.theme-toggle{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--gold);
+  display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .25s,border-color .25s}
+.theme-toggle:hover{transform:translateY(-2px);border-color:var(--gold)}
+.theme-toggle svg{width:18px;height:18px}
 /* reveal */
 .rv{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s ease}
 .rv.in{opacity:1;transform:none}
@@ -197,7 +218,13 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
       <a href="#process"><b>03</b>Process</a>
       <a href="#pricing"><b>04</b>Pricing</a>
     </div>
-    <a class="btn" href="#contact">Start a project</a>
+    <div class="nav-actions">
+      <button class="theme-toggle" id="themeToggle" aria-pressed="false" aria-label="Switch to light mode">
+        <svg class="ic-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8"/></svg>
+        <svg class="ic-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:none"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+      <a class="btn" href="#contact">Start a project</a>
+    </div>
   </div>
 </nav>
 
@@ -218,7 +245,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
       <table>
         <tr><td class="k">Output</td><td class="v">Websites · web apps · SaaS<small>Three lanes. Nothing else.</small></td></tr>
         <tr><td class="k">Stack</td><td class="v">Next.js · TypeScript · Supabase<small>Clean code, handed over to you.</small></td></tr>
-        <tr><td class="k">Delivery</td><td class="v">7–14 days typical<small>Live preview links at every milestone.</small></td></tr>
+        <tr><td class="k">Delivery</td><td class="v">1–2 days typical<small>Websites in 1–2 days · SaaS up to 1 week.</small></td></tr>
         <tr><td class="k">Coverage</td><td class="v">24/7 async<small>Progress continues while you sleep.</small></td></tr>
         <tr><td class="k">Pricing</td><td class="v">Fixed before we start<small>No hourly-billing surprises.</small></td></tr>
       </table>
@@ -234,7 +261,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
     <div class="svc rv">
       <span class="svc-no">/ 01</span>
       <div><h3>Custom <span>websites</span></h3><p>High-converting landing pages, company profiles and online stores. Designed for your brand, built for speed and search engines.</p></div>
-      <ul><li>Mobile-first, animated design</li><li>Clear English copy help</li><li>Launch in 7–14 days</li></ul>
+      <ul><li>Mobile-first, animated design</li><li>Clear English copy help</li><li>Launch in 1–2 days</li></ul>
     </div>
     <div class="svc rv">
       <span class="svc-no">/ 02</span>
@@ -302,7 +329,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
     <div class="ledger rv" aria-label="Studio facts">
       <div><b><span class="count" data-to="3">3</span></b><span>Live products shipped</span></div>
       <div><b>24/7</b><span>Async availability</span></div>
-      <div><b>≤14<span style="font-size:1.2rem"> days</span></b><span>Typical website launch</span></div>
+      <div><b>1–2<span style="font-size:1.2rem"> days</span></b><span>Typical website launch</span></div>
       <div><b>100%</b><span>Transparent progress</span></div>
     </div>
   </div>
@@ -327,17 +354,17 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
     <p class="sec-lede rv">No hourly-billing surprises. The price you approve in the blueprint is the price you pay.</p>
     <div class="tiers">
       <div class="tier rv">
-        <p class="t">Starter</p><p class="amt">$290</p><p class="per">one-time · launch in 7 days</p>
+        <p class="t">Starter</p><p class="amt">$290</p><p class="per">one-time · launch in 2 days</p>
         <ul><li>1-page premium website</li><li>Mobile-first, animated design</li><li>Contact / WhatsApp integration</li><li>Basic SEO setup</li></ul>
         <a class="btn" href="#contact" style="text-align:center">Choose Starter</a>
       </div>
       <div class="tier hot rv">
-        <p class="t">Business</p><p class="amt">$890</p><p class="per">one-time · launch in 14 days</p>
+        <p class="t">Business</p><p class="amt">$890</p><p class="per">one-time · launch in 7 days</p>
         <ul><li>Up to 8 pages + blog</li><li>Custom animations &amp; interactions</li><li>Online store or booking system</li><li>Analytics + advanced SEO</li><li>30 days priority support</li></ul>
         <a class="btn solid" href="#contact" style="text-align:center">Choose Business</a>
       </div>
       <div class="tier rv">
-        <p class="t">Scale / SaaS</p><p class="amt"><small>from</small> $2,500</p><p class="per">scoped per project</p>
+        <p class="t">Scale / SaaS</p><p class="amt"><small>from</small> $2,500</p><p class="per">scoped per project · up to 1 week</p>
         <ul><li>Web app or SaaS product</li><li>Auth, database, dashboards</li><li>AI features integration</li><li>90 days priority support</li></ul>
         <a class="btn" href="#contact" style="text-align:center">Talk to us</a>
       </div>
@@ -389,6 +416,25 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 </footer>
 
 <script>
+// theme toggle (dark default, persisted)
+(function(){
+  var root=document.documentElement, btn=document.getElementById('themeToggle');
+  if(!btn)return;
+  var saved=null; try{saved=localStorage.getItem('suki-theme')}catch(e){}
+  function apply(t){
+    var light=(t==='light');
+    root.setAttribute('data-theme',t);
+    btn.setAttribute('aria-pressed',String(light));
+    btn.setAttribute('aria-label',light?'Switch to dark mode':'Switch to light mode');
+    btn.querySelector('.ic-sun').style.display=light?'none':'block';
+    btn.querySelector('.ic-moon').style.display=light?'block':'none';
+    try{localStorage.setItem('suki-theme',t)}catch(e){}
+  }
+  apply(saved==='light'?'light':'dark');
+  btn.addEventListener('click',function(){
+    apply(root.getAttribute('data-theme')==='light'?'dark':'light');
+  });
+})();
 // rotating hero word
 (function(){
   var words=["earn their keep.","win customers.","ship in days.","work worldwide."];
