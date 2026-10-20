@@ -15,7 +15,6 @@ import {
 } from '@/components/layout/SukiIcons';
 
 /** Tautan bot Telegram resmi SUKI untuk pendaftaran program. */
-const TELEGRAM_BOT_URL = 'https://t.me/sukiapps_bot';
 import ImageSlot from './ImageSlot';
 
 /* ------------------------------------------------------------------ */
@@ -245,41 +244,40 @@ export function KendariKomunitas() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Pengguna Pertama — promo website gratis per vertikal (Fase 1).      */
-/* Slot = alokasi program dari Sarip; TANPA angka pendaftar karangan.  */
-/* Pendaftaran via bot Telegram resmi @sukiapps_bot.                   */
+/* Web Studio per vertikal — penawaran berbayar mulai Rp 99 rb.       */
+/* Promo slot gratis DIHAPUS per keputusan Suki 20 Okt 2026.           */
 /* ------------------------------------------------------------------ */
 const getPenggunaPertamaCards = () => [
   {
     ikon: Store,
     vertikal: 'UMKM',
-    slot: '100 slot',
+    slot: 'Mulai Rp 99 rb',
     teks: 'Website + katalog produk untuk kuliner, fashion, jasa, dan UMKM Sultra.',
   },
   {
     ikon: BriefcaseBusiness,
     vertikal: 'Lowongan',
-    slot: '10 slot',
+    slot: 'Mulai Rp 99 rb',
     teks: 'Halaman profil & lowongan untuk pemberi kerja yang rekrut via SUKI Jobs.',
   },
   {
     ikon: Building2,
     vertikal: 'Properti',
-    slot: '10 slot',
+    slot: 'Mulai Rp 299 rb',
     teks: 'Showcase unit untuk agen & developer properti di SUKI Properti.',
   },
   {
     ikon: Users,
     vertikal: 'Komunitas',
-    slot: '10 slot',
+    slot: 'Mulai Rp 99 rb',
     teks: 'Website komunitas: profil, agenda kegiatan, dan galeri dokumentasi.',
   },
 ];
 
 const PP_LANGKAH = [
   {
-    judul: 'Chat bot Telegram',
-    teks: 'Buka @sukiapps_bot dan pilih vertikal yang sesuai kebutuhanmu.',
+    judul: 'Chat WhatsApp',
+    teks: 'Hubungi SUKI Web Studio via WhatsApp dan pilih paket yang sesuai kebutuhanmu.',
   },
   {
     judul: 'Kirim data usahamu',
@@ -287,7 +285,7 @@ const PP_LANGKAH = [
   },
   {
     judul: 'Website tayang',
-    teks: 'Website gratis dibuatkan dan dipromosikan lewat ekosistem SUKI.',
+    teks: 'Website dibuatkan sesuai paket dan dipromosikan lewat ekosistem SUKI.',
   },
 ];
 
@@ -297,20 +295,20 @@ export function KendariPenggunaPertama() {
     <section className="kh-section kh-pp" id="pengguna-pertama" aria-labelledby="kh-pp-title">
       <div className="kh-wrap">
         <WcReveal>
-          <div className="kh-label">Program Pengguna Pertama</div>
+          <div className="kh-label">SUKI Web Studio</div>
         </WcReveal>
         <WcReveal delay={1}>
           <h2 className="kh-h2" id="kh-pp-title">
-            Website gratis untuk
+            Website profesional untuk
             <br />
-            <span className="kh-gold">pendaftar awal</span>
+            <span className="kh-gold">mulai Rp 99 ribu</span>
           </h2>
         </WcReveal>
         <WcReveal delay={2}>
           <p className="kh-desc">
-            SUKI Web Studio membuatkan website gratis bagi pendaftar awal di empat
-            vertikal — plus katalog marketing intensif untuk produkmu. Kuota per
-            vertikal terbatas.
+            SUKI Web Studio membuatkan website untuk empat vertikal — plus
+            katalog marketing untuk produkmu. Harga transparan mulai Rp 99 ribu,
+            tanpa biaya tersembunyi.
           </p>
         </WcReveal>
         <div className="kh-pp-grid">
@@ -327,11 +325,9 @@ export function KendariPenggunaPertama() {
                   <p>{c.teks}</p>
                   <a
                     className="kh-pp-cta"
-                    href={TELEGRAM_BOT_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href="/web-studio"
                   >
-                    Daftar via Telegram
+                    Lihat paket & harga
                     <ArrowRight size={15} aria-hidden="true" />
                   </a>
                 </article>
