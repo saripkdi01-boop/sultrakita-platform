@@ -26,7 +26,6 @@ import {
   Clock3,
   Coffee,
   Footprints,
-  Gift,
   Globe,
   Home,
   LayoutDashboard,
@@ -45,7 +44,6 @@ import {
   Sparkles,
   Star,
   Store,
-  Tag,
   User,
   Wallet,
   Wrench,
@@ -74,22 +72,22 @@ const PAKETS: Paket[] = [
   {
     id: 'landing-page',
     nama: 'Landing Page',
-    harga: 'Rp 1,5 jt',
+    harga: 'Rp 99 rb',
     periode: 'harga mulai',
-    deskripsi: 'Satu halaman yang fokus menjual satu produk atau mengumpulkan leads.',
+    deskripsi: 'Min. 5 halaman yang fokus menjual produk/jasamu dan mengumpulkan leads.',
     fitur: [
       'Desain mobile-friendly & cepat',
       'Tombol WhatsApp + form kontak',
       'Domain & hosting 1 tahun',
       'SSL & SEO dasar',
     ],
-    waktu: '3–5 hari kerja',
+    waktu: '1–2 hari kerja',
     ikon: Rocket,
   },
   {
     id: 'company-profile',
     nama: 'Company Profile',
-    harga: 'Rp 3 jt',
+    harga: 'Rp 299 rb',
     periode: 'harga mulai',
     deskripsi: 'Website perusahaan profesional yang bikin bisnismu terlihat kredibel.',
     fitur: [
@@ -99,13 +97,13 @@ const PAKETS: Paket[] = [
       'SEO on-page + Google Analytics',
       'Domain & hosting 1 tahun',
     ],
-    waktu: '10–14 hari kerja',
+    waktu: '3–5 hari kerja',
     ikon: Globe,
   },
   {
     id: 'toko-online',
     nama: 'Toko Online',
-    harga: 'Rp 6 jt',
+    harga: 'Rp 499 rb',
     periode: 'harga mulai',
     badge: 'Paling diminati',
     deskripsi: 'Jualan online di websitemu sendiri — tanpa potongan komisi marketplace.',
@@ -117,13 +115,13 @@ const PAKETS: Paket[] = [
       'Notifikasi pesanan via WhatsApp',
       'Domain & hosting 1 tahun',
     ],
-    waktu: '21–30 hari kerja',
+    waktu: '5–7 hari kerja',
     ikon: Store,
   },
   {
     id: 'web-aplikasi',
     nama: 'Web Aplikasi Custom',
-    harga: 'Rp 15 jt',
+    harga: 'Rp 999 rb',
     periode: 'harga mulai',
     deskripsi: 'Sistem web sesuai alur kerja bisnismu — kasir, inventori, booking, dashboard.',
     fitur: [
@@ -133,13 +131,13 @@ const PAKETS: Paket[] = [
       'Integrasi API (pembayaran, dsb.)',
       'Pelatihan penggunaan',
     ],
-    waktu: '4–8 minggu',
+    waktu: '7 hari kerja',
     ikon: LayoutDashboard,
   },
   {
     id: 'care-plan',
     nama: 'Care Plan',
-    harga: 'Rp 500 rb',
+    harga: 'Rp 49 rb',
     periode: '/bulan',
     deskripsi: 'Website-mu kami rawat: aman, ter-backup, dan selalu up-to-date.',
     fitur: [
@@ -150,57 +148,6 @@ const PAKETS: Paket[] = [
     ],
     waktu: 'Periode bulanan',
     ikon: Wrench,
-  },
-];
-
-/** Tautan bot Telegram resmi SUKI untuk pendaftaran tier promo. */
-const TELEGRAM_BOT_URL = 'https://t.me/sukiapps_bot';
-
-/**
- * Tier promo — harga spesial dari Sarip, ditampilkan apa adanya.
- * TANPA fitur karangan: detail layanan & pendaftaran via Telegram @sukiapps_bot.
- */
-const PROMO_TIERS = [
-  {
-    id: 'promo-gratis',
-    nama: 'Pengguna Pertama',
-    harga: 'Gratis',
-    badge: 'Promo',
-    tagline: 'Pembuatan website gratis untuk pendaftar awal program Pengguna Pertama.',
-    fitur: [
-      'Kuota: UMKM 100 slot · Lowongan 10 · Properti 10 · Komunitas 10',
-      'Katalog marketing intensif untuk produkmu',
-      'Pendaftaran & info via Telegram @sukiapps_bot',
-    ],
-    cta: 'Daftar via Telegram',
-    ikon: Gift,
-    unggulan: true,
-  },
-  {
-    id: 'promo-15rb',
-    nama: 'Hemat',
-    harga: 'Rp 15.000',
-    tagline: 'Tier hemat SUKI Web Studio — harga spesial dari Sarip.',
-    fitur: [
-      'Harga apa adanya, tanpa biaya tersembunyi',
-      'Detail layanan & cara daftar via Telegram @sukiapps_bot',
-    ],
-    cta: 'Tanya via Telegram',
-    ikon: Tag,
-    unggulan: false,
-  },
-  {
-    id: 'promo-29rb',
-    nama: 'Hemat Plus',
-    harga: 'Rp 29.000',
-    tagline: 'Tier hemat SUKI Web Studio — harga spesial dari Sarip.',
-    fitur: [
-      'Harga apa adanya, tanpa biaya tersembunyi',
-      'Detail layanan & cara daftar via Telegram @sukiapps_bot',
-    ],
-    cta: 'Tanya via Telegram',
-    ikon: Sparkles,
-    unggulan: false,
   },
 ];
 
@@ -216,7 +163,7 @@ const TERMASUK = [
 const LANGKAH = [
   {
     ikon: MessagesSquare,
-    judul: 'Konsultasi gratis',
+    judul: 'Konsultasi via WhatsApp',
     teks: 'Ceritakan kebutuhanmu via WhatsApp. Kami rekomendasikan paket yang paling pas — tanpa komitmen.',
   },
   {
@@ -239,7 +186,7 @@ const LANGKAH = [
 const KEUNGGULAN = [
   {
     ikon: MessagesSquare,
-    judul: 'Konsultasi gratis, tanpa komitmen',
+    judul: 'Konsultasi tanpa komitmen',
     teks: 'Ceritakan kebutuhanmu via WhatsApp. Kami beri rekomendasi paket yang paling pas — bahkan kalau jawabannya "belum butuh website".',
   },
   {
@@ -355,7 +302,7 @@ const FAQS = [  {
 ];
 
 const KONSULTASI_TEXT =
-  'Halo SUKI Web Studio! Saya ingin konsultasi gratis tentang pembuatan website untuk bisnis saya.';
+  'Halo SUKI Web Studio! Saya ingin konsultasi tentang pembuatan website untuk bisnis saya.';
 
 function formatOrder(nama: string, wa: string, usaha: string, paket: Paket, kebutuhan: string): string {
   const baris = [
@@ -631,7 +578,7 @@ export default function WebStudioPage() {
                   rel="noopener noreferrer"
                 >
                   <MessagesSquare size={18} aria-hidden />
-                  Konsultasi Gratis
+                  Chat WhatsApp
                 </a>
               ) : null}
               <a
@@ -706,62 +653,6 @@ export default function WebStudioPage() {
                 );
               })}
             </ul>
-          </div>
-        </section>
-
-        {/* TIER PROMO — harga spesial dari Sarip */}
-        <section className="sws-seksi sws-seksi-alternatif" aria-labelledby="sws-promo-judul">
-          <div className="sws-wrap">
-            <p className="sws-seksi-kicker sws-reveal">Promo spesial</p>
-            <h2 id="sws-promo-judul" className="sws-reveal">Mulai dari yang paling ringan</h2>
-            <p className="sws-lead sws-reveal">
-              Tier hemat SUKI Web Studio — harga apa adanya dari Sarip.
-              Detail & pendaftaran via Telegram.
-            </p>
-            <div className="sws-grid">
-              {PROMO_TIERS.map((tier, i) => {
-                const Ikon = tier.ikon;
-                return (
-                  <article
-                    key={tier.id}
-                    className={`sws-kartu sws-reveal${tier.unggulan ? ' sws-kartu-unggulan' : ''}`}
-                    style={{ '--sws-d': `${i * 90}ms` } as any}
-                    aria-label={`Tier ${tier.nama}`}
-                  >
-                    {tier.badge ? <span className="sws-badge">{tier.badge}</span> : null}
-                    <div className="sws-kartu-top">
-                      <div className="sws-kartu-ikon" aria-hidden>
-                        <Ikon size={22} />
-                      </div>
-                      <div>
-                        <h3>{tier.nama}</h3>
-                        <p className="sws-tagline">{tier.tagline}</p>
-                      </div>
-                    </div>
-                    <p className="sws-harga">
-                      <strong>{tier.harga}</strong>
-                    </p>
-                    <ul className="sws-fitur">
-                      {tier.fitur.map((f) => (
-                        <li key={f}>
-                          <Check size={15} aria-hidden />
-                          <span>{f}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <a
-                      className={`sws-btn ${tier.unggulan ? 'sws-btn-primary' : 'sws-btn-paket'}`}
-                      style={{ marginTop: 'auto' }}
-                      href={TELEGRAM_BOT_URL}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {tier.cta}
-                    </a>
-                  </article>
-                );
-              })}
-            </div>
           </div>
         </section>
 
@@ -1087,7 +978,7 @@ export default function WebStudioPage() {
             <div>
               <h2 id="sws-cta-judul" className="sws-reveal">Masih ragu paket mana yang cocok?</h2>
               <p>
-                Ngobrol dulu, gratis. Ceritakan bisnismu — kami bantu petakan
+                Ngobrol dulu via WhatsApp. Ceritakan bisnismu — kami bantu petakan
                 kebutuhan dan rekomendasikan paket yang paling pas, tanpa komitmen.
               </p>
             </div>
@@ -1099,7 +990,7 @@ export default function WebStudioPage() {
                 rel="noopener noreferrer"
               >
                 <MessagesSquare size={18} aria-hidden />
-                Konsultasi Gratis
+                Chat WhatsApp
               </a>
             ) : null}
           </div>
@@ -1147,7 +1038,7 @@ export default function WebStudioPage() {
               rel="noopener noreferrer"
             >
               <MessagesSquare size={17} aria-hidden />
-              Konsultasi Gratis
+              Chat WhatsApp
             </a>
           ) : null}
         </div>
