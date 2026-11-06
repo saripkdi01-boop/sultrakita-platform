@@ -9,10 +9,9 @@ import { getCoreLabels } from '@/lib/i18n/dictionaries';
 import './split-hero.css';
 
 /**
- * SplitHero — hero split-animation untuk homepage.
- * Kiri: headline raksasa + rotator kata + CTA. Kanan: panel visual
- * auto-rotate 3 detik (Marketplace / Properti / Web Studio).
- * Bahasa: Indonesia sumber kebenaran, Inggris diterjemahkan, sisanya fallback ID.
+ * SplitHero — hero split-animation HorizonX-inspired untuk homepage.
+ * Kiri: headline + rotator + CTA. Kanan: panel visual auto-rotate.
+ * Dark mode base dengan glass morphism, gradient orbs, dan interaksi halus.
  */
 
 type TabDatum = {
@@ -52,7 +51,6 @@ const TABS: TabDatum[] = [
   },
 ];
 
-// Fallback Bahasa Indonesia bila kunci belum diterjemahkan ke bahasa aktif
 const FALLBACK: Record<string, string> = {
   shBadge: 'Ekosistem Digital • Kendari → Indonesia',
   shTitleThin: 'Satu tempat.',
@@ -97,6 +95,7 @@ export default function SplitHero() {
 
   const [idx, setIdx] = useState(0);
   const [stickyVisible, setStickyVisible] = useState(false);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const heroRef = useRef<HTMLElement>(null);
   const timer = useRef<number | null>(null);
   const dismissed = useRef(false);
@@ -115,7 +114,6 @@ export default function SplitHero() {
     return () => {
       if (timer.current) window.clearInterval(timer.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -129,6 +127,14 @@ export default function SplitHero() {
     );
     io.observe(el);
     return () => io.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePos({ x: e.clientX, y: e.clientY });
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
   const goTab = (i: number) => {
@@ -145,16 +151,28 @@ export default function SplitHero() {
 
   return (
     <>
-      <section ref={heroRef} className="sh-hero" aria-labelledby="sh-title">
-        <div className="sh-split">
+      <section ref={heroRef} className="sh-hero sh-hero--horizon" aria-labelledby="sh-title">
+        {/* Gradient orbs — inspired by HorizonX liquid glass */}
+        <div className="sh-orbs" aria-hidden="true">
+          <div
+            className="sh-orb sh-orb--1"
+            style={{
+              transform: `translate(${mousePos.x * 0.03}px, ${mousePos.y * 0.03}px)`,
+            }}
+          />
+          <div className="sh-orb sh-orb--2" />
+          <div className="sh-orb sh-orb--3" />
+        </div>
+
+        <div className="sh-split sh-split--glass">
           {/* PANEL KIRI — teks */}
-          <div className="sh-left">
+          <div className="sh-left sh-left--glass">
             <div>
-              <span className="sh-live">
+              <span className="sh-live sh-live--glass">
                 <span className="sh-dot" aria-hidden="true" />
                 {tx('shBadge')}
               </span>
-              <h1 id="sh-title" className="sh-h1">
+              <h1 id="sh-title" className="sh-h1 sh-h1--horizon">
                 <span className="sh-thin">{tx('shTitleThin')}</span>
                 <span className="sh-row">
                   {tx('shTitleMid')}{' '}
@@ -163,12 +181,12 @@ export default function SplitHero() {
                   </span>
                 </span>
                 <span className="sh-rot-wrap" aria-live="polite">
-                  <span key={idx} className="sh-rotator">
+                  <span key={idx} className="sh-rotator sh-rotator--horizon">
                     {tx(tab.wordKey)}
                   </span>
                 </span>
               </h1>
-              <p className="sh-sub">
+              <p className="sh-sub sh-sub--horizon">
                 {tx('shSub1')}
                 <b>{tx('shSubB1')}</b>
                 {tx('shSub2')}
@@ -176,15 +194,15 @@ export default function SplitHero() {
                 {tx('shSub3')}
               </p>
               <div className="sh-ctas">
-                <Link href="/marketplace" className="sh-btn-primary">
+                <Link href="/marketplace" className="sh-btn-primary sh-btn-primary--horizon">
                   {tx('shCtaPrimary')} <ArrowRight size={17} aria-hidden="true" />
                 </Link>
-                <button type="button" className="sh-btn-ghost" onClick={scrollDown}>
+                <button type="button" className="sh-btn-ghost sh-btn-ghost--horizon" onClick={scrollDown}>
                   {tx('shCtaSecondary')} ↓
                 </button>
               </div>
               <p className="sh-cta-note">{tx('shCtaNote')}</p>
-              <div className="sh-trust">
+              <div className="sh-trust sh-trust--horizon">
                 {[tx('shTrust1'), tx('shTrust2')].map((s) => (
                   <span key={s}>
                     <Check size={13} aria-hidden="true" /> {s}
@@ -200,15 +218,15 @@ export default function SplitHero() {
           </div>
 
           {/* PANEL KANAN — visual */}
-          <div className="sh-right">
-            <div className="sh-tabs" role="tablist" aria-label={tx('shBadge')}>
+          <div className="sh-right sh-right--glass">
+            <div className="sh-tabs sh-tabs--glass" role="tablist" aria-label={tx('shBadge')}>
               {TABS.map((d, i) => (
                 <button
                   key={d.tabKey}
                   type="button"
                   role="tab"
                   aria-selected={i === idx}
-                  className={`sh-tab${i === idx ? ' is-active' : ''} sh-tab-${i}`}
+                  className={`sh-tab sh-tab--glass${i === idx ? ' is-active' : ''}`}
                   onClick={() => goTab(i)}
                 >
                   <em aria-hidden="true" />
@@ -232,14 +250,14 @@ export default function SplitHero() {
               <div className="sh-stage-shade" aria-hidden="true" />
             </div>
 
-            <div className="sh-notif" aria-hidden="true">
+            <div className="sh-notif sh-notif--glass" aria-hidden="true">
               <span className="sh-notif-dot">●</span> {tx(tab.notifKey)}
             </div>
-            <div className="sh-badge-vertical" aria-hidden="true">
+            <div className="sh-badge-vertical">
               {tx(tab.badgeKey)}
             </div>
 
-            <Link href={tab.href} className="sh-float-card" aria-label={tx(tab.titleKey)}>
+            <Link href={tab.href} className="sh-float-card sh-float-card--glass" aria-label={tx(tab.titleKey)}>
               <div className="sh-fc-icon" aria-hidden="true">
                 <TabIcon size={23} />
               </div>

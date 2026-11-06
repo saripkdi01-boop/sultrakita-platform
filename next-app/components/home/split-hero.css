@@ -1,91 +1,112 @@
-/* SplitHero — hero split-animation homepage SUKI Apps.
-   Token warna: kuning madu / hijau hutan / putih hangat / orange hangat.
-   Versi gelap mengikuti [data-theme="dark"] milik situs (bukan prefers-color-scheme).
-   SKALA SPACING (konsisten, rapat tapi rapi): 6 / 8 / 12 / 16 / 24.
-   Header situs sticky (in-flow) → padding-top hero kecil saja. */
+/* SplitHero — HorizonX-inspired dark glass hero.
+   Token warna: slate-950 base, blue-400 → orange-400 accent, glass white/10.
+   Mobile-first, ringan, tanpa WebGL berat. */
 
-.sh-hero {
-  --sh-putih: #fffef8;
-  --sh-putih-2: #f6f2e6;
-  --sh-hijau: #1b6b43;
-  --sh-hijau-deep: #0f3d27;
-  --sh-hijau-terang: #63c98b;
-  --sh-kuning: #f0b93e;
-  --sh-orange: #e4702f;
-  --sh-orange-lembut: #f08d4d;
-  --sh-orange-pucat: #fdeedf;
-  --sh-ink: #17231c;
-  --sh-muted: #5f6f63;
-  --sh-line: #e7e0cc;
-  --sh-card: #ffffff;
-  --sh-right-bg: var(--sh-putih-2);
-  --sh-shadow: 0 24px 60px -18px rgba(15, 61, 39, 0.18);
-  max-width: 1240px;
-  margin: 0 auto;
-  padding: 20px 16px 0;
+.sh-hero--horizon {
+  --hx-bg: #0b0f14;
+  --hx-surface: rgba(255, 255, 255, 0.04);
+  --hx-border: rgba(255, 255, 255, 0.08);
+  --hx-border-hover: rgba(255, 255, 255, 0.18);
+  --hx-text: #f1f5f9;
+  --hx-muted: rgba(255, 255, 255, 0.62);
+  --hx-accent-1: #38bdf8; /* sky-400 */
+  --hx-accent-2: #fb923c; /* orange-400 */
+  --hx-accent-3: #a78bfa; /* violet-400 */
+  --sh-putih: #f8fafc;
+  --sh-kuning: #38bdf8;
+  --sh-orange: #fb923c;
+  --sh-hijau-terang: #a78bfa;
+  --sh-hijau-deep: #0b0f14;
+  --sh-right-bg: #0f1419;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  background: var(--hx-bg);
+  position: relative;
+  overflow: hidden;
 }
 
-.sh-split {
+/* ---- Gradient orbs ---- */
+.sh-orbs {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.sh-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.32;
+  will-change: transform;
+}
+.sh-orb--1 {
+  width: 520px;
+  height: 520px;
+  background: var(--hx-accent-1);
+  top: -120px;
+  left: -80px;
+  opacity: 0.22;
+}
+.sh-orb--2 {
+  width: 480px;
+  height: 480px;
+  background: var(--hx-accent-2);
+  top: 40%;
+  right: -160px;
+  opacity: 0.18;
+}
+.sh-orb--3 {
+  width: 360px;
+  height: 360px;
+  background: var(--hx-accent-3);
+  bottom: -80px;
+  left: 30%;
+  opacity: 0.16;
+}
+
+/* ---- Split layout ---- */
+.sh-split--glass {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: 1.02fr 0.98fr;
-  min-height: 560px;
-  border-radius: 28px;
+  min-height: 580px;
+  border-radius: 0;
   overflow: hidden;
-  position: relative;
-  background: var(--sh-hijau-deep);
-  box-shadow: var(--sh-shadow);
-}
-/* Strip harmoni 4 warna di dasar hero */
-.sh-split::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 7px;
-  z-index: 6;
-  background: linear-gradient(
-    90deg,
-    var(--sh-kuning) 0 30%,
-    #ffffff 30% 40%,
-    var(--sh-orange) 40% 70%,
-    var(--sh-hijau-terang) 70% 100%
-  );
+  background: transparent;
+  box-shadow: none;
 }
 
-/* ---- PANEL KIRI ----
-   Alur vertikal: badge 12 → h1 12 → sub 16 → cta 6 → note 12 → trust 16 → progress(bar).
-   Tanpa space-between: jarak selalu sama di semua viewport. */
-.sh-left {
-  color: #fff;
-  padding: 28px 32px 24px;
+/* ---- Left panel ---- */
+.sh-left--glass {
+  color: var(--hx-text);
+  padding: 48px 40px 40px;
   position: relative;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(155deg, #17452c 0%, var(--sh-hijau-deep) 55%, #0b2e1d 100%);
-  animation: sh-slide-l 1s cubic-bezier(0.22, 1, 0.36, 1) both;
-  overflow: hidden;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  animation: none;
 }
-.sh-left::before {
+.sh-left--glass::before {
   content: "";
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(640px 340px at 18% -4%, rgba(228, 112, 47, 0.24), transparent 62%),
-    radial-gradient(520px 300px at 105% 108%, rgba(240, 185, 62, 0.16), transparent 60%),
-    radial-gradient(420px 200px at 50% 0%, rgba(255, 254, 248, 0.06), transparent 70%);
+    radial-gradient(640px 340px at 10% -10%, rgba(56, 189, 248, 0.14), transparent 62%),
+    radial-gradient(520px 300px at 110% 110%, rgba(251, 146, 60, 0.10), transparent 60%);
   pointer-events: none;
+  z-index: 0;
 }
-@keyframes sh-slide-l {
-  from { transform: translateX(-46px); opacity: 0; }
-  to { transform: none; opacity: 1; }
-}
-@keyframes sh-slide-r {
-  from { transform: translateX(46px); opacity: 0; }
-  to { transform: none; opacity: 1; }
+.sh-left--glass > div {
+  position: relative;
+  z-index: 1;
 }
 
-.sh-live {
+.sh-live--glass {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -93,21 +114,21 @@
   letter-spacing: 0.14em;
   font-weight: 800;
   text-transform: uppercase;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  background: rgba(255, 255, 255, 0.05);
-  color: #fff;
+  border: 1px solid var(--hx-border);
+  background: var(--hx-surface);
+  color: var(--hx-text);
   padding: 7px 12px;
   border-radius: 999px;
   width: fit-content;
-  position: relative;
-  z-index: 2;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 .sh-dot {
   width: 7px;
   height: 7px;
-  background: var(--sh-hijau-terang);
+  background: var(--hx-accent-1);
   border-radius: 50%;
-  box-shadow: 0 0 0 0 rgba(99, 201, 139, 0.55);
+  box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.55);
   animation: sh-pulse 1.6s infinite;
 }
 @keyframes sh-pulse {
@@ -115,42 +136,23 @@
   100% { box-shadow: 0 0 0 0 transparent; }
 }
 
-.sh-h1 {
+.sh-h1--horizon {
   font-family: "Archivo", "Plus Jakarta Sans", system-ui, sans-serif;
-  font-size: clamp(54px, 6.4vw, 92px);
-  margin: 12px 0 0;
+  font-size: clamp(48px, 6vw, 84px);
+  margin: 14px 0 0;
   font-weight: 900;
   line-height: 0.95;
   letter-spacing: -0.03em;
   text-transform: uppercase;
-  position: relative;
-  z-index: 2;
-  /* Warna eksplisit: rule h1 global situs menimpa warisan .sh-left */
-  color: var(--sh-putih);
-  text-shadow: 0 2px 26px rgba(0, 0, 0, 0.28);
+  color: var(--sh-putih) !important;
+  text-shadow: 0 2px 30px rgba(0, 0, 0, 0.35);
 }
-.sh-thin { display: block; font-weight: 800; opacity: 0.94; }
-.sh-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-.sh-arrow-badge {
-  width: 0.76em;
-  height: 0.76em;
-  background: var(--sh-orange);
-  border-radius: 50%;
-  display: inline-grid;
-  place-items: center;
-  flex-shrink: 0;
-  box-shadow: 0 10px 22px rgba(228, 112, 47, 0.32);
-  animation: sh-nudge 2.4s ease-in-out infinite;
-}
-.sh-arrow-badge svg { width: 0.42em; height: 0.42em; color: #fff; }
-@keyframes sh-nudge {
-  0%, 100% { transform: translateX(0); }
-  50% { transform: translateX(6px); }
-}
-.sh-rot-wrap { height: 1.16em; overflow: hidden; display: block; padding-bottom: 0.12em; }
-.sh-rotator {
+.sh-rotator--horizon {
   display: block;
-  color: var(--sh-kuning);
+  background: linear-gradient(135deg, var(--hx-accent-1), var(--hx-accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
   line-height: 1.04;
   padding-bottom: 0.08em;
   white-space: nowrap;
@@ -162,42 +164,56 @@
   to { transform: none; opacity: 1; filter: blur(0); }
 }
 
-.sh-sub {
-  margin: 12px 0 0;
+.sh-sub--horizon {
+  margin: 14px 0 0;
   font-size: 16px;
-  line-height: 1.5;
-  color: rgba(255, 255, 255, 0.88);
-  max-width: 470px;
-  position: relative;
-  z-index: 2;
+  line-height: 1.55;
+  color: var(--hx-muted);
+  max-width: 460px;
 }
-.sh-sub b { color: #fff; }
-.sh-ctas { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; position: relative; z-index: 2; }
-.sh-btn-primary {
+.sh-sub--horizon b {
+  color: var(--hx-text);
+  font-weight: 700;
+}
+
+.sh-ctas {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+/* Primary CTA — glass gradient */
+.sh-btn-primary--horizon {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, var(--sh-orange-lembut), var(--sh-orange));
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.18), rgba(251, 146, 60, 0.18));
   color: #fff;
   padding: 15px 22px;
   border-radius: 999px;
   font-weight: 800;
-  font-size: 15.5px;
-  border: none;
+  font-size: 15px;
+  border: 1px solid var(--hx-border-hover);
   display: inline-flex;
   gap: 8px;
   align-items: center;
-  box-shadow: 0 16px 34px rgba(228, 112, 47, 0.3);
-  transition: transform 0.2s, box-shadow 0.2s;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
-.sh-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 20px 40px rgba(228, 112, 47, 0.36); }
-.sh-btn-primary::after {
+.sh-btn-primary--horizon:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+}
+.sh-btn-primary--horizon::after {
   content: "";
   position: absolute;
   top: 0;
   left: -70%;
   width: 45%;
   height: 100%;
-  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.18), transparent);
   transform: skewX(-20deg);
   animation: sh-shine 3.2s ease-in-out infinite;
 }
@@ -205,31 +221,64 @@
   0%, 55% { left: -70%; }
   85%, 100% { left: 130%; }
 }
-.sh-btn-ghost {
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.45);
+
+/* Ghost CTA — frosted */
+.sh-btn-ghost--horizon {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--hx-text);
+  border: 1px solid var(--hx-border);
   padding: 15px 20px;
   border-radius: 999px;
   font-weight: 700;
   font-size: 15px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   transition: 0.2s;
-  backdrop-filter: blur(4px);
-  font-family: inherit;
   cursor: pointer;
 }
-.sh-btn-ghost:hover { background: rgba(255, 255, 255, 0.14); border-color: rgba(255, 255, 255, 0.65); }
-.sh-cta-note { margin: 6px 0 0; font-size: 12.5px; color: rgba(255, 255, 255, 0.6); font-weight: 600; position: relative; z-index: 2; }
-.sh-trust { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 12px; font-size: 12.5px; color: rgba(255, 255, 255, 0.72); font-weight: 600; position: relative; z-index: 2; }
-.sh-trust span { display: inline-flex; align-items: center; gap: 5px; }
-.sh-trust svg { color: var(--sh-kuning); }
+.sh-btn-ghost--horizon:hover {
+  background: rgba(255, 255, 255, 0.10);
+  border-color: var(--hx-border-hover);
+}
 
-.sh-progress { margin-top: 16px; position: relative; z-index: 2; }
-.sh-bar { height: 5px; background: rgba(255, 255, 255, 0.14); border-radius: 999px; margin-top: 8px; overflow: hidden; }
+.sh-cta-note {
+  margin: 8px 0 0;
+  font-size: 12.5px;
+  color: var(--hx-muted);
+  font-weight: 600;
+}
+.sh-trust--horizon {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  font-size: 12.5px;
+  color: var(--hx-muted);
+  font-weight: 600;
+}
+.sh-trust--horizon span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.sh-trust--horizon svg {
+  color: var(--hx-accent-1);
+}
+
+.sh-progress {
+  margin-top: 18px;
+}
+.sh-bar {
+  height: 5px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  margin-top: 10px;
+  overflow: hidden;
+}
 .sh-bar-fill {
   display: block;
   height: 100%;
-  background: linear-gradient(90deg, var(--sh-kuning), var(--sh-orange) 55%, var(--sh-hijau-terang));
+  background: linear-gradient(90deg, var(--hx-accent-1), var(--hx-accent-2) 55%, var(--hx-accent-3));
   width: 0;
   border-radius: 999px;
   animation: sh-progress 3s linear forwards;
@@ -239,50 +288,89 @@
   to { width: 100%; }
 }
 
-/* ---- PANEL KANAN ---- */
-.sh-right {
+/* ---- Right panel ---- */
+.sh-right--glass {
   position: relative;
   background: var(--sh-right-bg);
-  animation: sh-slide-r 1s 0.08s cubic-bezier(0.22, 1, 0.36, 1) both;
+  border-left: 1px solid var(--hx-border);
   overflow: hidden;
   min-height: 520px;
 }
-.sh-tabs { position: absolute; top: 12px; left: 12px; right: 12px; z-index: 5; display: flex; gap: 8px; flex-wrap: wrap; }
-.sh-tab {
-  border: none;
+.sh-tabs--glass {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  right: 14px;
+  z-index: 5;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.sh-tab--glass {
+  border: 1px solid var(--hx-border);
   padding: 9px 14px;
   border-radius: 999px;
   font-weight: 800;
   font-size: 13px;
-  background: rgba(255, 255, 255, 0.94);
-  color: #111;
+  background: rgba(15, 20, 25, 0.72);
+  color: var(--hx-muted);
   display: flex;
   gap: 7px;
   align-items: center;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.14);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   transition: 0.25s;
-  font-family: inherit;
   cursor: pointer;
 }
-.sh-tab:hover { transform: translateY(-1px); }
-.sh-tab.is-active { background: var(--sh-hijau-deep); color: #fff; box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3); }
-.sh-tab em { width: 7px; height: 7px; border-radius: 50%; background: #c9c2b0; display: block; }
-.sh-tab-0 em { background: var(--sh-orange); }
-.sh-tab-1 em { background: var(--sh-hijau-terang); }
-.sh-tab-2 em { background: var(--sh-kuning); }
+.sh-tab--glass:hover {
+  transform: translateY(-1px);
+  border-color: var(--hx-border-hover);
+  color: var(--hx-text);
+}
+.sh-tab--glass.is-active {
+  background: rgba(56, 189, 248, 0.14);
+  color: var(--hx-accent-1);
+  border-color: rgba(56, 189, 248, 0.35);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
+}
+.sh-tab--glass em {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  display: block;
+}
+.sh-tab--0.is-active em { background: var(--hx-accent-2); }
+.sh-tab--1.is-active em { background: var(--hx-accent-1); }
+.sh-tab--2.is-active em { background: var(--hx-accent-3); }
 
-.sh-stage { position: absolute; inset: 0; }
-.sh-stage-img { object-fit: cover; opacity: 0; transform: scale(1.07); transition: opacity 0.7s ease, transform 1.6s ease; }
-.sh-stage-img.is-active { opacity: 1 !important; transform: scale(1.01); }
-.sh-stage-shade { position: absolute; inset: 0; background: linear-gradient(to top, rgba(8, 12, 10, 0.66) 0%, transparent 50%); }
+.sh-stage {
+  position: absolute;
+  inset: 0;
+}
+.sh-stage-img {
+  object-fit: cover;
+  opacity: 0;
+  transform: scale(1.07);
+  transition: opacity 0.7s ease, transform 1.6s ease;
+}
+.sh-stage-img.is-active {
+  opacity: 1 !important;
+  transform: scale(1.01);
+}
+.sh-stage-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(11, 15, 20, 0.72) 0%, transparent 55%);
+}
 
-.sh-notif {
+.sh-notif--glass {
   position: absolute;
   top: 64px;
-  right: 12px;
+  right: 14px;
   z-index: 4;
-  background: var(--sh-hijau-deep);
-  color: #fff;
+  background: rgba(15, 20, 25, 0.78);
+  color: var(--hx-text);
   padding: 11px 14px;
   border-radius: 14px;
   font-size: 12.5px;
@@ -290,24 +378,29 @@
   display: flex;
   gap: 8px;
   align-items: center;
-  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--hx-border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.4);
   animation: sh-floaty 4.4s 0.5s ease-in-out infinite;
 }
-.sh-notif-dot { color: var(--sh-hijau-terang); }
+.sh-notif-dot {
+  color: var(--hx-accent-1);
+}
 .sh-badge-vertical {
   position: absolute;
-  right: 12px;
-  bottom: 116px;
+  right: 14px;
+  bottom: 140px;
   z-index: 3;
-  background: var(--sh-kuning);
-  color: #111;
+  background: linear-gradient(135deg, var(--hx-accent-1), var(--hx-accent-3));
+  color: #0b0f14;
   font-weight: 900;
   font-size: 11px;
   letter-spacing: 0.1em;
   padding: 8px 12px;
   border-radius: 999px;
   text-transform: uppercase;
-  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.35);
   transform: rotate(-2deg);
 }
 @keyframes sh-floaty {
@@ -315,43 +408,76 @@
   50% { transform: translateY(-6px); }
 }
 
-.sh-float-card {
+/* Floating card — glass */
+.sh-float-card--glass {
   position: absolute;
-  left: 12px;
-  right: 12px;
-  bottom: 12px;
+  left: 14px;
+  right: 14px;
+  bottom: 14px;
   z-index: 4;
-  background: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(10px);
-  color: #111;
+  background: rgba(15, 20, 25, 0.78);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: var(--hx-text);
+  border: 1px solid var(--hx-border);
   border-radius: 20px;
   padding: 15px;
   display: flex;
   gap: 14px;
   align-items: center;
-  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.28);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
   animation: sh-floaty 3.8s ease-in-out infinite;
-  transition: transform 0.2s;
+  transition: transform 0.2s, border-color 0.2s;
 }
-.sh-float-card:hover { transform: translateY(-2px); }
+.sh-float-card--glass:hover {
+  transform: translateY(-2px);
+  border-color: var(--hx-border-hover);
+}
 .sh-fc-icon {
   width: 50px;
   height: 50px;
   border-radius: 14px;
-  background: var(--sh-orange-pucat);
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.14), rgba(251, 146, 60, 0.14));
   display: grid;
   place-items: center;
-  color: var(--sh-orange);
+  color: var(--hx-accent-1);
   flex-shrink: 0;
 }
 .sh-fc-text { min-width: 0; }
-.sh-fc-text h3 { margin: 0; font-size: 15.5px; line-height: 1.2; }
-.sh-fc-text p { margin: 4px 0 0; font-size: 13px; opacity: 0.72; line-height: 1.4; }
-.sh-fc-price { margin-left: auto; text-align: right; flex-shrink: 0; }
-.sh-fc-price b { font-size: 15px; display: block; color: var(--sh-orange); }
-.sh-fc-price span { font-size: 11px; opacity: 0.6; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.sh-fc-text h3 {
+  margin: 0;
+  font-size: 15.5px;
+  line-height: 1.2;
+  color: var(--hx-text);
+}
+.sh-fc-text p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--hx-muted);
+  line-height: 1.4;
+}
+.sh-fc-price {
+  margin-left: auto;
+  text-align: right;
+  flex-shrink: 0;
+}
+.sh-fc-price b {
+  font-size: 15px;
+  display: block;
+  background: linear-gradient(135deg, var(--hx-accent-1), var(--hx-accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.sh-fc-price span {
+  font-size: 11px;
+  color: var(--hx-muted);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
 
-/* ---- STICKY CTA (HP) ---- */
+/* ---- Sticky CTA (mobile) ---- */
 .sh-sticky-cta {
   position: fixed;
   left: 12px;
@@ -361,72 +487,133 @@
   display: none;
   align-items: center;
   gap: 10px;
-  background: var(--sh-hijau-deep);
-  color: #fff;
+  background: rgba(15, 20, 25, 0.88);
+  color: var(--hx-text);
+  border: 1px solid var(--hx-border);
   border-radius: 18px;
   padding: 10px 10px 10px 16px;
-  box-shadow: 0 20px 44px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 20px 44px rgba(0, 0, 0, 0.5);
   transform: translateY(140%);
   transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
-.sh-sticky-cta.is-show { transform: none; }
-.sh-sticky-cta p { margin: 0; font-size: 13px; font-weight: 700; line-height: 1.3; flex: 1; }
-.sh-sticky-cta p span { display: block; font-weight: 500; opacity: 0.65; font-size: 11.5px; }
+.sh-sticky-cta.is-show {
+  transform: none;
+}
+.sh-sticky-cta p {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
+  flex: 1;
+}
+.sh-sticky-cta p span {
+  display: block;
+  font-weight: 500;
+  opacity: 0.65;
+  font-size: 11.5px;
+}
 .sh-sticky-cta a {
-  background: var(--sh-orange);
-  color: #fff;
+  background: linear-gradient(135deg, var(--hx-accent-1), var(--hx-accent-2));
+  color: #0b0f14;
   font-weight: 800;
   font-size: 13.5px;
   padding: 12px 16px;
   border-radius: 12px;
   white-space: nowrap;
-  box-shadow: 0 8px 18px rgba(228, 112, 47, 0.3);
+  box-shadow: 0 8px 18px rgba(56, 189, 248, 0.25);
 }
-.sh-sticky-close { background: transparent; border: none; color: rgba(255, 255, 255, 0.6); padding: 6px; line-height: 1; cursor: pointer; display: grid; place-items: center; }
+.sh-sticky-close {
+  background: transparent;
+  border: none;
+  color: var(--hx-muted);
+  padding: 6px;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
 
-/* ---- PERISAI WARNA ----
-   Situs memiliki rule global (h1/button/p, sebagian !important) yang dapat
-   menimpa warna teks komponen. Blok ini mengunci warna teks hero. */
-.sh-hero .sh-h1,
-.sh-hero .sh-thin,
-.sh-hero .sh-row { color: var(--sh-putih) !important; }
-.sh-hero .sh-rotator { color: var(--sh-kuning) !important; }
-.sh-hero .sh-live { color: #ffffff !important; }
-.sh-hero .sh-sub { color: rgba(255, 255, 255, 0.88) !important; }
-.sh-hero .sh-sub b { color: #ffffff !important; }
-.sh-hero .sh-btn-primary { color: #ffffff !important; }
-.sh-hero .sh-btn-ghost { color: #ffffff !important; }
-.sh-hero .sh-cta-note { color: rgba(255, 255, 255, 0.6) !important; }
-.sh-hero .sh-trust { color: rgba(255, 255, 255, 0.72) !important; }
+/* ---- Color lock ---- */
+.sh-hero--horizon .sh-h1,
+.sh-hero--horizon .sh-thin,
+.sh-hero--horizon .sh-row {
+  color: var(--sh-putih) !important;
+}
+.sh-hero--horizon .sh-rotator {
+  color: transparent !important;
+}
+.sh-hero--horizon .sh-live {
+  color: #ffffff !important;
+}
+.sh-hero--horizon .sh-sub {
+  color: var(--hx-muted) !important;
+}
+.sh-hero--horizon .sh-sub b {
+  color: var(--hx-text) !important;
+}
+.sh-hero--horizon .sh-btn-primary {
+  color: #ffffff !important;
+}
+.sh-hero--horizon .sh-btn-ghost {
+  color: var(--hx-text) !important;
+}
+.sh-hero--horizon .sh-cta-note {
+  color: var(--hx-muted) !important;
+}
+.sh-hero--horizon .sh-trust {
+  color: var(--hx-muted) !important;
+}
 
-/* ---- RESPONSIVE ---- */
+/* ---- Responsive ---- */
 @media (max-width: 860px) {
-  .sh-split { grid-template-columns: 1fr; min-height: auto; border-radius: 22px; }
-  .sh-left { padding: 20px 16px 16px; }
-  .sh-h1 { font-size: clamp(40px, 11vw, 54px); margin-top: 10px; }
-  .sh-sub { font-size: 14.5px; margin-top: 8px; }
-  .sh-ctas { margin-top: 12px; }
-  .sh-trust { margin-top: 10px; }
-  .sh-progress { margin-top: 12px; }
-  .sh-right { min-height: 380px; }
-  .sh-sticky-cta { display: flex; }
+  .sh-split--glass {
+    grid-template-columns: 1fr;
+    min-height: auto;
+    border-radius: 0;
+  }
+  .sh-left--glass {
+    padding: 32px 20px 24px;
+  }
+  .sh-h1--horizon {
+    font-size: clamp(40px, 11vw, 56px);
+    margin-top: 10px;
+  }
+  .sh-sub--horizon {
+    font-size: 14.5px;
+    margin-top: 10px;
+  }
+  .sh-ctas {
+    margin-top: 14px;
+  }
+  .sh-trust--horizon {
+    margin-top: 12px;
+  }
+  .sh-progress {
+    margin-top: 14px;
+  }
+  .sh-right--glass {
+    min-height: 420px;
+    border-left: none;
+    border-top: 1px solid var(--hx-border);
+  }
+  .sh-sticky-cta {
+    display: flex;
+  }
 }
 
-/* ---- DARK MODE situs ---- */
-html[data-theme="dark"] .sh-hero {
-  --sh-right-bg: #1a211d;
-  --sh-ink: #f2f0e4;
-  --sh-muted: #a3afa2;
-  --sh-line: #263128;
-  --sh-card: #151d17;
-  --sh-shadow: 0 24px 60px -18px rgba(0, 0, 0, 0.55);
-}
-html[data-theme="dark"] .sh-tab { background: rgba(28, 37, 32, 0.94); color: #edf2ee; }
-html[data-theme="dark"] .sh-float-card { background: rgba(28, 37, 32, 0.96); color: #edf2ee; }
-
-/* ---- REDUCED MOTION ---- */
+/* ---- Reduced motion ---- */
 @media (prefers-reduced-motion: reduce) {
-  .sh-hero * { animation: none !important; transition: none !important; }
-  .sh-bar-fill { width: 100%; }
-  .sh-stage-img.is-active { opacity: 1; transform: none; }
+  .sh-hero--horizon * {
+    animation: none !important;
+    transition: none !important;
+  }
+  .sh-bar-fill {
+    width: 100%;
+  }
+  .sh-stage-img.is-active {
+    opacity: 1;
+    transform: none;
+  }
 }
