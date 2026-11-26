@@ -68,83 +68,68 @@ type Paket = {
   ikon: typeof Globe;
 };
 
+// Harga diseragamkan (keputusan owner 26 Nov 2026): SATU HARGA, DUA MATA UANG —
+// sama dengan beranda (lib/homepage/content.ts) dan Suki Studio (USD). Fitur tiap
+// paket diterjemahkan dari halaman Studio, bukan dikarang.
 const PAKETS: Paket[] = [
   {
-    id: 'landing-page',
-    nama: 'Landing Page',
-    harga: 'Rp 99 rb',
-    periode: 'harga mulai',
-    deskripsi: 'Min. 5 halaman yang fokus menjual produk/jasamu dan mengumpulkan leads.',
+    id: 'website',
+    nama: 'Website',
+    harga: 'Rp 2,5 jt',
+    periode: 'sekali bayar',
+    deskripsi: 'Website premium minimal 5 halaman yang siap menjual produk/jasamu. Setara $149.',
     fitur: [
-      'Desain mobile-friendly & cepat',
-      'Tombol WhatsApp + form kontak',
-      'Domain & hosting 1 tahun',
-      'SSL & SEO dasar',
+      'Website premium 5+ halaman',
+      'Desain mobile-first dengan animasi',
+      'Integrasi kontak & WhatsApp',
+      'Pengaturan SEO dasar',
     ],
-    waktu: '1–2 hari kerja',
+    waktu: '±2 hari kerja',
     ikon: Rocket,
   },
   {
-    id: 'company-profile',
-    nama: 'Company Profile',
-    harga: 'Rp 299 rb',
-    periode: 'harga mulai',
-    deskripsi: 'Website perusahaan profesional yang bikin bisnismu terlihat kredibel.',
+    id: 'ai-web-app',
+    nama: 'AI Web App',
+    harga: 'Rp 5 jt',
+    periode: 'sekali bayar',
+    deskripsi: 'Website plus fitur AI, toko online atau booking. Setara $299.',
     fitur: [
-      '8–15 halaman (profil, layanan, blog, kontak)',
-      'Desain sesuai identitas brand',
-      'Admin panel — update konten mandiri',
-      'SEO on-page + Google Analytics',
-      'Domain & hosting 1 tahun',
+      'Semua yang ada di paket Website',
+      'Chat AI & fitur pintar bawaan',
+      'Toko online atau sistem booking',
+      'Analitik + SEO lanjutan',
+      'Dukungan prioritas 30 hari',
     ],
-    waktu: '3–5 hari kerja',
-    ikon: Globe,
+    waktu: 'maksimal 1 minggu',
+    ikon: Sparkles,
   },
   {
-    id: 'toko-online',
-    nama: 'Toko Online',
-    harga: 'Rp 499 rb',
-    periode: 'harga mulai',
-    badge: 'Paling diminati',
-    deskripsi: 'Jualan online di websitemu sendiri — tanpa potongan komisi marketplace.',
+    id: 'saas',
+    nama: 'SaaS Platform',
+    harga: 'Rp 8 jt',
+    periode: 'sekali bayar',
+    deskripsi: 'Web app atau produk SaaS custom sesuai alur bisnismu. Setara $499.',
     fitur: [
-      'Katalog, keranjang & checkout',
-      'Pembayaran QRIS, transfer bank, e-wallet',
-      'Ongkir otomatis (JNE, J&T, dll.)',
-      'Admin panel kelola produk & pesanan',
-      'Notifikasi pesanan via WhatsApp',
-      'Domain & hosting 1 tahun',
+      'Web app atau produk SaaS',
+      'Login, database, dan dashboard',
+      'Integrasi fitur AI',
+      'Dukungan prioritas 90 hari',
     ],
-    waktu: '5–7 hari kerja',
-    ikon: Store,
-  },
-  {
-    id: 'web-aplikasi',
-    nama: 'Web Aplikasi Custom',
-    harga: 'Rp 999 rb',
-    periode: 'harga mulai',
-    deskripsi: 'Sistem web sesuai alur kerja bisnismu — kasir, inventori, booking, dashboard.',
-    fitur: [
-      'Login & dashboard admin',
-      'Fitur sesuai kebutuhan operasional',
-      'Laporan & export data',
-      'Integrasi API (pembayaran, dsb.)',
-      'Pelatihan penggunaan',
-    ],
-    waktu: '7 hari kerja',
+    waktu: 'maksimal 1 minggu',
     ikon: LayoutDashboard,
   },
   {
     id: 'care-plan',
     nama: 'Care Plan',
-    harga: 'Rp 49 rb',
+    // Owner baru menetapkan harga dolar; rupiah belum ditetapkan — jangan dikarang.
+    harga: '$29',
     periode: '/bulan',
-    deskripsi: 'Website-mu kami rawat: aman, ter-backup, dan selalu up-to-date.',
+    deskripsi: 'Website-mu kami rawat: aman, ter-backup, dan selalu up-to-date. Opsional, bisa berhenti kapan saja.',
     fitur: [
-      'Monitoring & backup rutin',
-      'Update konten ringan',
-      'Perbaikan bug/error',
-      'Support chat jam kerja',
+      'Hosting & cek uptime',
+      'Backup rutin',
+      'Update keamanan',
+      'Perubahan konten kecil',
     ],
     waktu: 'Periode bulanan',
     ikon: Wrench,
@@ -289,7 +274,7 @@ const FAQS = [  {
   },
   {
     q: 'Berapa lama pengerjaannya?',
-    a: 'Landing page 3–5 hari kerja, company profile 10–14 hari kerja, toko online 21–30 hari kerja, web aplikasi custom 4–8 minggu. Waktu dihitung sejak materi konten (logo, foto, teks) kami terima lengkap.',
+    a: 'Website ±2 hari kerja; AI Web App dan SaaS Platform maksimal 1 minggu. Waktu dihitung sejak materi konten (logo, foto, teks) kami terima lengkap.',
   },
   {
     q: 'Apakah ada biaya tahunan setelah website jadi?',
@@ -297,7 +282,7 @@ const FAQS = [  {
   },
   {
     q: 'Bisakah saya update konten sendiri?',
-    a: 'Bisa. Paket Company Profile ke atas dilengkapi admin panel yang mudah dipakai, plus sesi pelatihan singkat cara menggunakannya.',
+    a: 'Bisa. Kebutuhan update konten mandiri (admin panel/dashboard) kita sepakati saat konsultasi sesuai paket yang dipilih — paket SaaS Platform sudah termasuk login, database, dan dashboard.',
   },
 ];
 
@@ -311,7 +296,7 @@ function formatOrder(nama: string, wa: string, usaha: string, paket: Paket, kebu
     `Nama: ${nama}`,
     `No. WA/HP: ${wa}`,
     usaha ? `Jenis usaha: ${usaha}` : 'Jenis usaha: -',
-    `Paket: ${paket.nama} (mulai ${paket.harga}${paket.periode === '/bulan' ? '/bln' : ''})`,
+    `Paket: ${paket.nama} (${paket.harga}${paket.periode === '/bulan' ? '/bln' : ''})`,
     kebutuhan ? `Kebutuhan:\n${kebutuhan}` : 'Kebutuhan: -',
     '',
     'Mohon info langkah selanjutnya. Terima kasih.',
@@ -389,7 +374,7 @@ export default function WebStudioPage() {
   const paketId = useId();
   const kebutuhanId = useId();
 
-  const [paketTerpilih, setPaketTerpilih] = useState<string>('toko-online');
+  const [paketTerpilih, setPaketTerpilih] = useState<string>('ai-web-app');
   const [nama, setNama] = useState('');
   const [wa, setWa] = useState('');
   const [usaha, setUsaha] = useState('');
@@ -662,8 +647,8 @@ export default function WebStudioPage() {
             <p className="sws-seksi-kicker sws-reveal">Harga transparan</p>
             <h2 id="sws-paket-judul" className="sws-reveal">Pilih paket yang pas untuk bisnismu</h2>
             <p className="sws-lead sws-reveal">
-              Semua harga dalam rupiah dan sekali bayar — kecuali Care Plan yang
-              bersifat bulanan. Tanpa biaya tersembunyi.
+              Harga yang sama, dalam rupiah untuk Indonesia dan dolar untuk klien
+              internasional. Sekali bayar — kecuali Care Plan yang bulanan.
             </p>
             <div className="sws-grid">
               {PAKETS.map((p, idx) => {
@@ -687,9 +672,9 @@ export default function WebStudioPage() {
                       </div>
                     </div>
                     <p className="sws-harga">
-                      {p.periode === '/bulan' ? null : (
+                      {p.periode === 'harga mulai' ? (
                         <span className="sws-harga-mulai">mulai</span>
-                      )}
+                      ) : null}
                       <strong>{p.harga}</strong>
                       {p.periode === '/bulan' ? (
                         <span className="sws-harga-periode">/bulan</span>
@@ -940,7 +925,7 @@ export default function WebStudioPage() {
                 >
                   {PAKETS.map((p) => (
                     <option key={p.id} value={p.id}>
-                      {p.nama} — mulai {p.harga}
+                      {p.nama} — {p.harga}
                       {p.periode === '/bulan' ? '/bln' : ''}
                     </option>
                   ))}
