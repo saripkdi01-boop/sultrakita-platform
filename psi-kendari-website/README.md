@@ -6,7 +6,7 @@ Galeri, video), ditambah konten lokal Kendari/Sultra, agregasi politik terbaru, 
 
 - **Stack:** Next.js 16 (App Router) · TypeScript · Tailwind CSS 4 · SSG + ISR (900 detik)
 - **Bahasa & zona waktu:** Bahasa Indonesia · WITA (Asia/Makassar)
-- **URL produksi:** lihat bagian [Deploy](#deploy-vercel)
+- **URL produksi:** https://psi-kendari-website.vercel.app
 
 ---
 
@@ -211,11 +211,46 @@ Best Practices 96 karena galat konsol CORS dari permintaan browser ke psi.id yan
 
 ## Deploy (Vercel)
 
-1. Hubungkan repo ke proyek Vercel (framework Next.js; root = folder proyek ini).
-2. Isi environment variable produksi sesuai tabel di atas (minimal `SITE_URL`).
-3. Deploy production, lalu cek: beranda, satu artikel, `/politik-terbaru`, `/data-pemilu`, `/sitemap.xml`.
+**URL produksi: https://psi-kendari-website.vercel.app** — deploy production pertama 27 Nov 2026
+dari GitHub `saripkdi01-boop/psi-kendari-website` branch `main` (commit `311a8f4`), proyek Vercel
+`psi-kendari-website` (tim *saripkdi01-boop's projects*), fungsi di region `sin1` (Singapura).
 
-**URL produksi:** _diisi setelah deploy (lihat riwayat commit terbaru)._
+Environment variable produksi yang sudah diisi: `SITE_URL`, `PSI_API_BASE`,
+`NEXT_PUBLIC_PSI_API_BASE`, `REVALIDATE_SECONDS`. (`NEXT_PUBLIC_CONTACT_EMAIL` dan
+`NEXT_PUBLIC_GA_ID` sengaja dikosongkan sampai ada nilai resmi.)
+
+Verifikasi setelah deploy (diakses sebagai pengunjung anonim):
+
+| Cek | Hasil |
+| --- | --- |
+| `/`, `/berita-psi`, artikel lokal, `/klarifikasi/…`, `/struktur/konawe` | 200 |
+| `/politik-terbaru` | 200 — 60 item RSS asli, semua berlabel DILAPORKAN MEDIA |
+| `/data-pemilu` | 200 — 67 / 112 / 37 / 55 / 276, total 547, sumber Keputusan KPU Kota Kendari No. 93/2024 |
+| `/sitemap.xml`, `/robots.txt`, `/opengraph-image` | 200, URL kanonik produksi |
+| Halaman tak dikenal | 404 berbahasa Indonesia |
+| Header keamanan (CSP, HSTS, X-Frame-Options, dll.) | aktif |
+| Lighthouse produksi (beranda) | mobile 97 · 100 · 96 · 100 — desktop 100 · 100 · 96 · 100 (Perf · A11y · BP · SEO) |
+| Berita psi.id dari server | ⚠️ build Vercel juga menerima `403 cf-mitigated: challenge` dari psi.id — blok psi.id memakai fallback browser |
+
+### ⚠️ Satu langkah manual: sambungkan Git untuk deploy otomatis
+
+Proyek Vercel ini dibuat lebih dulu (deployment uji koneksi ke psi.id) sebelum repo GitHub ada,
+dan API yang tersedia tidak bisa menautkan repo ke proyek yang sudah ada. Deploy production di atas
+dibuat langsung dari repo GitHub, tetapi **push berikutnya belum memicu deploy otomatis** sampai
+repo ditautkan:
+
+1. Buka Vercel → proyek **psi-kendari-website** → **Settings → Git**.
+2. **Connect Git Repository** → pilih `saripkdi01-boop/psi-kendari-website`, production branch `main`.
+
+Setelah itu, setiap commit + push ke `main` (mis. menambah berita di `/content`) akan dibangun
+ulang otomatis. Riwayat deployment juga masih memuat deployment uji lama (tidak aktif di domain
+produksi) — boleh dihapus dari dashboard bila ingin rapi.
+
+### Deploy ulang manual (tanpa Git)
+
+```bash
+npx vercel --prod
+```
 
 `vercel.json` memilih region fungsi `sin1` (Singapura) agar dekat dengan pembaca di Indonesia.
 
@@ -229,7 +264,11 @@ Best Practices 96 karena galat konsol CORS dari permintaan browser ke psi.id yan
   dipetakan ke label **DILAPORKAN MEDIA** dengan keputusan tertulis “BELUM TERVERIFIKASI RESMI”.
 - **Font** Plus Jakarta Sans (Google Fonts, lisensi OFL) di-*self-host* dari paket Fontsource —
   tanpa permintaan ke server Google saat build maupun saat dikunjungi.
-- Repo & branch mengikuti akses GitHub yang tersedia di sesi pembangunan (lihat laporan Fase 6).
+- **Repo:** kode dikembangkan di subfolder `psi-kendari-website/` pada branch `claude/stoic-fermat-r78pwu`
+  repo `saripkdi01-boop/sultrakita-platform` (repo yang terpasang di sesi pembangunan), lalu riwayat
+  6 commit fasenya dipisahkan (`git subtree split`) ke repo baru **privat** `saripkdi01-boop/psi-kendari-website`
+  branch `main`. Repo baru dibuat privat karena hanya itu yang diizinkan alat pembangunan; ubah ke publik
+  di GitHub bila diinginkan.
 
 ## Pekerjaan lanjutan
 
@@ -243,4 +282,5 @@ Best Practices 96 karena galat konsol CORS dari permintaan browser ke psi.id yan
 6. Cari feed RSS resmi media lokal Sultra lain dan sumber rilis KPU yang tidak memerlukan login.
 7. Pertimbangkan CMS ringan (mis. Decap/Git-based) bila pengurus non-teknis perlu menambah konten.
 8. Migrasi ke Cache Components (`'use cache'`) Next.js 16 bila diperlukan.
-9. Tambah domain kustom di Vercel dan perbarui `SITE_URL`.
+9. Tautkan Git di Vercel (lihat bagian Deploy) agar push otomatis ter-deploy.
+10. Tambah domain kustom di Vercel dan perbarui `SITE_URL`.
