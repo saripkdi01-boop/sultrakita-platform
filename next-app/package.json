@@ -21,7 +21,7 @@
     "@aws-sdk/s3-presigned-post": "^3.1127.0",
     "@aws-sdk/s3-request-presigner": "^3.1127.0",
     "@google/generative-ai": "^0.24.1",
-    "@hookform/resolvers": "^3.9.0",
+    "@hookform/resolvers": "^5.9.2",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.45.4",
     "@tanstack/react-virtual": "^3.14.12",
@@ -34,13 +34,13 @@
     "leaflet": "^1.9.4",
     "leaflet.markercluster": "^1.5.3",
     "lucide-react": "^0.468.0",
-    "next": "^15.5.27",
+    "next": "^15.5.29",
     "qrcode": "^1.5.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-hook-form": "^7.53.2",
+    "react-hook-form": "^7.92.0",
     "sharp": "^0.35.5",
-    "zod": "^3.23.8",
+    "zod": "^4.6.7",
     "zustand": "^5.0.1"
   },
   "devDependencies": {
@@ -50,12 +50,15 @@
     "@types/react-dom": "^18.3.1",
     "autoprefixer": "^10.4.20",
     "eslint": "^8.57.1",
-    "eslint-config-next": "^15.5.25",
+    "eslint-config-next": "^15.5.29",
     "postcss": "8.5.28",
     "tailwindcss": "^3.4.14",
     "typescript": "^5.6.3"
   },
   "overrides": {
-    "source-map-js": "1.2.2"
+    "source-map-js": "1.2.2",
+    "next": {
+      "postcss": "$postcss"
+    }
   }
 }

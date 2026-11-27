@@ -10,7 +10,7 @@ import { z } from 'zod';
 import { requireAdminUser } from '@/lib/supabase/server';
 import { AUDIT_ACTIONS, logAuditEvent } from '@/lib/security/audit';
 
-const uuidSchema = z.string().uuid('ID bisnis tidak valid.');
+const uuidSchema = z.string().guid('ID bisnis tidak valid.');
 const statusFilterSchema = z.enum(['review', 'pending', 'draft', 'approved', 'rejected', 'all']);
 const decisionSchema = z.enum(['approved', 'rejected']);
 const noteSchema = z
@@ -80,7 +80,7 @@ const BUSINESS_COLUMNS =
 /** Pesan error aman: hanya pesan guard yang dikenal yang diteruskan apa adanya. */
 function toSafeError(error: unknown, fallback: string): string {
   if (error instanceof z.ZodError) {
-    return error.errors[0]?.message ?? 'Input tidak valid.';
+    return error.issues[0]?.message ?? 'Input tidak valid.';
   }
   if (error instanceof Error && (error.message === 'Sesi login diperlukan.' || error.message === 'Akses admin diperlukan.')) {
     return error.message;

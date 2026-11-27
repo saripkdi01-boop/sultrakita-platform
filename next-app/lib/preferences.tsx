@@ -53,11 +53,14 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    // Jangan terapkan apa pun sebelum preferensi tersimpan terbaca: pada render pertama
+    // `theme` masih nilai awal 'light', dan applyTheme('light') di sini sempat menimpa
+    // tema gelap yang sudah dipasang skrip <head> / efek di atas (kedip terang + tes
+    // visual mode gelap yang flaky). Efek pertama sudah menerapkan tema awal.
+    if (!hydrated) return;
     applyTheme(theme);
-    if (hydrated) {
-      window.localStorage.setItem('sultrakita-theme', theme);
-      window.localStorage.setItem('sultra-dark', String(theme === 'dark'));
-    }
+    window.localStorage.setItem('sultrakita-theme', theme);
+    window.localStorage.setItem('sultra-dark', String(theme === 'dark'));
   }, [theme, hydrated]);
 
   useEffect(() => {

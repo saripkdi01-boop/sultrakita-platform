@@ -13,10 +13,10 @@ import { logAuditEvent } from '@/lib/security/audit';
 type ActionResult = { ok: true } | { ok: false; error: string };
 
 const reasonSchema = z.string().trim().min(3, 'Alasan wajib diisi (min. 3 karakter).').max(1000);
-const uuidSchema = z.string().uuid('ID tidak valid.');
+const uuidSchema = z.string().guid('ID tidak valid.');
 
 function fail(error: unknown): ActionResult {
-  if (error instanceof z.ZodError) return { ok: false, error: error.errors[0]?.message ?? 'Input tidak valid.' };
+  if (error instanceof z.ZodError) return { ok: false, error: error.issues[0]?.message ?? 'Input tidak valid.' };
   return { ok: false, error: error instanceof Error ? error.message : 'Terjadi kesalahan.' };
 }
 

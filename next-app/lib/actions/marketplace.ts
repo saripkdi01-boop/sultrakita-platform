@@ -10,13 +10,13 @@ const listingInputSchema = z.object({
   price: z.number().int('Harga harus bilangan bulat.').min(0, 'Harga tidak boleh negatif.').max(999_999_999_999),
   district: z.string().trim().min(2, 'Distrik wajib diisi.').max(80),
   city: z.string().trim().max(80).optional(),
-  categoryId: z.string().uuid('Kategori tidak valid.').nullable().optional(),
+  categoryId: z.string().guid('Kategori tidak valid.').nullable().optional(),
   images: z.array(z.string().url().max(500)).max(10).optional(),
   videoUrl: z.string().url().max(500).nullable().optional(),
   condition: z.enum(['new', 'like_new', 'good', 'fair']).optional(),
   stockQuantity: z.number().int().min(1).max(10000).optional(),
   aiGenerated: z.boolean().optional(),
-  aiMetadata: z.record(z.unknown()).optional(),
+  aiMetadata: z.record(z.string(), z.unknown()).optional(),
 });
 type ListingInput = z.infer<typeof listingInputSchema>;
 function friendly(error: unknown) { return error instanceof Error ? error.message : 'Marketplace belum dapat diproses.'; }
@@ -46,7 +46,7 @@ export async function toggleWishlist(listingId: string) {
   try {
     // Fase 2.4: validasi dulu; kembalikan kode LOGIN_REQUIRED agar client bisa
     // menampilkan login sheet (bukan sekadar pesan error generik).
-    const parsedId = z.string().uuid('Listing tidak valid.').safeParse(listingId);
+    const parsedId = z.string().guid('Listing tidak valid.').safeParse(listingId);
     if (!parsedId.success) return { ok: false as const, error: 'Listing tidak valid.' };
     const supabase = await getServerSupabase();
     const { data: { user } } = await supabase.auth.getUser();
@@ -125,7 +125,7 @@ export async function createListingMediaUpload(input: { fileName: string; conten
 }
 
 const confirmMediaSchema = z.object({
-  listingId: z.string().uuid('Listing tidak valid.'),
+  listingId: z.string().guid('Listing tidak valid.'),
   objectKey: z.string().trim().min(1).max(500).regex(/^marketplace\//, 'Object key tidak valid.'),
   contentType: z.string().regex(/^image\/(jpeg|png|webp|gif)$/),
   byteSize: z.number().int().min(1).max(20 * 1024 * 1024),
@@ -203,7 +203,7 @@ export async function listSavedSearches() {
 export async function deleteSavedSearch(id: string) {
   try {
     const { supabase, user } = await requireServerUser();
-    const parsed = z.string().uuid('Pencarian tidak valid.').safeParse(id);
+    const parsed = z.string().guid('Pencarian tidak valid.').safeParse(id);
     if (!parsed.success) return { ok: false as const, error: 'Pencarian tidak valid.' };
     const { error } = await supabase.from('saved_searches').delete().eq('id', parsed.data).eq('user_id', user.id);
     if (error) throw error;
@@ -214,7 +214,7 @@ export async function deleteSavedSearch(id: string) {
 export async function setSearchAlertEnabled(input: { id: string; enabled: boolean }) {
   try {
     const { supabase, user } = await requireServerUser();
-    const parsed = z.object({ id: z.string().uuid(), enabled: z.boolean() }).safeParse(input);
+    const parsed = z.object({ id: z.string().guid(), enabled: z.boolean() }).safeParse(input);
     if (!parsed.success) return { ok: false as const, error: 'Data tidak valid.' };
     const { error } = await supabase.from('saved_searches').update({ alert_enabled: parsed.data.enabled }).eq('id', parsed.data.id).eq('user_id', user.id);
     if (error) throw error;

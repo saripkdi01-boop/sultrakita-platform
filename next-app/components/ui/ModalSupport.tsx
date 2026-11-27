@@ -12,9 +12,10 @@ export function ModalSupport({ open, onClose }: { open: boolean; onClose: () => 
   const { language } = usePreferences();
   const t = dictChatNews[language] ?? dictChatNews.id;
   const schema = z.object({ amount: z.coerce.number().min(10000, t.uiSupportMinAmount), note: z.string().max(240).optional() });
-  type SupportValues = z.infer<typeof schema>;
+  type SupportInput = z.input<typeof schema>;
+  type SupportValues = z.output<typeof schema>;
   const [message, setMessage] = useState('');
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<SupportValues>({ resolver: zodResolver(schema), defaultValues: { amount: 50000 } });
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<SupportInput, unknown, SupportValues>({ resolver: zodResolver(schema), defaultValues: { amount: 50000 } });
   async function submit(values: SupportValues) {
     try {
       const payload = await postToApi<{ payment_url?: string }, { campaign_id: number; name: string; amount: number; message: string | null; payment_method: string }>('/api/donations', {

@@ -67,7 +67,7 @@ export async function updateBillingPlan(input: z.infer<typeof UpdatePlanSchema>)
 }
 
 const CancelOrderSchema = z.object({
-  orderId: z.string().uuid(),
+  orderId: z.string().guid(),
 });
 
 export async function cancelBillingOrder(input: z.infer<typeof CancelOrderSchema>): Promise<ActionResult> {

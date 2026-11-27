@@ -1,37 +1,36 @@
 import type { Metadata } from 'next';
 import HomeClient from './home-client';
+import { getHomeStats } from '@/lib/homepage/stats';
+
+// Angka hidup dihitung ulang paling lama tiap 5 menit (ISR) — halaman tetap cepat.
+export const revalidate = 300;
+
+const title = 'Suki Apps — Satu Pintu Digital Kendari & Sulawesi Tenggara';
+const description =
+  'Jualan, cari rumah, cari kerja, gabung komunitas, dan daftarkan usaha di Kendari — satu akun gratis. Butuh website? Harga sama dalam rupiah & dolar: mulai Rp 2,5 jt / $149.';
 
 export const metadata: Metadata = {
-  title: 'SUKI Apps — Ekosistem Digital Sulawesi Tenggara',
-  description:
-    'Temukan produk lokal, properti, peluang kerja, komunitas, dan layanan bisnis dalam satu ekosistem digital Sulawesi Tenggara.',
+  title,
+  description,
   alternates: { canonical: 'https://sukiapps.web.id/' },
   openGraph: {
-    title: 'SUKI Apps — Ekosistem Digital Sulawesi Tenggara',
-    description:
-      'Satu ruang digital untuk menemukan, terhubung, dan bertumbuh bersama ekosistem lokal Sulawesi Tenggara.',
+    title,
+    description,
     url: 'https://sukiapps.web.id/',
-    siteName: 'SUKI Apps',
+    siteName: 'Suki Apps',
     locale: 'id_ID',
     type: 'website',
-    images: [
-      {
-        url: '/og-image.png',
-        width: 512,
-        height: 512,
-        alt: 'Logo SUKI Apps',
-      },
-    ],
+    images: [{ url: '/og-image.png', width: 512, height: 512, alt: 'Logo Suki Apps' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'SUKI Apps — Ekosistem Digital Sulawesi Tenggara',
-    description:
-      'Temukan produk lokal, properti, peluang, komunitas, dan layanan bisnis di satu ekosistem.',
+    title,
+    description,
     images: ['/og-image.png'],
   },
 };
 
-export default function HomePage() {
-  return <HomeClient />;
+export default async function HomePage() {
+  const stats = await getHomeStats();
+  return <HomeClient stats={stats} />;
 }

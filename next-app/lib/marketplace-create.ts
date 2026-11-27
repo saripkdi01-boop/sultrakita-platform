@@ -146,17 +146,15 @@ export const createListingPayloadSchema = z.object({
     .min(10, 'Judul minimal 10 karakter agar jelas.')
     .max(140, 'Judul maksimal 140 karakter.'),
   category: z.string().refine((v) => CATEGORY_SET.has(v), 'Pilih kategori yang tersedia.'),
-  condition: z.enum(['new', 'like_new', 'good', 'fair'], {
-    errorMap: () => ({ message: 'Pilih kondisi barang.' }),
-  }),
+  condition: z.enum(['new', 'like_new', 'good', 'fair'], { error: 'Pilih kondisi barang.' }),
   price: z
-    .number({ invalid_type_error: 'Harga harus berupa angka.' })
+    .number({ error: (issue) => (issue.input === undefined ? undefined : 'Harga harus berupa angka.') })
     .int('Harga harus bilangan bulat.')
     .min(0, 'Harga tidak boleh negatif.')
     .max(999_999_999_999, 'Harga terlalu besar.'),
   negotiable: z.boolean().default(true),
   stock: z
-    .number({ invalid_type_error: 'Stok harus berupa angka.' })
+    .number({ error: (issue) => (issue.input === undefined ? undefined : 'Stok harus berupa angka.') })
     .int('Stok harus bilangan bulat.')
     .min(1, 'Stok minimal 1.')
     .max(10000, 'Stok maksimal 10.000.')
