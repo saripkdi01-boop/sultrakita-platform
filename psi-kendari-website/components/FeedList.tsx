@@ -23,7 +23,7 @@ export function FeedList({ items, sources }: { items: (CardItem & { sourceId: st
               onClick={() => setActive(o.id)}
               className={`rounded-full border px-3.5 py-1.5 text-sm font-bold ${on ? "border-red bg-red text-white" : "border-border bg-surface hover:border-red hover:text-red-ink"}`}
             >
-              {o.nama} <span className={on ? "text-white/80" : "text-muted"}>({n})</span>
+              {o.nama} <span className={on ? "text-white" : "text-muted"}>({n})</span>
             </button>
           );
         })}

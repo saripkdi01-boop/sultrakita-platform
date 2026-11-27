@@ -4,6 +4,7 @@ import type { CardItem } from "@/lib/card";
 import { RubrikBadge, VerificationBadge } from "./Badges";
 import { TimeAgo } from "./TimeAgo";
 import { IconExternal } from "./icons";
+import { formatTanggal } from "@/lib/format";
 
 export type CardVariant = "feature" | "default" | "compact" | "text";
 
@@ -28,7 +29,7 @@ function Meta({ item }: { item: CardItem }) {
     <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted">
       {item.source ? <span className="font-semibold text-fg">{item.source}</span> : null}
       {item.source && item.date ? <span aria-hidden="true">·</span> : null}
-      <TimeAgo iso={item.date} />
+      {item.dateOnly && item.date ? <time dateTime={item.date}>{formatTanggal(item.date)}</time> : <TimeAgo iso={item.date} />}
       {item.external ? <IconExternal className="text-muted" /> : null}
     </div>
   );

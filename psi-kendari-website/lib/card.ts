@@ -13,6 +13,8 @@ export type CardItem = {
   label: VerificationLabel;
   source?: string;
   image?: { src: string; alt: string; credit?: string } | null;
+  /** Tampilkan tanggal saja (tanpa "x jam lalu") — untuk konten lokal. */
+  dateOnly?: boolean;
 };
 
 export function psiToCard(p: PsiPost): CardItem {
@@ -50,6 +52,7 @@ export function lokalToCard(b: {
     rubrik: b.rubrik,
     label: b.label,
     source: "PSI Kendari",
+    dateOnly: true,
     image: b.gambar ? { src: b.gambar.src, alt: b.gambar.alt, credit: b.gambar.kredit ? `Foto: ${b.gambar.kredit}` : undefined } : null,
   };
 }

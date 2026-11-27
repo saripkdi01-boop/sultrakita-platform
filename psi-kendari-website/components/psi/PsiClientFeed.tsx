@@ -6,19 +6,15 @@ import type { PsiPost, PsiQuery } from "@/lib/psi-types";
 import { EmptyState } from "../EmptyState";
 import { PsiPostsView, type PsiView } from "./PsiPostsView";
 import { PsiUnavailable } from "./PsiUnavailable";
+import { TickerPlaceholder } from "../Ticker";
 
 type State = { status: "loading" } | { status: "ok"; posts: PsiPost[] } | { status: "error" };
 
-function Skeleton({ view }: { view: PsiView }) {
-  if (view === "ticker") return <div className="h-10 bg-red" aria-hidden="true" />;
-  const n = view === "hero" ? 1 : view === "list" || view === "compact" ? 4 : 3;
-  return (
-    <div aria-hidden="true" className={view === "list" || view === "compact" ? "space-y-4" : "grid gap-5 sm:grid-cols-2 lg:grid-cols-3"}>
-      {Array.from({ length: n }).map((_, i) => (
-        <div key={i} className={`animate-pulse rounded-2xl bg-bg-soft ${view === "hero" ? "h-80 sm:col-span-2 lg:col-span-3" : view === "list" || view === "compact" ? "h-16" : "h-64"}`} />
-      ))}
-    </div>
-  );
+/** Tinggi kerangka dibuat setara pesan "tidak dapat dimuat" agar tata letak tidak bergeser. */
+function Skeleton({ view, compact }: { view: PsiView; compact: boolean }) {
+  if (view === "ticker") return <TickerPlaceholder state="loading" />;
+  if (compact) return <div aria-hidden="true" className="h-12 animate-pulse rounded-xl bg-bg-soft" />;
+  return <div aria-hidden="true" className="h-44 animate-pulse rounded-2xl bg-bg-soft" />;
 }
 
 /**
@@ -57,11 +53,12 @@ export function PsiClientFeed({
     return (
       <div aria-busy="true" aria-live="polite">
         <span className="sr-only">Memuat berita dari psi.id…</span>
-        <Skeleton view={view} />
+        <Skeleton view={view} compact={compactNotice} />
       </div>
     );
   }
   if (state.status === "error") {
+    if (view === "ticker") return <TickerPlaceholder />;
     if (hideWhenUnavailable) return null;
     return <PsiUnavailable sourceHref={sourceHref} compact={compactNotice} />;
   }

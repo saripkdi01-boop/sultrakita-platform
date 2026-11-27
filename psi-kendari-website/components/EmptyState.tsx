@@ -3,16 +3,18 @@ export function EmptyState({
   children,
   action,
   tone = "neutral",
+  className = "",
 }: {
   title: string;
   children?: React.ReactNode;
   action?: React.ReactNode;
   tone?: "neutral" | "warning";
+  className?: string;
 }) {
   return (
     <div
       role="status"
-      className={`rounded-2xl border border-dashed p-6 text-center ${
+      className={`rounded-2xl border border-dashed p-6 text-center ${className} ${
         tone === "warning" ? "border-gold bg-bg-soft" : "border-border bg-bg-soft"
       }`}
     >

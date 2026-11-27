@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import { SITE } from "@/config/site";
 import { getBeritaLokal, getBeritaLokalBySlug } from "@/lib/content";
-import { formatTanggalWaktu } from "@/lib/format";
+import { formatTanggal } from "@/lib/format";
 import { Container } from "@/components/Container";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { RubrikBadge, VerificationBadge } from "@/components/Badges";
@@ -60,7 +60,7 @@ export default async function BeritaLokalPage({ params }: Props) {
         </div>
         <h1 className="mt-3 text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">{b.judul}</h1>
         <p className="mt-4 text-sm text-muted">
-          <time dateTime={b.tanggal}>{formatTanggalWaktu(b.tanggal)}</time> · {b.penulis}
+          <time dateTime={b.tanggal}>{formatTanggal(b.tanggal)}</time> · {b.penulis}
         </p>
         <div className="mt-5">
           <ShareButtons url={url} title={b.judul} />

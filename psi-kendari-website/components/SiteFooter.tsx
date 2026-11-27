@@ -7,7 +7,7 @@ const ext = { target: "_blank", rel: "noopener noreferrer" } as const;
 export function SiteFooter() {
   const year = new Date().getFullYear();
   return (
-    <footer className="mt-16 bg-ink text-zinc-200">
+    <footer className="mt-16 border-t border-white/10 bg-ink text-zinc-200">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-2 lg:grid-cols-4">
         <div>
           <Logo variant="vertikal" tone="putih" height={96} />

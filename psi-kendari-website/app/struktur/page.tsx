@@ -69,9 +69,9 @@ export default function StrukturPage() {
                   ) : null}
                   {dpw.anggota_tercatat ? (
                     <div className="col-span-2 rounded-2xl bg-red p-4 text-white">
-                      <dt className="text-xs font-bold uppercase tracking-widest text-white/80">Anggota tercatat</dt>
+                      <dt className="text-xs font-bold uppercase tracking-widest text-white">Anggota tercatat</dt>
                       <dd className="mt-1 text-3xl font-extrabold">{formatAngka(dpw.anggota_tercatat.jumlah)}</dd>
-                      <dd className="text-sm text-white/90">
+                      <dd className="text-sm text-white">
                         Sumber:{" "}
                         {dpw.anggota_tercatat.sumber_url ? (
                           <a className="underline" href={dpw.anggota_tercatat.sumber_url} target="_blank" rel="noopener noreferrer">

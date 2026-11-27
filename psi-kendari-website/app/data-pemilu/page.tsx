@@ -51,9 +51,9 @@ export default function DataPemiluPage() {
         <section aria-labelledby="ringkasan" className="grid gap-4 sm:grid-cols-3">
           <h2 id="ringkasan" className="sr-only">Ringkasan</h2>
           <div className="rounded-2xl bg-red p-6 text-white">
-            <p className="text-xs font-bold uppercase tracking-widest text-white/85">Total suara PSI</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-white">Total suara PSI</p>
             <p className="mt-1 text-5xl font-extrabold tabular-nums">{formatAngka(data.total_suara_partai)}</p>
-            <p className="mt-1 text-sm text-white/90">{data.lembaga}, {data.pemilu}</p>
+            <p className="mt-1 text-sm text-white">{data.lembaga}, {data.pemilu}</p>
           </div>
           <div className="rounded-2xl border border-border bg-surface p-6">
             <p className="text-xs font-bold uppercase tracking-widest text-muted">Total suara sah</p>

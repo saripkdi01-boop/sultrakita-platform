@@ -25,7 +25,7 @@ export function PsiUnavailable({
     );
   }
   return (
-    <EmptyState title={`${what} sementara tidak dapat dimuat`} tone="warning">
+    <EmptyState title={`${what} sementara tidak dapat dimuat`} tone="warning" className="flex min-h-44 flex-col justify-center">
       <p>
         psi.id saat ini membatasi akses otomatis, sehingga daftar ini belum bisa ditampilkan di sini. Silakan
         baca langsung di situs resmi PSI.

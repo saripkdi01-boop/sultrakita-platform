@@ -28,6 +28,7 @@ export function searchLocal(q: string, limit = 20): CardItem[] {
         rubrik: b.rubrik,
         label: b.label,
         source: "PSI Kendari",
+        dateOnly: true,
       });
     }
   }
@@ -43,6 +44,7 @@ export function searchLocal(q: string, limit = 20): CardItem[] {
         rubrik: "Klarifikasi",
         label: k.label,
         source: "PSI Kendari",
+        dateOnly: true,
       });
     }
   }

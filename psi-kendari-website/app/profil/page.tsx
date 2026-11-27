@@ -53,9 +53,9 @@ export default function ProfilPage() {
               <SectionHeading id="dna" title="DNA partai" />
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="rounded-2xl bg-red p-6 text-white">
-                  <p className="text-[0.7rem] font-extrabold uppercase tracking-[0.18em] text-white/80">DNA 1</p>
+                  <p className="text-[0.7rem] font-extrabold uppercase tracking-[0.18em] text-white">DNA 1</p>
                   <h3 className="mt-1 text-2xl font-extrabold">Kebajikan</h3>
-                  <p className="mt-2 text-white/90">Sikap antikorupsi.</p>
+                  <p className="mt-2 text-white">Sikap antikorupsi.</p>
                 </div>
                 <div className="rounded-2xl bg-ink p-6 text-white">
                   <p className="text-[0.7rem] font-extrabold uppercase tracking-[0.18em] text-[#ff4d57]">DNA 2</p>

@@ -62,8 +62,18 @@ export default async function HomePage() {
       />
       <PsiPosts result={ticker} query={Q.ticker} view="ticker" hideWhenUnavailable />
 
+      <section className="border-b border-border bg-bg-soft">
+        <Container className="py-6 sm:py-8">
+          <p className="text-[0.7rem] font-extrabold uppercase tracking-[0.18em] text-red-ink">
+            PSI Kota Kendari &amp; Sulawesi Tenggara · {SITE.tagline}
+          </p>
+          <h1 className="mt-1 max-w-4xl text-3xl font-extrabold leading-tight tracking-tight sm:text-5xl">
+            Berita PSI, kabar Kendari &amp; Sultra, dan data pemilu dalam satu tempat
+          </h1>
+        </Container>
+      </section>
+
       <Container className="py-8">
-        <h1 className="sr-only">PSI Kendari — Partai Super TBK: berita PSI, Kendari & Sulawesi Tenggara</h1>
 
         <section aria-labelledby="berita-utama">
           <h2 id="berita-utama" className="sr-only">Berita utama dari Liputan psi.id</h2>

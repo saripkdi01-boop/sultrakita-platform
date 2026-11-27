@@ -1,5 +1,6 @@
 import type { PsiListResult, PsiQuery } from "@/lib/psi-types";
 import { EmptyState } from "../EmptyState";
+import { TickerPlaceholder } from "../Ticker";
 import { PsiClientFeed } from "./PsiClientFeed";
 import { PsiPostsView, type PsiView } from "./PsiPostsView";
 
@@ -28,7 +29,10 @@ export function PsiPosts({
   compactNotice?: boolean;
 }) {
   if (result.ok) {
-    if (!result.posts.length) return hideWhenUnavailable ? null : <EmptyState title={emptyText} />;
+    if (!result.posts.length) {
+      if (view === "ticker") return <TickerPlaceholder />;
+      return hideWhenUnavailable ? null : <EmptyState title={emptyText} />;
+    }
     return <PsiPostsView posts={result.posts} view={view} priority={priority} />;
   }
   return (

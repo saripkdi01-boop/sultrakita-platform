@@ -9,7 +9,44 @@ export const BROWSER_PSI_BASE = (
   process.env.NEXT_PUBLIC_PSI_API_BASE || "https://psi.id/wp-json/wp/v2"
 ).replace(/\/$/, "");
 
+/* -------- Pemutus sirkuit: satu cek per sesi agar psi.id yang terblokir tidak dipanggil berulang -------- */
+const MEMO_KEY = "psi-api-unavailable-until";
+const MEMO_MS = 10 * 60_000;
+let probe: Promise<boolean> | null = null;
+
+function memoBlocked(): boolean {
+  try {
+    return Number(sessionStorage.getItem(MEMO_KEY) || 0) > Date.now();
+  } catch {
+    return false;
+  }
+}
+
+function rememberBlocked() {
+  try {
+    sessionStorage.setItem(MEMO_KEY, String(Date.now() + MEMO_MS));
+  } catch {
+    /* penyimpanan diblokir — abaikan */
+  }
+}
+
+async function ensureReachable(): Promise<void> {
+  if (memoBlocked()) throw new Error("psi.id tidak dapat diakses (cek tersimpan)");
+  probe ??= fetch(`${BROWSER_PSI_BASE}/posts?per_page=1&_fields=id`, { mode: "cors", credentials: "omit" })
+    .then((r) => {
+      const ok = r.ok && (r.headers.get("content-type") || "").includes("json");
+      if (!ok) rememberBlocked();
+      return ok;
+    })
+    .catch(() => {
+      rememberBlocked();
+      return false;
+    });
+  if (!(await probe)) throw new Error("psi.id tidak dapat diakses");
+}
+
 async function getList(url: string, signal?: AbortSignal): Promise<WpPost[]> {
+  await ensureReachable();
   const res = await fetch(url, {
     mode: "cors",
     credentials: "omit",

@@ -7,11 +7,11 @@ export function JoinBand() {
     <section aria-labelledby="gabung" className="overflow-hidden rounded-3xl bg-red text-white">
       <div className="grid gap-6 p-6 sm:p-10 lg:grid-cols-[1.4fr_1fr] lg:items-center">
         <div>
-          <p className="text-[0.7rem] font-extrabold uppercase tracking-[0.18em] text-white/80">Partai Super TBK</p>
+          <p className="text-[0.7rem] font-extrabold uppercase tracking-[0.18em] text-white">Partai Super TBK</p>
           <h2 id="gabung" className="mt-1 text-2xl font-extrabold leading-tight sm:text-3xl">
             Bergabung dengan PSI lewat kanal resmi
           </h2>
-          <p className="mt-3 max-w-2xl text-white/90">
+          <p className="mt-3 max-w-2xl text-white">
             Pendaftaran anggota dan relawan dilakukan langsung di psi.id dan aku.psi.id. Situs ini tidak
             mengumpulkan NIK, foto KTP, nomor HP, atau data pribadi lainnya.
           </p>
