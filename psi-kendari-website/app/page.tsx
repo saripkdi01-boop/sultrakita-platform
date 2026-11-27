@@ -15,6 +15,9 @@ import { NewsCard } from "@/components/NewsCard";
 import { EmptyState } from "@/components/EmptyState";
 import { BarChart } from "@/components/BarChart";
 import { formatAngka } from "@/lib/format";
+import { feedToCard, getPolitikTerbaru, getYoutubeVideos } from "@/lib/feeds";
+import { VideoGrid } from "@/components/VideoGrid";
+import { LINKS } from "@/config/site";
 
 export const revalidate = 900;
 
@@ -28,13 +31,15 @@ const Q = {
 };
 
 export default async function HomePage() {
-  const [ticker, hero, pers, kendari, kolom, ketum] = await Promise.all([
+  const [ticker, hero, pers, kendari, kolom, ketum, politik, video] = await Promise.all([
     getPosts(Q.ticker),
     getPosts(Q.hero),
     getPosts(Q.pers),
     getKendariPosts(Q.kendari.perPage),
     getPosts(Q.kolom),
     getPostsByCategory(PSI_CAT.BLOG_KETUM, 1, 3),
+    getPolitikTerbaru({ limit: 10 }),
+    getYoutubeVideos(4),
   ]);
   const lokal = getBeritaLokal().slice(0, 4);
   const pemilu = getDataPemilu("kendari-2024");
@@ -99,6 +104,22 @@ export default async function HomePage() {
           </div>
         </section>
 
+        <section aria-labelledby="politik" className="mt-14">
+          <SectionHeading id="politik" title="Politik Terbaru" kicker="Dilaporkan media" href="/politik-terbaru" />
+          {politik.items.length ? (
+            <div className="grid gap-x-8 md:grid-cols-2">
+              {politik.items.slice(0, 10).map((it) => (
+                <NewsCard key={it.id} item={feedToCard(it)} variant="text" />
+              ))}
+            </div>
+          ) : (
+            <EmptyState title="Berita media sementara tidak dapat dimuat" />
+          )}
+          <p className="mt-3 text-xs text-muted">
+            Ringkasan dari RSS resmi media; isi lengkap dan hak cipta ada pada media sumber.
+          </p>
+        </section>
+
         <section aria-labelledby="kolom" className="mt-14">
           <SectionHeading id="kolom" title="Kolom & Opini" kicker="Gagasan" href="/berita-psi/rubrik/kolom" />
           <div className="grid items-start gap-8 lg:grid-cols-[1fr_340px]">
@@ -115,6 +136,11 @@ export default async function HomePage() {
               </Link>
             </aside>
           </div>
+        </section>
+
+        <section aria-labelledby="video" className="mt-14">
+          <SectionHeading id="video" title="Video PSI" kicker="YouTube SolidaritasID" href={LINKS.youtube} hrefLabel="Kanal YouTube" />
+          <VideoGrid videos={video.videos} ok={video.ok} />
         </section>
 
         {pemilu ? (

@@ -10,6 +10,9 @@ import { WilayahFilter } from "@/components/WilayahFilter";
 import { PsiPosts } from "@/components/psi/PsiPosts";
 import { NewsCard } from "@/components/NewsCard";
 import { EmptyState } from "@/components/EmptyState";
+import { MediaFeedBlock } from "@/components/MediaFeedBlock";
+import { antaraSultraFeed } from "@/config/feeds";
+import { getFeedItems } from "@/lib/feeds";
 
 export const revalidate = 900;
 
@@ -24,7 +27,10 @@ const PSI_QUERY = { categories: [PSI_CAT.LIPUTAN_DAERAH], keywords: KENDARI_KEYW
 export default async function KendariSultraPage() {
   const lokal = getBeritaLokal();
   const wilayah = getWilayahList();
-  const psi = await getKendariPosts(PSI_QUERY.perPage);
+  const [psi, media] = await Promise.all([
+    getKendariPosts(PSI_QUERY.perPage),
+    getFeedItems(antaraSultraFeed("seputar-sultra"), 8),
+  ]);
 
   return (
     <>
@@ -59,6 +65,11 @@ export default async function KendariSultraPage() {
             sourceHref={psiCategoryUrl(PSI_CAT.LIPUTAN_DAERAH)}
             emptyText="Belum ada Liputan Daerah psi.id yang menyebut Kendari atau Sulawesi Tenggara."
           />
+        </section>
+
+        <section aria-labelledby="media-sultra">
+          <SectionHeading id="media-sultra" title="Kabar Sulawesi Tenggara dari media" kicker="ANTARA Sultra · Dilaporkan media" />
+          <MediaFeedBlock items={media.items} ok={media.status.ok} emptyText="Belum ada berita media Sulawesi Tenggara." />
         </section>
       </Container>
     </>

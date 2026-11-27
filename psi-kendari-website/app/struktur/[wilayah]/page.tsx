@@ -9,6 +9,9 @@ import { StatusChip, StrukturTable } from "@/components/StrukturTable";
 import { OfficeCard } from "@/components/OfficeCard";
 import { EmptyState } from "@/components/EmptyState";
 import { IconArrowRight } from "@/components/icons";
+import { MediaFeedBlock } from "@/components/MediaFeedBlock";
+import { antaraSultraFeed } from "@/config/feeds";
+import { getFeedItems } from "@/lib/feeds";
 
 export const revalidate = 900;
 export const dynamicParams = false;
@@ -33,6 +36,7 @@ export default async function WilayahPage({ params }: Props) {
   const w = getWilayah((await params).wilayah);
   if (!w) notFound();
   const terisi = wilayahTerisi(w);
+  const media = w.antara_feed ? await getFeedItems(antaraSultraFeed(w.antara_feed), 6) : null;
 
   return (
     <>
@@ -78,6 +82,13 @@ export default async function WilayahPage({ params }: Props) {
             </div>
           ) : null}
         </section>
+
+        {media ? (
+          <section aria-labelledby="media">
+            <SectionHeading id="media" title={`Kabar terbaru ${w.nama}`} kicker="ANTARA Sultra · Dilaporkan media" href={`/kendari-sultra/${w.slug}`} hrefLabel="Semua kabar wilayah" />
+            <MediaFeedBlock items={media.items} ok={media.status.ok} />
+          </section>
+        ) : null}
       </Container>
     </>
   );

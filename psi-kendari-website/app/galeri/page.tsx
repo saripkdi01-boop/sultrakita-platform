@@ -8,6 +8,8 @@ import { Container } from "@/components/Container";
 import { SectionHeading } from "@/components/SectionHeading";
 import { PsiPosts } from "@/components/psi/PsiPosts";
 import { EmptyState } from "@/components/EmptyState";
+import { VideoGrid } from "@/components/VideoGrid";
+import { getYoutubeVideos } from "@/lib/feeds";
 
 export const revalidate = 900;
 
@@ -20,7 +22,7 @@ export const metadata: Metadata = {
 const QUERY = { categories: [PSI_CAT.GALERI], perPage: 12 };
 
 export default async function GaleriPage() {
-  const psi = await getPostsByCategory(QUERY.categories, 1, QUERY.perPage);
+  const [psi, video] = await Promise.all([getPostsByCategory(QUERY.categories, 1, QUERY.perPage), getYoutubeVideos(8)]);
   const lokal = getGaleriLokal();
 
   return (
@@ -30,6 +32,11 @@ export default async function GaleriPage() {
         <section aria-labelledby="galeri-psi">
           <SectionHeading id="galeri-psi" title="Galeri PSI (psi.id)" kicker="Nasional" />
           <PsiPosts result={psi} query={QUERY} view="gallery" sourceHref={psiCategoryUrl(PSI_CAT.GALERI)} emptyText="Belum ada galeri dari psi.id." />
+        </section>
+
+        <section aria-labelledby="video">
+          <SectionHeading id="video" title="Video kanal resmi PSI" kicker="YouTube SolidaritasID" />
+          <VideoGrid videos={video.videos} ok={video.ok} />
         </section>
 
         <section aria-labelledby="galeri-lokal">

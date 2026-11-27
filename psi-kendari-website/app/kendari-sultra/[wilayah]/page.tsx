@@ -13,6 +13,9 @@ import { PsiPosts } from "@/components/psi/PsiPosts";
 import { NewsCard } from "@/components/NewsCard";
 import { EmptyState } from "@/components/EmptyState";
 import { IconArrowRight } from "@/components/icons";
+import { MediaFeedBlock } from "@/components/MediaFeedBlock";
+import { antaraSultraFeed } from "@/config/feeds";
+import { getFeedItems } from "@/lib/feeds";
 
 export const revalidate = 900;
 export const dynamicParams = false;
@@ -43,7 +46,10 @@ export default async function WilayahBeritaPage({ params }: Props) {
   if (!w) notFound();
   const lokal = getBeritaLokal().filter((b) => b.wilayah === w.slug);
   const query = { categories: [PSI_CAT.LIPUTAN_DAERAH], search: keyword(w.nama), perPage: 6 };
-  const psi = await getPosts(query);
+  const [psi, media] = await Promise.all([
+    getPosts(query),
+    w.antara_feed ? getFeedItems(antaraSultraFeed(w.antara_feed), 8) : Promise.resolve(null),
+  ]);
 
   return (
     <>
@@ -78,6 +84,12 @@ export default async function WilayahBeritaPage({ params }: Props) {
             emptyText={`Belum ada Liputan Daerah psi.id yang menyebut ${keyword(w.nama)}.`}
           />
         </section>
+        {media ? (
+          <section aria-labelledby="media">
+            <SectionHeading id="media" title={`Kabar ${w.nama} dari media`} kicker="ANTARA Sultra · Dilaporkan media" />
+            <MediaFeedBlock items={media.items} ok={media.status.ok} />
+          </section>
+        ) : null}
         <p>
           <Link href={`/struktur/${w.slug}`} className="inline-flex items-center gap-1 font-bold text-red-ink hover:underline">
             Struktur {w.dpd} <IconArrowRight />
