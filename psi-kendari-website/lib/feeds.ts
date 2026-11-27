@@ -151,13 +151,53 @@ function cleanSummary(raw: string | undefined, title: string): string {
   return summarize(s, 280);
 }
 
-async function fetchFeed(src: FeedSource): Promise<{ items: FeedItem[]; status: FeedStatus }> {
-  try {
-    const res = await fetch(src.url, {
+/* ---------------- Batas laju per host (sopan terhadap server media) ----------------
+ * ANTARA membalas HTTP 429 bila puluhan feed diminta bersamaan (mis. saat build
+ * membuat 13 halaman wilayah sekaligus). Permintaan ke host di bawah ini diantrikan:
+ * satu per satu dengan jeda, ditambah satu kali coba ulang bila tetap kena 429/503. */
+const HOST_GAP_MS: Record<string, number> = {
+  "sultra.antaranews.com": 1000,
+  "www.antaranews.com": 1000,
+};
+const hostQueues = new Map<string, Promise<unknown>>();
+const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+function throttled<T>(url: string, task: () => Promise<T>): Promise<T> {
+  const host = new URL(url).hostname;
+  const gap = HOST_GAP_MS[host];
+  if (!gap) return task();
+  const prev = hostQueues.get(host) ?? Promise.resolve();
+  const run = prev.then(task, task);
+  hostQueues.set(
+    host,
+    run.then(
+      () => wait(gap),
+      () => wait(gap),
+    ),
+  );
+  return run;
+}
+
+async function fetchXml(src: FeedSource): Promise<Response> {
+  const doFetch = () =>
+    fetch(src.url, {
       headers: { "User-Agent": USER_AGENT, Accept: "application/rss+xml, application/xml, text/xml;q=0.9, */*;q=0.5" },
       next: { revalidate: REVALIDATE_SECONDS, tags: ["rss", `rss:${src.id}`] },
       signal: AbortSignal.timeout(10_000),
     });
+  return throttled(src.url, async () => {
+    const res = await doFetch();
+    if (res.status !== 429 && res.status !== 503) return res;
+    await res.body?.cancel().catch(() => {});
+    const retryAfter = Number(res.headers.get("retry-after"));
+    await wait(Number.isFinite(retryAfter) && retryAfter > 0 ? Math.min(retryAfter * 1000, 5000) : 2000);
+    return doFetch();
+  });
+}
+
+async function fetchFeed(src: FeedSource): Promise<{ items: FeedItem[]; status: FeedStatus }> {
+  try {
+    const res = await fetchXml(src);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const xml = decodeXml(await res.arrayBuffer(), res.headers.get("content-type"));
     if (!/<(rss|feed|rdf:RDF)[\s>]/i.test(xml.slice(0, 2000))) throw new Error("bukan RSS/Atom");
