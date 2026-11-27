@@ -30,7 +30,7 @@ export const dynamic = 'force-dynamic';
 
 const WebhookSchema = z.object({
   eventId: z.string().min(1, 'eventId wajib diisi'),
-  orderId: z.string().uuid('orderId harus UUID'),
+  orderId: z.string().guid('orderId harus UUID'),
   outcome: z.enum(['paid', 'failed']),
   providerRef: z.string().min(1, 'providerRef wajib diisi'),
   sandbox: z.boolean(),

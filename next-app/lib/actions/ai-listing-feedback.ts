@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { requireServerUser } from '@/lib/supabase/server';
 
 const feedbackSchema = z.object({
-  generationId: z.string().uuid(),
+  generationId: z.string().guid(),
   helpful: z.boolean(),
   comment: z.string().trim().max(1000).optional().default(''),
   correctedFields: z.array(z.enum(['title', 'description', 'category', 'price', 'tags'])).max(5).default([]),

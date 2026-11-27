@@ -110,7 +110,7 @@ async function hasExtendedColumns(): Promise<boolean> {
 /** Pesan error aman: hanya pesan guard yang dikenal yang diteruskan apa adanya. */
 function toSafeError(error: unknown, fallback: string): string {
   if (error instanceof z.ZodError) {
-    return error.errors[0]?.message ?? 'Input tidak valid.';
+    return error.issues[0]?.message ?? 'Input tidak valid.';
   }
   if (error instanceof Error && (error.message === 'Sesi login diperlukan.' || error.message === 'Akses admin diperlukan.')) {
     return error.message;

@@ -74,7 +74,7 @@ export async function listPropertySavedSearches() {
 export async function setPropertySearchAlertEnabled(input: { id: string; enabled: boolean }) {
   try {
     const { supabase, user } = await requireServerUser();
-    const parsed = z.object({ id: z.string().uuid(), enabled: z.boolean() }).safeParse(input);
+    const parsed = z.object({ id: z.string().guid(), enabled: z.boolean() }).safeParse(input);
     if (!parsed.success) return { ok: false as const, error: 'Data tidak valid.' };
     const { error } = await supabase.from('saved_searches').update({ alert_enabled: parsed.data.enabled }).eq('id', parsed.data.id).eq('user_id', user.id);
     if (error) throw error;
@@ -85,7 +85,7 @@ export async function setPropertySearchAlertEnabled(input: { id: string; enabled
 export async function deletePropertySavedSearch(id: string) {
   try {
     const { supabase, user } = await requireServerUser();
-    const parsed = z.string().uuid('Pencarian tidak valid.').safeParse(id);
+    const parsed = z.string().guid('Pencarian tidak valid.').safeParse(id);
     if (!parsed.success) return { ok: false as const, error: 'Pencarian tidak valid.' };
     const { error } = await supabase.from('saved_searches').delete().eq('id', parsed.data).eq('user_id', user.id);
     if (error) throw error;
