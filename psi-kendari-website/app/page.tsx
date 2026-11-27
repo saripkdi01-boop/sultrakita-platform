@@ -9,6 +9,12 @@ import { JoinBand } from "@/components/JoinBand";
 import { JsonLd } from "@/components/JsonLd";
 import { SITE } from "@/config/site";
 import { IconArrowRight } from "@/components/icons";
+import { getBeritaLokal, getDataPemilu } from "@/lib/content";
+import { lokalToCard } from "@/lib/card";
+import { NewsCard } from "@/components/NewsCard";
+import { EmptyState } from "@/components/EmptyState";
+import { BarChart } from "@/components/BarChart";
+import { formatAngka } from "@/lib/format";
 
 export const revalidate = 900;
 
@@ -30,6 +36,8 @@ export default async function HomePage() {
     getPosts(Q.kolom),
     getPostsByCategory(PSI_CAT.BLOG_KETUM, 1, 3),
   ]);
+  const lokal = getBeritaLokal().slice(0, 4);
+  const pemilu = getDataPemilu("kendari-2024");
 
   return (
     <>
@@ -76,7 +84,18 @@ export default async function HomePage() {
                 emptyText="Belum ada Liputan Daerah psi.id yang menyebut Kendari/Sulawesi Tenggara."
               />
             </div>
-            <div id="berita-lokal-beranda" />
+            <div>
+              <h3 className="mb-3 text-sm font-extrabold uppercase tracking-widest text-muted">Berita lokal PSI Kendari</h3>
+              {lokal.length ? (
+                <div className="flex flex-col gap-5">
+                  {lokal.map((b) => (
+                    <NewsCard key={b.slug} item={lokalToCard(b)} variant="compact" />
+                  ))}
+                </div>
+              ) : (
+                <EmptyState title="Belum ada berita lokal." />
+              )}
+            </div>
           </div>
         </section>
 
@@ -97,6 +116,28 @@ export default async function HomePage() {
             </aside>
           </div>
         </section>
+
+        {pemilu ? (
+          <section aria-labelledby="data-pemilu" className="mt-14">
+            <SectionHeading id="data-pemilu" title="Data Pemilu Kendari 2024" kicker="DPRD Kota Kendari" href="/data-pemilu" hrefLabel="Tabel & sumber lengkap" />
+            <div className="grid items-center gap-8 rounded-3xl border border-border bg-surface p-6 sm:p-8 lg:grid-cols-[280px_1fr]">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest text-muted">Total suara PSI</p>
+                <p className="text-6xl font-extrabold tabular-nums text-red-ink">{formatAngka(pemilu.total_suara_partai)}</p>
+                <p className="mt-1 text-sm text-muted">
+                  dari {formatAngka(pemilu.total_suara_sah)} suara sah {pemilu.lembaga}
+                </p>
+                <p className="mt-4 text-xs text-muted">Sumber: {pemilu.sumber.dokumen}</p>
+              </div>
+              <BarChart
+                title={`Suara PSI per dapil — ${pemilu.lembaga} ${pemilu.pemilu}`}
+                data={pemilu.dapil.map((d) => ({ label: d.nama, value: d.suara }))}
+                shareOf={pemilu.total_suara_partai}
+                shareLabel="dari suara PSI"
+              />
+            </div>
+          </section>
+        ) : null}
 
         <div className="mt-14">
           <JoinBand />

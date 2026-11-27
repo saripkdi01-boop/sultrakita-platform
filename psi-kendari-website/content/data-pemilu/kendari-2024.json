@@ -1,0 +1,28 @@
+{
+  "id": "kendari-2024",
+  "judul": "Perolehan suara PSI — DPRD Kota Kendari, Pemilu 2024",
+  "pemilu": "Pemilu 2024",
+  "lembaga": "DPRD Kota Kendari",
+  "wilayah": "Kota Kendari",
+  "partai": "Partai Solidaritas Indonesia (PSI)",
+  "total_suara_partai": 547,
+  "total_suara_sah": 193643,
+  "dapil": [
+    { "nama": "Kendari 1", "suara": 67, "cakupan_wilayah": null },
+    { "nama": "Kendari 2", "suara": 112, "cakupan_wilayah": null },
+    { "nama": "Kendari 3", "suara": 37, "cakupan_wilayah": null },
+    { "nama": "Kendari 4", "suara": 55, "cakupan_wilayah": null },
+    { "nama": "Kendari 5", "suara": 276, "cakupan_wilayah": null }
+  ],
+  "sumber": {
+    "dokumen": "Keputusan KPU Kota Kendari Nomor 93 Tahun 2024",
+    "penerbit": "KPU Kota Kendari",
+    "status_verifikasi": "Terverifikasi 100% terhadap dokumen keputusan",
+    "url": null
+  },
+  "catatan": [
+    "Total suara sah (193.643) adalah seluruh suara sah pemilihan anggota DPRD Kota Kendari 2024.",
+    "Rincian per TPS menunggu D-Hasil resmi KPU.",
+    "Cakupan kecamatan per daerah pemilihan (dapil) menunggu data resmi."
+  ]
+}

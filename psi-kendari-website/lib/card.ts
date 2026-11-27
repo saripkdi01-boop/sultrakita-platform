@@ -29,3 +29,27 @@ export function psiToCard(p: PsiPost): CardItem {
     image: p.image ? { src: p.image.cardSrc, alt: p.image.alt, credit: "Foto: psi.id" } : null,
   };
 }
+
+/** Kartu untuk berita lokal (/content/berita-lokal). */
+export function lokalToCard(b: {
+  slug: string;
+  judul: string;
+  ringkasan: string;
+  tanggal: string;
+  rubrik: string;
+  label: VerificationLabel;
+  gambar: { src: string; alt: string; kredit?: string } | null;
+}): CardItem {
+  return {
+    key: `lokal-${b.slug}`,
+    title: b.judul,
+    href: `/kendari-sultra/berita/${b.slug}`,
+    external: false,
+    excerpt: b.ringkasan,
+    date: b.tanggal,
+    rubrik: b.rubrik,
+    label: b.label,
+    source: "PSI Kendari",
+    image: b.gambar ? { src: b.gambar.src, alt: b.gambar.alt, credit: b.gambar.kredit ? `Foto: ${b.gambar.kredit}` : undefined } : null,
+  };
+}
