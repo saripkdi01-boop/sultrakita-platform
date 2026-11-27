@@ -76,6 +76,8 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Pastikan folder /content ikut dibundel untuk render ulang ISR di server.
+  outputFileTracingIncludes: { "/**": ["./content/**/*"] },
   reactStrictMode: true,
   images: {
     // Gambar psi.id dirender `unoptimized` (langsung dari browser) karena

@@ -31,12 +31,14 @@ export function PsiClientFeed({
   sourceHref,
   emptyText = "Belum ada artikel pada rubrik ini.",
   hideWhenUnavailable = false,
+  compactNotice = false,
 }: {
   query: PsiQuery;
   view: PsiView;
   sourceHref?: string;
   emptyText?: string;
   hideWhenUnavailable?: boolean;
+  compactNotice?: boolean;
 }) {
   const [state, setState] = useState<State>({ status: "loading" });
   const key = JSON.stringify(query);
@@ -61,7 +63,7 @@ export function PsiClientFeed({
   }
   if (state.status === "error") {
     if (hideWhenUnavailable) return null;
-    return <PsiUnavailable sourceHref={sourceHref} />;
+    return <PsiUnavailable sourceHref={sourceHref} compact={compactNotice} />;
   }
   if (!state.posts.length) {
     if (hideWhenUnavailable) return null;

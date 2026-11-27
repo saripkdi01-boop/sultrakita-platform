@@ -1,0 +1,160 @@
+{
+  "wilayah": [
+    {
+      "slug": "kota-kendari",
+      "nama": "Kota Kendari",
+      "jenis": "Kota",
+      "dpd": "DPD PSI Kota Kendari",
+      "pengurus": [],
+      "sk": null,
+      "kantor": null,
+      "catatan": "Susunan pengurus, SK, dan alamat sekretariat menunggu data resmi.",
+      "antara_feed": "seputar-sultra-kota-kendari",
+      "data_pemilu": "kendari-2024"
+    },
+    {
+      "slug": "konawe",
+      "nama": "Kabupaten Konawe",
+      "jenis": "Kabupaten",
+      "dpd": "DPD PSI Kabupaten Konawe",
+      "pengurus": [],
+      "sk": null,
+      "kantor": null,
+      "catatan": "Susunan pengurus, SK, dan alamat sekretariat menunggu data resmi.",
+      "antara_feed": "seputar-sultra-kab-konawe",
+      "data_pemilu": null
+    },
+    {
+      "slug": "konawe-selatan",
+      "nama": "Kabupaten Konawe Selatan",
+      "jenis": "Kabupaten",
+      "dpd": "DPD PSI Kabupaten Konawe Selatan",
+      "pengurus": [],
+      "sk": null,
+      "kantor": null,
+      "catatan": "Susunan pengurus, SK, dan alamat sekretariat menunggu data resmi.",
+      "antara_feed": "seputar-sultra-kab-konawe-selatan",
+      "data_pemilu": null
+    },
+    {
+      "slug": "konawe-utara",
+      "nama": "Kabupaten Konawe Utara",
+      "jenis": "Kabupaten",
+      "dpd": "DPD PSI Kabupaten Konawe Utara",
+      "pengurus": [],
+      "sk": null,
+      "kantor": null,
+      "catatan": "Susunan pengurus, SK, dan alamat sekretariat menunggu data resmi.",
+      "antara_feed": "seputar-sultra-kab-konawe-utara",
+      "data_pemilu": null
+    },
+    {
+      "slug": "konawe-kepulauan",
+      "nama": "Kabupaten Konawe Kepulauan",
+      "jenis": "Kabupaten",
+      "dpd": "DPD PSI Kabupaten Konawe Kepulauan",
+      "pengurus": [],
+      "sk": null,
+      "kantor": null,
+      "catatan": "Susunan pengurus, SK, dan alamat sekretariat menunggu data resmi.",
+      "antara_feed": "seputar-sultra-kab-konawe-kepulauan",
+      "data_pemilu": null
+    },
+    {
+      "slug": "kolaka",
+      "nama": "Kabupaten Kolaka",
+      "jenis": "Kabupaten",
+      "dpd": "DPD PSI Kabupaten Kolaka",
+      "pengurus": [],
+      "sk": null,
+      "kantor": null,
+      "catatan": "Susunan pengurus, SK, dan alamat sekretariat menunggu data resmi.",
+      "antara_feed": "seputar-sultra-kab-kolaka",
+      "data_pemilu": null
+    },
+    {
+      "slug": "kolaka-timur",
+      "nama": "Kabupaten Kolaka Timur",
+      "jenis": "Kabupaten",
+      "dpd": "DPD PSI Kabupaten Kolaka Timur",
+      "pengurus": [],
+      "sk": null,
+      "kantor": null,
+      "catatan": "Susunan pengurus, SK, dan alamat sekretariat menunggu data resmi.",
+      "antara_feed": "seputar-sultra-kab-kolaka-timur",
+      "data_pemilu": null
+    },
+    {
+      "slug": "kolaka-utara",
+      "nama": "Kabupaten Kolaka Utara",
+      "jenis": "Kabupaten",
+      "dpd": "DPD PSI Kabupaten Kolaka Utara",
+      "pengurus": [],
+      "sk": null,
+      "kantor": null,
+      "catatan": "Susunan pengurus, SK, dan alamat sekretariat menunggu data resmi.",
+      "antara_feed": "seputar-sultra-kab-kolaka-utara",
+      "data_pemilu": null
+    },
+    {
+      "slug": "bombana",
+      "nama": "Kabupaten Bombana",
+      "jenis": "Kabupaten",
+      "dpd": "DPD PSI Kabupaten Bombana",
+      "pengurus": [],
+      "sk": null,
+      "kantor": null,
+      "catatan": "Susunan pengurus, SK, dan alamat sekretariat menunggu data resmi.",
+      "antara_feed": "seputar-sultra-kab-bombana",
+      "data_pemilu": null
+    },
+    {
+      "slug": "buton",
+      "nama": "Kabupaten Buton",
+      "jenis": "Kabupaten",
+      "dpd": "DPD PSI Kabupaten Buton",
+      "pengurus": [],
+      "sk": null,
+      "kantor": null,
+      "catatan": "Susunan pengurus, SK, dan alamat sekretariat menunggu data resmi.",
+      "antara_feed": "seputar-sultra-kab-buton",
+      "data_pemilu": null
+    },
+    {
+      "slug": "kota-baubau",
+      "nama": "Kota Baubau",
+      "jenis": "Kota",
+      "dpd": "DPD PSI Kota Baubau",
+      "pengurus": [],
+      "sk": null,
+      "kantor": null,
+      "catatan": "Susunan pengurus, SK, dan alamat sekretariat menunggu data resmi.",
+      "antara_feed": "seputar-sultra-kota-baubau",
+      "data_pemilu": null
+    },
+    {
+      "slug": "muna",
+      "nama": "Kabupaten Muna",
+      "jenis": "Kabupaten",
+      "dpd": "DPD PSI Kabupaten Muna",
+      "pengurus": [],
+      "sk": null,
+      "kantor": null,
+      "catatan": "Susunan pengurus, SK, dan alamat sekretariat menunggu data resmi.",
+      "antara_feed": "seputar-sultra-kab-muna",
+      "data_pemilu": null
+    },
+    {
+      "slug": "wakatobi",
+      "nama": "Kabupaten Wakatobi",
+      "jenis": "Kabupaten",
+      "dpd": "DPD PSI Kabupaten Wakatobi",
+      "pengurus": [],
+      "sk": null,
+      "kantor": null,
+      "catatan": "Susunan pengurus, SK, dan alamat sekretariat menunggu data resmi.",
+      "antara_feed": "seputar-sultra-kab-wakatobi",
+      "data_pemilu": null
+    }
+  ]
+}

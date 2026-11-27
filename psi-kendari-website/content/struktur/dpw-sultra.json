@@ -1,0 +1,21 @@
+{
+  "tingkat": "DPW",
+  "nama": "DPW PSI Sulawesi Tenggara",
+  "sk": { "nomor": "140/SK/DPP/2025", "penerbit": "DPP PSI" },
+  "pengurus": [
+    { "jabatan": "Ketua", "nama": "La Ode M. Rajiun Tumada", "foto": null },
+    { "jabatan": "Sekretaris", "nama": "Hartawan Abidin Karamasa", "foto": null },
+    { "jabatan": "Bendahara", "nama": null, "foto": null, "catatan": "menunggu data resmi" }
+  ],
+  "catatan": "Susunan lengkap pengurus DPW (wakil ketua, biro, dsb.) menunggu data resmi.",
+  "kantor": {
+    "alamat": ["Jl. Laute 3 No. 9", "Mandonga, Kota Kendari", "Sulawesi Tenggara"],
+    "catatan": null
+  },
+  "anggota_tercatat": {
+    "jumlah": 5191,
+    "sumber": "KPU — InfoPemilu",
+    "sumber_url": "https://infopemilu.kpu.go.id/"
+  },
+  "sumber_url": null
+}

@@ -73,6 +73,7 @@ export default async function UjiDataPage() {
               result={lists[i]}
               query={{ categories: [id], perPage: 10 }}
               view="list"
+              compactNotice
               sourceHref={psiCategoryUrl(id)}
             />
           </section>

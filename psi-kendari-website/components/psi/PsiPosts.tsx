@@ -15,6 +15,7 @@ export function PsiPosts({
   emptyText = "Belum ada artikel pada rubrik ini.",
   priority = false,
   hideWhenUnavailable = false,
+  compactNotice = false,
 }: {
   result: PsiListResult;
   query: PsiQuery;
@@ -23,6 +24,8 @@ export function PsiPosts({
   emptyText?: string;
   priority?: boolean;
   hideWhenUnavailable?: boolean;
+  /** Pakai pesan ringkas bila psi.id tidak dapat dimuat (blok sekunder). */
+  compactNotice?: boolean;
 }) {
   if (result.ok) {
     if (!result.posts.length) return hideWhenUnavailable ? null : <EmptyState title={emptyText} />;
@@ -35,6 +38,7 @@ export function PsiPosts({
       sourceHref={sourceHref}
       emptyText={emptyText}
       hideWhenUnavailable={hideWhenUnavailable}
+      compactNotice={compactNotice}
     />
   );
 }

@@ -1,7 +1,29 @@
 import { EmptyState } from "../EmptyState";
 import { IconExternal } from "../icons";
 
-export function PsiUnavailable({ sourceHref = "https://psi.id/", what = "Berita dari psi.id" }: { sourceHref?: string; what?: string }) {
+/**
+ * Pesan rapi saat psi.id tidak dapat dimuat. `compact` dipakai untuk blok
+ * sekunder agar halaman tidak dipenuhi kotak peringatan berulang.
+ */
+export function PsiUnavailable({
+  sourceHref = "https://psi.id/",
+  what = "Berita dari psi.id",
+  compact = false,
+}: {
+  sourceHref?: string;
+  what?: string;
+  compact?: boolean;
+}) {
+  if (compact) {
+    return (
+      <p role="status" className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-dashed border-border bg-bg-soft px-4 py-3 text-sm text-muted">
+        <span>{what} sementara tidak dapat dimuat.</span>
+        <a href={sourceHref} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-bold text-red-ink hover:underline">
+          Baca di psi.id <IconExternal />
+        </a>
+      </p>
+    );
+  }
   return (
     <EmptyState title={`${what} sementara tidak dapat dimuat`} tone="warning">
       <p>

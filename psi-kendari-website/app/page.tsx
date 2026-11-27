@@ -1,8 +1,107 @@
-export default function HomePage() {
+import Link from "next/link";
+import { PSI_CAT, RUBRIK, psiCategoryUrl } from "@/config/psi-categories";
+import { getKendariPosts, getPosts, getPostsByCategory } from "@/lib/psi-api";
+import { KENDARI_KEYWORDS } from "@/config/psi-categories";
+import { Container } from "@/components/Container";
+import { SectionHeading } from "@/components/SectionHeading";
+import { PsiPosts } from "@/components/psi/PsiPosts";
+import { JoinBand } from "@/components/JoinBand";
+import { JsonLd } from "@/components/JsonLd";
+import { SITE } from "@/config/site";
+import { IconArrowRight } from "@/components/icons";
+
+export const revalidate = 900;
+
+const Q = {
+  ticker: { perPage: 8 },
+  hero: { categories: [PSI_CAT.LIPUTAN, PSI_CAT.LIPUTAN_NASIONAL, PSI_CAT.LIPUTAN_DAERAH], perPage: 5 },
+  pers: { categories: RUBRIK["siaran-pers"].categories, perPage: 3 },
+  kendari: { categories: [PSI_CAT.LIPUTAN_DAERAH], keywords: KENDARI_KEYWORDS, perPage: 4 },
+  kolom: { categories: RUBRIK["kolom-opini"].categories, perPage: 3 },
+  ketum: { categories: [PSI_CAT.BLOG_KETUM], perPage: 3 },
+};
+
+export default async function HomePage() {
+  const [ticker, hero, pers, kendari, kolom, ketum] = await Promise.all([
+    getPosts(Q.ticker),
+    getPosts(Q.hero),
+    getPosts(Q.pers),
+    getKendariPosts(Q.kendari.perPage),
+    getPosts(Q.kolom),
+    getPostsByCategory(PSI_CAT.BLOG_KETUM, 1, 3),
+  ]);
+
   return (
-    <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
-      <h1 className="text-3xl font-extrabold">PSI Kendari — Partai Super TBK</h1>
-      <p className="mt-3 text-muted">Kerangka situs sedang dibangun.</p>
-    </section>
+    <>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: SITE.title,
+          url: SITE.url,
+          inLanguage: "id-ID",
+          potentialAction: {
+            "@type": "SearchAction",
+            target: `${SITE.url}/cari?q={search_term_string}`,
+            "query-input": "required name=search_term_string",
+          },
+        }}
+      />
+      <PsiPosts result={ticker} query={Q.ticker} view="ticker" hideWhenUnavailable />
+
+      <Container className="py-8">
+        <h1 className="sr-only">PSI Kendari — Partai Super TBK: berita PSI, Kendari & Sulawesi Tenggara</h1>
+
+        <section aria-labelledby="berita-utama">
+          <h2 id="berita-utama" className="sr-only">Berita utama dari Liputan psi.id</h2>
+          <PsiPosts result={hero} query={Q.hero} view="hero" priority sourceHref={psiCategoryUrl(PSI_CAT.LIPUTAN)} />
+        </section>
+
+        <section aria-labelledby="siaran-pers" className="mt-14">
+          <SectionHeading id="siaran-pers" title="Siaran Pers & Sikap DPP" kicker="Resmi DPP PSI" href="/berita-psi/rubrik/siaran-pers" />
+          <PsiPosts result={pers} query={Q.pers} view="grid" compactNotice sourceHref={psiCategoryUrl(PSI_CAT.SIARAN_PERS)} />
+        </section>
+
+        <section aria-labelledby="kendari-sultra" className="mt-14">
+          <SectionHeading id="kendari-sultra" title="Kendari & Sultra" kicker="Kabar wilayah" href="/kendari-sultra" />
+          <div className="grid gap-8 lg:grid-cols-2">
+            <div>
+              <h3 className="mb-3 text-sm font-extrabold uppercase tracking-widest text-muted">Liputan Daerah psi.id</h3>
+              <PsiPosts
+                result={kendari}
+                query={Q.kendari}
+                view="compact"
+                compactNotice
+                sourceHref={psiCategoryUrl(PSI_CAT.LIPUTAN_DAERAH)}
+                emptyText="Belum ada Liputan Daerah psi.id yang menyebut Kendari/Sulawesi Tenggara."
+              />
+            </div>
+            <div id="berita-lokal-beranda" />
+          </div>
+        </section>
+
+        <section aria-labelledby="kolom" className="mt-14">
+          <SectionHeading id="kolom" title="Kolom & Opini" kicker="Gagasan" href="/berita-psi/rubrik/kolom" />
+          <div className="grid items-start gap-8 lg:grid-cols-[1fr_340px]">
+            <PsiPosts result={kolom} query={Q.kolom} view="grid" compactNotice sourceHref={psiCategoryUrl(PSI_CAT.KOLOM)} />
+            <aside aria-labelledby="blog-ketum" className="rounded-2xl bg-ink p-6 text-white">
+              <p className="text-[0.7rem] font-extrabold uppercase tracking-[0.18em] text-[#ff4d57]">Blok khusus</p>
+              <h3 id="blog-ketum" className="mt-1 text-2xl font-extrabold">Blog Ketum</h3>
+              <p className="mt-2 text-sm text-zinc-300">Tulisan terbaru Ketua Umum PSI dari psi.id.</p>
+              <div className="mt-4 rounded-xl bg-surface px-4 py-1 text-fg">
+                <PsiPosts result={ketum} query={Q.ketum} view="list" compactNotice sourceHref={psiCategoryUrl(PSI_CAT.BLOG_KETUM)} />
+              </div>
+              <Link href="/berita-psi/rubrik/blog-ketum" className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-white hover:underline">
+                Semua Blog Ketum <IconArrowRight />
+              </Link>
+            </aside>
+          </div>
+        </section>
+
+        <div className="mt-14">
+          <JoinBand />
+        </div>
+      </Container>
+    </>
   );
 }
