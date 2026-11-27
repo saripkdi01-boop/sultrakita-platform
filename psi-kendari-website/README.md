@@ -137,7 +137,7 @@ YouTube RSS kanal SolidaritasID ───► lib/feeds.ts#getYoutubeVideos ─�
 | Media lokal zonasultra.id / telisik.id | ❌ Cloudflare challenge / tanpa feed — dilewati |
 
 Daftar feed diubah di **`config/feeds.ts`**. Aturan agregasi: judul + ringkasan ≤ 280 karakter +
-nama media + tanggal + tautan keluar; tanpa gambar/isi penuh; deduplikasi URL terkanonik +
+**satu foto mini dari feed sumber** + nama media + tanggal + tautan keluar; tanpa isi penuh; deduplikasi URL terkanonik +
 kemiripan judul (Jaccard ≥ 0,8); urut terbaru; label **DILAPORKAN MEDIA**. Scraping cadangan
 HTML tidak dipakai karena tidak ada sumber yang memerlukannya secara sah (KPU butuh login).
 
@@ -180,7 +180,10 @@ lalu commit. Skrip `scripts/prepare-logo.mjs` (jalan otomatis sebelum `dev`/`bui
 - **Header keamanan** (`next.config.ts`): CSP, HSTS, X-Frame-Options DENY, nosniff,
   Referrer-Policy, Permissions-Policy, COOP.
 - **Hak cipta:** artikel psi.id dengan atribusi + tautan asli + “Foto: psi.id”; media lain hanya
-  judul + ringkasan + tautan keluar.
+  judul + ringkasan + satu foto mini + tautan keluar. Foto media diambil dari feed RSS resminya
+  (enclosure / media:content / tag gambar feed), dimuat langsung dari server media tersebut (tidak
+  disalin atau disimpan), diberi kredit “Foto: <nama media>”, dan memakai `referrerpolicy=no-referrer`.
+  Bila foto gagal dimuat, kartu menampilkan blok netral bernama media.
 
 ## SEO
 

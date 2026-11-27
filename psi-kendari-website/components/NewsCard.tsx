@@ -5,8 +5,9 @@ import { RubrikBadge, VerificationBadge } from "./Badges";
 import { TimeAgo } from "./TimeAgo";
 import { IconExternal } from "./icons";
 import { formatTanggal } from "@/lib/format";
+import { RemoteThumb } from "./RemoteThumb";
 
-export type CardVariant = "feature" | "default" | "compact" | "text";
+export type CardVariant = "feature" | "default" | "compact" | "text" | "media";
 
 function CardLink({ item, className, children }: { item: CardItem; className?: string; children: React.ReactNode }) {
   if (item.external) {
@@ -98,6 +99,30 @@ export function NewsCard({
           <div className="min-w-0">
             {badges}
             <H className="mt-1.5 line-clamp-3 text-[0.95rem] font-bold leading-snug group-hover:text-red-ink">{item.title}</H>
+            <Meta item={item} />
+          </div>
+        </CardLink>
+      </article>
+    );
+  }
+
+  if (variant === "media") {
+    // Gambar di kiri, teks berita di kanan (dipakai untuk berita media/RSS).
+    return (
+      <article className="group border-b border-border py-4 last:border-b-0">
+        <CardLink item={item} className="flex gap-3 sm:gap-4">
+          <RemoteThumb
+            src={item.image?.src}
+            alt={item.image?.alt || item.title}
+            source={item.source}
+            credit={item.image?.credit}
+            sizes="(min-width: 640px) 144px, 104px"
+            className="aspect-[4/3] w-[104px] shrink-0 self-start rounded-lg sm:w-36"
+          />
+          <div className="min-w-0 flex-1">
+            {badges}
+            <H className="mt-1.5 line-clamp-3 text-base font-bold leading-snug group-hover:text-red-ink">{item.title}</H>
+            {item.excerpt ? <p className="mt-1.5 line-clamp-2 text-sm text-muted">{item.excerpt}</p> : null}
             <Meta item={item} />
           </div>
         </CardLink>

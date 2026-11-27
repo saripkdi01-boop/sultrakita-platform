@@ -10,10 +10,10 @@ export function MediaFeedBlock({ items, ok, emptyText = "Belum ada berita media 
     <div>
       <div className="grid gap-x-8 md:grid-cols-2">
         {items.map((it) => (
-          <NewsCard key={it.id} item={feedToCard(it)} variant="text" />
+          <NewsCard key={it.id} item={feedToCard(it)} variant="media" />
         ))}
       </div>
-      <p className="mt-3 text-xs text-muted">Ringkasan dari RSS resmi media; isi lengkap dan hak cipta ada pada media sumber.</p>
+      <p className="mt-3 text-xs text-muted">Ringkasan dan foto dari RSS resmi media (dimuat langsung dari situs sumber); isi lengkap dan hak cipta ada pada media sumber.</p>
     </div>
   );
 }

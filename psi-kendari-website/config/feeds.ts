@@ -1,7 +1,8 @@
 /**
  * Daftar feed RSS resmi media & lembaga untuk agregasi "Politik Terbaru".
- * Ubah di sini saja. Aturan: hanya JUDUL + ringkasan ≤ 280 karakter + nama media +
- * tanggal + tautan keluar. Tidak ada gambar/isi penuh dari media lain.
+ * Ubah di sini saja. Aturan: JUDUL + ringkasan ≤ 280 karakter + SATU gambar mini yang
+ * disediakan feed (dimuat langsung dari server media, dengan kredit "Foto: <media>") +
+ * nama media + tanggal + tautan keluar. Tidak menyalin isi artikel media lain.
  *
  * Status diperiksa 27 Nov 2026 dari jaringan pengembangan:
  *  - Kompas: tidak ditemukan feed RSS publik tanpa API key → dilewati.

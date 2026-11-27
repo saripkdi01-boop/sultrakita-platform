@@ -33,7 +33,7 @@ export function FeedList({ items, sources }: { items: (CardItem & { sourceId: st
       </p>
       <div className="mt-6 grid gap-x-8 md:grid-cols-2">
         {visible.map((it) => (
-          <NewsCard key={it.key} item={it} variant="text" />
+          <NewsCard key={it.key} item={it} variant="media" />
         ))}
       </div>
     </div>

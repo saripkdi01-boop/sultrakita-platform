@@ -30,7 +30,8 @@ export default async function PolitikTerbaruPage() {
         lead={
           <>
             Berita politik nasional, kepemiluan, dan Sulawesi Tenggara dari RSS resmi media. Kami hanya menampilkan
-            judul, ringkasan singkat, nama media, dan tanggal — baca isi lengkapnya di situs sumber. Semua item berlabel{" "}
+            judul, ringkasan singkat, satu foto dari feed sumber, nama media, dan tanggal — baca isi lengkapnya di
+            situs sumber. Semua item berlabel{" "}
             <VerificationBadge label="DILAPORKAN_MEDIA" /> sampai diverifikasi admin.
           </>
         }
@@ -66,8 +67,8 @@ export default async function PolitikTerbaruPage() {
             })}
           </ul>
           <p className="mt-4 text-xs text-muted">
-            Hak cipta berita ada pada masing-masing media. Situs ini tidak menyalin isi artikel media lain; setiap item
-            menautkan ke artikel aslinya. Feed umum disaring dengan kata kunci politik/pemilu.
+            Hak cipta berita dan foto ada pada masing-masing media. Situs ini tidak menyalin isi artikel media lain;
+            foto dimuat langsung dari server media sumber dan setiap item menautkan ke artikel aslinya. Feed umum disaring dengan kata kunci politik/pemilu.
           </p>
         </section>
       </Container>

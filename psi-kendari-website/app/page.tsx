@@ -119,14 +119,14 @@ export default async function HomePage() {
           {politik.items.length ? (
             <div className="grid gap-x-8 md:grid-cols-2">
               {politik.items.slice(0, 10).map((it) => (
-                <NewsCard key={it.id} item={feedToCard(it)} variant="text" />
+                <NewsCard key={it.id} item={feedToCard(it)} variant="media" />
               ))}
             </div>
           ) : (
             <EmptyState title="Berita media sementara tidak dapat dimuat" />
           )}
           <p className="mt-3 text-xs text-muted">
-            Ringkasan dari RSS resmi media; isi lengkap dan hak cipta ada pada media sumber.
+            Ringkasan dan foto dari RSS resmi media (dimuat langsung dari situs sumber); isi lengkap dan hak cipta ada pada media sumber.
           </p>
         </section>
 

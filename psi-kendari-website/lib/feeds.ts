@@ -1,7 +1,8 @@
 import "server-only";
 /**
- * Agregasi RSS (server). Hanya judul + ringkasan ≤ 280 karakter + nama media +
- * tanggal + tautan keluar. Deduplikasi berdasarkan URL terkanonik & kemiripan judul.
+ * Agregasi RSS (server). Judul + ringkasan ≤ 280 karakter + SATU gambar mini dari feed
+ * sumber (dimuat langsung dari server media, tidak disalin) + nama media + tanggal +
+ * tautan keluar. Deduplikasi berdasarkan URL terkanonik & kemiripan judul.
  * Semua item berlabel "DILAPORKAN MEDIA" sampai diverifikasi admin.
  */
 import Parser from "rss-parser";
@@ -19,12 +20,76 @@ export type FeedItem = {
   source: string;
   sourceId: string;
   kategori: FeedKategori;
+  /** Satu gambar mini dari feed sumber (https), atau null bila feed tidak menyediakan. */
+  image: string | null;
 };
 
 export type FeedStatus = { id: string; nama: string; ok: boolean; count: number; error?: string };
 
 const USER_AGENT = `psi-kendari-website/1.0 (+${SITE.url}; RSS reader)`;
-const parser = new Parser({ timeout: 10_000 });
+type MediaNode = { $?: { url?: string; medium?: string; type?: string } };
+type ExtraItemFields = {
+  /** Tempo memakai elemen <img>URL</img>. */
+  tempoImg?: string;
+  mediaContent?: MediaNode[];
+  mediaThumbnail?: MediaNode[];
+};
+
+const parser = new Parser<Record<string, never>, ExtraItemFields>({
+  timeout: 10_000,
+  customFields: {
+    item: [
+      ["img", "tempoImg"],
+      ["media:content", "mediaContent", { keepArray: true }],
+      ["media:thumbnail", "mediaThumbnail", { keepArray: true }],
+    ],
+  },
+});
+
+const IMG_EXT = /\.(jpe?g|png|webp|avif)(\?|$)/i;
+
+/** Rapikan URL gambar: absolut, https, dan pakai ukuran mini bila CDN menyediakannya. */
+function normalizeImage(raw: string | undefined, base: string): string | null {
+  if (!raw) return null;
+  let url: URL;
+  try {
+    url = new URL(decodeEntities(raw.trim()), base);
+  } catch {
+    return null;
+  }
+  if (url.protocol === "http:") url.protocol = "https:";
+  if (url.protocol !== "https:") return null;
+  if (/\.gif(\?|$)/i.test(url.pathname) || /pixel|tracking|feedburner/i.test(url.href)) return null;
+  // ANTARA menyediakan versi 350x233 (±16 KB) untuk setiap gambar 800x533 (±50 KB).
+  if (url.hostname === "img.antaranews.com") url.pathname = url.pathname.replace("/cache/800x533/", "/cache/350x233/");
+  return url.toString();
+}
+
+/** Ambil SATU gambar per item: enclosure → media:content/thumbnail → <img> (Tempo) → <img> pertama di deskripsi. */
+function pickImage(
+  it: Parser.Item & ExtraItemFields,
+  link: string,
+): string | null {
+  const enc = it.enclosure;
+  if (enc?.url && (enc.type?.startsWith("image/") || IMG_EXT.test(enc.url))) {
+    const u = normalizeImage(enc.url, link);
+    if (u) return u;
+  }
+  for (const m of [...(it.mediaContent ?? []), ...(it.mediaThumbnail ?? [])]) {
+    const a = m?.$;
+    if (a?.url && (!a.medium || a.medium === "image") && (!a.type || a.type.startsWith("image/"))) {
+      const u = normalizeImage(a.url, link);
+      if (u) return u;
+    }
+  }
+  if (typeof it.tempoImg === "string") {
+    const u = normalizeImage(it.tempoImg, link);
+    if (u) return u;
+  }
+  const html = decodeEntities(it.content ?? "");
+  const src = /<img[^>]+src=["']([^"']+)["']/i.exec(html)?.[1];
+  return normalizeImage(src, link);
+}
 
 /** Dekode body sesuai deklarasi XML (mis. Tempo mengirim header ISO-8859-15 untuk XML UTF-8). */
 function decodeXml(buf: ArrayBuffer, header: string | null): string {
@@ -113,6 +178,7 @@ async function fetchFeed(src: FeedSource): Promise<{ items: FeedItem[]; status: 
         date,
         source: src.nama,
         sourceId: src.id,
+        image: pickImage(it, link),
         kategori: src.kategori,
       });
       if (items.length >= (src.maks ?? 20)) break;
@@ -165,7 +231,7 @@ export function feedToCard(it: FeedItem): CardItem {
     rubrik: it.kategori === "pemilu" ? "Pemilu" : it.kategori === "lokal" ? "Sultra" : "Nasional",
     label: "DILAPORKAN_MEDIA",
     source: it.source,
-    image: null,
+    image: it.image ? { src: it.image, alt: it.title, credit: `Foto: ${it.source}` } : null,
   };
 }
 
